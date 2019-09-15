@@ -1,0 +1,58 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "25.0.1"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        lintOptions {
+            abortOnError false
+        }
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+
+        }
+    }
+
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+            }
+            resources {
+                srcDir 'src/../lib'
+            }
+        }
+    }
+}
+task clearJar(type: Delete) {
+    delete 'build/output/AppsFlyerAndroidPlugin.jar'
+}
+
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('build/output/')
+    include('classes.jar')
+    rename ('classes.jar', 'AppsFlyerAndroidPlugin.jar')
+}
+
+makeJar.dependsOn(clearJar, build)
+
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    testCompile 'junit:junit:4.12'
+    compile files('libs/classes.jar')
+    compile 'com.appsflyer:af-android-sdk:4.10.2@aar'
+
+}
