@@ -33,7 +33,7 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
 
 ```
 
-2. Add the new .unitypackage. The package can be found [here](#removeOldPlugin).
+2. Add the new .unitypackage, which can be found in the new plugin. 
 
 ## <a id="initnewplugin"> Init New Plugin
     
@@ -43,7 +43,7 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
    
 #### 1. remove all old init code 
 To do this simpily remove the game object or all the appsflyer code in the game object where there sdk is being initalized.
-Then follow the init guide for the new plugin [here](#/Guides.md#init-sdk).
+Then follow the init guide for the new plugin.
     
 #### 2. Update old init code with new code
 
@@ -65,27 +65,30 @@ void Start () {
 ```
 
 With new init code:
+
+
 ```c#
 using AppsFlyerSDK;
 
-  void Start()
-  {
-    /* AppsFlyer.setDebugLog(true); */
-    AppsFlyer.initSDK("devkey", "appID");
-    AppsFlyer.startSDK();
-  }
+public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
+{
+    void Start()
+    {
+        /* AppsFlyer.setDebugLog(true); */
+        AppsFlyer.initSDK("devkey", "appID", this);
+        AppsFlyer.startSDK();
+    }
+    
+ // .....   
+}
 ```
 **Important**
-If you are also implementing conversion data and/or deeplinking then you need to initalize the SDK with the `IAppsFlyerConversionData` interface as seen [here](#/Guides.md#init-sdk)
+If you are also implementing conversion data and/or deeplinking then you need to initalize the SDK with the `IAppsFlyerConversionData` interface.
 
 
 ## <a id="updateoldcode"> update other Code
 
-In the new plugin all of the API is available. 
-A full list of the API can be seen [here](#updateCode3).
-
-Here are some of the core API.
-Please refer to the new plugins api list for any other API. 
+Here is list of all the old API, and the new API.
 
 API
 
@@ -203,14 +206,14 @@ AppsFlyer.trackAndOpenStore(string appID, string campaign, Dictionary<string, st
 // old
 AppsFlyer.setIsSandbox(bool isSandbox);
 // new
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
         AppsFlyeriOS.setUseReceiptValidationSandbox(true);
 #endif
 
 // old
 AppsFlyer.registerUninstall(byte[] token);
 // new
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
         AppsFlyeriOS.registerUninstall(token);
 #endif
 
@@ -223,44 +226,52 @@ AppsFlyer.registerUninstall(byte[] token);
 // old
 AppsFlyer.setCollectIMEI(bool shouldCollect);
 // new 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setCollectIMEI(bool shouldCollect);
 #endif
 
 // old
 AppsFlyer.setCollectAndroidID(bool shouldCollect);
 //new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setCollectAndroidID(bool shouldCollect);
 #endif
 
 //old
 AppsFlyer.setImeiData(string imeiData);
 //new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setImeiData(string imeiData);
 #endif
 
 //old
 AppsFlyer.updateServerUninstallToken(string token);
 //new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.updateServerUninstallToken(string token);
 #endif
 
 //old
 AppsFlyer.setAndroidIdData(string androidIdData);
 //new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setAndroidIdData("androidId");
 #endif
 
 //old
 AppsFlyer.setPreinstallAttribution(string mediaSource, string campaign, string siteId);
 //new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setPreinstallAttribution("mediaSource", "campaign", "siteId");
 #endif
+
+//old
+AppsFlyer.handlePushNotification(Dictionary<string, string> payload);
+//new
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyerAndroid.handlePushNotifications();
+#endif
+
 
 ```
 
@@ -276,7 +287,7 @@ AppsFlyer.validateReceipt(string productIdentifier, string price, string currenc
 AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, string callbackFailedMethod);  
 
 // android new
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.validateAndSendInAppPurchase(
         "publicKey", 
         "signature", 
@@ -288,7 +299,7 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
 #endif
 
 // ios new 
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
         AppsFlyeriOS.validateAndSendInAppPurchase(
         "productIdentifier", 
         "price", 
@@ -305,7 +316,6 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
     
 ```c#
 //@Deprecated
-AppsFlyer.handlePushNotification(Dictionary<string, string> payload);
 AppsFlyer.enableUninstallTracking(string senderId);
 AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 AppsFlyer.getHost();

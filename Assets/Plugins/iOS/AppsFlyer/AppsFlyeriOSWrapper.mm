@@ -150,7 +150,7 @@ extern "C" {
         }];
     }
     
-    const void _trackInvite (const char* channel, const char* parameters) {
+    const void _recordInvite (const char* channel, const char* parameters) {
         [AppsFlyerShareInviteHelper trackInvite:stringFromChar(channel) parameters:dictionaryFromJson(parameters)];
     }
     

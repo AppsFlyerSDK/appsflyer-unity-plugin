@@ -234,7 +234,7 @@ public class AppsFlyerAndroidWrapper {
         });
     }
 
-    public static void handlePushNotification(){
+    public static void handlePushNotifications(){
         AppsFlyerLib.getInstance().sendPushNotificationData(UnityPlayer.currentActivity);
     }
 

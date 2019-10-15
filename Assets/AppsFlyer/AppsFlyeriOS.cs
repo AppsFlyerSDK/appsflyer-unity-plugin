@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AppsFlyerSDK
 {
-#if UNITY_IOS 
+#if UNITY_IOS && !UNITY_EDITOR
 
     public class AppsFlyeriOS
     {
@@ -19,7 +19,21 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Get conversion data.
+        /// Send an In-App Event.
+        /// In-App Events provide insight on what is happening in your app.
+        /// </summary>
+        /// <param name="eventName">Name of event.</param>
+        /// <param name="eventValues">Contains dictionary of values for handling by backend.</param>
+        public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
+        {
+            _sendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
+        }
+
+        /// <summary>
+        /// Get the conversion data.
+        /// Allows the developer to access the user attribution data in real-time for every new install, directly from the SDK level.
+        /// By doing this you can serve users with personalized content or send them to specific activities within the app,
+        /// which can greatly enhance their engagement with your app.
         /// </summary>
         public static void getConversionData(string objectName)
         {
@@ -65,8 +79,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// In case of in app purchase events, you can set the currency code your user has purchased with.
-        /// The currency code is a 3 letter code according to ISO standards.
+        /// Setting user local currency code for in-app purchases.
+        /// The currency code should be a 3 character ISO 4217 code. (default is USD).
+        /// You can set the currency code for all events by calling the following method.
         /// </summary>
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
@@ -85,7 +100,8 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Prints SDK messages to the console log.This property should only be used in `DEBUG` mode.
+        /// Enables Debug logs for the AppsFlyer SDK.
+        /// Should only be set to true in development / debug.
         /// The default value is false.
         /// </summary>
         /// <param name="isDebug">shouldEnable boolean..</param>
@@ -104,7 +120,8 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Set your `OneLink ID` from OneLink configuration. Used in User Invites to generate a OneLink.
+        /// Set the OneLink ID that should be used for User-Invites.
+        /// The link that is generated for the user invite will use this OneLink as the base link.
         /// </summary>
         /// <param name="appInviteOneLinkID">OneLink ID obtained from the AppsFlyer Dashboard.</param>
         public static void setAppInviteOneLinkID(string appInviteOneLinkID)
@@ -113,7 +130,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Opt-out for specific user.
+        /// Anonymize user Data.
+        /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
+        /// Default is false
         /// </summary>
         /// <param name="shouldAnonymizeUser">boolean shouldAnonymizeUser.</param>
         public static void anonymizeUser(bool shouldAnonymizeUser)
@@ -168,7 +187,12 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Use this to send the user's emails.
+        /// Set the user emails and encrypt them.
+        /// cryptMethod Encryption method:
+        /// EmailCryptType.EmailCryptTypeMD5
+        /// EmailCryptType.EmailCryptTypeSHA1
+        /// EmailCryptType.EmailCryptTypeSHA256
+        /// EmailCryptType.EmailCryptTypeNone
         /// </summary>
         /// <param name="cryptType">type Hash algoritm.</param>
         /// <param name="length">length of userEmails array.</param>
@@ -176,16 +200,6 @@ namespace AppsFlyerSDK
         public static void setUserEmails(EmailCryptType cryptType, int length, params string[] userEmails)
         {
             _setUserEmails(cryptType, length, userEmails);
-        }
-
-        /// <summary>
-        /// Use this method to send events in your app like purchases or user actions.
-        /// </summary>
-        /// <param name="eventName">Name of event.</param>
-        /// <param name="eventValues">Contains dictionary of values for handling by backend.</param>
-        public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
-        {
-            _sendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
         }
 
         /// <summary>
@@ -212,7 +226,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// This method returns AppsFlyer's internal id(unique for your app).
+        /// Get AppsFlyer's unique device ID, which is created for every new install of an app.
         /// </summary>
         public static string getAppsFlyerId()
         {
@@ -267,7 +281,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// API to shut down all SDK activities.
+        /// Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
+        /// In some extreme cases you might want to shut down all SDK activity due to legal and privacy compliance.
+        /// This can be achieved with the stopSDK API.
         /// </summary>
         /// <param name="isSDKStopped">boolean isSDKStopped.</param>
         public static void stopSDK(bool isSDKStopped)
@@ -317,14 +333,14 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// It is recommended to generate an in-app event after the invite is sent to track the invites from the senders' perspective. 
+        /// It is recommended to generate an in-app event after the invite is sent to record the invites from the senders' perspective. 
         /// This enables you to find the users that tend most to invite friends, and the media sources that get you these users.
         /// </summary>
         /// <param name="channel">channel string.</param>
         /// <param name="parameters">parameters Dictionary..</param>
-        public static void trackInvite(string channel, Dictionary<string, string> parameters)
+        public static void recordInvite(string channel, Dictionary<string, string> parameters)
         {
-            _trackInvite(channel, AFMiniJSON.Json.Serialize(parameters));
+            _recordInvite(channel, AFMiniJSON.Json.Serialize(parameters));
         }
 
 
@@ -429,7 +445,7 @@ namespace AppsFlyerSDK
         private static extern void _generateUserInviteLink(string parameters, string gameObject);
 
         [DllImport("__Internal")]
-        private static extern void _trackInvite(string channel, string parameters);
+        private static extern void _recordInvite(string channel, string parameters);
 
     }
 

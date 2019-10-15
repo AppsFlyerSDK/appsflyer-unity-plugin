@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AppsFlyerSDK
 {
 
-#if UNITY_ANDROID || !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
     public class AppsFlyerAndroid
     {
 
@@ -13,7 +13,7 @@ namespace AppsFlyerSDK
 
         /// <summary>
         /// Use this method to start the sdk for the application.
-        /// Notice that AppsFlyer's Dev-Key must be provided.
+        /// The AppsFlyer's Dev-Key must be provided.
         /// </summary>
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         public static void startSDK(string devkey)
@@ -24,7 +24,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
         /// In some extreme cases you might want to shut down all SDK activity due to legal and privacy compliance.
-        /// This can be achieved with the stopSDK API
+        /// This can be achieved with the stopSDK API.
         /// </summary>
         /// <param name="isSDKStopped">boolean should SDK be stopped.</param>
         public static void stopSDK(bool isSDKStopped)
@@ -108,7 +108,7 @@ namespace AppsFlyerSDK
         /// Use this API to provide the SDK with the relevant customer user id and trigger the SDK to begin its normal activity.
         /// </summary>
         /// <param name="id">Customer ID for client.</param>
-        public static void setCustomerIdStartSDK(string id)
+        public static void setCustomerIdAndStartSDK(string id)
         {
             appsFlyerAndroid.CallStatic("setCustomerIdAndTrack", id);
         }
@@ -151,7 +151,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Set the user emails
+        /// Set the user emails.
         /// </summary>
         /// <param name="emails">User emails.</param>
         public static void setUserEmails(params string[] emails)
@@ -228,7 +228,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Setting user local currency code for in-app purchases.
         /// The currency code should be a 3 character ISO 4217 code. (default is USD).
-        /// You can set the currency code for all events by calling the following method
+        /// You can set the currency code for all events by calling the following method.
         /// </summary>
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
@@ -237,7 +237,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Manually record the location of the user
+        /// Manually record the location of the user.
         /// </summary>
         /// <param name="latitude">latitude as double.</param>
         /// <param name="longitude">longitude as double.</param>
@@ -260,7 +260,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
-        /// Default is false
+        /// Default is false.
         /// </summary>
         /// <param name="isDisabled">isDisabled boolean.</param>
         public static void anonymizeUser(bool isDisabled)
@@ -269,7 +269,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Enable the collection of Facebook Deferred AppLinks
+        /// Enable the collection of Facebook Deferred AppLinks.
         /// Requires Facebook SDK and Facebook app on target/client device.
         /// This API must be invoked prior to initializing the AppsFlyer SDK in order to function properly.
         /// </summary>
@@ -283,7 +283,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Restrict reengagement via deep-link to once per each unique deep-link.
         /// Otherwise deep re-occurring deep-links will be permitted for non-singleTask Activities and deep-linking via AppsFlyer deep-links.
-        /// The default value is false
+        /// The default value is false.
         /// </summary>
         /// <param name="doConsume">doConsume boolean.</param>
         public static void setConsumeAFDeepLinks(bool doConsume)
@@ -375,7 +375,7 @@ namespace AppsFlyerSDK
 
         /// <summary>
         /// Get the host name.
-        /// Default value is  "appsflyer.com"
+        /// Default value is  "appsflyer.com".
         /// </summary>
         /// <returns>Host name.</returns>
         public static string getHostName()
@@ -446,10 +446,13 @@ namespace AppsFlyerSDK
         /// <summary>
         /// To measure push notifications as part of a retargeting campaign.
         /// </summary>
-        public static void handlePushNotification(){
-            appsFlyerAndroid.CallStatic("handlePushNotification");
+        public static void handlePushNotifications(){
+            appsFlyerAndroid.CallStatic("handlePushNotifications");
         }
         
+        /// <summary>
+        /// Internal Helper Method.
+        /// </summary>
         private static AndroidJavaObject getEmailType(EmailCryptType cryptType)
         {
             AndroidJavaClass emailsCryptTypeEnum = new AndroidJavaClass("com.appsflyer.AppsFlyerProperties$EmailsCryptType");
@@ -474,6 +477,9 @@ namespace AppsFlyerSDK
             return emailsCryptType;
         }
 
+        /// <summary>
+        /// Internal Helper Method.
+        /// </summary>
         private static AndroidJavaObject convertDictionaryToJavaMap(Dictionary<string, string> dictionary)
         {
             AndroidJavaObject map = new AndroidJavaObject("java.util.HashMap");

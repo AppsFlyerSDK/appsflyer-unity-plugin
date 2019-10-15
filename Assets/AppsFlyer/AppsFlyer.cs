@@ -10,25 +10,35 @@ namespace AppsFlyerSDK
         private static string devkey;
 
         /// <summary>
-        /// Initialize the AppsFlyer SDK with the devKey and appID
-        /// The dev key is required and the appID is required for iOS. 
+        /// Initialize the AppsFlyer SDK with your devKey and appID.
+        /// The dev key is required on all platforms, and the appID is required for iOS. 
         /// If you app is for Android only pass null for the appID.
         /// </summary>
         /// <param name="devKey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         /// <param name="appID">Your app's Apple ID.</param>
+        /// <example>
+        /// <code>
+        /// AppsFlyer.initSDK("K2***********99", "41*****44"");
+        /// </code>
+        /// </example>
         public static void initSDK(string devKey, string appID)
         {
             initSDK(devKey, appID, null);
         }
 
         /// <summary>
-        /// Initialize the AppsFlyer SDK with the devKey and appID
-        /// The dev key is required and the appID is required for iOS. 
+        /// Initialize the AppsFlyer SDK with your devKey and appID.
+        /// The dev key is required on all platforms, and the appID is required for iOS. 
         /// If you app is for Android only pass null for the appID.
         /// </summary>
         /// <param name="devKey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         /// <param name="appID">Your app's Apple ID.</param>
         /// <param name="gameObject">pass the script of the game object being used.</param>
+        /// <example>
+        /// <code>
+        /// AppsFlyer.initSDK("K2***********99", 41*****44, this);
+        /// </code>
+        /// </example>
         public static void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
 #if UNITY_IOS && !UNITY_EDITOR
@@ -85,7 +95,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
         /// In some extreme cases you might want to shut down all SDK activity due to legal and privacy compliance.
-        /// This can be achieved with the stopSDK API
+        /// This can be achieved with the stopSDK API.
         /// </summary>
         /// <param name="isSDKStopped"> should sdk be stopped.</param>
         public static void stopSDK(bool isSDKStopped)
@@ -163,7 +173,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Set the OneLink ID that should be used for User-Invite-API
+        /// Set the OneLink ID that should be used for User-Invite-API.
         /// The link that is generated for the user invite will use this OneLink as the base link.
         /// </summary>
         /// <param name="oneLinkId">OneLink ID obtained from the AppsFlyer Dashboard.</param>
@@ -243,7 +253,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Manually record the location of the user
+        /// Manually record the location of the user.
         /// </summary>
         /// <param name="latitude">latitude as double.</param>
         /// <param name="longitude">longitude as double.</param>
@@ -261,7 +271,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
-        /// Default is false
+        /// Default is false.
         /// </summary>
         /// <param name = "shouldAnonymizeUser" >shouldAnonymizeUser boolean.</param>
         public static void anonymizeUser(bool shouldAnonymizeUser)
@@ -276,7 +286,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Get AppsFlyer's unique device ID is created for every new install of an app.
+        /// Get AppsFlyer's unique device ID which is created for every new install of an app.
         /// </summary>
         /// <returns>AppsFlyer's unique device ID.</returns>
         public static string getAppsFlyerId()
@@ -350,6 +360,11 @@ namespace AppsFlyerSDK
         /// By doing this you can serve users with personalized content or send them to specific activities within the app,
         /// which can greatly enhance their engagement with your app.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// AppsFlyer.getConversionData(this.name);
+        /// </code>
+        /// </example>
         public static void getConversionData(string objectName)
         {
 #if UNITY_IOS && !UNITY_EDITOR
@@ -368,6 +383,14 @@ namespace AppsFlyerSDK
         /// <param name="appID">promoted App ID</param>
         /// <param name="campaign">cross promotion campaign</param>
         /// <param name="userParams">additional user params</param>
+        /// <example>
+        /// <code>
+        /// Dictionary<string, string> parameters = new Dictionary<string, string>();
+        /// parameters.Add("af_sub1", "val");
+        /// parameters.Add("custom_param", "val2");
+        /// AppsFlyer.attributeAndOpenStore("123456789", "test campaign", parameters, this);
+        /// </code>
+        /// </example>
         public static void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
         {
 #if UNITY_IOS && !UNITY_EDITOR
