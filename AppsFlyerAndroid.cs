@@ -47,7 +47,6 @@ namespace AppsFlyerSDK
         /// <param name="token">Firebase Device Token.</param>
         public static void updateServerUninstallToken(string token)
         {
-            //TODO check uninstall API
             appsFlyerAndroid.CallStatic("updateServerUninstallToken", token);
         }
 
