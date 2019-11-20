@@ -15,11 +15,11 @@
 @implementation UnityAppController (AppsFlyerSwizzledAppController)
 
 static BOOL didEnteredBackGround __unused;
-static IMP __original_applicationDidBecomeActive_Imp __unused;;
-static IMP __original_applicationDidEnterBackground_Imp __unused;;
-static IMP __original_didReceiveRemoteNotification_Imp __unused;;
-static IMP __original_continueUserActivity_Imp __unused;;
-static IMP __original_openUrl_Imp __unused;;
+static IMP __original_applicationDidBecomeActive_Imp __unused;
+static IMP __original_applicationDidEnterBackground_Imp __unused;
+static IMP __original_didReceiveRemoteNotification_Imp __unused;
+static IMP __original_continueUserActivity_Imp __unused;
+static IMP __original_openUrl_Imp __unused;
 
 
 + (void)load {

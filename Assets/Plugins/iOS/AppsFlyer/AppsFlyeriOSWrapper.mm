@@ -186,11 +186,11 @@ extern "C" {
 
 @implementation AppsFlyeriOSWarpper
 
-- (void)onConversionDataReceived:(NSDictionary *)installData {
+- (void)onConversionDataSuccess:(NSDictionary *)installData {
     unityCallBack(ConversionDataCallbackObject, GCD_CALLBACK, stringFromdictionary(installData));
 }
 
-- (void)onConversionDataRequestFailure:(NSError *)error {
+- (void)onConversionDataFail:(NSError *)error {
     unityCallBack(ConversionDataCallbackObject, GCD_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
 }
 

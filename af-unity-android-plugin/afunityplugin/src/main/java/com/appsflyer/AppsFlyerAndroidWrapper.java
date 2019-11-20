@@ -1,10 +1,10 @@
 package com.appsflyer;
 
-import android.app.Activity;
 import com.appsflyer.share.CrossPromotionHelper;
 import com.appsflyer.share.LinkGenerator;
 import com.appsflyer.share.ShareInviteHelper;
 import com.unity3d.player.UnityPlayer;
+
 import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +14,8 @@ public class AppsFlyerAndroidWrapper {
 
     private static final String VALIDATE_CALLBACK = "didFinishValidateReceipt";
     private static final String VALIDATE_ERROR_CALLBACK = "didFinishValidateReceiptWithError";
-    private static final String GCD_CALLBACK = "didReceiveConversionData";
-    private static final String GCD_ERROR_CALLBACK = "didReceiveConversionDataWithError";
+    private static final String GCD_CALLBACK = "onConversionDataSuccess";
+    private static final String GCD_ERROR_CALLBACK = "onConversionDataFail";
     private static final String OAOA_CALLBACK = "onAppOpenAttribution";
     private static final String OAOA_ERROR_CALLBACK = "onAppOpenAttributionFailure";
     private static final String GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";
@@ -182,10 +182,11 @@ public class AppsFlyerAndroidWrapper {
         return AppsFlyerLib.getInstance().getHostPrefix();
     }
 
-    public static void getConversionData(final String objectName) {
+
+    public static void getConversionData(final String objectName){
         AppsFlyerLib.getInstance().registerConversionListener(UnityPlayer.currentActivity, new AppsFlyerConversionListener() {
             @Override
-            public void onInstallConversionDataLoaded(Map<String, String> map) {
+            public void onConversionDataSuccess(Map<String, Object> map) {
                 if(objectName != null){
                     JSONObject jsonObject = new JSONObject(map);
                     UnityPlayer.UnitySendMessage(objectName, GCD_CALLBACK, jsonObject.toString());
@@ -193,7 +194,7 @@ public class AppsFlyerAndroidWrapper {
             }
 
             @Override
-            public void onInstallConversionFailure(String s) {
+            public void onConversionDataFail(String s) {
                 if(objectName != null){
                     UnityPlayer.UnitySendMessage(objectName, GCD_ERROR_CALLBACK, s);
                 }

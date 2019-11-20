@@ -21,8 +21,8 @@ NSString* ConversionDataCallbackObject;
 
 static const char* VALIDATE_CALLBACK = "didFinishValidateReceipt";
 static const char* VALIDATE_ERROR_CALLBACK = "didFinishValidateReceiptWithError";
-static const char* GCD_CALLBACK = "didReceiveConversionData";
-static const char* GCD_ERROR_CALLBACK = "didReceiveConversionDataWithError";
+static const char* GCD_CALLBACK = "onConversionDataSuccess";
+static const char* GCD_ERROR_CALLBACK = "onConversionDataFail";
 static const char* OAOA_CALLBACK = "onAppOpenAttribution";
 static const char* OAOA_ERROR_CALLBACK = "onAppOpenAttributionFailure";
 static const char* GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";

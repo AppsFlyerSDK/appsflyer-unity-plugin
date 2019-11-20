@@ -27,14 +27,14 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     }
 
     // Mark AppsFlyer CallBacks
-    public void didReceiveConversionData(string conversionData)
+    public void onConversionDataSuccess(string conversionData)
     {
         AppsFlyer.AFLog("didReceiveConversionData", conversionData);
         Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
         // add deferred deeplink logic here
     }
 
-    public void didReceiveConversionDataWithError(string error)
+    public void onConversionDataFail(string error)
     {
         AppsFlyer.AFLog("didReceiveConversionDataWithError", error);
     }
