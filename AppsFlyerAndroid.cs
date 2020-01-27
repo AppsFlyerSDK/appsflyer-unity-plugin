@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AppsFlyerSDK
 {
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID 
     public class AppsFlyerAndroid
     {
 
@@ -18,7 +18,9 @@ namespace AppsFlyerSDK
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         public static void startSDK(string devkey)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("startTracking", devkey);
+#endif
         }
 
         /// <summary>
@@ -29,7 +31,9 @@ namespace AppsFlyerSDK
         /// <param name="isSDKStopped">boolean should SDK be stopped.</param>
         public static void stopSDK(bool isSDKStopped)
         {
-            appsFlyerAndroid.CallStatic("stopTracking", isSDKStopped);
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("stopTracking", isSDKStopped);
+#endif
         }
 
         /// <summary>
@@ -38,7 +42,11 @@ namespace AppsFlyerSDK
         /// <returns>AppsFlyer SDK version.</returns>
         public static string getSdkVersion()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getSdkVersion");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -47,7 +55,9 @@ namespace AppsFlyerSDK
         /// <param name="token">Firebase Device Token.</param>
         public static void updateServerUninstallToken(string token)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("updateServerUninstallToken", token);
+#endif
         }
 
         /// <summary>
@@ -57,7 +67,9 @@ namespace AppsFlyerSDK
         /// <param name="shouldEnable">shouldEnable boolean.</param>
         public static void setIsDebug(bool shouldEnable)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setIsDebug", shouldEnable);
+#endif
         }
 
         /// <summary>
@@ -68,7 +80,9 @@ namespace AppsFlyerSDK
         /// <param name="aImei">device's IMEI.</param>
         public static void setImeiData(string aImei)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setImeiData", aImei);
+#endif
         }
 
         /// <summary>
@@ -79,7 +93,9 @@ namespace AppsFlyerSDK
         /// <param name="aAndroidId">device's Android ID.</param>
         public static void setAndroidIdData(string aAndroidId)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAndroidIdData", aAndroidId);
+#endif
         }
 
         /// <summary>
@@ -89,7 +105,9 @@ namespace AppsFlyerSDK
         /// <param name="id">Customer ID for client.</param>
         public static void setCustomerUserId(string id)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCustomerUserId", id);
+#endif
         }
 
         /// <summary>
@@ -100,7 +118,9 @@ namespace AppsFlyerSDK
         /// <param name="wait">wait boolean.</param>
         public static void waitForCustomerUserId(bool wait)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("waitForCustomerUserId", wait);
+#endif
         }
 
         /// <summary>
@@ -109,7 +129,9 @@ namespace AppsFlyerSDK
         /// <param name="id">Customer ID for client.</param>
         public static void setCustomerIdAndStartSDK(string id)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCustomerIdAndTrack", id);
+#endif
         }
 
         /// <summary>
@@ -118,7 +140,11 @@ namespace AppsFlyerSDK
         /// <returns>AF_Store value.</returns>
         public static string getOutOfStore()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getOutOfStore");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -127,7 +153,9 @@ namespace AppsFlyerSDK
         /// <param name="sourceName">value to be set.</param>
         public static void setOutOfStore(string sourceName)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setOutOfStore", sourceName);
+#endif
         }
 
         /// <summary>
@@ -137,7 +165,9 @@ namespace AppsFlyerSDK
         /// <param name="oneLinkId">OneLink ID obtained from the AppsFlyer Dashboard.</param>
         public static void setAppInviteOneLinkID(string oneLinkId)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAppInviteOneLinkID", oneLinkId);
+#endif
         }
 
         /// <summary>
@@ -146,7 +176,9 @@ namespace AppsFlyerSDK
         /// <param name="customData">additional data Dictionary.</param>
         public static void setAdditionalData(Dictionary<string, string> customData)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAdditionalData", convertDictionaryToJavaMap(customData));
+#endif
         }
 
         /// <summary>
@@ -155,7 +187,9 @@ namespace AppsFlyerSDK
         /// <param name="emails">User emails.</param>
         public static void setUserEmails(params string[] emails)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setUserEmails", (object)emails);
+#endif
         }
 
         /// <summary>
@@ -170,7 +204,9 @@ namespace AppsFlyerSDK
         /// <param name="emails">User emails.</param>
         public static void setUserEmails(EmailCryptType cryptMethod, params string[] emails)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setUserEmails", getEmailType(cryptMethod), (object)emails);
+#endif
         }
 
         /// <summary>
@@ -181,7 +217,9 @@ namespace AppsFlyerSDK
         /// <param name="isCollect">boolean, false to opt-out.</param>
         public static void setCollectAndroidID(bool isCollect)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectAndroidID", isCollect);
+#endif
         }
 
         /// <summary>
@@ -192,7 +230,9 @@ namespace AppsFlyerSDK
         /// <param name="isCollect">boolean, false to opt-out.</param>
         public static void setCollectIMEI(bool isCollect)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectIMEI", isCollect);
+#endif
         }
 
         /// <summary>
@@ -202,7 +242,9 @@ namespace AppsFlyerSDK
         /// <param name="urls">Array of urls.</param>
         public static void setResolveDeepLinkURLs(params string[] urls)
         {
-            appsFlyerAndroid.CallStatic("setResolveDeepLinkURLs", (object)urls);
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setResolveDeepLinkURLs", (object)urls);
+#endif
         }
 
 
@@ -212,7 +254,9 @@ namespace AppsFlyerSDK
         /// <param name="domains">Array of domains.</param>
         public static void setOneLinkCustomDomain(params string[] domains)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setOneLinkCustomDomain", (object)domains);
+#endif
         }
 
         /// <summary>
@@ -221,7 +265,9 @@ namespace AppsFlyerSDK
         /// <param name="isUpdate">isUpdate boolean value.</param>
         public static void setIsUpdate(bool isUpdate)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setIsUpdate", isUpdate);
+#endif
         }
 
         /// <summary>
@@ -232,7 +278,9 @@ namespace AppsFlyerSDK
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCurrencyCode", currencyCode);
+#endif
         }
 
         /// <summary>
@@ -242,7 +290,9 @@ namespace AppsFlyerSDK
         /// <param name="longitude">longitude as double.</param>
         public static void recordLocation(double latitude, double longitude)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("trackLocation", latitude, longitude);
+#endif
         }
 
         /// <summary>
@@ -253,7 +303,9 @@ namespace AppsFlyerSDK
         /// <param name="eventValues">Event Values as Dictionary.</param>
         public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("trackEvent", eventName, convertDictionaryToJavaMap(eventValues));
+#endif
         }
 
         /// <summary>
@@ -264,7 +316,9 @@ namespace AppsFlyerSDK
         /// <param name="isDisabled">isDisabled boolean.</param>
         public static void anonymizeUser(bool isDisabled)
         {
-            appsFlyerAndroid.CallStatic("setDeviceTrackingDisabled", isDisabled);
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setDeviceTrackingDisabled", isDisabled);
+#endif
         }
 
         /// <summary>
@@ -275,7 +329,9 @@ namespace AppsFlyerSDK
         /// <param name="isEnabled">should Facebook's deferred app links be processed by the AppsFlyer SDK.</param>
         public static void enableFacebookDeferredApplinks(bool isEnabled)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("enableFacebookDeferredApplinks", isEnabled);
+#endif
         }
 
 
@@ -287,7 +343,9 @@ namespace AppsFlyerSDK
         /// <param name="doConsume">doConsume boolean.</param>
         public static void setConsumeAFDeepLinks(bool doConsume)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setConsumeAFDeepLinks", doConsume);
+#endif
         }
 
         /// <summary>
@@ -298,7 +356,9 @@ namespace AppsFlyerSDK
         /// <param name="siteId">Site ID for preinstall attribution.</param>
         public static void setPreinstallAttribution(string mediaSource, string campaign, string siteId)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setPreinstallAttribution", mediaSource, campaign, siteId);
+#endif
         }
 
         /// <summary>
@@ -307,7 +367,11 @@ namespace AppsFlyerSDK
         /// <returns>boolean isPreInstalledApp.</returns>
         public static bool isPreInstalledApp()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<bool>("isPreInstalledApp");
+#else
+            return false;
+#endif
         }
 
         /// <summary>
@@ -316,7 +380,11 @@ namespace AppsFlyerSDK
         /// <returns>string Facebook attribution ID.</returns>
         public static string getAttributionId()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getAttributionId");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -325,7 +393,11 @@ namespace AppsFlyerSDK
         /// <returns>AppsFlyer's unique device ID.</returns>
         public static string getAppsFlyerId()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getAppsFlyerId");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -340,7 +412,9 @@ namespace AppsFlyerSDK
         /// <param name="additionalParameters">additionalParameters Freehand parameters to be sent with the purchase (if validated).</param>
         public static void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
-            appsFlyerAndroid.CallStatic("validateAndTrackInAppPurchase", publicKey, signature, purchaseData, price, currency, convertDictionaryToJavaMap(additionalParameters), gameObject ? gameObject.name : null);
+#if !UNITY_EDITOR
+           appsFlyerAndroid.CallStatic("validateAndTrackInAppPurchase", publicKey, signature, purchaseData, price, currency, convertDictionaryToJavaMap(additionalParameters), gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
@@ -349,7 +423,11 @@ namespace AppsFlyerSDK
         /// <returns>boolean isSDKStopped.</returns>
         public static bool isSDKStopped()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<bool>("isTrackingStopped");
+#else
+            return false;
+#endif
         }
 
         /// <summary>
@@ -359,7 +437,9 @@ namespace AppsFlyerSDK
         /// <param name="seconds">minimum time between 2 separate sessions in seconds.</param>
         public static void setMinTimeBetweenSessions(int seconds)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setMinTimeBetweenSessions", seconds);
+#endif
         }
 
         /// <summary>
@@ -369,7 +449,9 @@ namespace AppsFlyerSDK
         /// <param name="hostName">Host name.</param>
         public static void setHost(string hostPrefixName, string hostName)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setHost", hostPrefixName, hostName);
+#endif
         }
 
         /// <summary>
@@ -379,7 +461,11 @@ namespace AppsFlyerSDK
         /// <returns>Host name.</returns>
         public static string getHostName()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getHostName");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -388,7 +474,11 @@ namespace AppsFlyerSDK
         /// <returns>Host prefix.</returns>
         public static string getHostPrefix()
         {
+#if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getHostPrefix");
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -399,7 +489,9 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void getConversionData(string objectName)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("getConversionData", objectName);
+#endif
         }
 
         /// <summary>
@@ -407,7 +499,9 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void initInAppPurchaseValidatorListener(MonoBehaviour gameObject)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("initInAppPurchaseValidatorListener", gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
@@ -418,7 +512,9 @@ namespace AppsFlyerSDK
         /// <param name="userParams">additional user params</param>
         public static void attributeAndOpenStore(string promoted_app_id, string campaign, Dictionary<string, string> userParams)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("attributeAndOpenStore", promoted_app_id, campaign, convertDictionaryToJavaMap(userParams));
+#endif
         }
 
         /// <summary>
@@ -429,7 +525,9 @@ namespace AppsFlyerSDK
         /// <param name="campaign">cross promotion campaign.</param>
         public static void recordCrossPromoteImpression(string appID, string campaign)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("recordCrossPromoteImpression", appID, campaign);
+#endif
         }
 
         /// <summary>
@@ -439,16 +537,20 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("createOneLinkInviteListener", convertDictionaryToJavaMap(parameters), gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
         /// To measure push notifications as part of a retargeting campaign.
         /// </summary>
         public static void handlePushNotifications(){
+#if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("handlePushNotifications");
+#endif
         }
-        
+
         /// <summary>
         /// Internal Helper Method.
         /// </summary>
