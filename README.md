@@ -1,7 +1,7 @@
 
 <img src="https://www.appsflyer.com/wp-content/uploads/2016/11/logo-1.svg"  width="450">
 
-# unity_appsflyer_sdk 
+# appsflyer-unity-plugin
 
 AppsFlyer’s Unity SDK provides mobile app installation and event recording functionality for Android and iOS Unity projects. You can record installs, updates, and sessions and also record post-installs events (including in-app purchases, game levels, etc.) to evaluate ROI and user engagement levels.
 

@@ -3,24 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using AppsFlyerSDK;
 
+// This class is intended to be used the the AppsFlyerObject.prefab
+
 public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 {
 
     // These fields are set from the editor so do not modify!
+    //******************************//
     public string devKey;
     public string appID;
     public bool isDebug;
     public bool getConversionData;
+    //******************************//
 
-    // Start is called before the first frame update
     void Start()
     {
+        // These fields are set from the editor so do not modify!
+        //******************************//
         AppsFlyer.setIsDebug(isDebug);
         AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        //******************************//
+
         AppsFlyer.startSDK();
     }
 
-    // Update is called once per frame
     void Update()
     {
 

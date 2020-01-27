@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AppsFlyerSDK
 {
-#if UNITY_IOS && !UNITY_EDITOR
+#if UNITY_IOS
 
     public class AppsFlyeriOS
     {
@@ -15,7 +15,9 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void startSDK()
         {
-            _startSDK();
+#if !UNITY_EDITOR
+          _startSDK(); 
+#endif
         }
 
         /// <summary>
@@ -26,7 +28,9 @@ namespace AppsFlyerSDK
         /// <param name="eventValues">Contains dictionary of values for handling by backend.</param>
         public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
-            _sendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
+#if !UNITY_EDITOR
+           _sendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
+#endif
         }
 
         /// <summary>
@@ -37,7 +41,9 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void getConversionData(string objectName)
         {
+#if !UNITY_EDITOR
             _getConversionData(objectName);
+#endif
         }
 
         /// <summary>
@@ -47,7 +53,9 @@ namespace AppsFlyerSDK
         /// <param name="customerUserID">Customer ID for client.</param>
         public static void setCustomerUserID(string customerUserID)
         {
+#if !UNITY_EDITOR
             _setCustomerUserID(customerUserID);
+#endif
         }
 
         /// <summary>
@@ -57,7 +65,9 @@ namespace AppsFlyerSDK
         /// <param name="customData">additional data Dictionary.</param>
         public static void setAdditionalData(Dictionary<string, string> customData)
         {
-            _setAdditionalData(AFMiniJSON.Json.Serialize(customData));
+#if !UNITY_EDITOR
+           _setAdditionalData(AFMiniJSON.Json.Serialize(customData));
+#endif
         }
 
         /// <summary>
@@ -66,7 +76,9 @@ namespace AppsFlyerSDK
         /// <param name="appsFlyerDevKey">AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         public static void setAppsFlyerDevKey(string appsFlyerDevKey)
         {
-            _setAppsFlyerDevKey(appsFlyerDevKey);
+#if !UNITY_EDITOR
+           _setAppsFlyerDevKey(appsFlyerDevKey);
+#endif
         }
 
         /// <summary>
@@ -75,7 +87,9 @@ namespace AppsFlyerSDK
         /// <param name="appleAppID">your app's Apple ID.</param>
         public static void setAppleAppID(string appleAppID)
         {
-            _setAppleAppID(appleAppID);
+#if !UNITY_EDITOR
+           _setAppleAppID(appleAppID);
+#endif
         }
 
         /// <summary>
@@ -86,7 +100,9 @@ namespace AppsFlyerSDK
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
         {
-            _setCurrencyCode(currencyCode);
+#if !UNITY_EDITOR
+           _setCurrencyCode(currencyCode);
+#endif
         }
 
         /// <summary>
@@ -96,7 +112,9 @@ namespace AppsFlyerSDK
         /// <param name="disableCollectAppleAdSupport">boolean to disableCollectAppleAdSupport</param>
         public static void setDisableCollectAppleAdSupport(bool disableCollectAppleAdSupport)
         {
-            _setDisableCollectAppleAdSupport(disableCollectAppleAdSupport);
+#if !UNITY_EDITOR
+           _setDisableCollectAppleAdSupport(disableCollectAppleAdSupport);
+#endif
         }
 
         /// <summary>
@@ -107,7 +125,9 @@ namespace AppsFlyerSDK
         /// <param name="isDebug">shouldEnable boolean..</param>
         public static void setIsDebug(bool isDebug)
         {
-            _setIsDebug(isDebug);
+#if !UNITY_EDITOR
+           _setIsDebug(isDebug);
+#endif
         }
 
         /// <summary>
@@ -116,7 +136,9 @@ namespace AppsFlyerSDK
         /// <param name="shouldCollectDeviceName">boolean shouldCollectDeviceName.</param>
         public static void setShouldCollectDeviceName(bool shouldCollectDeviceName)
         {
+#if !UNITY_EDITOR
             _setShouldCollectDeviceName(shouldCollectDeviceName);
+#endif
         }
 
         /// <summary>
@@ -126,7 +148,9 @@ namespace AppsFlyerSDK
         /// <param name="appInviteOneLinkID">OneLink ID obtained from the AppsFlyer Dashboard.</param>
         public static void setAppInviteOneLinkID(string appInviteOneLinkID)
         {
+#if !UNITY_EDITOR
             _setAppInviteOneLinkID(appInviteOneLinkID);
+#endif
         }
 
         /// <summary>
@@ -137,7 +161,9 @@ namespace AppsFlyerSDK
         /// <param name="shouldAnonymizeUser">boolean shouldAnonymizeUser.</param>
         public static void anonymizeUser(bool shouldAnonymizeUser)
         {
-            _anonymizeUser(shouldAnonymizeUser);
+#if !UNITY_EDITOR
+           _anonymizeUser(shouldAnonymizeUser);
+#endif
         }
 
         /// <summary>
@@ -146,7 +172,9 @@ namespace AppsFlyerSDK
         /// <param name="disableCollectIAd">boolean disableCollectIAd.</param>
         public static void setDisableCollectIAd(bool disableCollectIAd)
         {
-            _setDisableCollectIAd(disableCollectIAd);
+#if !UNITY_EDITOR
+           _setDisableCollectIAd(disableCollectIAd);
+#endif
         }
 
         /// <summary>
@@ -155,7 +183,9 @@ namespace AppsFlyerSDK
         /// <param name="useReceiptValidationSandbox">boolean useReceiptValidationSandbox.</param>
         public static void setUseReceiptValidationSandbox(bool useReceiptValidationSandbox)
         {
+#if !UNITY_EDITOR
             _setUseReceiptValidationSandbox(useReceiptValidationSandbox);
+#endif
         }
 
         /// <summary>
@@ -164,7 +194,9 @@ namespace AppsFlyerSDK
         /// <param name="useUninstallSandbox">boolean useUninstallSandbox.</param>
         public static void setUseUninstallSandbox(bool useUninstallSandbox)
         {
-            _setUseUninstallSandbox(useUninstallSandbox);
+#if !UNITY_EDITOR
+           _setUseUninstallSandbox(useUninstallSandbox);
+#endif
         }
 
         /// <summary>
@@ -174,7 +206,9 @@ namespace AppsFlyerSDK
         /// <param name="resolveDeepLinkURLs">Array of urls.</param>
         public static void setResolveDeepLinkURLs(params string[] resolveDeepLinkURLs)
         {
-            _setResolveDeepLinkURLs(resolveDeepLinkURLs.Length,resolveDeepLinkURLs);
+#if !UNITY_EDITOR
+           _setResolveDeepLinkURLs(resolveDeepLinkURLs.Length,resolveDeepLinkURLs);
+#endif
         }
 
         /// <summary>
@@ -183,7 +217,9 @@ namespace AppsFlyerSDK
         /// <param name="oneLinkCustomDomains">Array of domains.</param>
         public static void setOneLinkCustomDomains(params string[] oneLinkCustomDomains)
         {
+#if !UNITY_EDITOR
             _setOneLinkCustomDomains(oneLinkCustomDomains.Length, oneLinkCustomDomains);
+#endif
         }
 
         /// <summary>
@@ -199,7 +235,9 @@ namespace AppsFlyerSDK
         /// <param name="userEmails">userEmails The list of strings that hold mails.</param>
         public static void setUserEmails(EmailCryptType cryptType, int length, params string[] userEmails)
         {
-            _setUserEmails(cryptType, length, userEmails);
+#if !UNITY_EDITOR
+           _setUserEmails(cryptType, length, userEmails);
+#endif
         }
 
         /// <summary>
@@ -212,7 +250,9 @@ namespace AppsFlyerSDK
         /// <param name="additionalParameters">The additional param, which you want to receive it in the raw reports.</param>
         public static void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
+#if !UNITY_EDITOR
             _validateAndSendInAppPurchase(productIdentifier, price, currency, tranactionId, AFMiniJSON.Json.Serialize(additionalParameters), gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
@@ -222,7 +262,9 @@ namespace AppsFlyerSDK
         /// <param name="latitude">The location latitude.</param>
         public static void recordLocation(double longitude, double latitude)
         {
+#if !UNITY_EDITOR
             _recordLocation(longitude, latitude);
+#endif
         }
 
         /// <summary>
@@ -230,7 +272,11 @@ namespace AppsFlyerSDK
         /// </summary>
         public static string getAppsFlyerId()
         {
-            return _getAppsFlyerId();
+#if !UNITY_EDITOR
+           return _getAppsFlyerId();
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -239,7 +285,9 @@ namespace AppsFlyerSDK
         /// <param name="deviceToken">deviceToken The `deviceToken` from `-application:didRegisterForRemoteNotificationsWithDeviceToken:`.</param>
         public static void registerUninstall(byte[] deviceToken)
         {
-            _registerUninstall(deviceToken);
+#if !UNITY_EDITOR
+           _registerUninstall(deviceToken);
+#endif
         }
 
         /// <summary>
@@ -248,7 +296,9 @@ namespace AppsFlyerSDK
         /// <param name="pushPayload">pushPayload The `userInfo` from received remote notification. One of root keys should be @"af"..</param>
         public static void handlePushNotification(Dictionary<string, string> pushPayload)
         {
-            _handlePushNotification(AFMiniJSON.Json.Serialize(pushPayload));
+#if !UNITY_EDITOR
+           _handlePushNotification(AFMiniJSON.Json.Serialize(pushPayload));
+#endif
         }
 
         /// <summary>
@@ -256,7 +306,11 @@ namespace AppsFlyerSDK
         /// </summary>
         public static string getSDKVersion()
         {
-            return _getSDKVersion();
+#if !UNITY_EDITOR
+           return _getSDKVersion();
+#else
+            return "";
+#endif
         }
 
         /// <summary>
@@ -267,7 +321,9 @@ namespace AppsFlyerSDK
         /// <param name="host">Host prefix.</param>
         public static void setHost(string host, string hostPrefix)
         {
+#if !UNITY_EDITOR
             _setHost(host, hostPrefix);
+#endif
         }
 
         /// <summary>
@@ -277,7 +333,9 @@ namespace AppsFlyerSDK
         /// <param name="minTimeBetweenSessions">minimum time between 2 separate sessions in seconds.</param>
         public static void setMinTimeBetweenSessions(int minTimeBetweenSessions)
         {
-            _setMinTimeBetweenSessions(minTimeBetweenSessions);
+#if !UNITY_EDITOR
+           _setMinTimeBetweenSessions(minTimeBetweenSessions);
+#endif
         }
 
         /// <summary>
@@ -288,16 +346,22 @@ namespace AppsFlyerSDK
         /// <param name="isSDKStopped">boolean isSDKStopped.</param>
         public static void stopSDK(bool isSDKStopped)
         {
+#if !UNITY_EDITOR
             _stopSDK(isSDKStopped);
+#endif
         }
 
-         // <summary>
+        // <summary>
         /// Was the stopSDK(boolean) API set to true.
         /// </summary>
         /// <returns>boolean isSDKStopped.</returns>
         public static bool isSDKStopped()
         {
-            return _isSDKStopped();
+#if !UNITY_EDITOR
+           return _isSDKStopped();
+#else
+            return false;
+#endif
         }
 
         /// <summary>
@@ -308,7 +372,9 @@ namespace AppsFlyerSDK
         /// <param name="campaign">cross promotion campaign.</param>
         public static void recordCrossPromoteImpression(string appID, string campaign)
         {
+#if !UNITY_EDITOR
             _recordCrossPromoteImpression(appID, campaign);
+#endif
         }
 
         /// <summary>
@@ -319,7 +385,9 @@ namespace AppsFlyerSDK
         /// <param name="parameters">additional user params</param>
         public static void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
-            _attributeAndOpenStore(appID, campaign, AFMiniJSON.Json.Serialize(parameters), gameObject ? gameObject.name : null);
+#if !UNITY_EDITOR
+           _attributeAndOpenStore(appID, campaign, AFMiniJSON.Json.Serialize(parameters), gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
@@ -329,7 +397,9 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
+#if !UNITY_EDITOR
             _generateUserInviteLink(AFMiniJSON.Json.Serialize(parameters), gameObject ? gameObject.name : null);
+#endif
         }
 
         /// <summary>
@@ -340,7 +410,9 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary..</param>
         public static void recordInvite(string channel, Dictionary<string, string> parameters)
         {
+#if !UNITY_EDITOR
             _recordInvite(channel, AFMiniJSON.Json.Serialize(parameters));
+#endif
         }
 
 
