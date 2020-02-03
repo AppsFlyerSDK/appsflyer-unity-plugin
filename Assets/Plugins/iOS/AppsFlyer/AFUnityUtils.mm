@@ -82,12 +82,6 @@ static EmailCryptType emailCryptTypeFromInt(int emailCryptTypeInt){
     EmailCryptType emailCryptType;
     switch (emailCryptTypeInt){
         case 1:
-            emailCryptType = EmailCryptTypeSHA1;
-            break;
-        case 2:
-            emailCryptType = EmailCryptTypeMD5;
-            break;
-        case 3:
             emailCryptType = EmailCryptTypeSHA256;
             break;
         default:

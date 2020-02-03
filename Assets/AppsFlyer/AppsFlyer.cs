@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "5.0.0_rc2";
+        public static readonly string kAppsFlyerPluginVersion = "5.0.0_rc3";
         private static string devkey;
 
         /// <summary>
@@ -460,12 +460,8 @@ namespace AppsFlyerSDK
     {
         // None
         EmailCryptTypeNone = 0,
-        // SHA1
-        EmailCryptTypeSHA1 = 1,
-        // MD5
-        EmailCryptTypeMD5 = 2,
         // SHA256
-        EmailCryptTypeSHA256 = 3
+        EmailCryptTypeSHA256 = 1,
     }
 
 }

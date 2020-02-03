@@ -384,22 +384,20 @@ AppsFlyer.setHost("hostPrefixName","hostName");
 Set the user emails and encrypt them.
 
 cryptMethod Encryption methods:
-EmailCryptType.EmailCryptTypeMD5
-EmailCryptType.EmailCryptTypeSHA1
 EmailCryptType.EmailCryptTypeSHA256
 EmailCryptType.EmailCryptTypeNone
 
 
 | parameter     | type              | description               |
 | -----------   |-------------------|---------------------------|
-| `cryptMethod` | `EmailCryptType`  | none, sha1, sha256 or md5 |
+| `cryptMethod` | `EmailCryptType`  | none, or sha256 |
 | `emails`      | `params string[]` | list of emails            |
 
 
 *Example:*
 
 ```c#
-AppsFlyer.setUserEmails(EmailCryptType.EmailCryptTypeMD5, "test1@test1.com", "test2@test2.com");
+AppsFlyer.setUserEmails(EmailCryptType.EmailCryptTypeSHA256, "test1@test1.com", "test2@test2.com");
 ```
 
 ---
