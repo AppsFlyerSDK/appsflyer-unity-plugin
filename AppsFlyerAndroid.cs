@@ -561,12 +561,6 @@ namespace AppsFlyerSDK
 
             switch (cryptType)
             {
-                case EmailCryptType.EmailCryptTypeSHA1:
-                    emailsCryptType = emailsCryptTypeEnum.GetStatic<AndroidJavaObject>("SHA1");
-                    break;
-                case EmailCryptType.EmailCryptTypeMD5:
-                    emailsCryptType = emailsCryptTypeEnum.GetStatic<AndroidJavaObject>("MD5");
-                    break;
                 case EmailCryptType.EmailCryptTypeSHA256:
                     emailsCryptType = emailsCryptTypeEnum.GetStatic<AndroidJavaObject>("SHA256");
                     break;
