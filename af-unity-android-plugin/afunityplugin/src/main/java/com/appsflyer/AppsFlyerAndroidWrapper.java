@@ -22,8 +22,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String GENERATE_LINK_ERROR_CALLBACK = "onInviteLinkGeneratedFailure";
 
     public static void startTracking(String devKey) {
-        AppsFlyerLib.getInstance().startTracking(UnityPlayer.currentActivity.getApplication(), devKey);
-        AppsFlyerLib.getInstance().reportTrackSession(UnityPlayer.currentActivity);
+        AppsFlyerLib.getInstance().startTracking(UnityPlayer.currentActivity, devKey);
     }
 
     public static void stopTracking(boolean isTrackingStopped) {
@@ -174,10 +173,6 @@ public class AppsFlyerAndroidWrapper {
         return AppsFlyerLib.getInstance().getHostName();
     }
 
-    public static void setHostName(String hostname) {
-        AppsFlyerLib.getInstance().setHostName(hostname);
-    }
-
     public static String getHostPrefix() {
         return AppsFlyerLib.getInstance().getHostPrefix();
     }
@@ -257,6 +252,7 @@ public class AppsFlyerAndroidWrapper {
         linkGenerator.setReferrerImageURL(params.get("referrerImageUrl"));
         linkGenerator.setReferrerCustomerId(params.get("customerID"));
         linkGenerator.setBaseDeeplink(params.get("baseDeepLink"));
+        linkGenerator.setBrandDomain(params.get("brandDomain"));
 
         params.remove("channel");
         params.remove("campaign");
@@ -264,6 +260,7 @@ public class AppsFlyerAndroidWrapper {
         params.remove("referrerImageUrl");
         params.remove("customerID");
         params.remove("baseDeepLink");
+        params.remove("brandDomain");
 
         linkGenerator.addParameters(params);
 

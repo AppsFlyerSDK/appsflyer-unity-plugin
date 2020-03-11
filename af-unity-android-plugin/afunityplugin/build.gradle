@@ -53,6 +53,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.0.1'
     testCompile 'junit:junit:4.12'
     compile files('libs/classes.jar')
-    compile 'com.appsflyer:af-android-sdk:5.0.0@aar'
+    compile 'com.appsflyer:af-android-sdk:5.2.0@aar'
 
 }

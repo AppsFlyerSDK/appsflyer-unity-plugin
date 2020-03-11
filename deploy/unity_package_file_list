@@ -23,9 +23,9 @@ Assets/Plugins/iOS/AppsFlyer/AppsFlyerShareInviteHelper.h
 Assets/Plugins/iOS/AppsFlyer/AppsFlyerTracker.h
 Assets/Plugins/iOS/AppsFlyer/libAppsFlyerLib.a
 
-Assets/Plugins/AppsFlyer/Android/AndroidManifest.xml
-Assets/Plugins/AppsFlyer/Android/AppsFlyerAndroidPlugin.jar
-Assets/Plugins/AppsFlyer/Android/AF-Android-SDK-v5.0.0.260-release.jar
-Assets/Plugins/AppsFlyer/Android/installreferrer-1.0.aar
+Assets/Plugins/Android/AndroidManifest.xml
+Assets/Plugins/Android/AppsFlyerAndroidPlugin.jar
+Assets/Plugins/Android/AF-Android-SDK.jar
+Assets/Plugins/Android/installreferrer-1.0.aar
 
 

@@ -58,7 +58,7 @@ static char* getCString(const char* string){
 
 static AppsFlyerLinkGenerator* generatorFromDictionary(NSDictionary* dictionary, AppsFlyerLinkGenerator*  generator) {
     
-    NSArray* generatorKeys = @[@"channel", @"customerID", @"campaign", @"referrerName", @"referrerImageUrl", @"deeplinkPath", @"baseDeeplink"];
+    NSArray* generatorKeys = @[@"channel", @"customerID", @"campaign", @"referrerName", @"referrerImageUrl", @"deeplinkPath", @"baseDeeplink", @"brandDomain"];
     
     NSMutableDictionary* mutableDictionary = [dictionary mutableCopy];
     
@@ -69,7 +69,9 @@ static AppsFlyerLinkGenerator* generatorFromDictionary(NSDictionary* dictionary,
     [generator setReferrerImageURL:[dictionary objectForKey: @"referrerImageUrl"]];
     [generator setDeeplinkPath:[dictionary objectForKey: @"deeplinkPath"]];
     [generator setBaseDeeplink:[dictionary objectForKey: @"baseDeeplink"]];
-    
+    [generator setBrandDomain:[dictionary objectForKey: @"brandDomain"]];
+
+
     [mutableDictionary removeObjectsForKeys:generatorKeys];
     
     [generator addParameters:mutableDictionary];
