@@ -20,9 +20,18 @@ public class AppsFlyerAndroidWrapper {
     private static final String OAOA_ERROR_CALLBACK = "onAppOpenAttributionFailure";
     private static final String GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";
     private static final String GENERATE_LINK_ERROR_CALLBACK = "onInviteLinkGeneratedFailure";
+    private static AppsFlyerConversionListener conversionListener;
 
-    public static void startTracking(String devKey) {
-        AppsFlyerLib.getInstance().startTracking(UnityPlayer.currentActivity, devKey);
+    public static void initSDK(String devKey, String objectName) {
+        if (conversionListener == null && objectName != null){
+            conversionListener = getConversionListener(objectName);
+        }
+
+        AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
+    }
+
+    public static void startTracking() {
+        AppsFlyerLib.getInstance().startTracking(UnityPlayer.currentActivity);
     }
 
     public static void stopTracking(boolean isTrackingStopped) {
@@ -179,7 +188,16 @@ public class AppsFlyerAndroidWrapper {
 
 
     public static void getConversionData(final String objectName){
-        AppsFlyerLib.getInstance().registerConversionListener(UnityPlayer.currentActivity, new AppsFlyerConversionListener() {
+        if (conversionListener == null){
+            conversionListener = getConversionListener(objectName);
+        }
+
+        AppsFlyerLib.getInstance().registerConversionListener(UnityPlayer.currentActivity, conversionListener);
+    }
+
+    private static AppsFlyerConversionListener getConversionListener(final String objectName){
+
+        return new AppsFlyerConversionListener() {
             @Override
             public void onConversionDataSuccess(Map<String, Object> map) {
                 if(objectName != null){
@@ -209,8 +227,9 @@ public class AppsFlyerAndroidWrapper {
                     UnityPlayer.UnitySendMessage(objectName, OAOA_ERROR_CALLBACK, s);
                 }
             }
-        });
+        };
     }
+
 
     public static void initInAppPurchaseValidatorListener(final String objectName) {
         AppsFlyerLib.getInstance().registerValidatorListener(UnityPlayer.currentActivity, new AppsFlyerInAppPurchaseValidatorListener() {

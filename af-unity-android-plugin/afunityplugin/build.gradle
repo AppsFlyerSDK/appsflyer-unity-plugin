@@ -54,5 +54,4 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile files('libs/classes.jar')
     compile 'com.appsflyer:af-android-sdk:5.2.0@aar'
-
 }
