@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     {
 
         public static readonly string kAppsFlyerPluginVersion = "5.2.0_rc1";
-        private static string devkey;
+  
 
         /// <summary>
         /// Initialize the AppsFlyer SDK with your devKey and appID.
@@ -49,11 +49,7 @@ namespace AppsFlyerSDK
                 AppsFlyeriOS.getConversionData(gameObject.name);
             }
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            devkey = devKey; 
-              if(gameObject != null)
-              {
-                AppsFlyerAndroid.getConversionData(gameObject.name);
-              }
+            AppsFlyerAndroid.initSDK(devKey, gameObject);
 #else
 
 #endif
@@ -69,7 +65,7 @@ namespace AppsFlyerSDK
 #if UNITY_IOS && !UNITY_EDITOR
             AppsFlyeriOS.startSDK();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.startSDK(devkey);
+            AppsFlyerAndroid.startSDK();
 #else
 
 #endif

@@ -11,15 +11,29 @@ namespace AppsFlyerSDK
 
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.AppsFlyerAndroidWrapper");
 
+
+        /// <summary>
+        /// Use this method to init the sdk for the application.
+        /// Call this method before startSDK.
+        /// </summary>
+        /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
+        /// <param name="gameObject">The current game object. This is used to get the conversion data callbacks. Pass null if you do not need the callbacks.</param>
+        public static void initSDK(string devkey, MonoBehaviour gameObject)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
+#endif
+        }
+
         /// <summary>
         /// Use this method to start the sdk for the application.
         /// The AppsFlyer's Dev-Key must be provided.
         /// </summary>
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
-        public static void startSDK(string devkey)
+        public static void startSDK()
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("startTracking", devkey);
+            appsFlyerAndroid.CallStatic("startTracking");
 #endif
         }
 
