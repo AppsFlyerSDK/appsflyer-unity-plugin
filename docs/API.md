@@ -79,7 +79,7 @@ AppsFlyer.initSDK("dev_key", "app_id", this); // with deeplinking
 
 ##### <a id="startSDK"> **`void startSDK()`**
     
-Once this API is invoked the SDK will start,  sessions will be immediately sent, and all background forground transitions will record a session.
+Once this API is invoked the SDK will start,  sessions will be immediately sent, and all background foreground transitions will record a session.
 
 *Example:*
 
@@ -163,7 +163,7 @@ if (!AppsFlyer.isSDKStopped())
 
 ##### <a id="getSdkVersion"> **`string getSdkVersion()`**
 
-Get the AppsFlyer SDK version used in app.
+Get the AppsFlyer SDK version used in the app.
 
 *Example:*
 
@@ -194,7 +194,7 @@ AppsFlyer.setIsDebug(true);
 
 ##### <a id="setCustomerUserId"> **`void setCustomerUserId(string id)`**
 
-Setting your own Custom ID enables you to cross-reference your own unique ID with AppsFlyer’s user ID and the other devices’ IDs. This ID is available in AppsFlyer CSV reports along with postbacks APIs for cross-referencing with you internal IDs.
+Setting your own Custom ID enables you to cross-reference your own unique ID with AppsFlyer’s user ID and the other devices’ IDs. This ID is available in AppsFlyer CSV reports along with postbacks APIs for cross-referencing with your internal IDs.
 
 | parameter | type     | description     |
 | --------- |--------- |--------------   |
@@ -321,7 +321,7 @@ Anonymizing users SEVERELY impacts your attribution information. Use this option
 
 | parameter             | type   | description                   |
 | --------------------  |--------|-------------------------------|
-| `shouldAnonymizeUser` | `bool` | true to preform anonymization |
+| `shouldAnonymizeUser` | `bool` | true to perform anonymization |
 
 *Example:*
 
@@ -784,7 +784,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
            
 ##### <a id="setDisableCollectAppleAdSupport"> **`void setDisableCollectAppleAdSupport(bool disable)`**
  
-AppsFlyer SDK collect Apple's `advertisingIdentifier` if the `AdSupport.framework` included in the SDK.
+AppsFlyer SDK collects Apple's `advertisingIdentifier` if the `AdSupport.framework` is included in the SDK.
 You can disable this behavior by setting the following property to true.
 
 | parameter      | type     | description  |

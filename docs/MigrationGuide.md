@@ -83,12 +83,12 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 }
 ```
 **Important**
-If you are also implementing conversion data and/or deeplinking then you need to initalize the SDK with the `IAppsFlyerConversionData` interface.
+If you are also implementing conversion data and/or deeplinking then you need to initialize the SDK with the `IAppsFlyerConversionData` interface.
 
 
 ## <a id="updateoldcode"> update other Code
 
-Here is list of all the old API, and the new API.
+Here is a list of all the old API, and the new API.
 
 API
 
@@ -153,7 +153,7 @@ AppsFlyer.initSDK(string key, string app_id, MonoBehaviour gameObject); // with 
 AppsFlyer.startSDK();
 ```
 
-#### <a id="sameapi"> API that stayed the same
+#### <a id="sameapi"> API that did not change
 
 ```c#
 AppsFlyer.setCurrencyCode(string currencyCode);

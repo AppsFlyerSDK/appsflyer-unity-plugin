@@ -1,4 +1,4 @@
-# unity_appsflyer_sdk Guides
+# Guides
 
 <img src="https://massets.appsflyer.com/wp-content/uploads/2016/06/26122512/banner-img-ziv.png"  width="300">
 
@@ -94,7 +94,7 @@ For more info please check out the [OneLink™ Deep Linking Guide](https://suppo
 
 ###  <a id="deferred-deep-linking"> 1. Deferred Deep Linking (Get Conversion Data)
 
-Check out the deferred deeplinkg guide from the AppFlyer knowledge base [here](https://support.appsflyer.com/hc/en-us/articles/207032096-Accessing-AppsFlyer-Attribution-Conversion-Data-from-the-SDK-Deferred-Deeplinking-#Introduction)
+Check out the deferred deeplinkg guide from the AppFlyer knowledge base [here](https://support.appsflyer.com/hc/en-us/articles/207032096-Accessing-AppsFlyer-Attribution-Conversion-Data-from-the-SDK-Deferred-Deeplinking-#Introduction).
 
 Code Sample to handle the conversion data:
 
@@ -114,7 +114,7 @@ public void didReceiveConversionDataWithError(string error)
 
 ###  <a id="handle-deeplinking"> 2. Direct Deeplinking
     
-When a deeplink is clicked on the device the AppsFlyer SDK will return the link in the [onAppOpenAttribution](https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-Deep-Linking-Guide#deep-linking-data-the-onappopenattribution-method-) method.
+When a deeplink is clicked on the device the AppsFlyer SDK will return the resolved link in the [onAppOpenAttribution](https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-Deep-Linking-Guide#deep-linking-data-the-onappopenattribution-method-) method.
 
 
 
@@ -148,7 +148,7 @@ In your app’s manifest add the following intent-filter to your relevant activi
 </intent-filter>
 ```
 
-If onAppOpenAttribution is not being invoked, the plugin provieds a work around that will help.
+If onAppOpenAttribution is not being invoked, the plugin provides a work around that will help.
 
 ```xml
  <activity android:name="com.appsflyer.GetDeepLinkingActivity" android:exported="true">
@@ -270,34 +270,33 @@ Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
 
 Read more about Android  Uninstall Tracking: [Appsflyer SDK support site](https://support.appsflyer.com/hc/en-us/articles/208004986-Android-Uninstall-Tracking)
 
-
-##  <a id="UserInviteAttribution"> Recording push notifications
-
-
 ##  <a id="UserInviteAttribution"> User invite attribution
 
 AppsFlyer allows you to attribute and record installs originating from user invites within your app. Allowing your existing users to invite their friends and contacts as new users to your app can be a key growth factor for your app.
 
 Example:
-```
+```c#
 
 public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData, IAppsFlyerUserInvite {
 
-
-    ...
+...
 
     public void generateAppsFlyerLink()
     {
         Dictionary<string, string> parameters = new Dictionary<string, string>();
         parameters.Add("channel", "some_channel");
         parameters.Add("campaign", "some_campaign");
+        parameters.Add("additional_param1", "some_param1");
+        parameters.Add("additional_param2", "some_param2");
+       
+        // other params
         //parameters.Add("referrerName", "some_referrerName");
         //parameters.Add("referrerImageUrl", "some_referrerImageUrl");
         //parameters.Add("customerID", "some_customerID");
         //parameters.Add("baseDeepLink", "some_baseDeepLink");
         //parameters.Add("brandDomain", "some_brandDomain");
-        parameters.Add("additional_param1", "some_param1");
-        parameters.Add("additional_param2", "some_param2");
+        
+
         AppsFlyer.generateUserInviteLink(parameters, this);
     }
 
