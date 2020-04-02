@@ -20,9 +20,11 @@
 ## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
 
 1. Clone / download this repository.
-2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the AppsFlyerUnityPlugin.unitypackage into your Unity project.
+2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the appsflyer-unity-plugin-*.unitypackage into your Unity project.
 3. Go to Assets >> Import Package >> Custom Package.
-4. Select the AppsFlyerUnityPlugin.unitypackage file.
+4. Select the appsflyer-unity-plugin-*.unitypackage file.
+
+**Note:** The plugins uses the [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) (formerly Play Services Resolver / Jar Resolver). If you do not want to use The External Dependency Manager for Unity see the [Installation guide](/docs/Installation.md) for more details.
 
 
 ## <a id="init-sdk"> 🚀 Initializing the SDK
@@ -67,9 +69,12 @@ public class AppsFlyerObjectScript : MonoBehaviour
 
 Great installation and setup guides can be viewed [here](/docs/Guides.md).
 
+- [Installation](/docs/Installation.md)
 - [Init SDK](/docs/Guides.md#init-sdk)
 - [Deep Linking](/docs/Guides.md#deeplinking)
 - [Uninstall](/docs/Guides.md#track-app-uninstalls)
+- [User Invite](/docs/Guides.md#-user-invite-attribution)
+
 
 ## <a id="api"> 📑 API
   
