@@ -5,7 +5,11 @@
 //  Created by Jonathan Wesfield on 24/07/2019.
 //
 
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
 #import "AppsFlyerTracker.h"
+#endif
 
 
 static NSString* stringFromChar(const char *str) {

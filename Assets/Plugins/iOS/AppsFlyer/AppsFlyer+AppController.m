@@ -6,8 +6,12 @@
 //
 
 #import <objc/runtime.h>
-#import "AppsFlyerTracker.h"
 #import "UnityAppController.h"
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
+#import "AppsFlyerTracker.h"
+#endif
 
 // Based on : https://blog.newrelic.com/engineering/right-way-to-swizzle/ (MUST READ!!)
 // https://medium.com/rocknnull/ios-to-swizzle-or-not-to-swizzle-f8b0ed4a1ce6

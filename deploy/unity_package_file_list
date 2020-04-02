@@ -11,21 +11,15 @@ Assets/AppsFlyer/IAppsFlyerUserInvite.cs
 
 Assets/AppsFlyer/Editor/AppsFlyerObjectEditor.cs
 Assets/AppsFlyer/Editor/logo.png
+Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
 
 Assets/Plugins/iOS/AppsFlyer/AFUnityUtils.mm
 Assets/Plugins/iOS/AppsFlyer/AppsFlyerAppController.mm
 Assets/Plugins/iOS/AppsFlyer/AppsFlyer+AppController.m
 Assets/Plugins/iOS/AppsFlyer/AppsFlyeriOSWrapper.h
 Assets/Plugins/iOS/AppsFlyer/AppsFlyeriOSWrapper.mm
-Assets/Plugins/iOS/AppsFlyer/AppsFlyerCrossPromotionHelper.h
-Assets/Plugins/iOS/AppsFlyer/AppsFlyerLinkGenerator.h
-Assets/Plugins/iOS/AppsFlyer/AppsFlyerShareInviteHelper.h
-Assets/Plugins/iOS/AppsFlyer/AppsFlyerTracker.h
-Assets/Plugins/iOS/AppsFlyer/libAppsFlyerLib.a
 
-Assets/Plugins/Android/AndroidManifest.xml
-Assets/Plugins/Android/AppsFlyerAndroidPlugin.jar
-Assets/Plugins/Android/AF-Android-SDK.jar
-Assets/Plugins/Android/installreferrer-1.0.aar
+
+
 
 

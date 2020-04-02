@@ -7,8 +7,12 @@
 
 #import <Foundation/Foundation.h>
 #import "UnityAppController.h"
-#import "AppsFlyerTracker.h"
 #import "AppDelegateListener.h"
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
+#import "AppsFlyerTracker.h"
+#endif
 
 /**
  Note if you would like to use method swizzeling see AppsFlyer+AppController.m

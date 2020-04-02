@@ -9,7 +9,7 @@ namespace AppsFlyerSDK
     public class AppsFlyerAndroid
     {
 
-        private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.AppsFlyerAndroidWrapper");
+        private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
 
         /// <summary>

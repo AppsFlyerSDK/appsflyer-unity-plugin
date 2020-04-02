@@ -5,9 +5,13 @@
 //  Created by Jonathan Wesfield on 24/07/2019.
 //
 
-#import "AppsFlyerTracker.h"
 #import "AFUnityUtils.mm"
 #import "UnityAppController.h"
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
+#import "AppsFlyerTracker.h"
+#endif
 
 @interface AppsFlyeriOSWarpper : NSObject <AppsFlyerTrackerDelegate>
 
