@@ -1,11 +1,10 @@
-
 <img src="https://www.appsflyer.com/wp-content/uploads/2016/11/logo-1.svg"  width="450">
 
 # appsflyer-unity-plugin
 
 🛠 In order for us to provide optimal support, we would kindly ask you to submit any issues to support@appsflyer.com
 
-*When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
+> *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
 ## Table of content
 - [Adding the SDK to your project](#add-sdk-to-project)
@@ -24,7 +23,7 @@
 3. Go to Assets >> Import Package >> Custom Package.
 4. Select the appsflyer-unity-plugin-*.unitypackage file.
 
-**Note:** The plugins uses the [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) (formerly Play Services Resolver / Jar Resolver). If you do not want to use The External Dependency Manager for Unity see the [Installation guide](/docs/Installation.md) for more details.
+> **Note:** The plugin uses the [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) (EDM4U) (formerly Play Services Resolver / Jar Resolver). If you do not want to use EDM4U see the [Installation guide](/docs/Installation.md) for more details.
 
 
 ## <a id="init-sdk"> 🚀 Initializing the SDK
@@ -62,12 +61,12 @@ public class AppsFlyerObjectScript : MonoBehaviour
 }
 ```
 
-**Note:** Make sure not to call destroy on the game object. 
+> **Note:** Make sure not to call destroy on the game object. 
 
 
  ## <a id="guides"> 📖 Guides
 
-Great installation and setup guides can be viewed [here](/docs/Guides.md).
+Installation and setup guides can be viewed [here](/docs/Guides.md).
 
 - [Installation](/docs/Installation.md)
 - [Init SDK](/docs/Guides.md#init-sdk)
@@ -83,6 +82,4 @@ See the full [API](/docs/API.md) available for this plugin.
 ## <a id="migration"> ⏩ Migration 
   
 Migrating from the old plugin? <br/>
-Check the migration docs [here](/docs/MigrationGuide.md).
-
-
+View the migration docs [here](/docs/MigrationGuide.md).
