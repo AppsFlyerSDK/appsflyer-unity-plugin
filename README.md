@@ -16,6 +16,13 @@
 - [Migration from older plugin versions](#migration) 
 
 
+### <a id="plugin-build-for"> This plugin is built for
+
+- Android AppsFlyer SDK **v5.2.0** 
+- iOS AppsFlyer SDK **v5.2.0**
+
+
+
 ## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
 
 1. Clone / download this repository.
