@@ -1,0 +1,3 @@
+rootProject.name='android-unity-wrapper'
+include ':app'
+include ':unitywrapper'
