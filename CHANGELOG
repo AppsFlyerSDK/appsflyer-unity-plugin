@@ -1,5 +1,9 @@
 # Versions
 
+## 5.2.1
+
+RD-37433 - Fix for 'duplicate symbol '__sendEvent' issue
+
 ## 5.2.0
 
 
