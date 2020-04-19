@@ -29,7 +29,7 @@ namespace AppsFlyerSDK
         public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
 #if !UNITY_EDITOR
-           _sendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
+           _afSendEvent(eventName, AFMiniJSON.Json.Serialize(eventValues));
 #endif
         }
 
@@ -475,7 +475,7 @@ namespace AppsFlyerSDK
         private static extern void _setUserEmails(EmailCryptType cryptType, int length, params string[] userEmails);
 
         [DllImport("__Internal")]
-        private static extern void _sendEvent(string eventName, string eventValues);
+        private static extern void _afSendEvent(string eventName, string eventValues);
 
         [DllImport("__Internal")]
         private static extern void _validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, string additionalParameters, string objectName);
