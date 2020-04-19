@@ -84,7 +84,7 @@ extern "C" {
         }
     }
 
-    const void _sendEvent (const char* eventName, const char* eventValues) {
+    const void _afSendEvent (const char* eventName, const char* eventValues) {
         [[AppsFlyerTracker sharedTracker] trackEvent:stringFromChar(eventName) withValues:dictionaryFromJson(eventValues)];
     }
 
