@@ -90,3 +90,6 @@ See the full [API](/docs/API.md) available for this plugin.
   
 Migrating from the old plugin? <br/>
 View the migration docs [here](/docs/MigrationGuide.md).
+
+⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
+

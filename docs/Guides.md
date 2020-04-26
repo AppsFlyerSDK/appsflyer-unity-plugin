@@ -148,20 +148,6 @@ In your app’s manifest add the following intent-filter to your relevant activi
 </intent-filter>
 ```
 
-If onAppOpenAttribution is not being invoked, the plugin provides a work around that will help.
-
-```xml
- <activity android:name="com.appsflyer.GetDeepLinkingActivity" android:exported="true">
-    <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="aftest" />
-    </intent-filter>
-</activity> 
-```
-
-
 #### <a id="app-links"> App Links
 For more on App Links check out the guide [here](https://support.appsflyer.com/hc/en-us/articles/115005314223-Deep-Linking-Users-with-Android-App-Links#what-are-android-app-links).
 

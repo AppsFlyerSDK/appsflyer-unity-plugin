@@ -2,8 +2,14 @@
 
 1. [Remove the old Plugin](#removeOldPlugin)
 2. [Init the new Plugin](#initnewplugin)
-3. [Update code](#updateoldcode)
+3. [Update deeplink logic](#updateolddeeplink)
+4. [Update code](#updateoldcode)
 
+:warning: There are breaking changes when migrating to Unity v5. This includes:
+* New class names
+* New android package name
+* `com.appsflyer.GetDeepLinkingActivity` does not exist in Unity v5. This is no longer required for deeplinking
+* unity-jar-resolver is used to import assets
 
 ## <a id="removeOldPlugin"> Remove the old plugin 
 
@@ -85,6 +91,10 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 **Important**
 If you are also implementing conversion data and/or deeplinking then you need to initialize the SDK with the `IAppsFlyerConversionData` interface.
 
+## <a id="updateolddeeplink"> Update deeplink logic 
+    
+Unity v5 does not include `com.appsflyer.GetDeepLinkingActivity`. <br>This was used in Unity v4 as a workaround for deeplinking.<br>
+If you are using this class for deeplinking, then make sure to remove the GetDeepLinkingActivity from the AndroidManifest.xml file. 
 
 ## <a id="updateoldcode"> update other Code
 
