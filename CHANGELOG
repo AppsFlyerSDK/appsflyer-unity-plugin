@@ -1,5 +1,11 @@
 # Versions
 
+## 5.3.0
+
+Android SDK Version - 5.3.0
+iOS SDK Version.    - 5.3.0
+Prefab fix for unity 2018.2.21f
+
 ## 5.2.1
 
 RD-37433 - Fix for 'duplicate symbol '__sendEvent' issue
