@@ -99,16 +99,16 @@ Check out the deferred deeplinkg guide from the AppFlyer knowledge base [here](h
 Code Sample to handle the conversion data:
 
 ```c#
-public void didReceiveConversionData(string conversionData)
+public void onConversionDataSuccess(string conversionData)
 {
-    AppsFlyer.AFLog("didReceiveConversionData", conversionData);
+    AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
     Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
     // add deferred deeplink logic here
 }
 
-public void didReceiveConversionDataWithError(string error)
+public void onConversionDataFail(string error)
 {
-    AppsFlyer.AFLog("didReceiveConversionDataWithError", error);
+    AppsFlyer.AFLog("onConversionDataFail", error);
 }
 ```
 
