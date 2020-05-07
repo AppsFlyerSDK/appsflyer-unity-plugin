@@ -339,8 +339,7 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
         string prodID = args.purchasedProduct.definition.id;
-        string price = args.purchasedProduct.metadata.localizedPriceString;
-        string regPrice = Regex.Replace(price, "[^0-9 /.]", "");
+        string price = args.purchasedProduct.metadata.localizedPrice.ToString();
         string currency = args.purchasedProduct.metadata.isoCurrencyCode;
 
         string receipt = args.purchasedProduct.receipt;
@@ -356,7 +355,7 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
                 AppsFlyeriOS.setUseReceiptValidationSandbox(true);
             }
 
-            AppsFlyeriOS.validateAndSendInAppPurchase(prodID, regPrice, currency, transactionID, null, this);
+            AppsFlyeriOS.validateAndSendInAppPurchase(prodID, price, currency, transactionID, null, this);
 #endif
         }
 
