@@ -39,11 +39,11 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
 
 ```
 
-2. Add the new .unitypackage, which can be found in the new plugin. 
-
 ## <a id="initnewplugin"> Init New Plugin
     
-   There are two main options here: 
+1. Add the new .unitypackage, which can be found in the new plugin. 
+    
+2. There are two main options of initialization: 
    1. Remove all old init code and use the new .prefab object. 
    2. Update your existing init code.
    
