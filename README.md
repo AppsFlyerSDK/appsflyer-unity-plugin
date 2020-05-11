@@ -7,14 +7,24 @@
 > *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
 ## Table of content
+- [Migration from older plugin versions](#migration) 
 - [Adding the SDK to your project](#add-sdk-to-project)
 - [Initializing the SDK](#init-sdk)
     - [Using the AppsFlyerObject.prefab](#using-prefab)
     - [Manual integration](#manual-integration)
 - [Guides](#guides)
 - [API](#api) 
-- [Migration from older plugin versions](#migration) 
 
+<hr/>
+
+## <a id="migration"> ⏩ Migration 
+  
+Migrating from the old plugin? (version V4) <br/>
+View the migration docs [here](/docs/MigrationGuide.md).
+
+⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
+
+<hr/>
 
 ### <a id="plugin-build-for"> This plugin is built for
 
@@ -85,11 +95,4 @@ Installation and setup guides can be viewed [here](/docs/Guides.md).
 ## <a id="api"> 📑 API
   
 See the full [API](/docs/API.md) available for this plugin.
-
-## <a id="migration"> ⏩ Migration 
-  
-Migrating from the old plugin? <br/>
-View the migration docs [here](/docs/MigrationGuide.md).
-
-⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
 
