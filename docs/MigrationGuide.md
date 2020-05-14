@@ -227,6 +227,14 @@ AppsFlyer.registerUninstall(byte[] token);
         AppsFlyeriOS.registerUninstall(token);
 #endif
 
+// old
+AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
+// new
+#if UNITY_IOS && !UNITY_EDITOR
+        AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+#endif
+        
+
 ```
 
 
@@ -327,7 +335,6 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
 ```c#
 //@Deprecated
 AppsFlyer.enableUninstallTracking(string senderId);
-AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 AppsFlyer.getHost();
 AppsFlyer.loadConversionData(string callbackObject, string callbackMethod, string callbackFailedMethod);
 AppsFlyer.setGCMProjectNumber(string googleGCMNumber);
