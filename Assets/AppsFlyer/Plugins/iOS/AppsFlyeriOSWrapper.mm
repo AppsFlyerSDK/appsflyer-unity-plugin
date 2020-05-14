@@ -126,7 +126,11 @@ extern "C" {
     const BOOL _isSDKStopped () {
         return [AppsFlyerTracker sharedTracker].isStopTracking;
     }
-    
+
+    const void _handleOpenUrl(const char *url, const char *sourceApplication, const char *annotation) {
+        [[AppsFlyerTracker sharedTracker] handleOpenURL:[NSURL URLWithString:stringFromChar(url)] sourceApplication:stringFromChar(sourceApplication) withAnnotation:stringFromChar(annotation)];
+    }
+
     const void _recordCrossPromoteImpression (const char* appID, const char* campaign) {
         [AppsFlyerCrossPromotionHelper trackCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign)];
     }

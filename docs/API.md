@@ -50,6 +50,7 @@ The list of available methods for this plugin is described below.
     - [setUseUninstallSandbox](#setUseUninstallSandbox)
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [registerUninstall](#registerUninstall)
+    - [handleOpenUrl](#handleOpenUrl)
 
 ---
 
@@ -933,6 +934,29 @@ Register uninstall - you should register for remote notification and provide App
 #endif
     }
 
+```
+
+---
+
+##### <a id="handleOpenUrl"> **` void handleOpenUrl(string url, string sourceApplication, string annotation)`**
+
+
+    In case you want to track deep linking manually call handleOpenUrl.
+    The continueUserActivity and onOpenURL are implemented in the AppsFlyerAppController.mm class, so 
+    only use this method if the other methods do not cover your apps deeplinking needs.
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `url`         | `string`   |      The URL to be passed to your AppDelegate        |
+| `sourceApplication` | `string`   |    The sourceApplication to be passed to your AppDelegate    |
+| `annotation`  | `string`   |       The annotation to be passed to your app delegate       |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+#endif
 ```
 
 ---
