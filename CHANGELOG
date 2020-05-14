@@ -1,5 +1,13 @@
 # Versions
 
+## 5.3.1
+
+RD-39294 - add super call from continueUserActivity
+RD-39255 - make IAppsFlyerConversionData public	
+RD-39254 - add setCollectOaid api (android)
+RD-39216 - add handleOpenUrl api (iOS)
+
+
 ## 5.3.0
 
 Android SDK Version - 5.3.0
