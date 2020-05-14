@@ -519,6 +519,18 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// setCollectOaid
+        /// You must include the appsflyer oaid library for this api to work.
+        /// </summary>
+        /// <param name="isCollect">isCollect oaid - set fasle to opt out</param>
+        public static void setCollectOaid(boolean isCollect)
+        {
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("setCollectOaid", isCollect);
+#endif
+        }
+
+        /// <summary>
         /// Use the following API to attribute the click and launch the app store's app page.
         /// </summary>
         /// <param name="promoted_app_id">promoted App ID</param>

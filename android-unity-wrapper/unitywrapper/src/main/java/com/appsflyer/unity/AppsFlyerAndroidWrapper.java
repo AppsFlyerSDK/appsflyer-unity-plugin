@@ -35,7 +35,7 @@ public class AppsFlyerAndroidWrapper {
         }
 
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_5.3.0");
+        AppsFlyerLib.getInstance().setExtension("unity_android_5.3.1");
     }
 
     public static void startTracking() {
@@ -194,6 +194,9 @@ public class AppsFlyerAndroidWrapper {
         return AppsFlyerLib.getInstance().getHostPrefix();
     }
 
+    public static void setCollectOaid(boolean isCollect) {
+        AppsFlyerLib.getInstance().setCollectOaid(isCollect);
+    }
 
     public static void getConversionData(final String objectName){
         if (conversionListener == null){

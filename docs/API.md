@@ -43,6 +43,7 @@ The list of available methods for this plugin is described below.
     - [getAttributionId](#getAttributionId)
     - [handlePushNotifications](#handlePushNotifications)
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
+    - [setCollectOaid](#setCollectOaid)
 - [iOS Only API](#iOSOnly)
     - [setShouldCollectDeviceName](#setShouldCollectDeviceName)
     - [setDisableCollectIAd](#setDisableCollectIAd)
@@ -775,6 +776,26 @@ An af_purchase event with the relevant values will be automatically sent if the 
         "currency", 
         null, 
         this);
+#endif
+```
+
+---
+
+##### <a id="setCollectOaid"> **`void setCollectOaid(boolean isCollect)`**
+
+    setCollectOaid
+
+    You must include the appsflyer oaid library for this api to work.
+
+| parameter   | type    | description             |
+| ----------- |-------- |-------------------------|
+| `isCollect` | `bool`  | true to allow oaid collection |
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyerAndroid.setCollectOaid(true);
 #endif
 ```
 
