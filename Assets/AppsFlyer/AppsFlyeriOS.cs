@@ -365,21 +365,6 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// In case you want to track deep linking manually call handleOpenUrl.
-        /// The continueUserActivity and onOpenURL are implemented in the AppsFlyerAppController.mm class, so 
-        /// only use this method if the other methods do not cover your apps deeplinking needs.
-        /// </summary>
-        /// <param name="url">The URL to be passed to your AppDelegate.</param>
-        /// <param name="sourceApplication">The sourceApplication to be passed to your AppDelegate.</param>
-        /// <param name="annotation">The annotation to be passed to your app delegate.</param>
-        public static void handleOpenUrl(string url, string sourceApplication, string annotation)
-        {
-#if !UNITY_EDITOR
-            _handleOpenUrl(url, sourceApplication, annotation);
-#endif
-        }
-
-        /// <summary>
         /// To record an impression use the following API call.
         /// Make sure to use the promoted App ID as it appears within the AppsFlyer dashboard.
         /// </summary>
@@ -521,9 +506,6 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern bool _isSDKStopped();
-
-        [DllImport("__Internal")]
-        private static extern void _handleOpenUrl(string url, string sourceApplication, string annotation);
 
         [DllImport("__Internal")]
         private static extern void _recordCrossPromoteImpression(string appID, string campaign);
