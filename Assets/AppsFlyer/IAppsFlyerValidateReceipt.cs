@@ -1,6 +1,6 @@
 namespace AppsFlyerSDK
 {
-    public interface IAppsFlyerValidateReceipt
+    interface IAppsFlyerValidateReceipt
     {
         /// <summary>
         /// The success callback for validateAndSendInAppPurchase API.

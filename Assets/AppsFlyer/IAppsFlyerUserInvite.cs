@@ -1,6 +1,6 @@
 namespace AppsFlyerSDK
 {
-    public interface IAppsFlyerUserInvite
+    interface IAppsFlyerUserInvite
     {
         /// <summary>
         /// The success callback for generating OneLink URLs. 
