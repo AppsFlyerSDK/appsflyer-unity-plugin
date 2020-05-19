@@ -4,7 +4,7 @@
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-sdk:5.3.0">
     </androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:5.3.1">
+    <androidPackage spec="com.appsflyer:unity-wrapper:5.3.0">
     </androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:1.1.2">
     </androidPackage>
