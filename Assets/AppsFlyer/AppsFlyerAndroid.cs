@@ -523,7 +523,7 @@ namespace AppsFlyerSDK
         /// You must include the appsflyer oaid library for this api to work.
         /// </summary>
         /// <param name="isCollect">isCollect oaid - set fasle to opt out</param>
-        public static void setCollectOaid(boolean isCollect)
+        public static void setCollectOaid(bool isCollect)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectOaid", isCollect);
