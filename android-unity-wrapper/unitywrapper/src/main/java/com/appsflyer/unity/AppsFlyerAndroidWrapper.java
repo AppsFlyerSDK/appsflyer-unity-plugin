@@ -35,7 +35,7 @@ public class AppsFlyerAndroidWrapper {
         }
 
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_5.3.1");
+        AppsFlyerLib.getInstance().setExtension("unity_android_5.4.1");
     }
 
     public static void startTracking() {
@@ -264,12 +264,16 @@ public class AppsFlyerAndroidWrapper {
         AppsFlyerLib.getInstance().sendPushNotificationData(UnityPlayer.currentActivity);
     }
 
+    public static void setPhoneNumber(String phoneNumber){
+        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber);
+    }
+
     public static void attributeAndOpenStore(String promoted_app_id, String campaign, Map<String, String> userParams) {
         CrossPromotionHelper.trackAndOpenStore(UnityPlayer.currentActivity, promoted_app_id, campaign, userParams);
     }
 
-    public static void recordCrossPromoteImpression(String appID, String campaign){
-        CrossPromotionHelper.trackCrossPromoteImpression(UnityPlayer.currentActivity, appID, campaign);
+    public static void recordCrossPromoteImpression(String appID, String campaign, Map<String,String> params){
+        CrossPromotionHelper.trackCrossPromoteImpression(UnityPlayer.currentActivity, appID, campaign, params);
     }
 
     public static void createOneLinkInviteListener(Map<String,String> params, final String objectName){

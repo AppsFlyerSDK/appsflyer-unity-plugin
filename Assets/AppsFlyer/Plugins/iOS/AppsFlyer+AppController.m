@@ -13,8 +13,6 @@
 #import "AppsFlyerTracker.h"
 #endif
 
-// Based on : https://blog.newrelic.com/engineering/right-way-to-swizzle/ (MUST READ!!)
-// https://medium.com/rocknnull/ios-to-swizzle-or-not-to-swizzle-f8b0ed4a1ce6
 
 @implementation UnityAppController (AppsFlyerSwizzledAppController)
 

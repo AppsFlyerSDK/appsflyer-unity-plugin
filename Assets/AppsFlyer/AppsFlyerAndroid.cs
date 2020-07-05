@@ -206,6 +206,17 @@ namespace AppsFlyerSDK
 #endif
         }
 
+
+        /// <summary>
+        /// Set the user phone number.
+        /// </summary>
+        /// <param name="phoneNumber">User phoneNumber.</param>
+        public static void setPhoneNumber(string phoneNumber){
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("setPhoneNumber", phoneNumber);
+#endif
+        }
+
         /// <summary>
         /// Set the user emails and encrypt them.
         /// cryptMethod Encryption method:
@@ -549,10 +560,11 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="appID">promoted App ID.</param>
         /// <param name="campaign">cross promotion campaign.</param>
-        public static void recordCrossPromoteImpression(string appID, string campaign)
+        /// <param name="parameters">parameters Dictionary.</param>
+        public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("recordCrossPromoteImpression", appID, campaign);
+            appsFlyerAndroid.CallStatic("recordCrossPromoteImpression", appID, campaign, convertDictionaryToJavaMap(parameters));
 #endif
         }
 

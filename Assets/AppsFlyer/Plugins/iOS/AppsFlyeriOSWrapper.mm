@@ -131,8 +131,8 @@ extern "C" {
         [[AppsFlyerTracker sharedTracker] handleOpenURL:[NSURL URLWithString:stringFromChar(url)] sourceApplication:stringFromChar(sourceApplication) withAnnotation:stringFromChar(annotation)];
     }
 
-    const void _recordCrossPromoteImpression (const char* appID, const char* campaign) {
-        [AppsFlyerCrossPromotionHelper trackCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign)];
+    const void _recordCrossPromoteImpression (const char* appID, const char* campaign, const char* parameters) {
+        [AppsFlyerCrossPromotionHelper trackCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign) parameters:dictionaryFromJson(parameters)];
     }
     
     const void _attributeAndOpenStore (const char* appID, const char* campaign, const char* parameters, const char* objectName) {
@@ -163,9 +163,15 @@ extern "C" {
             [[AppsFlyerTracker sharedTracker] setUserEmails:NSArrayFromCArray(length, userEmails) withCryptType:emailCryptTypeFromInt(emailCryptTypeInt)];
         }
     }
+
+    const void _setPhoneNumber (const char* phoneNumber) {
+        [[AppsFlyerTracker sharedTracker] setPhoneNumber:stringFromChar(phoneNumber)];
+    }
     
     const void _validateAndSendInAppPurchase (const char* productIdentifier, const char* price, const char* currency, const char* tranactionId, const char* additionalParameters, const char* objectName) {
-        
+
+        validateObjectName = stringFromChar(objectName);
+
         [[AppsFlyerTracker sharedTracker]
          validateAndTrackInAppPurchase:stringFromChar(productIdentifier)
          price:stringFromChar(price)
@@ -175,7 +181,7 @@ extern "C" {
          success:^(NSDictionary *result){
                  unityCallBack(stringFromChar(objectName), VALIDATE_CALLBACK, stringFromdictionary(result));
          } failure:^(NSError *error, id response) {
-                 unityCallBack(stringFromChar(objectName), VALIDATE_ERROR_CALLBACK, error ? [[error localizedDescription] UTF8String] : "error");
+                 unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, error ? [[error localizedDescription] UTF8String] : "error");
          }];
     }
     

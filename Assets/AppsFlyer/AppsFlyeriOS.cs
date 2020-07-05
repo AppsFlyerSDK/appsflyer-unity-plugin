@@ -241,6 +241,16 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Set the user phone number.
+        /// </summary>
+        /// <param name="phoneNumber">User phoneNumber.</param>
+        public static void setPhoneNumber(string phoneNumber){
+#if !UNITY_EDITOR
+            _setPhoneNumber(phoneNumber);
+#endif
+        }
+
+        /// <summary>
         ///  To send and validate in app purchases you can call this method from the processPurchase method.
         /// </summary>
         /// <param name="productIdentifier">The product identifier.</param>
@@ -385,10 +395,11 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="appID">promoted App ID.</param>
         /// <param name="campaign">cross promotion campaign.</param>
-        public static void recordCrossPromoteImpression(string appID, string campaign)
+        /// <param name="parameters">parameters Dictionary.</param>
+        public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
 #if !UNITY_EDITOR
-            _recordCrossPromoteImpression(appID, campaign);
+            _recordCrossPromoteImpression(appID, campaign, AFMiniJSON.Json.Serialize(parameters));
 #endif
         }
 
@@ -490,6 +501,9 @@ namespace AppsFlyerSDK
         private static extern void _setUserEmails(EmailCryptType cryptType, int length, params string[] userEmails);
 
         [DllImport("__Internal")]
+        private static extern void _setPhoneNumber(string phoneNumber);
+
+        [DllImport("__Internal")]
         private static extern void _afSendEvent(string eventName, string eventValues);
 
         [DllImport("__Internal")]
@@ -526,7 +540,7 @@ namespace AppsFlyerSDK
         private static extern void _handleOpenUrl(string url, string sourceApplication, string annotation);
 
         [DllImport("__Internal")]
-        private static extern void _recordCrossPromoteImpression(string appID, string campaign);
+        private static extern void _recordCrossPromoteImpression(string appID, string campaign, string parameters);
 
         [DllImport("__Internal")]
         private static extern void _attributeAndOpenStore(string appID, string campaign, string parameters, string gameObject);

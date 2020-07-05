@@ -31,3 +31,5 @@ static const char* OAOA_CALLBACK = "onAppOpenAttribution";
 static const char* OAOA_ERROR_CALLBACK = "onAppOpenAttributionFailure";
 static const char* GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";
 static const char* OPEN_STORE_LINK_CALLBACK = "onOpenStoreLinkGenerated";
+
+static NSString* validateObjectName = @"";

@@ -23,6 +23,7 @@ The list of available methods for this plugin is described below.
     - [setMinTimeBetweenSessions](#setMinTimeBetweenSessions)
     - [setHost](#setHost)
     - [setUserEmails](#setUserEmails)
+    - [setPhoneNumber](#setPhoneNumber)
     - [getConversionData](#getConversionData)
     - [attributeAndOpenStore](#attributeAndOpenStore)
     - [recordCrossPromoteImpression](#recordCrossPromoteImpression)
@@ -404,6 +405,24 @@ AppsFlyer.setUserEmails(EmailCryptType.EmailCryptTypeSHA256, "test1@test1.com", 
 
 ---
 
+##### <a id="setPhoneNumber"> **`void setPhoneNumber(string phoneNumber)`**
+
+Set the user phone number.
+
+
+| parameter     | type              | description               |
+| -----------   |-------------------|---------------------------|
+| `phoneNumber` | `string`  |  |
+
+
+*Example:*
+
+```c#
+AppsFlyer.setPhoneNumber("4166358181");
+```
+
+---
+
 ##### <a id="getConversionData"> **`void getConversionData(string objectName);`**
 
 Register a Conversion Data Listener.
@@ -458,12 +477,16 @@ Make sure to use the promoted App ID as it appears within the AppsFlyer dashboar
 | -----------  |-----------|--------------|
 | `appID`      | `string`  | appID        |
 | `campaign`   | `string`  | campaign     |
+| `params`     | `Dictionary<string, string>`    | additional params     |
 
 
 *Example:*
 
 ```c#
-AppsFlyer.recordCrossPromoteImpression("appID", "campaign");
+Dictionary<string, string> parameters = new Dictionary<string, string>();
+parameters.Add("af_sub1", "val");
+parameters.Add("custom_param", "val2");
+AppsFlyer.recordCrossPromoteImpression("appID", "campaign", parameters);
 ```
 
 ---

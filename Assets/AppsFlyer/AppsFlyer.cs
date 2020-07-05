@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "5.3.1";
+        public static readonly string kAppsFlyerPluginVersion = "5.4.1";
   
 
         /// <summary>
@@ -351,6 +351,21 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Set the user phone number.
+        /// </summary>
+        /// <param name="phoneNumber">phoneNumber string</param>
+        public static void setPhoneNumber(string phoneNumber)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.setPhoneNumber(phoneNumber);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.setPhoneNumber(phoneNumber);
+#else
+
+#endif
+        }
+
+        /// <summary>
         /// Register a Conversion Data Listener.
         /// Allows the developer to access the user attribution data in real-time for every new install, directly from the SDK level.
         /// By doing this you can serve users with personalized content or send them to specific activities within the app,
@@ -404,12 +419,13 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="appID">promoted App ID.</param>
         /// <param name="campaign">cross promotion campaign.</param>
-        public static void recordCrossPromoteImpression(string appID, string campaign)
+        /// <param name="parameters">parameters Dictionary.</param>
+        public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.recordCrossPromoteImpression(appID, campaign);
+            AppsFlyeriOS.recordCrossPromoteImpression(appID, campaign, parameters);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.recordCrossPromoteImpression(appID, campaign);
+            AppsFlyerAndroid.recordCrossPromoteImpression(appID, campaign, parameters);
 #else
 
 #endif
