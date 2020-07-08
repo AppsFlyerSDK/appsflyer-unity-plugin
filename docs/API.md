@@ -53,6 +53,18 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [registerUninstall](#registerUninstall)
     - [handleOpenUrl](#handleOpenUrl)
+- [IAppsFlyerConversionData](#IAppsFlyerConversionData)
+    - [onConversionDataSuccess](#onConversionDataSuccess)
+    - [onConversionDataFail](#onConversionDataFail)
+    - [onAppOpenAttribution](#onAppOpenAttribution)
+    - [onAppOpenAttributionFailure](#onAppOpenAttributionFailure)
+- [IAppsFlyerUserInvite](#IAppsFlyerUserInvite)
+    - [onInviteLinkGenerated](#onInviteLinkGenerated)
+    - [onInviteLinkGeneratedFailure](#onInviteLinkGeneratedFailure)
+    - [onOpenStoreLinkGenerated](#onOpenStoreLinkGenerated)
+- [IAppsFlyerValidateReceipt](#IAppsFlyerValidateReceipt)
+    - [didFinishValidateReceipt](#didFinishValidateReceipt)
+    - [didFinishValidateReceiptWithError](#didFinishValidateReceiptWithError)
 
 ---
 
@@ -1001,6 +1013,201 @@ Register uninstall - you should register for remote notification and provide App
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
 #endif
+```
+
+---
+
+## <a id="IAppsFlyerConversionData"> IAppsFlyerConversionData
+  
+##### <a id="onConversionDataSuccess"> **`public void onConversionDataSuccess(string conversionData)`**
+ 
+ ConversionData contains information about install.<br> Organic/non-organic, etc. See [here](https://support.appsflyer.com/hc/en-us/articles/360000726098-Conversion-Data-Scenarios#Introduction) for more info.
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `conversionData`     | `string`  | JSON string of the returned conversion data |
+
+
+*Example:*
+
+```c#
+   public void onConversionDataSuccess(string conversionData)
+    {
+        AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
+        Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
+        // add deferred deeplink logic here
+    }
+```
+
+---
+
+##### <a id="onConversionDataFail"> **`public void onConversionDataFail(string error)`**
+ 
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `error`     | `string`  | A string describing the error |
+
+
+*Example:*
+
+```c#
+    public void onConversionDataFail(string error)
+    {
+        AppsFlyer.AFLog("onConversionDataFail", error);
+    }
+```
+
+---
+
+##### <a id="onAppOpenAttribution"> **`public void onAppOpenAttribution(string attributionData)`**
+ 
+attributionData contains information about OneLink, deeplink.
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `attributionData`     | `string`  | JSON string of the returned deeplink data |
+
+
+*Example:*
+
+```c#
+    public void onAppOpenAttribution(string attributionData)
+    {
+        AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
+        Dictionary<string, object> attributionDataDictionary = AppsFlyer.CallbackStringToDictionary(attributionData);
+        // add direct deeplink logic here
+    }
+```
+
+---
+
+##### <a id="onAppOpenAttributionFailure"> **`public void onAppOpenAttributionFailure(string error)`**
+    
+Any errors that occurred during the attribution request.
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `error`     | `string`  | string describing the error |
+
+
+*Example:*
+
+```c#
+  public void onAppOpenAttributionFailure(string error)
+    {
+        AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
+    }
+```
+
+---
+
+## <a id="IAppsFlyerUserInvite"> IAppsFlyerUserInvite
+  
+##### <a id="onInviteLinkGenerated"> **`public void onInviteLinkGenerated(string link)`**
+ 
+The success callback for generating OneLink URLs. 
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `link`     | `string`  | generated link |
+
+
+*Example:*
+
+```c#
+   public void onInviteLinkGenerated(string link)
+    {
+
+    }
+```
+
+---
+
+##### <a id="onInviteLinkGeneratedFailure"> **`public void onInviteLinkGeneratedFailure(string error)`**
+ 
+ The error callback for generating OneLink URLs
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `error`     | `string`  | A string describing the error |
+
+
+*Example:*
+
+```c#
+    public void onInviteLinkGeneratedFailure(string error)
+    {
+        AppsFlyer.AFLog("onInviteLinkGeneratedFailure", error);
+    }
+```
+
+---
+
+##### <a id="onOpenStoreLinkGenerated"> **`public void onOpenStoreLinkGenerated(string link)`**
+ 
+       
+ (ios only) iOS allows you to utilize the StoreKit component to open
+ the App Store while remaining in the context of your app.<br>
+ More details at [here](https://support.appsflyer.com/hc/en-us/articles/115004481946-Cross-Promotion-Tracking#tracking-cross-promotion-impressions)
+     
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `attributionData`     | `string`  | JSON string of the returned deeplink data |
+
+
+*Example:*
+
+```c#
+    public void onOpenStoreLinkGenerated(string link)
+    {
+
+    }
+```
+
+---
+
+## <a id="IAppsFlyerValidateReceipt"> IAppsFlyerValidateReceipt
+  
+##### <a id="didFinishValidateReceipt"> **`public void didFinishValidateReceipt(string result)`**
+ 
+The success callback for validateAndSendInAppPurchase API.<br>
+For Android : the callback will return "Validate success".<br>
+For iOS : the callback will return a JSON string from apples verifyReceipt API. <br>
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `result`     | `string`  | validate result |
+
+
+*Example:*
+
+```c#
+   public void didFinishValidateReceipt(string link)
+    {
+
+    }
+```
+
+---
+
+##### <a id="didFinishValidateReceiptWithError"> **`public void didFinishValidateReceiptWithError(string error)`**
+ 
+ The error callback for validating receipts.<br>
+
+| parameter   | type      | description        |
+| ----------  |---------- |--------------------|
+| `error`     | `string`  | A string describing the error |
+
+
+*Example:*
+
+```c#
+    public void didFinishValidateReceiptWithError(string error)
+    {
+      
+    }
 ```
 
 ---
