@@ -1,5 +1,14 @@
 # Versions
 
+## 5.4.1
+
+RD-40404 - add additional params for recordCrossPromoteImpression api (ios & android)
+RD-42760 - add setPhoneNumber api (ios & android)
+RD-42761 - fix validateAndSendInAppPurchase callback on iOS
+
+Android SDK Version - 5.4.1
+iOS SDK Version     - 5.4.1
+
 ## 5.3.1
 
 RD-39294 - add super call from continueUserActivity
