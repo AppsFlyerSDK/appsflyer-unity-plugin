@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "5.4.1";
+        public static readonly string kAppsFlyerPluginVersion = "5.4.2";
   
 
         /// <summary>
@@ -360,6 +360,35 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.setPhoneNumber(phoneNumber);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.setPhoneNumber(phoneNumber);
+#else
+
+#endif
+        }
+
+        /// <summary>
+        /// Used by advertisers to exclude all networks/integrated partners from getting data.
+        /// </summary>
+        public static void setSharingFilterForAllPartners()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.setSharingFilterForAllPartners();
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.setSharingFilterForAllPartners();
+#else
+
+#endif
+        }
+
+        /// <summary>
+        /// Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
+        /// </summary>
+        /// <param name="partners">partners to exclude from getting data</param>
+        public static void setSharingFilter(params string[] partners)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.setSharingFilter(partners);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.setSharingFilter(partners);
 #else
 
 #endif
