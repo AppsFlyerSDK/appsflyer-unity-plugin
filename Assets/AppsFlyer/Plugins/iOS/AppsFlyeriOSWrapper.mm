@@ -167,6 +167,16 @@ extern "C" {
     const void _setPhoneNumber (const char* phoneNumber) {
         [[AppsFlyerTracker sharedTracker] setPhoneNumber:stringFromChar(phoneNumber)];
     }
+
+    const void _setSharingFilterForAllPartners () {
+        [[AppsFlyerTracker sharedTracker] setSharingFilterForAllPartners];
+    }
+
+    const void _setSharingFilter (int length, const char **partners) {
+        if(length > 0 && partners) {
+            [[AppsFlyerTracker sharedTracker] setSharingFilter:NSArrayFromCArray(length, partners)];
+        }
+    }
     
     const void _validateAndSendInAppPurchase (const char* productIdentifier, const char* price, const char* currency, const char* tranactionId, const char* additionalParameters, const char* objectName) {
 
@@ -179,7 +189,7 @@ extern "C" {
          transactionId:stringFromChar(tranactionId)
          additionalParameters:dictionaryFromJson(additionalParameters)
          success:^(NSDictionary *result){
-                 unityCallBack(stringFromChar(objectName), VALIDATE_CALLBACK, stringFromdictionary(result));
+                 unityCallBack(validateObjectName, VALIDATE_CALLBACK, stringFromdictionary(result));
          } failure:^(NSError *error, id response) {
                  unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, error ? [[error localizedDescription] UTF8String] : "error");
          }];

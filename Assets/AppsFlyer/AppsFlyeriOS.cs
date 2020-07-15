@@ -390,6 +390,27 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Used by advertisers to exclude all networks/integrated partners from getting data.
+        /// </summary>
+        public static void setSharingFilterForAllPartners()
+        {
+#if !UNITY_EDITOR
+            _setSharingFilterForAllPartners();
+#endif
+        }
+
+        /// <summary>
+        /// Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
+        /// </summary>
+        /// <param name="partners">partners to exclude from getting data</param>
+        public static void setSharingFilter(params string[] partners)
+        {
+#if !UNITY_EDITOR
+            _setSharingFilter(partners.Length, partners);
+#endif
+        }
+
+        /// <summary>
         /// To record an impression use the following API call.
         /// Make sure to use the promoted App ID as it appears within the AppsFlyer dashboard.
         /// </summary>
@@ -538,6 +559,12 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _handleOpenUrl(string url, string sourceApplication, string annotation);
+
+        [DllImport("__Internal")]
+        private static extern void _setSharingFilterForAllPartners();
+
+        [DllImport("__Internal")]
+        private static extern void _setSharingFilter(int length, params string[] partners);
 
         [DllImport("__Internal")]
         private static extern void _recordCrossPromoteImpression(string appID, string campaign, string parameters);
