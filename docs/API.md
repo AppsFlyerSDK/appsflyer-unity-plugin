@@ -28,6 +28,8 @@ The list of available methods for this plugin is described below.
     - [attributeAndOpenStore](#attributeAndOpenStore)
     - [recordCrossPromoteImpression](#recordCrossPromoteImpression)
     - [generateUserInviteLink](#generateUserInviteLink)
+    - [setSharingFilterForAllPartners](#setSharingFilterForAllPartners)
+    - [setSharingFilter](#setSharingFilter)
 - [Android Only API](#androidOnly)
     - [updateServerUninstallToken](#updateServerUninstallToken)
     - [setImeiData](#setImeiData)
@@ -518,6 +520,37 @@ See - https://support.appsflyer.com/hc/en-us/articles/115004480866-User-invite-a
 
 ```c#
 AppsFlyer.generateUserInviteLink(params, this);
+```
+
+---
+
+##### <a id="setSharingFilterForAllPartners"> **`void setSharingFilterForAllPartners()`**
+
+Used by advertisers to exclude all networks/integrated partners from getting data.
+
+*Example:*
+
+```c#
+AppsFlyer.setSharingFilterForAllPartners();
+```
+
+---
+
+##### <a id="setSharingFilter"> **`void setSharingFilter(params string[] partners)`**
+
+
+ Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
+
+
+| parameter    | type                         | description                                         |
+| -----------  |----------------------------- |-----------------------------------------------------|
+| `partners` | `params string[] partners` | partners to exclude from getting data                                                    |
+
+
+*Example:*
+
+```c#
+AppsFlyer.setSharingFilter("googleadwords_int","snapchat_int","doubleclick_int");
 ```
 
 ---

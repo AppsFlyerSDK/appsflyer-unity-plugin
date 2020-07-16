@@ -35,7 +35,7 @@ public class AppsFlyerAndroidWrapper {
         }
 
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_5.4.1");
+        AppsFlyerLib.getInstance().setExtension("unity_android_5.4.2");
     }
 
     public static void startTracking() {
@@ -196,6 +196,14 @@ public class AppsFlyerAndroidWrapper {
 
     public static void setCollectOaid(boolean isCollect) {
         AppsFlyerLib.getInstance().setCollectOaid(isCollect);
+    }
+
+    public static void setSharingFilterForAllPartners() {
+        AppsFlyerLib.getInstance().setSharingFilterForAllPartners();
+    }
+
+    public static void setSharingFilter(String ... partners) {
+        AppsFlyerLib.getInstance().setSharingFilter(partners);
     }
 
     public static void getConversionData(final String objectName){

@@ -1,5 +1,11 @@
 # Versions
 
+## 5.4.2
+
+RD-43178 - added setSharingFilterForAllPartners() api
+RD-43178 - added setSharingFilter(params string[] partners) api
+RD-42761 - fix validateAndSendInAppPurchase callback on iOS
+
 ## 5.4.1
 
 RD-40404 - add additional params for recordCrossPromoteImpression api (ios & android)
