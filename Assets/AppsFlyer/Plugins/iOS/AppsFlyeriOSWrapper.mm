@@ -136,21 +136,27 @@ extern "C" {
     }
     
     const void _attributeAndOpenStore (const char* appID, const char* campaign, const char* parameters, const char* objectName) {
+
+        openStoreObjectName = stringFromChar(objectName);
+
         [AppsFlyerCrossPromotionHelper
          trackAndOpenStore:stringFromChar(appID)
          campaign:stringFromChar(campaign)
          paramters:dictionaryFromJson(parameters)
          openStore:^(NSURLSession * _Nonnull urlSession, NSURL * _Nonnull clickURL) {
-             unityCallBack(stringFromChar(objectName), OPEN_STORE_LINK_CALLBACK, [clickURL.absoluteString UTF8String]);
+             unityCallBack(openStoreObjectName, OPEN_STORE_LINK_CALLBACK, [clickURL.absoluteString UTF8String]);
              
          }];
     }
     
     const void _generateUserInviteLink (const char* parameters, const char* objectName) {
+
+        generateInviteObjectName = stringFromChar(objectName);
+
         [AppsFlyerShareInviteHelper generateInviteUrlWithLinkGenerator:^AppsFlyerLinkGenerator * _Nonnull(AppsFlyerLinkGenerator * _Nonnull generator) {
             return generatorFromDictionary(dictionaryFromJson(parameters), generator);
         } completionHandler:^(NSURL * _Nullable url) {
-            unityCallBack(stringFromChar(objectName), GENERATE_LINK_CALLBACK, [url.absoluteString UTF8String]);
+            unityCallBack(generateInviteObjectName, GENERATE_LINK_CALLBACK, [url.absoluteString UTF8String]);
         }];
     }
     

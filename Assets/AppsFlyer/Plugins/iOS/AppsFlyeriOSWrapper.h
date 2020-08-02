@@ -33,3 +33,5 @@ static const char* GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";
 static const char* OPEN_STORE_LINK_CALLBACK = "onOpenStoreLinkGenerated";
 
 static NSString* validateObjectName = @"";
+static NSString* openStoreObjectName = @"";
+static NSString* generateInviteObjectName = @"";

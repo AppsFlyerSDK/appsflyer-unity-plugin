@@ -1,5 +1,11 @@
 # Versions
 
+## 5.4.3
+
+* RD-44538 - empty game object fix
+* Android SDK Version - 5.4.3
+* iOS SDK Version     - 5.4.3
+
 ## 5.4.2
 
 * RD-43178 - added setSharingFilterForAllPartners() api
