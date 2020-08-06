@@ -17,133 +17,132 @@ static void unityCallBack(NSString* objectName, const char* method, const char* 
 extern "C" {
     
     const void _startSDK() {
-        [[AppsFlyerTracker sharedTracker] trackAppLaunch];
+        [[AppsFlyerLib shared] start];
     }
     
     const void _setCustomerUserID (const char* customerUserID) {
-        [[AppsFlyerTracker sharedTracker] setCustomerUserID:stringFromChar(customerUserID)];
+        [[AppsFlyerLib shared] setCustomerUserID:stringFromChar(customerUserID)];
     }
 
     const void _setAdditionalData (const char* customData) {
-        [[AppsFlyerTracker sharedTracker] setAdditionalData:dictionaryFromJson(customData)];
+        [[AppsFlyerLib shared] setAdditionalData:dictionaryFromJson(customData)];
     }
 
     const void _setAppsFlyerDevKey (const char* appsFlyerDevKey) {
-        [AppsFlyerTracker sharedTracker].appsFlyerDevKey = stringFromChar(appsFlyerDevKey);
+        [AppsFlyerLib shared].appsFlyerDevKey = stringFromChar(appsFlyerDevKey);
     }
 
     const void _setAppleAppID (const char* appleAppID) {
-        [AppsFlyerTracker sharedTracker].appleAppID = stringFromChar(appleAppID);
+        [AppsFlyerLib shared].appleAppID = stringFromChar(appleAppID);
     }
 
     const void _setCurrencyCode (const char* currencyCode) {
-        [[AppsFlyerTracker sharedTracker] setCurrencyCode:stringFromChar(currencyCode)];
+        [[AppsFlyerLib shared] setCurrencyCode:stringFromChar(currencyCode)];
     }
 
-    const void _setDisableCollectAppleAdSupport (bool disableAppleAdSupportTracking) {
-        [AppsFlyerTracker sharedTracker].disableAppleAdSupportTracking = disableAppleAdSupportTracking;
+    const void _setDisableCollectAppleAdSupport (bool disableAdvertisingIdentifier) {
+        [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
     const void _setIsDebug (bool isDebug) {
-        [AppsFlyerTracker sharedTracker].isDebug = isDebug;
+        [AppsFlyerLib shared].isDebug = isDebug;
     }
 
     const void _setShouldCollectDeviceName (bool shouldCollectDeviceName) {
-        [AppsFlyerTracker sharedTracker].shouldCollectDeviceName = shouldCollectDeviceName;
+        [AppsFlyerLib shared].shouldCollectDeviceName = shouldCollectDeviceName;
     }
 
     const void _setAppInviteOneLinkID (const char*  appInviteOneLinkID) {
-        [[AppsFlyerTracker sharedTracker] setAppInviteOneLink:stringFromChar(appInviteOneLinkID)];
+        [[AppsFlyerLib shared] setAppInviteOneLink:stringFromChar(appInviteOneLinkID)];
     }
 
-    const void _anonymizeUser (bool deviceTrackingDisabled) {
-        [AppsFlyerTracker sharedTracker].deviceTrackingDisabled = deviceTrackingDisabled;
+    const void _anonymizeUser (bool deviceLoggingDisabled) {
+        [AppsFlyerLib shared].deviceLoggingDisabled = deviceLoggingDisabled;
     }
 
-    const void _setDisableCollectIAd (bool disableIAdTracking) {
-        [AppsFlyerTracker sharedTracker].disableIAdTracking = disableIAdTracking;
+    const void _setDisableCollectIAd (bool disableCollectASA) {
+        [AppsFlyerLib shared].disableCollectASA = disableCollectASA;
     }
     
     const void _setUseReceiptValidationSandbox (bool useReceiptValidationSandbox) {
-        [AppsFlyerTracker sharedTracker].useReceiptValidationSandbox = useReceiptValidationSandbox;
+        [AppsFlyerLib shared].useReceiptValidationSandbox = useReceiptValidationSandbox;
     }
     
     const void _setUseUninstallSandbox (bool useUninstallSandbox) {
-        [AppsFlyerTracker sharedTracker].useUninstallSandbox = useUninstallSandbox;
+        [AppsFlyerLib shared].useUninstallSandbox = useUninstallSandbox;
     }
 
     const void _setResolveDeepLinkURLs (int length, const char **resolveDeepLinkURLs) {
         if(length > 0 && resolveDeepLinkURLs) {
-            [[AppsFlyerTracker sharedTracker] setResolveDeepLinkURLs:NSArrayFromCArray(length, resolveDeepLinkURLs)];
+            [[AppsFlyerLib shared] setResolveDeepLinkURLs:NSArrayFromCArray(length, resolveDeepLinkURLs)];
         }
     }
 
     const void _setOneLinkCustomDomains (int length, const char **oneLinkCustomDomains) {
         if(length > 0 && oneLinkCustomDomains) {
-            [[AppsFlyerTracker sharedTracker] setResolveDeepLinkURLs:NSArrayFromCArray(length, oneLinkCustomDomains)];
+            [[AppsFlyerLib shared] setResolveDeepLinkURLs:NSArrayFromCArray(length, oneLinkCustomDomains)];
         }
     }
 
     const void _afSendEvent (const char* eventName, const char* eventValues) {
-        [[AppsFlyerTracker sharedTracker] trackEvent:stringFromChar(eventName) withValues:dictionaryFromJson(eventValues)];
+        [[AppsFlyerLib shared] logEvent:stringFromChar(eventName) withValues:dictionaryFromJson(eventValues)];
     }
 
     const void _recordLocation (double longitude, double latitude) {
-        [[AppsFlyerTracker sharedTracker] trackLocation:longitude latitude:latitude];
+        [[AppsFlyerLib shared] logLocationEvent:longitude latitude:latitude];
     }
 
     const char* _getAppsFlyerId () {
-        return getCString([[[AppsFlyerTracker sharedTracker] getAppsFlyerUID] UTF8String]);
+        return getCString([[[AppsFlyerLib shared] getAppsFlyerUID] UTF8String]);
     }
 
     const void _registerUninstall (unsigned char* deviceToken) {
         if(deviceToken){
             NSData* tokenData = [NSData dataWithBytes:(const void *)deviceToken length:sizeof(unsigned char)*kPushNotificationSize];
-            [[AppsFlyerTracker sharedTracker] registerUninstall:tokenData];
+            [[AppsFlyerLib shared] registerUninstall:tokenData];
         }
     }
 
     const void _handlePushNotification (const char* pushPayload) {
-        [[AppsFlyerTracker sharedTracker] handlePushNotification:dictionaryFromJson(pushPayload)];
+        [[AppsFlyerLib shared] handlePushNotification:dictionaryFromJson(pushPayload)];
     }
 
     const char* _getSDKVersion () {
-        return getCString([[[AppsFlyerTracker sharedTracker] getSDKVersion] UTF8String]);
+        return getCString([[[AppsFlyerLib shared] getSDKVersion] UTF8String]);
     }
 
     const void _setHost (const char* host, const char* hostPrefix) {
-        [[AppsFlyerTracker sharedTracker] setHost:stringFromChar(host) withHostPrefix:stringFromChar(hostPrefix)];
+        [[AppsFlyerLib shared] setHost:stringFromChar(host) withHostPrefix:stringFromChar(hostPrefix)];
     }
 
     const void _setMinTimeBetweenSessions (int minTimeBetweenSessions) {
-        [AppsFlyerTracker sharedTracker].minTimeBetweenSessions = minTimeBetweenSessions;
+        [AppsFlyerLib shared].minTimeBetweenSessions = minTimeBetweenSessions;
     }
 
-    const void _stopSDK (bool isStopTracking) {
-        [AppsFlyerTracker sharedTracker].isStopTracking = isStopTracking;
+    const void _stopSDK (bool isStopped) {
+        [AppsFlyerLib shared].isStopped = isStopped;
     }
 
     const BOOL _isSDKStopped () {
-        return [AppsFlyerTracker sharedTracker].isStopTracking;
+        return [AppsFlyerLib shared].isStopped;
     }
 
     const void _handleOpenUrl(const char *url, const char *sourceApplication, const char *annotation) {
-        [[AppsFlyerTracker sharedTracker] handleOpenURL:[NSURL URLWithString:stringFromChar(url)] sourceApplication:stringFromChar(sourceApplication) withAnnotation:stringFromChar(annotation)];
+        [[AppsFlyerLib shared] handleOpenURL:[NSURL URLWithString:stringFromChar(url)] sourceApplication:stringFromChar(sourceApplication) withAnnotation:stringFromChar(annotation)];
     }
 
     const void _recordCrossPromoteImpression (const char* appID, const char* campaign, const char* parameters) {
-        [AppsFlyerCrossPromotionHelper trackCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign) parameters:dictionaryFromJson(parameters)];
+        [AppsFlyerCrossPromotionHelper logCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign) parameters:dictionaryFromJson(parameters)];
     }
     
     const void _attributeAndOpenStore (const char* appID, const char* campaign, const char* parameters, const char* objectName) {
         [AppsFlyerCrossPromotionHelper
-         trackAndOpenStore:stringFromChar(appID)
+         logAndOpenStore:stringFromChar(appID)
          campaign:stringFromChar(campaign)
-         paramters:dictionaryFromJson(parameters)
-         openStore:^(NSURLSession * _Nonnull urlSession, NSURL * _Nonnull clickURL) {
-             unityCallBack(stringFromChar(objectName), OPEN_STORE_LINK_CALLBACK, [clickURL.absoluteString UTF8String]);
-             
-         }];
+         parameters:dictionaryFromJson(parameters)
+         openStore:^(NSURLSession * _Nonnull urlSession, NSURL * _Nonnull clickURL){
+                   unityCallBack(stringFromChar(objectName), OPEN_STORE_LINK_CALLBACK, [clickURL.absoluteString UTF8String]);
+        }];
     }
     
     const void _generateUserInviteLink (const char* parameters, const char* objectName) {
@@ -155,26 +154,26 @@ extern "C" {
     }
     
     const void _recordInvite (const char* channel, const char* parameters) {
-        [AppsFlyerShareInviteHelper trackInvite:stringFromChar(channel) parameters:dictionaryFromJson(parameters)];
+        [AppsFlyerShareInviteHelper logInvite:stringFromChar(channel) parameters:dictionaryFromJson(parameters)];
     }
     
     const void _setUserEmails (int emailCryptTypeInt , int length, const char **userEmails) {
         if(length > 0 && userEmails) {
-            [[AppsFlyerTracker sharedTracker] setUserEmails:NSArrayFromCArray(length, userEmails) withCryptType:emailCryptTypeFromInt(emailCryptTypeInt)];
+            [[AppsFlyerLib shared] setUserEmails:NSArrayFromCArray(length, userEmails) withCryptType:emailCryptTypeFromInt(emailCryptTypeInt)];
         }
     }
 
     const void _setPhoneNumber (const char* phoneNumber) {
-        [[AppsFlyerTracker sharedTracker] setPhoneNumber:stringFromChar(phoneNumber)];
+        [[AppsFlyerLib shared] setPhoneNumber:stringFromChar(phoneNumber)];
     }
 
     const void _setSharingFilterForAllPartners () {
-        [[AppsFlyerTracker sharedTracker] setSharingFilterForAllPartners];
+        [[AppsFlyerLib shared] setSharingFilterForAllPartners];
     }
 
     const void _setSharingFilter (int length, const char **partners) {
         if(length > 0 && partners) {
-            [[AppsFlyerTracker sharedTracker] setSharingFilter:NSArrayFromCArray(length, partners)];
+            [[AppsFlyerLib shared] setSharingFilter:NSArrayFromCArray(length, partners)];
         }
     }
     
@@ -182,8 +181,8 @@ extern "C" {
 
         validateObjectName = stringFromChar(objectName);
 
-        [[AppsFlyerTracker sharedTracker]
-         validateAndTrackInAppPurchase:stringFromChar(productIdentifier)
+        [[AppsFlyerLib shared]
+         validateAndLogInAppPurchase:stringFromChar(productIdentifier)
          price:stringFromChar(price)
          currency:stringFromChar(currency)
          transactionId:stringFromChar(tranactionId)
@@ -200,7 +199,11 @@ extern "C" {
             _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
         }
         ConversionDataCallbackObject = stringFromChar(objectName);
-        [[AppsFlyerTracker sharedTracker] setDelegate:_AppsFlyerdelegate];
+        [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
+    }
+
+    const void _waitForAdvertisingIdentifierWithTimeoutInterval (int timeoutInterval) {
+         [[AppsFlyerLib shared] waitForAdvertisingIdentifierWithTimeoutInterval:timeoutInterval];
     }
 }
 

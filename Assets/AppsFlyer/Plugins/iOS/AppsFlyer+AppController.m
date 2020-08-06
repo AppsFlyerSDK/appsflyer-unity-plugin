@@ -7,10 +7,10 @@
 
 #import <objc/runtime.h>
 #import "UnityAppController.h"
-#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
-#import <AppsFlyerLib/AppsFlyerTracker.h>
+#if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
+#import <AppsFlyerLib/AppsFlyerLib.h>
 #else
-#import "AppsFlyerTracker.h"
+#import "AppsFlyerLib.h"
 #endif
 
 

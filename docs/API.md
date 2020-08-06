@@ -55,6 +55,7 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [registerUninstall](#registerUninstall)
     - [handleOpenUrl](#handleOpenUrl)
+    - [waitForAdvertisingIdentifierWithTimeoutInterval](#waitForAdvertisingIdentifier)
 - [IAppsFlyerConversionData](#IAppsFlyerConversionData)
     - [onConversionDataSuccess](#onConversionDataSuccess)
     - [onConversionDataFail](#onConversionDataFail)
@@ -1045,6 +1046,23 @@ Register uninstall - you should register for remote notification and provide App
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+#endif
+```
+
+---
+
+##### <a id="waitForAdvertisingIdentifier"> **` void waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `timeoutInterval`         | `int`   |      Time to wait for idfa        |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.waitForAdvertisingIdentifierWithTimeoutInterval(60);
 #endif
 ```
 

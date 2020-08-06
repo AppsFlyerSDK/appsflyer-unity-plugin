@@ -1,6 +1,6 @@
 <img src="https://www.appsflyer.com/wp-content/uploads/2016/11/logo-1.svg"  width="450">
 
-# appsflyer-unity-plugin
+# appsflyer-unity-plugin-beta
 
 🛠 In order for us to provide optimal support, we would kindly ask you to submit any issues to support@appsflyer.com
 
@@ -29,7 +29,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK **v5.4.1** 
-- iOS AppsFlyer SDK **v5.4.1**
+- iOS AppsFlyer SDK **v6.0.0-beta**
 
 
 

@@ -1,5 +1,12 @@
 # Versions
 
+## 6.0.0-beta
+
+- added waitForAdvertisingIdentifierWithTimeoutInterval api
+
+* Android SDK Version - 5.4.1
+* iOS SDK Version     - 6.0.0-beta
+
 ## 5.4.2
 
 * RD-43178 - added setSharingFilterForAllPartners() api
