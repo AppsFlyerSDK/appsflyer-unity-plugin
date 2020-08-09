@@ -29,7 +29,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK **v5.4.1** 
-- iOS AppsFlyer SDK **v6.0.0-beta**
+- iOS AppsFlyer SDK **v6.0.1-beta**
 
 
 

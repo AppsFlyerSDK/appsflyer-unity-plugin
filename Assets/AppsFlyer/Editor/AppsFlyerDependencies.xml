@@ -11,7 +11,7 @@
   </androidPackages>
 
   <iosPods>
-    <iosPod name="Beta-AppsFlyerFramework" version="~> 6.0" minTargetSdk="8.0">
+    <iosPod name="Beta-AppsFlyerFramework" version="~> 6.0.1" minTargetSdk="8.0">
     </iosPod>
   </iosPods>
 

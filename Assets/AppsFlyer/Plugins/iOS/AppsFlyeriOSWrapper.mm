@@ -205,6 +205,10 @@ extern "C" {
     const void _waitForAdvertisingIdentifierWithTimeoutInterval (int timeoutInterval) {
          [[AppsFlyerLib shared] waitForAdvertisingIdentifierWithTimeoutInterval:timeoutInterval];
     }
+
+    const void _disableSKAdNetwork (bool isDisabled) {
+        [AppsFlyerLib shared].disableSKAdNetwork = isDisabled;
+    }
 }
 
 @implementation AppsFlyeriOSWarpper

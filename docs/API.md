@@ -56,6 +56,7 @@ The list of available methods for this plugin is described below.
     - [registerUninstall](#registerUninstall)
     - [handleOpenUrl](#handleOpenUrl)
     - [waitForAdvertisingIdentifierWithTimeoutInterval](#waitForAdvertisingIdentifier)
+    - [disableSKAdNetwork](#disableSKAdNetwork)
 - [IAppsFlyerConversionData](#IAppsFlyerConversionData)
     - [onConversionDataSuccess](#onConversionDataSuccess)
     - [onConversionDataFail](#onConversionDataFail)
@@ -1063,6 +1064,23 @@ Register uninstall - you should register for remote notification and provide App
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyeriOS.waitForAdvertisingIdentifierWithTimeoutInterval(60);
+#endif
+```
+
+---
+
+##### <a id="disableSKAdNetwork"> **` bools disableSKAdNetwork(int isDisabled)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `isDisabled`         | `bool`   |      True to disable SKAdNetwork     |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.disableSKAdNetwork(true);
 #endif
 ```
 

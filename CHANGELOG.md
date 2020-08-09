@@ -1,5 +1,12 @@
 # Versions
 
+## 6.0.1-beta
+
+- added disableSKAdNetwork api
+
+* Android SDK Version - 5.4.1
+* iOS SDK Version     - 6.0.1-beta
+
 ## 6.0.0-beta
 
 - added waitForAdvertisingIdentifierWithTimeoutInterval api
