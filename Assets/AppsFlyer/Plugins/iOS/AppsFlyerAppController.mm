@@ -63,7 +63,7 @@
     return YES;
 }
 
--(BOOL) application:(UIApplication *)application openUrl:(NSURL *)url options:(NSDictionary *)options {
+-(BOOL) application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary *)options {
     NSLog(@"got openUrl: %@",url);
     [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
     return YES;

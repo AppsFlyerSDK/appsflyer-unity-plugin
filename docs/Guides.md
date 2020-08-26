@@ -19,6 +19,7 @@
     - [Android Uninstall Setup](#track-app-uninstalls-android)
 - [User invite attribution](#UserInviteAttribution)
 - [In-app purchase validation](#InAppPurchaseValidation)
+- [OAID Collection](#oaid)
 
 ## <a id="init-sdk"> Init SDK 
 
@@ -375,6 +376,26 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
 }
 
 ```
+
+##  <a id="oaid"> OAID Collection
+
+First, check out the OAID docs [here](https://support.appsflyer.com/hc/en-us/articles/360006278797#collecting-oaids).
+
+Now implement the following steps:
+
+1. Download the [AAR](https://github.com/AppsFlyerSDK/appsflyer-oaid/blob/master/oaid/libs/msa_mdid_1.0.13.aar) provided by the [MSA alliance](http://www.msa-alliance.cn/col.jsp?id=120).
+2. Add the downloaded aar to the Assets/Plugins/Android folder.
+3. For Huawei devices, add the `hms-ads-identifier` lib to the Assets/Plugins/Android folder.
+4. Add [appsflyer-oaid](https://github.com/AppsFlyerSDK/appsflyer-oaid) to your project. This can be done by adding the aar to the Assets/Plugins/Android folder or by adding the following to Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml:
+
+```xml
+    <androidPackage spec="com.appsflyer:oaid:5.2.0">
+    </androidPackage>
+```
+
+For appsflyer-unity-plugin >= 5.4, OAID is collected automatically by default. 
+To opt-out call `AppsFlyerAndroid.setCollectOaid(false);`.
+
 
 
 
