@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.0.0-beta";
+        public static readonly string kAppsFlyerPluginVersion = "6.0.1-beta";
   
 
         /// <summary>
