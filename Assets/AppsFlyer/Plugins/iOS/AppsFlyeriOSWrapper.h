@@ -7,13 +7,13 @@
 
 #import "AFUnityUtils.mm"
 #import "UnityAppController.h"
-#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>)
-#import <AppsFlyerLib/AppsFlyerTracker.h>
+#if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
+#import <AppsFlyerLib/AppsFlyerLib.h>
 #else
-#import "AppsFlyerTracker.h"
+#import "AppsFlyerLib.h"
 #endif
 
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerTrackerDelegate>
+@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate>
 
 @end
 
@@ -33,3 +33,5 @@ static const char* GENERATE_LINK_CALLBACK = "onInviteLinkGenerated";
 static const char* OPEN_STORE_LINK_CALLBACK = "onOpenStoreLinkGenerated";
 
 static NSString* validateObjectName = @"";
+static NSString* openStoreObjectName = @"";
+static NSString* generateInviteObjectName = @"";

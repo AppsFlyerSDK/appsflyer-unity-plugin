@@ -462,6 +462,26 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="channel">channel string.</param>
+        public static void waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval)
+        {
+#if !UNITY_EDITOR
+            _waitForAdvertisingIdentifierWithTimeoutInterval(timeoutInterval);
+#endif
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="isDisabled">bool should diable</param>
+        public static void disableSKAdNetwork(bool isDisabled)
+        {
+#if !UNITY_EDITOR
+            _disableSKAdNetwork(isDisabled);
+#endif
+        }
+
 
         /*
          * AppsFlyer ios method mapping
@@ -577,6 +597,12 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _recordInvite(string channel, string parameters);
+
+        [DllImport("__Internal")]
+        private static extern void _waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval);
+
+        [DllImport("__Internal")]
+        private static extern void _disableSKAdNetwork(bool isDisabled);
 
     }
 
