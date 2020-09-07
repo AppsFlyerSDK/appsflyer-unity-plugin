@@ -463,12 +463,13 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Waits for request user authorization to access app-related data
         /// </summary>
-        /// <param name="channel">channel string.</param>
-        public static void waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval)
+        /// <param name="timeoutInterval">time to wait until session starts</param>
+        public static void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)
         {
 #if !UNITY_EDITOR
-            _waitForAdvertisingIdentifierWithTimeoutInterval(timeoutInterval);
+            _waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
 #endif
         }
 
@@ -599,7 +600,7 @@ namespace AppsFlyerSDK
         private static extern void _recordInvite(string channel, string parameters);
 
         [DllImport("__Internal")]
-        private static extern void _waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval);
+        private static extern void _waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval);
 
         [DllImport("__Internal")]
         private static extern void _disableSKAdNetwork(bool isDisabled);

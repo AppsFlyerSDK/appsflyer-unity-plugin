@@ -206,8 +206,8 @@ extern "C" {
         [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
     }
 
-    const void _waitForAdvertisingIdentifierWithTimeoutInterval (int timeoutInterval) {
-        [[AppsFlyerLib shared] waitForAdvertisingIdentifierWithTimeoutInterval:timeoutInterval];
+    const void _waitForATTUserAuthorizationWithTimeoutInterval (int timeoutInterval) {
+        [[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];
     }
 
     const void _disableSKAdNetwork (bool isDisabled) {
