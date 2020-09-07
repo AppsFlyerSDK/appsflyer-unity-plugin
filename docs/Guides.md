@@ -384,11 +384,11 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
     1. Add an entry to the list: Press +  next to `Information Property List`.
     2. Scroll down and select `Privacy - Tracking Usage Description`.
     3. Add as the value the wording you want to present to the user when asking for permission to collect the IDFA.
-3. Call the `waitForAdvertisingIdentifierWithTimeoutInterval` api before `startSDK()`
+3. Call the `waitForATTUserAuthorizationWithTimeoutInterval` api before `startSDK()`
     
     ```c#
     #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.waitForAdvertisingIdentifierWithTimeoutInterval(60);
+    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
     #endif
     ```
         

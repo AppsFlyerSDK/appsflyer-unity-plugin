@@ -55,7 +55,7 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [registerUninstall](#registerUninstall)
     - [handleOpenUrl](#handleOpenUrl)
-    - [waitForAdvertisingIdentifierWithTimeoutInterval](#waitForAdvertisingIdentifier)
+    - [waitForATTUserAuthorizationWithTimeoutInterval](#waitForATTUserAuthorizationWithTimeoutInterval)
     - [disableSKAdNetwork](#disableSKAdNetwork)
 - [IAppsFlyerConversionData](#IAppsFlyerConversionData)
     - [onConversionDataSuccess](#onConversionDataSuccess)
@@ -1052,7 +1052,7 @@ Register uninstall - you should register for remote notification and provide App
 
 ---
 
-##### <a id="waitForAdvertisingIdentifier"> **` void waitForAdvertisingIdentifierWithTimeoutInterval(int timeoutInterval)`**
+##### <a id="waitForATTUserAuthorizationWithTimeoutInterval"> **` void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)`**
 
 
 | parameter     | type       | description  |
@@ -1063,7 +1063,7 @@ Register uninstall - you should register for remote notification and provide App
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.waitForAdvertisingIdentifierWithTimeoutInterval(60);
+    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
 #endif
 ```
 

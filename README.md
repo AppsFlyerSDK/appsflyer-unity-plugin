@@ -21,7 +21,7 @@
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK **v5.4.3** 
-- iOS AppsFlyer SDK **v6.0.2**
+- iOS AppsFlyer SDK **v6.0.3**
 
 
 
@@ -81,7 +81,6 @@ public class AppsFlyerObjectScript : MonoBehaviour
 - [Deep Linking](/docs/Guides.md#deeplinking)
 - [Uninstall](/docs/Guides.md#track-app-uninstalls)
 - [User Invite](/docs/Guides.md#-user-invite-attribution)
-- [Collect IDFA with ATTrackingManager](/docs/Guides.md#collect-idfa)
 
 
 ## <a id="api"> 📑 API

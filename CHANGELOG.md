@@ -1,13 +1,13 @@
 # Versions
 
-## 6.0.2
+## 6.0.3
 
 * RD-44538 - empty game object fix
 * Added disableSKAdNetwork api
-* Added waitForAdvertisingIdentifierWithTimeoutInterval api
+* Added waitForATTUserAuthorizationWithTimeoutInterval api
 * Update android [installreferrer](https://mvnrepository.com/artifact/com.android.installreferrer/installreferrer) to 2.1 
 * Android SDK Version - 5.4.3
-* iOS SDK Version - 6.0.2
+* iOS SDK Version - 6.0.3
 
 
 ## 5.4.2
