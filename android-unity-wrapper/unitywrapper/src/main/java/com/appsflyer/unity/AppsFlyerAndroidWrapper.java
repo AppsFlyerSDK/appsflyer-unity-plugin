@@ -35,7 +35,7 @@ public class AppsFlyerAndroidWrapper {
         }
 
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_5.4.2");
+        AppsFlyerLib.getInstance().setExtension("unity_android_5.4.3");
     }
 
     public static void startTracking() {

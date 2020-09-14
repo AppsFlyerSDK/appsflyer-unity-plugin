@@ -17,19 +17,11 @@
 
 <hr/>
 
-## <a id="migration"> ⏩ Migration 
-  
-Migrating from the old plugin? (version V4) <br/>
-View the migration docs [here](/docs/MigrationGuide.md).
-
-⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
-
-<hr/>
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v5.4.1** 
-- iOS AppsFlyer SDK **v5.4.1**
+- Android AppsFlyer SDK **v5.4.3** 
+- iOS AppsFlyer SDK **v6.0.3**
 
 
 
@@ -83,7 +75,6 @@ public class AppsFlyerObjectScript : MonoBehaviour
 
  ## <a id="guides"> 📖 Guides
 
-Installation and setup guides can be viewed [here](/docs/Guides.md).
 
 - [Installation](/docs/Installation.md)
 - [Init SDK](/docs/Guides.md#init-sdk)
@@ -95,4 +86,13 @@ Installation and setup guides can be viewed [here](/docs/Guides.md).
 ## <a id="api"> 📑 API
   
 See the full [API](/docs/API.md) available for this plugin.
+
+## <a id="migration"> ⏩ Migration 
+  
+Migrating from the old plugin? (version V4) <br/>
+View the migration docs [here](/docs/MigrationGuide.md).
+
+⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
+
+
 

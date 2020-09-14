@@ -462,6 +462,27 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>
+        /// Waits for request user authorization to access app-related data
+        /// </summary>
+        /// <param name="timeoutInterval">time to wait until session starts</param>
+        public static void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)
+        {
+#if !UNITY_EDITOR
+            _waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
+#endif
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="isDisabled">bool should diable</param>
+        public static void disableSKAdNetwork(bool isDisabled)
+        {
+#if !UNITY_EDITOR
+            _disableSKAdNetwork(isDisabled);
+#endif
+        }
+
 
         /*
          * AppsFlyer ios method mapping
@@ -577,6 +598,12 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _recordInvite(string channel, string parameters);
+
+        [DllImport("__Internal")]
+        private static extern void _waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval);
+
+        [DllImport("__Internal")]
+        private static extern void _disableSKAdNetwork(bool isDisabled);
 
     }
 

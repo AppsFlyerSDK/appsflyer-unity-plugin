@@ -55,6 +55,8 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [registerUninstall](#registerUninstall)
     - [handleOpenUrl](#handleOpenUrl)
+    - [waitForATTUserAuthorizationWithTimeoutInterval](#waitForATTUserAuthorizationWithTimeoutInterval)
+    - [disableSKAdNetwork](#disableSKAdNetwork)
 - [IAppsFlyerConversionData](#IAppsFlyerConversionData)
     - [onConversionDataSuccess](#onConversionDataSuccess)
     - [onConversionDataFail](#onConversionDataFail)
@@ -1045,6 +1047,40 @@ Register uninstall - you should register for remote notification and provide App
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+#endif
+```
+
+---
+
+##### <a id="waitForATTUserAuthorizationWithTimeoutInterval"> **` void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `timeoutInterval`         | `int`   |      Time to wait for idfa        |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
+#endif
+```
+
+---
+
+##### <a id="disableSKAdNetwork"> **` bools disableSKAdNetwork(int isDisabled)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `isDisabled`         | `bool`   |      True to disable SKAdNetwork     |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.disableSKAdNetwork(true);
 #endif
 ```
 
