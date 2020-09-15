@@ -379,6 +379,9 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
 
 ##  <a id="collect-idfa"> Collect IDFA with ATTrackingManager
     
+⚠️ **By default, IDFA is collected. Consent dialog is optional.**
+   
+   
 1. Add the `AppTrackingTransparency` framework to your xcode project. 
 2. In the `Info.plist`:
     1. Add an entry to the list: Press +  next to `Information Property List`.
