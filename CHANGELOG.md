@@ -2,7 +2,7 @@
 
 ## v6.0.5
 
-* iOS SDK Version - 6.0.5.194 (appsflyer-apple-sdk-qa)
+* iOS SDK Version - 6.0.5
 
 
 ## 6.0.3
