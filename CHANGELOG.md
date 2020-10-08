@@ -1,5 +1,10 @@
 # Versions
 
+## v6.0.5
+
+* iOS SDK Version - 6.0.5.194 (appsflyer-apple-sdk-qa)
+
+
 ## 6.0.3
 
 * RD-44538 - empty game object fix
