@@ -11,7 +11,7 @@
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework" version="6.0.3" minTargetSdk="8.0">
+    <iosPod name="appsflyer-apple-sdk-qa" version="6.0.5.194" minTargetSdk="8.0">
     </iosPod>
   </iosPods>
 
