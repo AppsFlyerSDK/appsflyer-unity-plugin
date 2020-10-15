@@ -74,7 +74,7 @@ static IMP __original_openUrl_Imp __unused;
  
  BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* application, NSUserActivity* userActivity, void (^restorationHandler)(NSArray*)) {
  NSLog(@"swizzled continueUserActivity");
- [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+      [[AppsFlyerLib shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
  
  if(__original_continueUserActivity_Imp){
  return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*))__original_continueUserActivity_Imp)(self, _cmd, application, userActivity);
@@ -90,7 +90,7 @@ void __swizzled_applicationDidBecomeActive(id self, SEL _cmd, UIApplication* lau
     NSLog(@"swizzled applicationDidBecomeActive");
     
     if(didEnteredBackGround){
-        [[AppsFlyerTracker sharedTracker] trackAppLaunch];
+        [[[AppsFlyerLib shared] start];
     }
     
     if(__original_applicationDidBecomeActive_Imp){
@@ -113,7 +113,7 @@ void __swizzled_applicationDidEnterBackground(id self, SEL _cmd, UIApplication* 
 BOOL __swizzled_didReceiveRemoteNotification(id self, SEL _cmd, UIApplication* application, NSDictionary* userInfo,void (^UIBackgroundFetchResult)(void) ) {
     NSLog(@"swizzled didReceiveRemoteNotification");
 
-   [[AppsFlyerTracker sharedTracker] handlePushNotification:userInfo];
+   [[AppsFlyerLib shared] handlePushNotification:userInfo];
 
     if(__original_didReceiveRemoteNotification_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSDictionary*, (UIBackgroundFetchResult)))__original_didReceiveRemoteNotification_Imp)(self, _cmd, application, userInfo, nil);
@@ -125,7 +125,7 @@ BOOL __swizzled_didReceiveRemoteNotification(id self, SEL _cmd, UIApplication* a
 /** <remove comment if you are swizzling openURL>
 BOOL __swizzled_openURL(id self, SEL _cmd, UIApplication* application, NSURL* url, NSDictionary * options) {
     NSLog(@"swizzled openURL");
-    [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+     [[AppsFlyerLib shared] handleOpenUrl:url options:options];
     if(__original_openUrl_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSURL*, NSDictionary*))__original_openUrl_Imp)(self, _cmd, application, url, options);
     }
