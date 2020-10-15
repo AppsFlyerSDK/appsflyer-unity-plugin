@@ -1,5 +1,10 @@
 # Versions
 
+## v6.0.6
+
+* RD-48888 - continueUserActivity remove super call
+* RD-48915 - AppsFlyer+AppController update to lastest version
+
 ## v6.0.5
 
 * iOS SDK Version - 6.0.5
