@@ -32,7 +32,13 @@
 {
     self = [super init];
     if (self) {
-        UnityRegisterAppDelegateListener(self);
+        
+        id swizzleFlag = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"AppsFlyerShouldSwizzle"];
+        BOOL shouldSwizzle = swizzleFlag ? [swizzleFlag boolValue] : NO;
+        
+        if(!shouldSwizzle){
+            UnityRegisterAppDelegateListener(self);
+        }
     }
     return self;
 }
