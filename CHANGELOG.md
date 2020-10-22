@@ -1,5 +1,12 @@
 # Versions
 
+
+## v6.0.7
+
+* RD-49435 - ios swizzle options fix
+* iOS SDK Version - 6.0.7
+
+
 ## v6.0.6
 
 * RD-48888 - continueUserActivity remove super call
