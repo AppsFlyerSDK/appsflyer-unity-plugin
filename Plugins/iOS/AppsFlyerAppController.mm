@@ -71,7 +71,7 @@
 -(BOOL) application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary *)options {
     NSLog(@"got openUrl: %@",url);
     [[AppsFlyerLib shared] handleOpenUrl:url options:options];
-    return YES;
+    return NO;
 }
 
 - (void)onOpenURL:(NSNotification*)notification {
