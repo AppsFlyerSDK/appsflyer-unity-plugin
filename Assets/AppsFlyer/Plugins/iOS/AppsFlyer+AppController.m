@@ -124,7 +124,7 @@ BOOL __swizzled_openURL(id self, SEL _cmd, UIApplication* application, NSURL* ur
     if(__original_openUrl_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSURL*, NSDictionary*))__original_openUrl_Imp)(self, _cmd, application, url, options);
     }
-    return YES;
+    return NO;
 }
 
 
