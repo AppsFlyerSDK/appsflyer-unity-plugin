@@ -15,9 +15,23 @@ static void unityCallBack(NSString* objectName, const char* method, const char* 
 }
 
 extern "C" {
-    
-    const void _startSDK() {
-        [[AppsFlyerLib shared] start];
+ 
+    const void _startSDK(bool shouldCallback, const char* objectName) {
+        startRequestObjectName = stringFromChar(objectName);
+        
+        [[AppsFlyerLib shared] startWithCompletionHandler:^(NSDictionary<NSString *,id> *dictionary, NSError *error) {
+            if(shouldCallback){
+                if (error) {
+                    NSDictionary *callbackDictionary = @{@"statusCode":[NSNumber numberWithLong:[error code]]};
+                    unityCallBack(startRequestObjectName, START_REQUEST_CALLBACK, stringFromdictionary(callbackDictionary));
+                    return;
+                }
+                if (dictionary) {
+                    unityCallBack(startRequestObjectName, START_REQUEST_CALLBACK, stringFromdictionary(dictionary));
+                    return;
+                }
+            }
+        }];
     }
     
     const void _setCustomerUserID (const char* customerUserID) {
@@ -84,8 +98,21 @@ extern "C" {
         }
     }
 
-    const void _afSendEvent (const char* eventName, const char* eventValues) {
-        [[AppsFlyerLib shared] logEvent:stringFromChar(eventName) withValues:dictionaryFromJson(eventValues)];
+    const void _afSendEvent (const char* eventName, const char* eventValues, bool shouldCallback, const char* objectName) {
+        inAppRequestObjectName = stringFromChar(objectName);
+        [[AppsFlyerLib shared] logEventWithEventName:stringFromChar(eventName) eventValues:dictionaryFromJson(eventValues) completionHandler:^(NSDictionary<NSString *,id> *dictionary, NSError *error) {
+                if(shouldCallback){
+                    if (error) {
+                        NSDictionary *callbackDictionary = @{@"statusCode":[NSNumber numberWithLong:[error code]]};
+                        unityCallBack(inAppRequestObjectName, IN_APP_RESPONSE_CALLBACK, stringFromdictionary(callbackDictionary));
+                        return;
+                    }
+                    if (dictionary) {
+                        unityCallBack(inAppRequestObjectName, IN_APP_RESPONSE_CALLBACK, stringFromdictionary(dictionary));
+                        return;
+                    }
+                }
+        }];
     }
 
     const void _recordLocation (double longitude, double latitude) {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,8 +7,11 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.0.7";
-  
+        public static readonly string kAppsFlyerPluginVersion = "6.1.0";
+        public static string CallBackObjectName = null;
+        private static EventHandler onRequestResponse;
+        private static EventHandler onInAppResponse;
+
 
         /// <summary>
         /// Initialize the AppsFlyer SDK with your devKey and appID.
@@ -41,6 +45,12 @@ namespace AppsFlyerSDK
         /// </example>
         public static void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
+            
+            if(gameObject != null)
+            {
+                CallBackObjectName = gameObject.name;
+            }
+
 #if UNITY_IOS && !UNITY_EDITOR
             AppsFlyeriOS.setAppsFlyerDevKey(devKey);
             AppsFlyeriOS.setAppleAppID(appID);
@@ -63,9 +73,9 @@ namespace AppsFlyerSDK
         public static void startSDK()
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.startSDK();
+            AppsFlyeriOS.startSDK(onRequestResponse != null, CallBackObjectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.startSDK();
+            AppsFlyerAndroid.startSDK(onRequestResponse != null, CallBackObjectName);
 #else
 
 #endif
@@ -80,9 +90,9 @@ namespace AppsFlyerSDK
         public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.sendEvent(eventName, eventValues);
+            AppsFlyeriOS.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.sendEvent(eventName, eventValues);
+            AppsFlyerAndroid.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
 #else
 
 #endif
@@ -474,6 +484,78 @@ namespace AppsFlyerSDK
 #else
 
 #endif
+        }
+        
+        /// <summary>
+        /// Start callback event.
+        /// </summary>
+        public static event EventHandler OnRequestResponse
+        {
+            add
+            {
+                onRequestResponse += value;
+            }  
+            remove  
+            {  
+                onRequestResponse -= value;
+            }     
+        }
+        
+        /// <summary>
+        /// In-App callback event.
+        /// </summary>
+        public static event EventHandler OnInAppResponse
+        {
+            add
+            {
+                onInAppResponse += value;
+            }  
+            remove  
+            {  
+                onInAppResponse -= value;
+            }     
+        }
+
+        /// <summary>
+        /// Used to accept start callback from UnitySendMessage on native side.
+        /// </summary>
+        public void inAppResponseReceived(string response)
+        {
+            if (onInAppResponse != null) 
+            {
+                onInAppResponse.Invoke(null, parseRequestCallback(response));
+            }
+        }
+        
+        /// <summary>
+        /// Used to accept in-app callback from UnitySendMessage on native side.
+        /// </summary>
+        public void requestResponseReceived(string response)
+        {
+            if (onRequestResponse != null)
+            {
+                onRequestResponse.Invoke(null, parseRequestCallback(response));
+            }
+        }
+
+        private static AppsFlyerRequestEventArgs parseRequestCallback(string response)
+        {
+            int responseCode = 0;
+            string errorDescription = "";
+            
+            try
+            {
+                Dictionary<string, object> dictionary = CallbackStringToDictionary(response);
+                var errorResponse = dictionary.ContainsKey("errorDescription") ? dictionary["errorDescription"] : "";
+                errorDescription = (string)errorResponse;
+                responseCode = (int)(long) dictionary["statusCode"];
+            }
+            catch (Exception e)
+            {
+                AFLog("parseRequestCallback", String.Format("{0} Exception caught.", e));
+            }
+
+            return new AppsFlyerRequestEventArgs(responseCode, errorDescription);
         }
 
         /// <summary>
