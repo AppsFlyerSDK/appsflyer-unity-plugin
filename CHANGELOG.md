@@ -1,5 +1,10 @@
 # Versions
 
+## v6.1.0
+
+* iOS SDK Version - 6.1.1
+* Android SDK Version - 6.1.0
+* Added onRequestResponse and onInAppResponse events.
 
 ## v6.0.7
 
