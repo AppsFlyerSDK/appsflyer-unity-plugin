@@ -23,10 +23,16 @@ android {
 
 }
 
+repositories {
+    mavenCentral()
+}
+
+
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    compileOnly 'com.appsflyer:af-android-sdk:5.4.3'
+    compileOnly 'com.appsflyer:af-android-sdk:6.1.0'
+
 }
 
 apply from: file('publish.gradle')
