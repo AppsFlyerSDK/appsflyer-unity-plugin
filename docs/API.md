@@ -69,6 +69,9 @@ The list of available methods for this plugin is described below.
 - [IAppsFlyerValidateReceipt](#IAppsFlyerValidateReceipt)
     - [didFinishValidateReceipt](#didFinishValidateReceipt)
     - [didFinishValidateReceiptWithError](#didFinishValidateReceiptWithError)
+- [Events](#events)
+    - [OnRequestResponse](#onRequestResponse)
+    - [OnInAppResponse](#onInAppResponse)
 
 ---
 
@@ -1280,3 +1283,58 @@ For iOS : the callback will return a JSON string from apples verifyReceipt API. 
 ```
 
 ---
+
+## <a id="events"> Events
+    
+##### <a id="onRequestResponse"> **`public static event EventHandler OnRequestResponse`**
+ 
+ The callback for Sessions.<br>
+
+| statusCode      | errorDescription | 
+| ----------- | ----------- | 
+| 200      | null       | 
+| 10   | "Event timeout. Check 'minTimeBetweenSessions' param"        | 
+| 11   | "Skipping event because 'isStopTracking' enabled"        | 
+| 40   | Network error: Error description comes from Android        | 
+| 41   | "No dev key"        | 
+| 50   | "Status code failure" + actual response code from the server        | 
+
+*Example:*
+
+```c#
+    AppsFlyer.OnRequestResponse += (sender, args) =>
+    {
+        var af_args = args as AppsFlyerRequestEventArgs;
+        AppsFlyer.AFLog("AppsFlyerOnRequestResponse", "status code" + af_args.statusCode);
+    };
+```
+
+---
+
+##### <a id="onInAppResponse"> **`public static event EventHandler OnInAppResponse`**
+ 
+ The callback for In-App Events.<br>
+
+| statusCode      | errorDescription | 
+| ----------- | ----------- | 
+| 200      | null       | 
+| 10   | "Event timeout. Check 'minTimeBetweenSessions' param"        | 
+| 11   | "Skipping event because 'isStopTracking' enabled"        | 
+| 40   | Network error: Error description comes from Android        | 
+| 41   | "No dev key"        | 
+| 50   | "Status code failure" + actual response code from the server        | 
+
+*Example:*
+
+```c#
+
+    AppsFlyer.OnInAppResponse += (sender, args) =>
+    {
+        var af_args = args as AppsFlyerRequestEventArgs;
+        AppsFlyer.AFLog("OnRequestResponse", "status code" + af_args.statusCode);
+    }; 
+
+```
+
+---
+
