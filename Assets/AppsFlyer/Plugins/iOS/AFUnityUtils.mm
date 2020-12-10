@@ -98,3 +98,38 @@ static EmailCryptType emailCryptTypeFromInt(int emailCryptTypeInt){
     return emailCryptType;
 }
 
+static NSString* stringFromDeepLinkResultStatus(AFSDKDeepLinkResultStatus deepLinkResult){
+    NSString* result;
+    switch (deepLinkResult){
+        case AFSDKDeepLinkResultStatusFound:
+            result = @"FOUND";
+            break;
+        case AFSDKDeepLinkResultStatusFailure:
+            result = @"ERROR";
+            break;
+        case AFSDKDeepLinkResultStatusNotFound:
+            result = @"NOT_FOUND";
+            break;
+        default:
+            result = @"ERROR";
+            break;
+    }
+    
+    return result;
+}
+
+static NSString* stringFromDeepLinkResultError(AppsFlyerDeepLinkResult *result){
+    NSString* res;
+    
+    if (result && result.error){
+        if ([[result.error userInfo][NSUnderlyingErrorKey] code] == -1001) {
+            res = @"TIMEOUT";
+       } else if ([[result.error userInfo][NSUnderlyingErrorKey] code] == -1009) {
+           res = @"NETWORK";
+       }
+    }
+    
+    res = @"UNKNOWN";
+    
+    return res;
+}

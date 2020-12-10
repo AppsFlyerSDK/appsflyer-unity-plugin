@@ -493,6 +493,14 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>
+        /// subscribe to unified deep link callbacks
+        /// </summary>
+        public static void subscribeForDeepLink(string objectName){
+#if !UNITY_EDITOR
+            _subscribeForDeepLink(objectName);
+#endif
+        }
 
         /*
          * AppsFlyer ios method mapping
@@ -614,6 +622,9 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _disableSKAdNetwork(bool isDisabled);
+
+        [DllImport("__Internal")]
+        private static extern void _subscribeForDeepLink(string objectName);
 
     }
 
