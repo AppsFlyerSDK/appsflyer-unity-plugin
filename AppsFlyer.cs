@@ -7,10 +7,11 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.1.0";
+        public static readonly string kAppsFlyerPluginVersion = "6.1.1";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
+        private static EventHandler onDeepLinkReceived;
 
 
         /// <summary>
@@ -485,6 +486,22 @@ namespace AppsFlyerSDK
 
 #endif
         }
+
+        /// <summary>
+        /// Subscribe for unified deeplink API.
+        /// This is called automatically from OnDeepLinkReceived.
+        /// CallBackObjectName is set in the init method.
+        /// </summary>
+        public static void subscribeForDeepLink()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.subscribeForDeepLink(CallBackObjectName);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.subscribeForDeepLink(CallBackObjectName);
+#else
+
+#endif
+        }
         
         /// <summary>
         /// Start callback event.
@@ -517,6 +534,22 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Unified DeepLink Event
+        /// </summary>
+        public static event EventHandler OnDeepLinkReceived
+        {
+            add
+            {
+                onDeepLinkReceived += value;
+                subscribeForDeepLink();
+            }  
+            remove  
+            {  
+                onDeepLinkReceived -= value;
+            }     
+        }
+
+        /// <summary>
         /// Used to accept start callback from UnitySendMessage on native side.
         /// </summary>
         public void inAppResponseReceived(string response)
@@ -535,6 +568,20 @@ namespace AppsFlyerSDK
             if (onRequestResponse != null)
             {
                 onRequestResponse.Invoke(null, parseRequestCallback(response));
+            }
+        }
+
+        /// <summary>
+        /// Used to accept deeplink callback from UnitySendMessage on native side.
+        /// </summary>
+        public void onDeepLinking(string response)
+        {
+
+            DeepLinkEventsArgs args = new DeepLinkEventsArgs(response);
+
+            if (onDeepLinkReceived != null)
+            {
+                onDeepLinkReceived.Invoke(null, args);
             }
         }
 

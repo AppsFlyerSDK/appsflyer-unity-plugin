@@ -621,6 +621,15 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// subscribe to unified deep link callbacks
+        /// </summary>
+        public static void subscribeForDeepLink(string objectName){
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("subscribeForDeepLink", objectName);
+#endif
+        }
+
+        /// <summary>
         /// Internal Helper Method.
         /// </summary>
         private static AndroidJavaObject getEmailType(EmailCryptType cryptType)
