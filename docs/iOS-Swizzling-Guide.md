@@ -46,4 +46,5 @@ public class MyBuildPostprocessor {
 ```
 
 4. Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
+5. Comment out `IMPL_APP_CONTROLLER_SUBCLASS(AppsFlyerAppController)` in AppsFlyerAppController.mm.
 
