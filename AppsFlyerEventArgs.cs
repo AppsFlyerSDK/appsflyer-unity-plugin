@@ -87,17 +87,17 @@ namespace AppsFlyerSDK
 
         public string getAfSub1()
         {
-            return getDeepLinkParameter("af_sub3");
+            return getDeepLinkParameter("af_sub1");
         }
 
         public string getAfSub2()
         {
-            return getDeepLinkParameter("af_sub1");
+            return getDeepLinkParameter("af_sub2");
         }
 
         public string getAfSub3()
         { 
-            return getDeepLinkParameter("af_sub2");
+            return getDeepLinkParameter("af_sub3");
         }
 
         public string getAfSub4()
