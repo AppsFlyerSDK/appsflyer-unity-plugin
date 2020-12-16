@@ -2,7 +2,7 @@
 
 ## v6.1.1
 
-* DDL 
+* Added Unified Deep Linking API
 
 ## v6.1.0
 
