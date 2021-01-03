@@ -1,8 +1,11 @@
 # Versions
 
-## v6.1.1
+## v6.1.3
 
-* Added Unified Deep Linking API
+* RD-50954 - Added Unified Deep Linking API
+* RD-54264 - Added addPushNotificationDeepLinkPath api for iOS & Android
+* RD-54266 - iOS SDK Version - 6.1.3
+* RD-54266 - Android SDK Version - 6.1.3
 
 ## v6.1.0
 

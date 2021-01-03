@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.1.1";
+        public static readonly string kAppsFlyerPluginVersion = "6.1.3";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -482,6 +482,24 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.generateUserInviteLink(parameters, gameObject);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.generateUserInviteLink(parameters, gameObject);
+#else
+
+#endif
+        }
+
+
+        /// <summary>
+        /// Use this method if you’re integrating your app with push providers 
+        /// that don’t use the default push notification JSON schema the SDK expects.
+        /// See docs for more info.
+        /// </summary>
+        /// <param name="paths">array of nested json path</param>
+        public static void addPushNotificationDeepLinkPath(params string[] paths)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.addPushNotificationDeepLinkPath(paths);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.addPushNotificationDeepLinkPath(paths);
 #else
 
 #endif

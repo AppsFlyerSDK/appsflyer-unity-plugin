@@ -494,6 +494,19 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Use this method if you’re integrating your app with push providers 
+        /// that don’t use the default push notification JSON schema the SDK expects.
+        /// See docs for more info.
+        /// </summary>
+        /// <param name="paths">array of nested json path</param>
+        public static void addPushNotificationDeepLinkPath(params string[] paths)
+        {
+#if !UNITY_EDITOR
+            _addPushNotificationDeepLinkPath(paths.Length, paths);
+#endif
+        }
+
+        /// <summary>
         /// subscribe to unified deep link callbacks
         /// </summary>
         public static void subscribeForDeepLink(string objectName){
@@ -622,6 +635,9 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _disableSKAdNetwork(bool isDisabled);
+
+        [DllImport("__Internal")]
+        private static extern void _addPushNotificationDeepLinkPath(int length, params string[] paths);
 
         [DllImport("__Internal")]
         private static extern void _subscribeForDeepLink(string objectName);

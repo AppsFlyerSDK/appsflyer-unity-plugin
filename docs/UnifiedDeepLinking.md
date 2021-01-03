@@ -1,6 +1,6 @@
 ## Unified Deep Linking
 
-Starting from v6.1.1, the new Unified Deep Linking API is available to handle deeplinking logic.
+Starting from v6.1.3, the new Unified Deep Linking API is available to handle deeplinking logic.
 
 
 The flow works as follows:
@@ -14,7 +14,7 @@ The flow works as follows:
 
 Considerations:
 
-* Requires AppsFlyer Android SDK V6.1.1 or later.
+* Requires AppsFlyer Android SDK V6.1.3 or later.
 * Does not support SRN campaigns.
 * Does not provide af_dp in the API response.
 * onAppOpenAttribution will not be called. All code should migrate to `OnDeepLinkReceived`.

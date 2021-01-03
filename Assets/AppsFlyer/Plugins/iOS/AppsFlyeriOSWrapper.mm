@@ -241,6 +241,12 @@ extern "C" {
         [AppsFlyerLib shared].disableSKAdNetwork = isDisabled;
     }
 
+    const void _addPushNotificationDeepLinkPath (int length, const char **paths) {
+        if(length > 0 && paths) {
+            [[AppsFlyerLib shared] addPushNotificationDeepLinkPath:NSArrayFromCArray(length, paths)];
+        }
+    }
+
     const void _subscribeForDeepLink (const char* objectName) {
 
         onDeeplinkingObjectName = stringFromChar(objectName);
