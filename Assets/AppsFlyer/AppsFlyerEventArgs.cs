@@ -43,7 +43,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// DeepLink dictionary to get additional parameters
         /// </summary>
-        public readonly Dictionary<string, object> deepLink;
+        public Dictionary<string, object> deepLink;
         
         /// <summary>
         /// DeepLink status: FOUND, NOT_FOUND, ERROR
@@ -120,11 +120,16 @@ namespace AppsFlyerSDK
                 }
                 catch (Exception e)
                 {
-                    
+                    AppsFlyer.AFLog("DeepLinkEventsArgs.isDeferred", String.Format("{0} Exception caught.", e));
                 }
             }
 
             return false;
+        }
+
+        public Dictionary<string, object> getDeepLinkDictionary()
+        {
+            return deepLink;
         }
         
         public DeepLinkEventsArgs(string str)
