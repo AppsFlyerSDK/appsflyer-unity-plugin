@@ -621,6 +621,28 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Use this method if you’re integrating your app with push providers 
+        /// that don’t use the default push notification JSON schema the SDK expects.
+        /// See docs for more info.
+        /// </summary>
+        /// <param name="paths">array of nested json path</param>
+        public static void addPushNotificationDeepLinkPath(params string[] paths)
+        {
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("addPushNotificationDeepLinkPath", (object)paths);
+#endif
+        }
+
+        /// <summary>
+        /// subscribe to unified deep link callbacks
+        /// </summary>
+        public static void subscribeForDeepLink(string objectName){
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("subscribeForDeepLink", objectName);
+#endif
+        }
+
+        /// <summary>
         /// Internal Helper Method.
         /// </summary>
         private static AndroidJavaObject getEmailType(EmailCryptType cryptType)

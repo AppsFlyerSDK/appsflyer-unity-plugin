@@ -72,6 +72,7 @@ The list of available methods for this plugin is described below.
 - [Events](#events)
     - [OnRequestResponse](#onRequestResponse)
     - [OnInAppResponse](#onInAppResponse)
+    - [OnDeepLinkReceived](#onDeepLinkReceived)
 
 ---
 
@@ -1332,6 +1333,30 @@ For iOS : the callback will return a JSON string from apples verifyReceipt API. 
     {
         var af_args = args as AppsFlyerRequestEventArgs;
         AppsFlyer.AFLog("OnRequestResponse", "status code" + af_args.statusCode);
+    }; 
+
+```
+
+---
+
+##### <a id="onDeepLinkReceived"> **`public static event EventHandler OnDeepLinkReceived`**
+ 
+ The callback for Unified Deeplink API.<br>
+
+
+*Example:*
+
+```c#
+
+    // First call init with devKey, appId and gameObject
+    AppsFlyer.initSDK(devKey, appID, this);
+
+
+    AppsFlyer.OnDeepLinkReceived += (sender, args) =>
+    {
+        var deepLinkEventArgs = args as DeepLinkEventsArgs;
+
+        // DEEPLINK LOGIC HERE
     }; 
 
 ```

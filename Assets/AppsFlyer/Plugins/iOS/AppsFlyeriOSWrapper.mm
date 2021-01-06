@@ -240,6 +240,22 @@ extern "C" {
     const void _disableSKAdNetwork (bool isDisabled) {
         [AppsFlyerLib shared].disableSKAdNetwork = isDisabled;
     }
+
+    const void _addPushNotificationDeepLinkPath (int length, const char **paths) {
+        if(length > 0 && paths) {
+            [[AppsFlyerLib shared] addPushNotificationDeepLinkPath:NSArrayFromCArray(length, paths)];
+        }
+    }
+
+    const void _subscribeForDeepLink (const char* objectName) {
+
+        onDeeplinkingObjectName = stringFromChar(objectName);
+        
+        if (_AppsFlyerdelegate == nil) {
+            _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+        }
+        [[AppsFlyerLib shared] setDeepLinkDelegate:_AppsFlyerdelegate];
+    }
 }
 
 @implementation AppsFlyeriOSWarpper
@@ -258,6 +274,20 @@ extern "C" {
 
 - (void)onAppOpenAttributionFailure:(NSError *)error {
     unityCallBack(ConversionDataCallbackObject, OAOA_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
+}
+
+- (void)didResolveDeepLink:(AppsFlyerDeepLinkResult *)result{
+    
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    [dict setValue:stringFromDeepLinkResultError(result) forKey:@"error"];
+    [dict setValue:stringFromDeepLinkResultStatus(result.status) forKey:@"status"];
+    
+    if(result && result.deepLink){
+        [dict setValue:result.deepLink.description forKey:@"deepLink"];
+    }
+    
+    unityCallBack(onDeeplinkingObjectName, ON_DEEPLINKING, stringFromdictionary(dict));
 }
 
 @end
