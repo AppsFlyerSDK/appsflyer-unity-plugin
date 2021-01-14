@@ -1,5 +1,9 @@
 # Versions
 
+## v6.1.4
+
+* RD-55566 - Fix onAppOpenAttribution called from kill
+
 ## v6.1.3
 
 * RD-50954 - Added Unified Deep Linking API

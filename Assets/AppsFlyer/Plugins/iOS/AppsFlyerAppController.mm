@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "UnityAppController.h"
 #import "AppDelegateListener.h"
+#import "AppsFlyeriOSWrapper.h"
 #if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
 #import <AppsFlyerLib/AppsFlyerLib.h>
 #else
@@ -45,6 +46,15 @@
 
 - (void)didFinishLaunching:(NSNotification*)notification {
     NSLog(@"got didFinishLaunching = %@",notification.userInfo);
+
+
+    if (_AppsFlyerdelegate == nil) {
+        _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+    }
+
+    [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
+    
+
     if (notification.userInfo[@"url"]) {
         [self onOpenURL:notification];
     }
