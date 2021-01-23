@@ -7,6 +7,7 @@
 
 #import <objc/runtime.h>
 #import "UnityAppController.h"
+#import "AppsFlyeriOSWrapper.h"
 #if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
 #import <AppsFlyerLib/AppsFlyerLib.h>
 #else
@@ -47,6 +48,11 @@ static IMP __original_openUrl_Imp __unused;
             Method method4 = class_getInstanceMethod([self class], @selector(application:openURL:options:));
             __original_openUrl_Imp = method_setImplementation(method4, (IMP)__swizzled_openURL);
             
+            if (_AppsFlyerdelegate == nil) {
+                _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+            }
+
+            [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
            
             [self swizzleContinueUserActivity:[self class]];
         }
@@ -86,7 +92,7 @@ BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* applicati
 void __swizzled_applicationDidBecomeActive(id self, SEL _cmd, UIApplication* launchOptions) {
     NSLog(@"swizzled applicationDidBecomeActive");
     
-    if(didEnteredBackGround){
+    if(didEnteredBackGround && AppsFlyeriOSWarpper.didCallStart == YES){
         [[AppsFlyerLib shared] start];
     }
     
