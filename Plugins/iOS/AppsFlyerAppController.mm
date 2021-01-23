@@ -62,7 +62,7 @@
 
 -(void)didBecomeActive:(NSNotification*)notification {
     NSLog(@"got didBecomeActive(out) = %@", notification.userInfo);
-    if (didEnteredBackGround == YES) {
+    if (didEnteredBackGround == YES && AppsFlyeriOSWarpper.didCallStart == YES) {
         [[AppsFlyerLib shared] start];
         didEnteredBackGround = NO;
     }
