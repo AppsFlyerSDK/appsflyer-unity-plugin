@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         startRequestObjectName = stringFromChar(objectName);
-        
+        AppsFlyeriOSWarpper.didCallStart = YES;
         [[AppsFlyerLib shared] startWithCompletionHandler:^(NSDictionary<NSString *,id> *dictionary, NSError *error) {
             if(shouldCallback){
                 if (error) {
@@ -55,7 +55,6 @@ extern "C" {
     }
 
     const void _setDisableCollectAppleAdSupport (bool disableAdvertisingIdentifier) {
-        [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
     const void _setIsDebug (bool isDebug) {
@@ -221,7 +220,12 @@ extern "C" {
          success:^(NSDictionary *result){
                  unityCallBack(validateObjectName, VALIDATE_CALLBACK, stringFromdictionary(result));
          } failure:^(NSError *error, id response) {
+            if(response && [response isKindOfClass:[NSDictionary class]]) {
+                 NSDictionary* value = (NSDictionary*)response;
+                 unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, stringFromdictionary(value));
+             } else {
                  unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, error ? [[error localizedDescription] UTF8String] : "error");
+             }
          }];
     }
     
@@ -234,7 +238,6 @@ extern "C" {
     }
 
     const void _waitForATTUserAuthorizationWithTimeoutInterval (int timeoutInterval) {
-        [[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];
     }
 
     const void _disableSKAdNetwork (bool isDisabled) {
@@ -259,6 +262,12 @@ extern "C" {
 }
 
 @implementation AppsFlyeriOSWarpper
+
+static BOOL didCallStart;
++ (BOOL) didCallStart
+{ @synchronized(self) { return didCallStart; } }
++ (void) setDidCallStart:(BOOL)val
+{ @synchronized(self) { didCallStart = val; } }
 
 - (void)onConversionDataSuccess:(NSDictionary *)installData {
     unityCallBack(ConversionDataCallbackObject, GCD_CALLBACK, stringFromdictionary(installData));
