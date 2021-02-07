@@ -186,7 +186,9 @@ Essentially, the Universal Links method links between an iOS mobile app and an a
 #### <a id="track-app-uninstalls-ios"> iOS
 
 AppsFlyer enables you to track app uninstalls. To handle notifications it requires  to modify your `AppDelegate.m`. Use [didRegisterForRemoteNotificationsWithDeviceToken](https://developer.apple.com/reference/uikit/uiapplicationdelegate) to register to the uninstall feature.
+
 UnityEngine.iOS.NotificationServices is now deprecated. Please use the "Mobile Notifications" package instead. It is available in the Unity package manager. 
+
 *Example:*
 
 ```c#
