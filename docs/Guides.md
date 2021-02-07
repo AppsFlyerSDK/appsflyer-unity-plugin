@@ -186,11 +186,12 @@ Essentially, the Universal Links method links between an iOS mobile app and an a
 #### <a id="track-app-uninstalls-ios"> iOS
 
 AppsFlyer enables you to track app uninstalls. To handle notifications it requires  to modify your `AppDelegate.m`. Use [didRegisterForRemoteNotificationsWithDeviceToken](https://developer.apple.com/reference/uikit/uiapplicationdelegate) to register to the uninstall feature.
-
+UnityEngine.iOS.NotificationServices is now deprecated. Please use the "Mobile Notifications" package instead. It is available in the Unity package manager. 
 *Example:*
 
 ```c#
 using AppsFlyerSDK;
+using Unity.Notifications.iOS;
 
 public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
 {
@@ -200,28 +201,38 @@ public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
     {
         AppsFlyer.initSDK("devKey", "appID", this);
         AppsFlyer.startSDK();
-
 #if UNITY_IOS
-        UnityEngine.iOS.NotificationServices.RegisterForNotifications(UnityEngine.iOS.NotificationType.Alert | UnityEngine.iOS.NotificationType.Badge | UnityEngine.iOS.NotificationType.Sound);
+  
+        StartCoroutine(RequestAuthorization());
         Screen.orientation = ScreenOrientation.Portrait;
+
 #endif
 
     }
 
-    void Update()
-    {
+
 #if UNITY_IOS
-        if (!tokenSent)
-        { 
-            byte[] token = UnityEngine.iOS.NotificationServices.deviceToken;
-            if (token != null)
+    IEnumerator RequestAuthorization()
+    {
+      
+        using (var req = new AuthorizationRequest(AuthorizationOption.Alert | AuthorizationOption.Badge, true))
+        {
+
+            while (!req.IsFinished)
             {
-                AppsFlyeriOS.registerUninstall(token);
-                tokenSent = true;
+                yield return null;
+            }
+            if (!tokenSent)
+            {
+                if (req.Granted && req.DeviceToken != "")
+                {
+                    AppsFlyeriOS.registerUninstall(Encoding.UTF8.GetBytes(req.DeviceToken));
+      
+                }
             }
         }
-#endif
     }
+#endif
 }
 ```
 
