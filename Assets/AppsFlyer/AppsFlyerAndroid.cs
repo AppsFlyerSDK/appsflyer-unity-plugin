@@ -670,11 +670,15 @@ namespace AppsFlyerSDK
         {
             AndroidJavaObject map = new AndroidJavaObject("java.util.HashMap");
             IntPtr putMethod = AndroidJNIHelper.GetMethodID(map.GetRawClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+            jvalue[] val;
             if (dictionary != null)
             {
                 foreach (var entry in dictionary)
                 {
-                    AndroidJNI.CallObjectMethod(map.GetRawObject(), putMethod, AndroidJNIHelper.CreateJNIArgArray(new object[] { entry.Key, entry.Value }));
+                    val = AndroidJNIHelper.CreateJNIArgArray(new object[] { entry.Key, entry.Value });
+                    AndroidJNI.CallObjectMethod(map.GetRawObject(), putMethod,val);
+                    AndroidJNI.DeleteLocalRef(val[0].l);
+                    AndroidJNI.DeleteLocalRef(val[1].l);
                 }
             }
             
