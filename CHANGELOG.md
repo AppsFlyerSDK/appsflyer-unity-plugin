@@ -1,5 +1,13 @@
 # Versions
 
+## v6.2.0
+
+* RD-55161 - Fixed don't call start before startSDK() (iOS) 
+* RD-55566 - Fix onAppOpenAttribution called from kill for swizziling class (iOS)
+* RD-45032 - Send reponse code in Purchase Validation Error (iOS) 
+* RD-54266 - iOS SDK Version - 6.2.0
+* RD-54266 - Android SDK Version - 6.1.4
+
 ## v6.1.4
 
 * RD-55566 - Fix onAppOpenAttribution called from kill

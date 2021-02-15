@@ -14,7 +14,8 @@
 #endif
 
 @interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate>
-
++ (BOOL) didCallStart;
++ (void) setDidCallStart:(BOOL)val;
 @end
 
 
