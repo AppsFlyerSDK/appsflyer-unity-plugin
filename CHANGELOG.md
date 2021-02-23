@@ -1,5 +1,10 @@
 # Versions
 
+## v6.2.2
+
+* RD-54266 - iOS SDK Version - 6.2.2
+* RD-54266 - Android SDK Version - 6.2.0
+
 ## v6.2.0
 
 * RD-55161 - Fixed don't call start before startSDK() (iOS) 
