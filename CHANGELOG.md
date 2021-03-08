@@ -1,5 +1,9 @@
 # Versions
 
+## v6.2.3
+
+* RD-54266 - iOS SDK Version - 6.2.3
+
 ## v6.2.2
 
 * RD-54266 - iOS SDK Version - 6.2.2
