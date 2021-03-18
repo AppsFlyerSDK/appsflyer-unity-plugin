@@ -14,12 +14,15 @@
 #else
 #import "AppsFlyerLib.h"
 #endif
+#import <objc/message.h>
 
 /**
  Note if you would like to use method swizzeling see AppsFlyer+AppController.m
  If you are using swizzeling then comment out the method that is being swizzeled in AppsFlyerAppController.mm
  Only use swizzeling if there are conflicts with other plugins that needs to be resolved.
 */
+
+typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
 
 @interface AppsFlyerAppController : UnityAppController <AppDelegateListener>
 {
@@ -53,7 +56,12 @@
     }
 
     [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
-    
+     SEL SKSel = NSSelectorFromString(@"__willResolveSKRules:");
+    id AppsFlyer = [AppsFlyerLib shared];
+    if ([AppsFlyer respondsToSelector:SKSel]) {
+        bypassDidFinishLaunchingWithOption msgSend = (bypassDidFinishLaunchingWithOption)objc_msgSend;
+        msgSend(AppsFlyer, SKSel, 2);
+    }
 
     if (notification.userInfo[@"url"]) {
         [self onOpenURL:notification];
