@@ -1,5 +1,9 @@
 # Versions
 
+## v6.2.41
+
+* Fix Skad issue
+
 ## v6.2.4
 
 * RD-59026 - iOS SDK Version - 6.2.4
