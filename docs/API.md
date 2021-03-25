@@ -1058,6 +1058,7 @@ Register uninstall - you should register for remote notification and provide App
 
 ##### <a id="waitForATTUserAuthorizationWithTimeoutInterval"> **` void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)`**
 
+See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-X-integration-guide-for-developers#integration-33-configuring-app-tracking-transparency-att-support) for more info. 
 
 | parameter     | type       | description  |
 | -----------   |----------  |--------------|
@@ -1070,7 +1071,6 @@ Register uninstall - you should register for remote notification and provide App
     AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
 #endif
 ```
-
 ---
 
 ##### <a id="disableSKAdNetwork"> **` bools disableSKAdNetwork(int isDisabled)`**
