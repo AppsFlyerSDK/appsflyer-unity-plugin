@@ -1,5 +1,5 @@
-**.meta
 *.meta
+!*.*.meta
 .DS_Store
 *.log
 Logs/
