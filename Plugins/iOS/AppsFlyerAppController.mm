@@ -56,7 +56,6 @@ typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
     }
     [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
 
-    [AppsFlyerLib shared].appsFlyerDevKey = @"2fRSe9XZe7mSNL47cmANsG";
      SEL SKSel = NSSelectorFromString(@"__willResolveSKRules:");
     id AppsFlyer = [AppsFlyerLib shared];
     if ([AppsFlyer respondsToSelector:SKSel]) {
