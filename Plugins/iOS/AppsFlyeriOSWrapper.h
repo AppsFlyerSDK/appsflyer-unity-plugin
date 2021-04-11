@@ -7,6 +7,7 @@
 
 #import "AFUnityUtils.mm"
 #import "UnityAppController.h"
+#import "AppsFlyerAttribution.h"
 #if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
 #import <AppsFlyerLib/AppsFlyerLib.h>
 #else
