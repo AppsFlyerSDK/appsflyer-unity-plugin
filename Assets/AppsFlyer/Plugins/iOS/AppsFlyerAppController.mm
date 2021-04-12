@@ -54,8 +54,8 @@ typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
     if (_AppsFlyerdelegate == nil) {
         _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
     }
-
     [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
+
      SEL SKSel = NSSelectorFromString(@"__willResolveSKRules:");
     id AppsFlyer = [AppsFlyerLib shared];
     if ([AppsFlyer respondsToSelector:SKSel]) {
@@ -82,13 +82,13 @@ typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
 }
 
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray *))restorationHandler {
-    [[AppsFlyerLib shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
+    [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
     return YES;
 }
 
 -(BOOL) application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary *)options {
     NSLog(@"got openUrl: %@",url);
-    [[AppsFlyerLib shared] handleOpenUrl:url options:options];
+    [[AppsFlyerAttribution shared] handleOpenUrl:url options:options];
     return NO;
 }
 
@@ -102,7 +102,7 @@ typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
     }
     
     if (url != nil) {
-        [[AppsFlyerLib shared] handleOpenURL:url sourceApplication:sourceApplication withAnnotation:nil];
+        [[AppsFlyerAttribution shared] handleOpenUrl:url sourceApplication:sourceApplication annotation:nil];
     }
     
 }
