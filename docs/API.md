@@ -48,7 +48,7 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [setCollectOaid](#setCollectOaid)
 - [iOS Only API](#iOSOnly)
-    - [setShouldCollectDeviceName](#setShouldCollectDeviceName)
+    - [setShouldCollectDeviceName](#deprecated)
     - [setDisableCollectIAd](#setDisableCollectIAd)
     - [setUseReceiptValidationSandbox](#setUseReceiptValidationSandbox)
     - [setUseUninstallSandbox](#setUseUninstallSandbox)

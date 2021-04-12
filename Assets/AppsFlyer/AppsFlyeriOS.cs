@@ -144,6 +144,7 @@ namespace AppsFlyerSDK
         /// Set this flag to true, to collect the current device name(e.g. "My iPhone"). Default value is false.
         /// </summary>
         /// <param name="shouldCollectDeviceName">boolean shouldCollectDeviceName.</param>
+         [System.Obsolete("This is deprecated")]
         public static void setShouldCollectDeviceName(bool shouldCollectDeviceName)
         {
 #if !UNITY_EDITOR
