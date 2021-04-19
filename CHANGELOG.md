@@ -1,5 +1,11 @@
 # Versions
 
+## v6.2.5
+
+* Update iOS SDK version - 6.2.5
+* Deprecated setShouldCollectDeviceName
+* AttributionObject to handle DeepLink
+
 ## v6.2.41
 
 * Fix Skad issue
