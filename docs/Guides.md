@@ -367,6 +367,17 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
             }
 
             AppsFlyeriOS.validateAndSendInAppPurchase(prodID, price, currency, transactionID, null, this);
+#elif UNITY_ANDROID
+        var purchaseData = (string)recptToJSON["json"];
+        var signature = (string)recptToJSON["signature"];
+        AppsFlyerAndroid.validateAndSendInAppPurchase(
+        "<google_public_key>", 
+        signature, 
+        purchaseData, 
+        price, 
+        currency, 
+        null, 
+        this);
 #endif
         }
 
