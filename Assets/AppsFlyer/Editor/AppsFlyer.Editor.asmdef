@@ -1,11 +1,9 @@
 {
-    "name": "AppsFlyer",
-    "references": [],
-    "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS"
+    "name": "AppsFlyer.Editor",
+    "references": [
+        "GUID:2a37df438292d4903b4e5159c5de3bf9"
     ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
