@@ -197,7 +197,6 @@ using Unity.Notifications.iOS;
 
 public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
 {
-    private bool tokenSent;
 
     void Start()
     {
@@ -224,14 +223,11 @@ public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
             {
                 yield return null;
             }
-            if (!tokenSent)
-            {
-                if (req.Granted && req.DeviceToken != "")
-                {
-                    AppsFlyeriOS.registerUninstall(Encoding.UTF8.GetBytes(req.DeviceToken));
+             if (req.Granted && req.DeviceToken != "")
+             {
+                  AppsFlyeriOS.registerUninstall(Encoding.UTF8.GetBytes(req.DeviceToken));
       
-                }
-            }
+             }
         }
     }
 #endif
@@ -371,6 +367,17 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
             }
 
             AppsFlyeriOS.validateAndSendInAppPurchase(prodID, price, currency, transactionID, null, this);
+#elif UNITY_ANDROID
+        var purchaseData = (string)recptToJSON["json"];
+        var signature = (string)recptToJSON["signature"];
+        AppsFlyerAndroid.validateAndSendInAppPurchase(
+        "<google_public_key>", 
+        signature, 
+        purchaseData, 
+        price, 
+        currency, 
+        null, 
+        this);
 #endif
         }
 
