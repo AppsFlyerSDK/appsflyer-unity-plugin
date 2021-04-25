@@ -1,4 +1,3 @@
-*.meta
 !*.*.meta
 .DS_Store
 *.log
