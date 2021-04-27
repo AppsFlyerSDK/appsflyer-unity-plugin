@@ -61,6 +61,8 @@ namespace AppsFlyerSDK
             }
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.initSDK(devKey, gameObject);
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
 #else
 
 #endif
@@ -77,8 +79,8 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.startSDK(onRequestResponse != null, CallBackObjectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.startSDK(onRequestResponse != null, CallBackObjectName);
-#else
-
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            AppsFlyerWindows.Start();
 #endif
         }
 
@@ -94,6 +96,8 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            AppsFlyerWindows.LogEvent(eventName, eventValues);
 #else
 
 #endif
@@ -174,6 +178,8 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.setCustomerUserID(id);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.setCustomerUserId(id);
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            AppsFlyerWindows.SetCustomerUserId(id);
 #else
 
 #endif
@@ -422,6 +428,8 @@ namespace AppsFlyerSDK
             AppsFlyeriOS.getConversionData(objectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.getConversionData(objectName);
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            AppsFlyerWindows.GetConversionData("");
 #else
 
 #endif
