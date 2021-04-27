@@ -22,7 +22,6 @@
  Only use swizzeling if there are conflicts with other plugins that needs to be resolved.
 */
 
-typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
 
 @interface AppsFlyerAppController : UnityAppController <AppDelegateListener>
 {
@@ -55,13 +54,6 @@ typedef void (*bypassDidFinishLaunchingWithOption)(id, SEL, NSInteger);
         _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
     }
     [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
-
-     SEL SKSel = NSSelectorFromString(@"__willResolveSKRules:");
-    id AppsFlyer = [AppsFlyerLib shared];
-    if ([AppsFlyer respondsToSelector:SKSel]) {
-        bypassDidFinishLaunchingWithOption msgSend = (bypassDidFinishLaunchingWithOption)objc_msgSend;
-        msgSend(AppsFlyer, SKSel, 2);
-    }
 
     if (notification.userInfo[@"url"]) {
         [self onOpenURL:notification];

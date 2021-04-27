@@ -20,8 +20,8 @@
   <img src="https://firebasestorage.googleapis.com/v0/b/firstintegrationapp.appspot.com/o/Screen%20Shot%202020-04-02%20at%2014.38.30.png?alt=media&token=e556a324-b3b7-418c-8d2f-52ea9cf70f86"  width="350">
 
   2. Download and add the required Android dependencies to the Assets/Plugins/Android folder:
-      1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.2.0/af-android-sdk-6.2.0.aar)
-      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.2.0/unity-wrapper-6.2.0.aar)
+      1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.2.3/af-android-sdk-6.2.3.aar)
+      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.2.3/unity-wrapper-6.2.3.aar)
       3. [Google Installreferrer library](https://mvnrepository.com/artifact/com.android.installreferrer/installreferrer/2.1)
   3. Download and add the required iOS dependencies to the Assets/Plugins/iOS/AppsFlyer folder:
       1. [Download](https://s3-eu-west-1.amazonaws.com/download.appsflyer.com/ios/AF-iOS-SDK.zip) the iOS SDK as a static library
