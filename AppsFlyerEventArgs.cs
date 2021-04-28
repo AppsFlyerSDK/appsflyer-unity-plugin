@@ -140,7 +140,7 @@ namespace AppsFlyerSDK
 
                 string status = "";
                 string error = "";
-                Dictionary<string, object> deepLink;
+
                 
                 if (dictionary.ContainsKey("status") && dictionary["status"] != null)
                 {
