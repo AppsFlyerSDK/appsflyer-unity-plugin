@@ -1,7 +1,11 @@
-﻿{
-	"name": "AppsFlyer",
- "references": [],
-    "includePlatforms": [],
+{
+    "name": "AppsFlyer.Editor",
+    "references": [
+        "AppsFlyer"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
