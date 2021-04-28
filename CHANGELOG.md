@@ -1,5 +1,9 @@
 # Versions
 
+## v6.2.61
+
+* Fix android dependency
+
 ## v6.2.6
 
 * Update iOS SDK version - 6.2.6
