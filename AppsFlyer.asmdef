@@ -1,6 +1,6 @@
-﻿{
-	"name": "AppsFlyer",
- "references": [],
+{
+    "name": "AppsFlyer",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
