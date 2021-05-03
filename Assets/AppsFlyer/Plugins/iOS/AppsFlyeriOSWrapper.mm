@@ -96,7 +96,7 @@ extern "C" {
 
     const void _setOneLinkCustomDomains (int length, const char **oneLinkCustomDomains) {
         if(length > 0 && oneLinkCustomDomains) {
-            [[AppsFlyerLib shared] oneLinkCustomDomains:NSArrayFromCArray(length, oneLinkCustomDomains)];
+            [[AppsFlyerLib shared] setOneLinkCustomDomains:NSArrayFromCArray(length, oneLinkCustomDomains)];
         }
     }
 
