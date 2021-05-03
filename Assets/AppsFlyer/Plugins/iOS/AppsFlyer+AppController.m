@@ -78,7 +78,7 @@ static IMP __original_openUrl_Imp __unused;
 
 BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* application, NSUserActivity* userActivity, void (^restorationHandler)(NSArray*)) {
     NSLog(@"swizzled continueUserActivity");
-    [[AppsFlyerLib shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
+    [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
     
     if(__original_continueUserActivity_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*))__original_continueUserActivity_Imp)(self, _cmd, application, userActivity);
@@ -126,7 +126,7 @@ BOOL __swizzled_didReceiveRemoteNotification(id self, SEL _cmd, UIApplication* a
 
 BOOL __swizzled_openURL(id self, SEL _cmd, UIApplication* application, NSURL* url, NSDictionary * options) {
     NSLog(@"swizzled openURL");
-    [[AppsFlyerLib shared] handleOpenUrl:url options:options];
+    [[AppsFlyerAttribution shared] handleOpenUrl:url options:options];
     if(__original_openUrl_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSURL*, NSDictionary*))__original_openUrl_Imp)(self, _cmd, application, url, options);
     }
