@@ -57,7 +57,7 @@ extern "C" {
     }
 
     const void _setDisableCollectAppleAdSupport (bool disableAdvertisingIdentifier) {
-        //[AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
+       // [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
     const void _setIsDebug (bool isDebug) {
@@ -96,7 +96,7 @@ extern "C" {
 
     const void _setOneLinkCustomDomains (int length, const char **oneLinkCustomDomains) {
         if(length > 0 && oneLinkCustomDomains) {
-            [[AppsFlyerLib shared] setResolveDeepLinkURLs:NSArrayFromCArray(length, oneLinkCustomDomains)];
+            [[AppsFlyerLib shared] setOneLinkCustomDomains:NSArrayFromCArray(length, oneLinkCustomDomains)];
         }
     }
 
