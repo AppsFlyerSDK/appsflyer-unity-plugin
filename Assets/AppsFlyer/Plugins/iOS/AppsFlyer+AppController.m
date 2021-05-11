@@ -51,8 +51,6 @@ static IMP __original_openUrl_Imp __unused;
             if (_AppsFlyerdelegate == nil) {
                 _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
             }
-
-            [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
            
             [self swizzleContinueUserActivity:[self class]];
         }
@@ -91,7 +89,8 @@ BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* applicati
 
 void __swizzled_applicationDidBecomeActive(id self, SEL _cmd, UIApplication* launchOptions) {
     NSLog(@"swizzled applicationDidBecomeActive");
-    
+    [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
+
     if(didEnteredBackGround && AppsFlyeriOSWarpper.didCallStart == YES){
         [[AppsFlyerLib shared] start];
     }
