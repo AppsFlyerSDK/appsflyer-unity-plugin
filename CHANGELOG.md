@@ -1,5 +1,13 @@
 # Versions
 
+## v6.2.63
+* fix swizzling DDL
+
+## v6.2.62
+
+* fix setOneLinkCustomDomains API
+* fix swizzling
+
 ## v6.2.61
 
 * Fix android dependency
