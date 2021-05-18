@@ -63,6 +63,10 @@ namespace AppsFlyerSDK
             AppsFlyerAndroid.initSDK(devKey, gameObject);
 #elif UNITY_WSA_10_0 && !UNITY_EDITOR
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
+            if (gameObject != null)
+            {
+                AppsFlyerWindows.GetConversionData(gameObject.name);
+            }
 #else
 
 #endif
