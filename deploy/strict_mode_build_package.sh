@@ -5,7 +5,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
 
  DEPLOY_PATH=outputs
  UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.2.63.unitypackage"
+ PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.3.0.unitypackage"
  mkdir -p $DEPLOY_PATH
 
 echo "Changing AppsFlyerFramework to Strict Mode"
@@ -14,7 +14,7 @@ echo "Changing AppsFlyerFramework to Strict Mode. Done."
 
 
  # Build the .unitypackage
- /Applications/Unity/Hub/Editor/2019.4.19f1/Unity.app/Contents/MacOS/Unity \
+ /Applications/Unity/Hub/Editor/2019.4.26f1/Unity.app/Contents/MacOS/Unity \
  -gvh_disable \
  -batchmode \
  -importPackage external-dependency-manager-1.2.144.unitypackage \
@@ -25,7 +25,7 @@ echo "Changing AppsFlyerFramework to Strict Mode. Done."
  Assets \
  $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
  -quit \
- && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.2.63.unitypackage" \
+ && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.3.0.unitypackage" \
  || echo "Failed to export package. See create_unity_core.log for more info."
 
 
