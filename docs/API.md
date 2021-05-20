@@ -3,15 +3,17 @@
 <img src="https://massets.appsflyer.com/wp-content/uploads/2018/06/20092440/static-ziv_1TP.png"  width="400" >
 
 The list of available methods for this plugin is described below.
--  Android & iOS API
+- Android & iOS & Windows API
     - [initSDK](#initSDK)
     - [startSDK](#startSDK)
     - [sendEvent](#sendEvent)
+    - [setCustomerUserId](#setCustomerUserId)
+    - [getConversionData](#getConversionData)
+-  Android & iOS API
     - [stopSDK](#stopSDK)
     - [isSDKStopped](#isSDKStopped)
     - [getSdkVersion](#getSdkVersion)
     - [setIsDebug](#setIsDebug)
-    - [setCustomerUserId](#setCustomerUserId)
     - [setAppInviteOneLinkID](#setAppInviteOneLinkID)
     - [setAdditionalData](#setAdditionalData)
     - [setResolveDeepLinkURLs](#setResolveDeepLinkURLs)
@@ -24,7 +26,6 @@ The list of available methods for this plugin is described below.
     - [setHost](#setHost)
     - [setUserEmails](#setUserEmails)
     - [setPhoneNumber](#setPhoneNumber)
-    - [getConversionData](#getConversionData)
     - [attributeAndOpenStore](#attributeAndOpenStore)
     - [recordCrossPromoteImpression](#recordCrossPromoteImpression)
     - [generateUserInviteLink](#generateUserInviteLink)

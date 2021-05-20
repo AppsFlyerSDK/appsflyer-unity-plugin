@@ -11,6 +11,7 @@
 > *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
 ## Table of content
+- [Breaking changes 6.3.0](#breaking-changes) 
 - [Migration from older plugin versions](#migration) 
 - [Adding the SDK to your project](#add-sdk-to-project)
 - [Initializing the SDK](#init-sdk)
@@ -24,10 +25,15 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v6.2.3** 
-- iOS AppsFlyer SDK **v6.2.6**
+- Android AppsFlyer SDK **v6.3.0** 
+- iOS AppsFlyer SDK **v6.3.0**
 
+## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.3.0 ❗❗
 
+- 6.3.0 supports Universal Windows Platform. As part of this update, the AppsFlyerObjectScript changes to include the app_id for your UWP app. If you made changes to this file, please merge them with the new AppsFlyerObjectScript.
+Please also note that you can leave the uwp app id field empty. 
+
+- From version `6.3.0`, we use `xcframework` for iOS platform, then you need to use cocoapods version >= 1.10
 
 ## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
 
