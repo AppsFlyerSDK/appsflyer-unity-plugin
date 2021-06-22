@@ -875,6 +875,27 @@ An af_purchase event with the relevant values will be automatically sent if the 
 ```
 
 ---
+    
+    
+    ##### <a id="disable"> **`void setDisableAdvertisingIdentifiers(boolean disable)`**
+
+    setDisableAdvertisingIdentifiers
+
+    Disables collection of various Advertising IDs by the SDK. This includes Google Advertising ID (GAID), OAID and Amazon Advertising ID (AAID)
+
+| parameter   | type    | description             |
+| ----------- |-------- |-------------------------|
+| `disable` | `bool`  | true to disable|
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyerAndroid.setDisableAdvertisingIdentifiers(true);
+#endif
+```
+
+---
 
 ## <a id="iOSOnly"> iOS Only API
  
