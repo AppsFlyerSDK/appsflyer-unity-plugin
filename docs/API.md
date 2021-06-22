@@ -48,6 +48,7 @@ The list of available methods for this plugin is described below.
     - [handlePushNotifications](#handlePushNotifications)
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [setCollectOaid](#setCollectOaid)
+    - [setDisableAdvertisingIdentifiers](#setDisableAdvertisingIdentifiers)
 - [iOS Only API](#iOSOnly)
     - [setShouldCollectDeviceName](#deprecated)
     - [setDisableCollectIAd](#setDisableCollectIAd)
@@ -871,6 +872,26 @@ An af_purchase event with the relevant values will be automatically sent if the 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyerAndroid.setCollectOaid(true);
+#endif
+```
+
+---
+    
+##### <a id="setDisableAdvertisingIdentifiers"> **`void setDisableAdvertisingIdentifiers(boolean disable)`**
+
+    setDisableAdvertisingIdentifiers
+
+    Disables collection of various Advertising IDs by the SDK. This includes Google Advertising ID (GAID), OAID and Amazon Advertising ID (AAID)
+
+| parameter   | type    | description             |
+| ----------- |-------- |-------------------------|
+| `disable` | `bool`  | true to disable|
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyerAndroid.setDisableAdvertisingIdentifiers(true);
 #endif
 ```
 
