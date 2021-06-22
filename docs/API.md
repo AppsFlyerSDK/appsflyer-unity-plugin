@@ -877,8 +877,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ---
     
-    
-    ##### <a id="setDisableAdvertisingIdentifiers"> **`void setDisableAdvertisingIdentifiers(boolean disable)`**
+##### <a id="setDisableAdvertisingIdentifiers"> **`void setDisableAdvertisingIdentifiers(boolean disable)`**
 
     setDisableAdvertisingIdentifiers
 
