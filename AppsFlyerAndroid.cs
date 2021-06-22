@@ -643,6 +643,17 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Disables collection of various Advertising IDs by the SDK. This includes Google Advertising ID (GAID), OAID and Amazon Advertising ID (AAID)
+        /// </summary>
+        /// <param name="disable">disable boolean.</param>
+        public static void setDisableAdvertisingIdentifiers(bool disable)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setDisableAdvertisingIdentifiers", disable);
+#endif
+        }
+
+        /// <summary>
         /// Internal Helper Method.
         /// </summary>
         private static AndroidJavaObject getEmailType(EmailCryptType cryptType)
