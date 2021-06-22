@@ -1,5 +1,10 @@
 # Versions
 
+## v6.3.2
+* Update iOS SDK version - 6.3.2
+* Update Android SDK version - 6.3.2
+* new Android API `setDisableAdvertisingIdentifiers`
+
 ## v6.3.1
 * Update iOS SDK version - 6.3.1
 
