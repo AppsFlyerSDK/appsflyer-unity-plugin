@@ -399,4 +399,8 @@ public class AppsFlyerAndroidWrapper {
     public static void addPushNotificationDeepLinkPath(String ... path){
         AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(path);
     }
+
+    public static void setDisableAdvertisingIdentifiers(boolean disable){
+        AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(disable);
+    }
 }
