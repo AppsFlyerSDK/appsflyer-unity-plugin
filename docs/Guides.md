@@ -33,7 +33,7 @@ public class AppsFlyerObjectScript : MonoBehaviour
 {
   void Start()
   {
-    /* AppsFlyer.setDebugLog(true); */
+    /* AppsFlyer.setIsDebug(true); */
     AppsFlyer.initSDK("devkey", "appID");
     AppsFlyer.startSDK();
   }
