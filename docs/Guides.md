@@ -445,16 +445,13 @@ Sessions response example:
 ```c#
     void Start()
     {
-        AppsFlyer.OnRequestResponse += AppsFlyerOnRequestResponse;
+        AppsFlyer.OnRequestResponse += (sender, args) => {
+            var af_args = args as AppsFlyerRequestEventArgs;
+            AppsFlyer.AFLog("AppsFlyerOnRequestResponse", " status code " + af_args.statusCode);
+        };
         
         AppsFlyer.initSDK(devKey, appID, this);
         AppsFlyer.startSDK();
-    }
-
-    void AppsFlyerOnRequestResponse(object sender, EventArgs e)
-    {
-        var args = e as AppsFlyerRequestEventArgs;
-        AppsFlyer.AFLog("AppsFlyerOnRequestResponse", " status code " + args.statusCode);
     }
 ```
 
