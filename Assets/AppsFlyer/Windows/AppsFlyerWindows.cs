@@ -31,7 +31,7 @@ namespace AppsFlyerSDK
             // Remove callstack
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
 #endif
-            Log("[InitSDK]: devKey: {0}, appId: {1}, gameObject: {2}", devKey, appId, gameObject.ToString());
+            Log("[InitSDK]: devKey: {0}, appId: {1}, gameObject: {2}", devKey, appId, gameObject != null ? gameObject.ToString() : "null");
             AppsFlyerTracker tracker = AppsFlyerTracker.GetAppsFlyerTracker();
             tracker.devKey = devKey;
             tracker.appId = appId;
@@ -64,11 +64,19 @@ namespace AppsFlyerSDK
 #if ENABLE_WINMD_SUPPORT
         public static void Callback(AppsFlyerLib.ServerStatusCode code)
         {
-            Log("[Callback]: {0}", code.ToString());
+            if (_gameObject != null)
+            {
+                Log("[Callback]: {0}", code.ToString());
 
-            AppsFlyerRequestEventArgs eventArgs = new AppsFlyerRequestEventArgs((int)code, code.ToString());
-            var method = _gameObject.GetType().GetMethod("AppsFlyerOnRequestResponse");
-            method.Invoke(_gameObject, new object[] { AppsFlyerTracker.GetAppsFlyerTracker(), eventArgs });
+                AppsFlyerRequestEventArgs eventArgs = new AppsFlyerRequestEventArgs((int)code, code.ToString());
+                var method = _gameObject.GetType().GetMethod("AppsFlyerOnRequestResponse");
+                method.Invoke(_gameObject, new object[] { AppsFlyerTracker.GetAppsFlyerTracker(), eventArgs });
+            }
+            else
+            {
+                //Log("[Callback]: Deeplink callbacks disabled (GetConversionData is false)");
+            }
+            
         }
 #endif
 
@@ -93,22 +101,29 @@ namespace AppsFlyerSDK
         public static void GetConversionData(string _reserved)
         {
 #if ENABLE_WINMD_SUPPORT
-            Task.Run(async () =>
+            if (_gameObject != null)
             {
-                AppsFlyerLib.AppsFlyerTracker tracker = AppsFlyerLib.AppsFlyerTracker.GetAppsFlyerTracker();
-                string conversionData = await tracker.GetConversionDataAsync();
-
-                IAppsFlyerConversionData conversionDataHandler = _gameObject as IAppsFlyerConversionData;
-
-                if (conversionDataHandler != null)
+                Task.Run(async () =>
                 {
-                    Log("[GetConversionData] Will call `onConversionDataSuccess` with: {0}", conversionData);
-                    conversionDataHandler.onConversionDataSuccess(conversionData);
-                } else {
-                    Log("[GetConversionData] Object with `IAppsFlyerConversionData` interface not found! Check `InitSDK` implementation");
-                }
-                // _gameObject.GetType().GetMethod("onConversionDataSuccess").Invoke(_gameObject, new[] { conversionData });
-            });
+                    AppsFlyerLib.AppsFlyerTracker tracker = AppsFlyerLib.AppsFlyerTracker.GetAppsFlyerTracker();
+                    string conversionData = await tracker.GetConversionDataAsync();
+
+                    IAppsFlyerConversionData conversionDataHandler = _gameObject as IAppsFlyerConversionData;
+
+                    if (conversionDataHandler != null)
+                    {
+                        Log("[GetConversionData] Will call `onConversionDataSuccess` with: {0}", conversionData);
+                        conversionDataHandler.onConversionDataSuccess(conversionData);
+                    } else {
+                        Log("[GetConversionData] Object with `IAppsFlyerConversionData` interface not found! Check `InitSDK` implementation");
+                    }
+                    // _gameObject.GetType().GetMethod("onConversionDataSuccess").Invoke(_gameObject, new[] { conversionData });
+                });
+            }
+            else
+            {
+                //Log("[Callback]: Deeplink callbacks disabled (GetConversionData is false)");
+            }
 #endif
         }
 
