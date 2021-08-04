@@ -39,9 +39,11 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [In-app Events](/docs/InAppEvents.md)
 - [Get Conversion Data](/docs/BasicIntegration.md)
 - [Deep Linking](/docs/DeepLink.md)
+- [Uninstall](/docs/Uninstall.md)
+- [Collect IDFA with ATTrackingManager](/docs/Collect.md)
 - [Testing the integration](/docs/Testing.md)
 - [API](/docs/API.md)
-- [Swizzling](dos/iOS-Swizzling-Guide.md)
+- [Swizzling](/dos/iOS-Swizzling-Guide.md)
 
 
 
