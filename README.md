@@ -37,7 +37,6 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [Adding the SDK to your project](/docs/Installation.md)
 - [Initializing the SDK](/docs/BasicIntegration.md)
 - [In-app Events](/docs/InAppEvents.md)
-- [Get Conversion Data](/docs/BasicIntegration.md)
 - [Deep Linking](/docs/DeepLink.md)
 - [Uninstall](/docs/Uninstall.md)
 - [Collect IDFA with ATTrackingManager](/docs/Collect.md)
