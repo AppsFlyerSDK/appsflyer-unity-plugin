@@ -33,38 +33,15 @@ View the migration docs [here](/docs/MigrationGuide.md).
 ⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
 
 
-## Table of content
-- [Adding the SDK to your project](#add-sdk-to-project)
-- [Initializing the SDK](#init-sdk)
-- [In-app Events](#in-app-events)
-- [Get Conversion Data](#gcd)
-- [Deep Linking](#deep-linking)
-- [Advanced APIs](#advanced-apis)
-- [Testing the integration](#Testing)
-- [API](#api) 
-
-<hr/>
-
-
-
-## <a id="init-sdk"> 🚀 Initializing the SDK
-
-
-
-
  ## <a id="guides"> 📖 Guides
-
-
-- [Installation](/docs/Installation.md)
-- [Init SDK](/docs/Guides.md#init-sdk)
-- [Deep Linking](/docs/Guides.md#deeplinking)
-- [Uninstall](/docs/Guides.md#track-app-uninstalls)
-- [User Invite](/docs/Guides.md#-user-invite-attribution)
-
-
-## <a id="api"> 📑 API
-  
-See the full [API](/docs/API.md) available for this plugin.
+- [Adding the SDK to your project](/docs/Installation.md)
+- [Initializing the SDK](/docs/BasicIntegration.md)
+- [In-app Events](/docs/InAppEvents.md)
+- [Get Conversion Data](/docs/BasicIntegration.md)
+- [Deep Linking](/docs/DeepLink.md)
+- [Testing the integration](/docs/Testing.md)
+- [API](/docs/API.md)
+- [Swizzling](dos/iOS-Swizzling-Guide.md)
 
 
 
