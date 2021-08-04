@@ -50,11 +50,7 @@ Add this line for the regular mode
  "appsflyer-unity-plugin": "https://github.com/AppsFlyerSDK/appsflyer-unity-plugin.git#Strict-upm"
 ```
 
-
-- [Installation with unity-jar-resolver](#installation-with-unity-jar-resolver)
-- [Installation without unity-jar-resolver](#installation-without-using-unity-jar-resolver)
-
-
+---
 
 ## <a id="installation-without-using-unity-jar-resolver"> Installation without unity-jar-resolver
   
