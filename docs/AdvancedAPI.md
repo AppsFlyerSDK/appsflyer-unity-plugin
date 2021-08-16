@@ -116,8 +116,17 @@ Example:
 
 public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData, IAppsFlyerUserInvite {
 
-...
+void Start()
+  {
+    //...
 
+    AppsFlyer.initSDK("devkey", "appID");
+    AppsFlyer.setAppInviteOneLinkID("XXXX"); //set up the one link ID for the user invite
+    AppsFlyer.startSDK();
+  }
+   
+
+    //...
     public void generateAppsFlyerLink()
     {
         Dictionary<string, string> parameters = new Dictionary<string, string>();
