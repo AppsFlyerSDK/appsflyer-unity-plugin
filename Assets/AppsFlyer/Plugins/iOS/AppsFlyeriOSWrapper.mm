@@ -263,6 +263,10 @@ extern "C" {
         }
         [[AppsFlyerLib shared] setDeepLinkDelegate:_AppsFlyerdelegate];
     }
+
+    const void _setCurrentDeviceLanguage(const char* language) {
+        [[AppsFlyerLib shared]setCurrentDeviceLanguage::stringFromChar(language)];
+    }
 }
 
 @implementation AppsFlyeriOSWarpper
