@@ -516,6 +516,15 @@ namespace AppsFlyerSDK
 #endif
         }
 
+           /// <summary>
+        /// Set the language of the device.
+        /// </summary>
+        public static void setCurrentDeviceLanguage(string language){
+#if !UNITY_EDITOR
+            _setCurrentDeviceLanguage(language);
+#endif
+        }
+
         /*
          * AppsFlyer ios method mapping
          */
@@ -642,6 +651,9 @@ namespace AppsFlyerSDK
 
         [DllImport("__Internal")]
         private static extern void _subscribeForDeepLink(string objectName);
+
+        [DllImport("__Internal")]
+        private static extern void _setCurrentDeviceLanguage(string language);
 
     }
 
