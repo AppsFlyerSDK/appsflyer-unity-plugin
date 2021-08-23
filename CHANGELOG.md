@@ -1,5 +1,10 @@
 # Versions
 
+## v6.3.5
+* Update iOS SDK version - 6.3.5
+* Fix issue with Facebook login
+* Fix issue with uwp
+
 ## v6.3.2
 * Update iOS SDK version - 6.3.2
 * Update Android SDK version - 6.3.2
