@@ -11,7 +11,7 @@
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework/Strict" version="6.3.5" minTargetSdk="9.0">
+    <iosPod name="AppsFlyerFramework" version="6.3.5" minTargetSdk="9.0">
     </iosPod>
   </iosPods>
 
