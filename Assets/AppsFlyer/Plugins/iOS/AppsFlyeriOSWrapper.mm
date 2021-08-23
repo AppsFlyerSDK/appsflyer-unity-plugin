@@ -265,7 +265,7 @@ extern "C" {
     }
 
     const void _setCurrentDeviceLanguage(const char* language) {
-        [[AppsFlyerLib shared]setCurrentDeviceLanguage::stringFromChar(language)];
+        [[AppsFlyerLib shared] setCurrentDeviceLanguage:stringFromChar(language)];
     }
 }
 
