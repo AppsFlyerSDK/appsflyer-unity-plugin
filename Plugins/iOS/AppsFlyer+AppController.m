@@ -79,7 +79,7 @@ BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* applicati
     [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
     
     if(__original_continueUserActivity_Imp){
-        return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*))__original_continueUserActivity_Imp)(self, _cmd, application, userActivity);
+        return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*, void (^)(NSArray*)))__original_continueUserActivity_Imp)(self, _cmd, application, userActivity, NULL);
     }
     
     return YES;
