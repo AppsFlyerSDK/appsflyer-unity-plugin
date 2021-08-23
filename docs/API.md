@@ -59,6 +59,7 @@ The list of available methods for this plugin is described below.
     - [handleOpenUrl](#handleOpenUrl)
     - [waitForATTUserAuthorizationWithTimeoutInterval](#waitForATTUserAuthorizationWithTimeoutInterval)
     - [disableSKAdNetwork](#disableSKAdNetwork)
+    - [setCurrentDeviceLanguage](#setLanguage)
 - [IAppsFlyerConversionData](#IAppsFlyerConversionData)
     - [onConversionDataSuccess](#onConversionDataSuccess)
     - [onConversionDataFail](#onConversionDataFail)
@@ -1107,6 +1108,23 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyeriOS.disableSKAdNetwork(true);
+#endif
+```
+
+---
+
+##### <a id="setLanguage"> **` setCurrentDeviceLanguage(string language)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `language`         | `String`   |    The language to set   |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.setCurrentDeviceLanguage("english");
 #endif
 ```
 

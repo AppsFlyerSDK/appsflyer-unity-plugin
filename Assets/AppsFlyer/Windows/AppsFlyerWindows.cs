@@ -31,7 +31,7 @@ namespace AppsFlyerSDK
             // Remove callstack
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
 #endif
-            Log("[InitSDK]: devKey: {0}, appId: {1}, gameObject: {2}", devKey, appId, gameObject.ToString());
+            Log("[InitSDK]: devKey: {0}, appId: {1}, gameObject: {2}", devKey, appId, gameObject == null ? "null" : gameObject.ToString());
             AppsFlyerTracker tracker = AppsFlyerTracker.GetAppsFlyerTracker();
             tracker.devKey = devKey;
             tracker.appId = appId;
@@ -75,6 +75,10 @@ namespace AppsFlyerSDK
         public static void LogEvent(string eventName, Dictionary<string, string> eventValues)
         {
 #if ENABLE_WINMD_SUPPORT
+            if (eventValues == null)
+            {
+                    eventValues = new Dictionary<string, string>();
+            }
             IDictionary<string, object> result = new Dictionary<string, object>();
             foreach (KeyValuePair<string, string> kvp in eventValues)
             {
