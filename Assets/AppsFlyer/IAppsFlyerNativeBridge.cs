@@ -21,8 +21,6 @@ namespace AppsFlyerSDK
 
         string getSdkVersion();
 
-        void setIsDebug(bool shouldEnable);
-
         void setCustomerUserId(string id);
 
         void setAppInviteOneLinkID(string oneLinkId);

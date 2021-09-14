@@ -158,10 +158,13 @@ namespace AppsFlyerSDK
         /// <param name="shouldEnable">shouldEnable boolean.</param>
         public static void setIsDebug(bool shouldEnable)
         {
-            if (instance != null)
-            {
-                instance.setIsDebug(shouldEnable);
-            }
+#if UNITY_IOS && !UNITY_EDITOR
+                        AppsFlyeriOS.setIsDebug(shouldEnable);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+                        AppsFlyerAndroid.setIsDebug(shouldEnable);
+#else
+
+#endif
 
         }
 

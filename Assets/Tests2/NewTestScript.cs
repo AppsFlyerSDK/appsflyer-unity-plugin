@@ -80,18 +80,6 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void testSetIsDebug()
-        {
-
-            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerNativeBridge>();
-
-            AppsFlyer.instance = AppsFlyerMOCKInterface;
-            AppsFlyer.setIsDebug(true);
-            AppsFlyerMOCKInterface.Received().setIsDebug(true);
-
-        }
-
-        [Test]
         public void testSetCustomerUserId()
         {
 
