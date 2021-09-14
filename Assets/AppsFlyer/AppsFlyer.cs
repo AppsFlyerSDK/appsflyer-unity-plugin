@@ -13,6 +13,8 @@ namespace AppsFlyerSDK
         private static EventHandler onInAppResponse;
         private static EventHandler onDeepLinkReceived;
 
+        public static IAppsFlyerNativeBridge instance = null;
+
 
         /// <summary>
         /// Initialize the AppsFlyer SDK with your devKey and appID.
@@ -46,28 +48,27 @@ namespace AppsFlyerSDK
         /// </example>
         public static void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
-            
-            if(gameObject != null)
+            if (gameObject != null)
             {
                 CallBackObjectName = gameObject.name;
             }
-
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setAppsFlyerDevKey(devKey);
-            AppsFlyeriOS.setAppleAppID(appID);
-            if(gameObject != null)
+#if UNITY_IOS
+            if  (instance == null)
             {
-                AppsFlyeriOS.getConversionData(gameObject.name);
+                instance = new AppsFlyeriOS(devKey, appID, gameObject);
             }
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.initSDK(devKey, gameObject);
+#elif UNITY_ANDROID
+            if (instance == null)
+            {
+                instance = new AppsFlyerAndroid(devKey, gameObject);
+            }
+
 #elif UNITY_WSA_10_0 && !UNITY_EDITOR
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
             if (gameObject != null)
             {
                 AppsFlyerWindows.GetConversionData(gameObject.name);
             }
-#else
 
 #endif
         }
@@ -79,14 +80,15 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void startSDK()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.startSDK(onRequestResponse != null, CallBackObjectName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.startSDK(onRequestResponse != null, CallBackObjectName);
-#elif UNITY_WSA_10_0 && !UNITY_EDITOR
-            AppsFlyerWindows.Start();
+#if UNITY_WSA_10_0 && !UNITY_EDITOR
+              AppsFlyerWindows.Start();
+#else   
+            if (instance != null)
+            {
+                instance.startSDK(onRequestResponse != null, CallBackObjectName);
+            }
 #endif
-        }
+            }
 
         /// <summary>
         /// Send an In-App Event.
@@ -96,14 +98,13 @@ namespace AppsFlyerSDK
         /// <param name="eventValues">Event Values as Dictionary.</param>
         public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
-#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+#if UNITY_WSA_10_0 && !UNITY_EDITOR
             AppsFlyerWindows.LogEvent(eventName, eventValues);
 #else
-
+            if (instance != null)
+            {
+                instance.sendEvent(eventName, eventValues);
+            }
 #endif
         }
 
@@ -115,13 +116,11 @@ namespace AppsFlyerSDK
         /// <param name="isSDKStopped"> should sdk be stopped.</param>
         public static void stopSDK(bool isSDKStopped)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.stopSDK(isSDKStopped);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.stopSDK(isSDKStopped);
-#else
+            if (instance != null)
+            {
+                instance.stopSDK(isSDKStopped);
+            }
 
-#endif
         }
 
         // <summary>
@@ -130,13 +129,12 @@ namespace AppsFlyerSDK
         /// <returns>boolean isSDKStopped.</returns>
         public static bool isSDKStopped()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            return AppsFlyeriOS.isSDKStopped();
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            return AppsFlyerAndroid.isSDKStopped();
-#else
+            if (instance != null)
+            {
+                return instance.isSDKStopped();
+            }
             return false;
-#endif
+      
         }
 
         /// <summary>
@@ -145,13 +143,11 @@ namespace AppsFlyerSDK
         /// <returns>The current SDK version.</returns>
         public static string getSdkVersion()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            return AppsFlyeriOS.getSDKVersion();
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            return AppsFlyerAndroid.getSdkVersion();
-#else
+            if (instance != null)
+            {
+                return instance.getSdkVersion();
+            }
             return "";
-#endif
 
         }
 
@@ -162,13 +158,11 @@ namespace AppsFlyerSDK
         /// <param name="shouldEnable">shouldEnable boolean.</param>
         public static void setIsDebug(bool shouldEnable)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setIsDebug(shouldEnable);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setIsDebug(shouldEnable);
-#else
+            if (instance != null)
+            {
+                instance.setIsDebug(shouldEnable);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -178,14 +172,13 @@ namespace AppsFlyerSDK
         /// <param name="id">Customer ID for client.</param>
         public static void setCustomerUserId(string id)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setCustomerUserID(id);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setCustomerUserId(id);
-#elif UNITY_WSA_10_0 && !UNITY_EDITOR
-            AppsFlyerWindows.SetCustomerUserId(id);
+#if UNITY_WSA_10_0 && !UNITY_EDITOR
+             AppsFlyerWindows.SetCustomerUserId(id);
 #else
-
+            if (instance != null)
+            {
+                instance.setCustomerUserId(id);
+            }
 #endif
         }
 
@@ -196,13 +189,11 @@ namespace AppsFlyerSDK
         /// <param name="oneLinkId">OneLink ID obtained from the AppsFlyer Dashboard.</param>
         public static void setAppInviteOneLinkID(string oneLinkId)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setAppInviteOneLinkID(oneLinkId);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setAppInviteOneLinkID(oneLinkId);
-#else
+            if (instance != null)
+            {
+                instance.setAppInviteOneLinkID(oneLinkId);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -211,13 +202,11 @@ namespace AppsFlyerSDK
         /// <param name="customData">additional data Dictionary.</param>
         public static void setAdditionalData(Dictionary<string, string> customData)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setAdditionalData(customData);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setAdditionalData(customData);
-#else
+            if (instance != null)
+            {
+                instance.setAdditionalData(customData);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -227,13 +216,11 @@ namespace AppsFlyerSDK
         /// <param name="urls">Array of urls.</param>
         public static void setResolveDeepLinkURLs(params string[] urls)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setResolveDeepLinkURLs(urls);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setResolveDeepLinkURLs(urls);
-#else
+            if (instance != null)
+            {
+                instance.setResolveDeepLinkURLs(urls);
+            }
 
-#endif
         }
 
 
@@ -243,13 +230,11 @@ namespace AppsFlyerSDK
         /// <param name="domains">Array of domains.</param>
         public static void setOneLinkCustomDomain(params string[] domains)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setOneLinkCustomDomains(domains);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setOneLinkCustomDomain(domains);
-#else
+            if (instance != null)
+            {
+                instance.setOneLinkCustomDomain(domains);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -260,13 +245,11 @@ namespace AppsFlyerSDK
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setCurrencyCode(currencyCode);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setCurrencyCode(currencyCode);
-#else
+            if (instance != null)
+            {
+                instance.setCurrencyCode(currencyCode);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -276,13 +259,11 @@ namespace AppsFlyerSDK
         /// <param name="longitude">longitude as double.</param>
         public static void recordLocation(double latitude, double longitude)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.recordLocation(latitude, longitude);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.recordLocation(latitude, longitude);
-#else
+            if (instance != null)
+            {
+                instance.recordLocation(latitude, longitude);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -293,13 +274,11 @@ namespace AppsFlyerSDK
         /// <param name = "shouldAnonymizeUser" >shouldAnonymizeUser boolean.</param>
         public static void anonymizeUser(bool shouldAnonymizeUser)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.anonymizeUser(shouldAnonymizeUser);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.anonymizeUser(shouldAnonymizeUser);
-#else
+            if (instance != null)
+            {
+                instance.anonymizeUser(shouldAnonymizeUser);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -308,13 +287,11 @@ namespace AppsFlyerSDK
         /// <returns>AppsFlyer's unique device ID.</returns>
         public static string getAppsFlyerId()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            return AppsFlyeriOS.getAppsFlyerId();
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            return AppsFlyerAndroid.getAppsFlyerId();
-#else
-            return "";
-#endif
+            if (instance != null)
+            {
+                instance.getAppsFlyerId();
+            }
+            return string.Empty;
 
         }
 
@@ -325,13 +302,11 @@ namespace AppsFlyerSDK
         /// <param name="seconds">minimum time between 2 separate sessions in seconds.</param>
         public static void setMinTimeBetweenSessions(int seconds)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setMinTimeBetweenSessions(seconds);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setMinTimeBetweenSessions(seconds);
-#else
+            if (instance != null)
+            {
+                instance.setMinTimeBetweenSessions(seconds);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -341,13 +316,11 @@ namespace AppsFlyerSDK
         /// <param name="hostName">Host name.</param>
         public static void setHost(string hostPrefixName, string hostName)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setHost(hostName, hostPrefixName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setHost(hostPrefixName, hostName);
-#else
+            if (instance != null)
+            {
+                instance.setHost(hostPrefixName, hostName);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -362,13 +335,18 @@ namespace AppsFlyerSDK
         /// <param name="emails">User emails.</param>
         public static void setUserEmails(EmailCryptType cryptMethod, params string[] emails)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setUserEmails(cryptMethod, emails.Length, emails);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setUserEmails(cryptMethod, emails);
-#else
+            if (instance != null)
+            {
+                instance.setUserEmails(cryptMethod, emails);
+            }
 
-#endif
+//#if UNITY_IOS && !UNITY_EDITOR
+//            AppsFlyeriOS.setUserEmails(cryptMethod, emails.Length, emails);
+//#elif UNITY_ANDROID && !UNITY_EDITOR
+//            AppsFlyerAndroid.setUserEmails(cryptMethod, emails);
+//#else
+
+//#endif
         }
 
         /// <summary>
@@ -377,13 +355,10 @@ namespace AppsFlyerSDK
         /// <param name="phoneNumber">phoneNumber string</param>
         public static void setPhoneNumber(string phoneNumber)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setPhoneNumber(phoneNumber);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setPhoneNumber(phoneNumber);
-#else
-
-#endif
+            if (instance != null)
+            {
+                instance.setPhoneNumber(phoneNumber);
+            }
         }
 
         /// <summary>
@@ -391,13 +366,11 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void setSharingFilterForAllPartners()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setSharingFilterForAllPartners();
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setSharingFilterForAllPartners();
-#else
+            if (instance != null)
+            {
+                instance.setSharingFilterForAllPartners();
+            }
 
-#endif
         }
 
         /// <summary>
@@ -406,13 +379,11 @@ namespace AppsFlyerSDK
         /// <param name="partners">partners to exclude from getting data</param>
         public static void setSharingFilter(params string[] partners)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.setSharingFilter(partners);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.setSharingFilter(partners);
-#else
+            if (instance != null)
+            {
+                instance.setSharingFilter(partners);
+            }
 
-#endif
         }
 
         /// <summary>
@@ -428,15 +399,15 @@ namespace AppsFlyerSDK
         /// </example>
         public static void getConversionData(string objectName)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.getConversionData(objectName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.getConversionData(objectName);
-#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+#if UNITY_WSA_10_0 && !UNITY_EDITOR
             AppsFlyerWindows.GetConversionData("");
 #else
-
+            if (instance != null)
+            {
+                instance.getConversionData(objectName);
+            }
 #endif
+
         }
 
 
@@ -456,13 +427,17 @@ namespace AppsFlyerSDK
         /// </example>
         public static void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.attributeAndOpenStore(appID, campaign, userParams, gameObject);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.attributeAndOpenStore(appID, campaign, userParams);
-#else
+            if (instance != null)
+            {
+                instance.attributeAndOpenStore(appID, campaign, userParams, gameObject);
+            }
+//#if UNITY_IOS && !UNITY_EDITOR
+//            AppsFlyeriOS.attributeAndOpenStore(appID, campaign, userParams, gameObject);
+//#elif UNITY_ANDROID && !UNITY_EDITOR
+//            AppsFlyerAndroid.attributeAndOpenStore(appID, campaign, userParams);
+//#else
 
-#endif
+//#endif
         }
 
         /// <summary>
@@ -474,13 +449,17 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.recordCrossPromoteImpression(appID, campaign, parameters);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.recordCrossPromoteImpression(appID, campaign, parameters);
-#else
+            if (instance != null)
+            {
+                instance.recordCrossPromoteImpression(appID, campaign, parameters);
+            }
+//#if UNITY_IOS && !UNITY_EDITOR
+//            AppsFlyeriOS.recordCrossPromoteImpression(appID, campaign, parameters);
+//#elif UNITY_ANDROID && !UNITY_EDITOR
+//            AppsFlyerAndroid.recordCrossPromoteImpression(appID, campaign, parameters);
+//#else
 
-#endif
+//#endif
         }
 
         /// <summary>
@@ -490,13 +469,17 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.generateUserInviteLink(parameters, gameObject);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.generateUserInviteLink(parameters, gameObject);
-#else
+            if (instance != null)
+            {
+                instance.generateUserInviteLink(parameters, gameObject);
+            }
+//#if UNITY_IOS && !UNITY_EDITOR
+//            AppsFlyeriOS.generateUserInviteLink(parameters, gameObject);
+//#elif UNITY_ANDROID && !UNITY_EDITOR
+//            AppsFlyerAndroid.generateUserInviteLink(parameters, gameObject);
+//#else
 
-#endif
+//#endif
         }
 
 
@@ -508,13 +491,10 @@ namespace AppsFlyerSDK
         /// <param name="paths">array of nested json path</param>
         public static void addPushNotificationDeepLinkPath(params string[] paths)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.addPushNotificationDeepLinkPath(paths);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.addPushNotificationDeepLinkPath(paths);
-#else
-
-#endif
+            if (instance != null)
+            {
+                instance.addPushNotificationDeepLinkPath(paths);
+            }
         }
 
         /// <summary>
@@ -524,13 +504,10 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void subscribeForDeepLink()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            AppsFlyeriOS.subscribeForDeepLink(CallBackObjectName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-            AppsFlyerAndroid.subscribeForDeepLink(CallBackObjectName);
-#else
-
-#endif
+            if (instance != null)
+            {
+                instance.subscribeForDeepLink(CallBackObjectName);
+            }
         }
         
         /// <summary>
