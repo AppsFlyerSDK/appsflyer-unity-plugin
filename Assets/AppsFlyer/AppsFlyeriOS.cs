@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
 {
 #if UNITY_IOS
 
-    public class AppsFlyeriOS: IAppsFlyerNativeBridge
+    public class AppsFlyeriOS: IAppsFlyerIOSBridge
     {
 
 
@@ -496,7 +496,7 @@ namespace AppsFlyerSDK
         public void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)
         {
 #if !UNITY_EDITOR
-            _waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
+             _waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
 #endif
         }
 

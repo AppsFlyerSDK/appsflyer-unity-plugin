@@ -6,16 +6,17 @@ namespace AppsFlyerSDK
 {
 
 #if UNITY_ANDROID 
-    public class AppsFlyerAndroid : IAppsFlyerNativeBridge
+    public class AppsFlyerAndroid : IAppsFlyerAndroidBridge
     {
-
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
-
-        public AppsFlyerAndroid(string devkey, MonoBehaviour gameObject)
-        {
-            appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
-        }
+        public AppsFlyerAndroid() { }
+          
+     
+        //public AppsFlyerAndroid(string devkey, MonoBehaviour gameObject)
+        //{
+        //    appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
+        //}
 
         /// <summary>
         /// Use this method to init the sdk for the application.

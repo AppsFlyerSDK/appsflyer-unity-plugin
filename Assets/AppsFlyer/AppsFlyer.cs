@@ -12,8 +12,15 @@ namespace AppsFlyerSDK
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
         private static EventHandler onDeepLinkReceived;
+        //public static IAppsFlyerNativeBridge instance = null;
 
-        public static IAppsFlyerNativeBridge instance = null;
+#if UNITY_IOS
+        public static IAppsFlyerNativeBridge instance = new AppsFlyerIOS();
+#elif UNITY_ANDROID
+        public static IAppsFlyerNativeBridge instance = new AppsFlyerAndroid();
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+    public static IAppsFlyerNativeBridge instance = null;
+#endif
 
 
         /// <summary>
@@ -48,27 +55,28 @@ namespace AppsFlyerSDK
         /// </example>
         public static void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
+
             if (gameObject != null)
             {
                 CallBackObjectName = gameObject.name;
             }
-#if UNITY_IOS
-            if  (instance == null)
-            {
-                instance = new AppsFlyeriOS(devKey, appID, gameObject);
-            }
-#elif UNITY_ANDROID
-            if (instance == null)
-            {
-                instance = new AppsFlyerAndroid(devKey, gameObject);
-            }
 
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.setAppsFlyerDevKey(devKey);
+            AppsFlyeriOS.setAppleAppID(appID);
+            if(gameObject != null)
+            {
+                AppsFlyeriOS.getConversionData(gameObject.name);
+            }
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.initSDK(devKey, gameObject);
 #elif UNITY_WSA_10_0 && !UNITY_EDITOR
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
             if (gameObject != null)
             {
                 AppsFlyerWindows.GetConversionData(gameObject.name);
             }
+#else
 
 #endif
         }
@@ -82,7 +90,7 @@ namespace AppsFlyerSDK
         {
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
               AppsFlyerWindows.Start();
-#else   
+#else
             if (instance != null)
             {
                 instance.startSDK(onRequestResponse != null, CallBackObjectName);
