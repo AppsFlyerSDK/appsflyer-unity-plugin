@@ -640,6 +640,9 @@ namespace AppsFlyerSDK
         private static extern void _setSharingFilter(int length, params string[] partners);
 
         [DllImport("__Internal")]
+        private static extern void _setSharingFilterForPartners(int length, params string[] partners);
+
+        [DllImport("__Internal")]
         private static extern void _recordCrossPromoteImpression(string appID, string campaign, string parameters);
 
         [DllImport("__Internal")]
