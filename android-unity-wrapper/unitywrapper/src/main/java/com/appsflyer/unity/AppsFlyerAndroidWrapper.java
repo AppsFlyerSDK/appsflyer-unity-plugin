@@ -403,4 +403,8 @@ public class AppsFlyerAndroidWrapper {
     public static void setDisableAdvertisingIdentifiers(boolean disable){
         AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(disable);
     }
+
+    public static void setSharingFilterForPartners(java.lang.String... partners){
+        AppsFlyerLib.getInstance().setSharingFilterForPartners(partners);
+    }
 }
