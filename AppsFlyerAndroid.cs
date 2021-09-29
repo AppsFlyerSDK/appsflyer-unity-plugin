@@ -538,6 +538,17 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Lets you configure how which partners should the SDK exclude from data-sharing.
+        /// </summary>
+        /// <param name="partners">partners to exclude from getting data</param>
+        public static void setSharingFilterForPartners(params string[] partners)
+        {
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("setSharingFilterForPartners", (object)partners);
+#endif
+        }
+
+        /// <summary>
         /// Register a Conversion Data Listener.
         /// Allows the developer to access the user attribution data in real-time for every new install, directly from the SDK level.
         /// By doing this you can serve users with personalized content or send them to specific activities within the app,
