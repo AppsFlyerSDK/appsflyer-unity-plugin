@@ -1,5 +1,12 @@
 # Versions
 
+## v6.4.0
+* Update iOS SDK version - 6.4.0
+* Update Android SDK version - 6.4.0
+* new API `setSharingFilterForPartners`
+* Deprecated API `setSharingFilterForAllPartners` and `setSharingFilter`
+* Android Target API updated to 30
+
 ## v6.3.5
 * Update iOS SDK version - 6.3.5
 * Fix issue with Facebook login
