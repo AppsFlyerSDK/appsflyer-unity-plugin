@@ -421,6 +421,17 @@ namespace AppsFlyerSDK
 #endif
         }
 
+
+        /// <summary>
+        /// Lets you configure how which partners should the SDK exclude from data-sharing.
+        /// <param name="partners">partners to exclude from getting data</param>
+        public static void setSharingFilterForPartners(params string[] partners)
+        {
+#if !UNITY_EDITOR
+            _setSharingFilterForPartners(partners.Length, partners);
+#endif
+        }
+
         /// <summary>
         /// To record an impression use the following API call.
         /// Make sure to use the promoted App ID as it appears within the AppsFlyer dashboard.

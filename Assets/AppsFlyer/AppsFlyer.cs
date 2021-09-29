@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.3.5";
+        public static readonly string kAppsFlyerPluginVersion = "6.4.0";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -389,6 +389,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Used by advertisers to exclude all networks/integrated partners from getting data.
         /// </summary>
+        [Obsolete("Please use setSharingFilterForPartners api")]
         public static void setSharingFilterForAllPartners()
         {
 #if UNITY_IOS && !UNITY_EDITOR
@@ -404,12 +405,28 @@ namespace AppsFlyerSDK
         /// Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
         /// </summary>
         /// <param name="partners">partners to exclude from getting data</param>
+        [Obsolete("Please use setSharingFilterForPartners api")]
         public static void setSharingFilter(params string[] partners)
         {
 #if UNITY_IOS && !UNITY_EDITOR
             AppsFlyeriOS.setSharingFilter(partners);
 #elif UNITY_ANDROID && !UNITY_EDITOR
             AppsFlyerAndroid.setSharingFilter(partners);
+#else
+
+#endif
+        }
+
+        /// <summary>
+        /// Lets you configure how which partners should the SDK exclude from data-sharing.
+        /// </summary>
+        /// <param name="partners">partners to exclude from getting data</param>
+        public static void setSharingFilterForPartners(params string[] partners)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            AppsFlyeriOS.setSharingFilterForPartners(partners);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+            AppsFlyerAndroid.setSharingFilterForPartners(partners);
 #else
 
 #endif

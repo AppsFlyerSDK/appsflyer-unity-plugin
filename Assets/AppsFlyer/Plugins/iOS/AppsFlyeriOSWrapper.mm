@@ -209,6 +209,14 @@ extern "C" {
             [[AppsFlyerLib shared] setSharingFilter:NSArrayFromCArray(length, partners)];
         }
     }
+
+    const void _setSharingFilterForPartners (int length, const char **partners) {
+        if(length > 0 && partners) {
+            [[AppsFlyerLib shared] setSharingFilterForPartners:NSArrayFromCArray(length, partners)];
+        } else {
+            [[AppsFlyerLib shared] setSharingFilterForPartners:nil];
+        }
+    }
     
     const void _validateAndSendInAppPurchase (const char* productIdentifier, const char* price, const char* currency, const char* tranactionId, const char* additionalParameters, const char* objectName) {
 
