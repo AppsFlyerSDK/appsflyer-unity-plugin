@@ -3,13 +3,13 @@
 <img src="https://massets.appsflyer.com/wp-content/uploads/2018/06/20092440/static-ziv_1TP.png"  width="400" >
 
 The list of available methods for this plugin is described below.
-- Android & iOS & Windows API
+- [Android & iOS & Windows API](#allAPI)
     - [initSDK](#initSDK)
     - [startSDK](#startSDK)
     - [sendEvent](#sendEvent)
     - [setCustomerUserId](#setCustomerUserId)
     - [getConversionData](#getConversionData)
--  Android & iOS API
+-  [Android & iOS API](#androidiOSApi)
     - [stopSDK](#stopSDK)
     - [isSDKStopped](#isSDKStopped)
     - [getSdkVersion](#getSdkVersion)
@@ -78,6 +78,7 @@ The list of available methods for this plugin is described below.
     - [OnInAppResponse](#onInAppResponse)
     - [OnDeepLinkReceived](#onDeepLinkReceived)
 
+## <a id="allAPI"> Android & iOS & Windows API
 ---
 
 ##### <a id="initSDK"> **`void initSDK(string devKey, string appID, MonoBehaviour gameObject)`**
@@ -116,6 +117,7 @@ Once this API is invoked the SDK will start,  sessions will be immediately sent,
 
 ---
 
+## <a id="androidiOSApi"> Android & iOS API
 
 ---
 
