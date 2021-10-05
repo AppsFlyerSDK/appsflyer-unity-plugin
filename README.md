@@ -38,7 +38,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [Initializing the SDK](/docs/BasicIntegration.md)
 - [In-app Events](/docs/InAppEvents.md)
 - [Deep Linking](/docs/DeepLink.md)
-- [Advanced API](/docs/AdvancedAPI.md)
+- [Guides](/docs/Guides.md)
 - [Testing the integration](/docs/Testing.md)
 - [API](/docs/API.md)
 - [Swizzling](/dos/iOS-Swizzling-Guide.md)

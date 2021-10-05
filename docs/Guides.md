@@ -326,14 +326,15 @@ In-App response example:
     
     ...
     
-    - (void)didFinishLaunching:(NSNotification*)notification {
+ - (void)viewDidLoad {
+    [super viewDidLoad];
     
-    if (@available(iOS 14, *)) {
-          [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status){
-          }];
-      }
-    ...
+    if #available(iOS 14, *) {
+      [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+        NSLog(@"Status: %lu", (unsigned long)status);
+      }];
     }
+}
     
     ```
     
