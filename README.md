@@ -41,7 +41,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [Guides](/docs/Guides.md)
 - [Testing the integration](/docs/Testing.md)
 - [API](/docs/API.md)
-- [Troubleshooting](/dos/Troubleshooting.md)
+- [Troubleshooting](/docs/Troubleshooting.md)
 
 
 
