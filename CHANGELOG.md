@@ -1,5 +1,10 @@
 # Versions
 
+## v6.4.1
+* Update iOS SDK version - 6.4.1
+* Update Android SDK version - 6.4.1
+* Fixed a bug causing a crash in Unity apps
+
 ## v6.4.0
 * Update iOS SDK version - 6.4.0
 * Update Android SDK version - 6.4.0
