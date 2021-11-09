@@ -3,13 +3,13 @@
 <img src="https://massets.appsflyer.com/wp-content/uploads/2018/06/20092440/static-ziv_1TP.png"  width="400" >
 
 The list of available methods for this plugin is described below.
-- Android & iOS & Windows API
+- [Android & iOS & Windows API](#allAPI)
     - [initSDK](#initSDK)
     - [startSDK](#startSDK)
     - [sendEvent](#sendEvent)
     - [setCustomerUserId](#setCustomerUserId)
     - [getConversionData](#getConversionData)
--  Android & iOS API
+-  [Android & iOS API](#androidiOSApi)
     - [stopSDK](#stopSDK)
     - [isSDKStopped](#isSDKStopped)
     - [getSdkVersion](#getSdkVersion)
@@ -78,6 +78,7 @@ The list of available methods for this plugin is described below.
     - [OnInAppResponse](#onInAppResponse)
     - [OnDeepLinkReceived](#onDeepLinkReceived)
 
+## <a id="allAPI"> Android & iOS & Windows API
 ---
 
 ##### <a id="initSDK"> **`void initSDK(string devKey, string appID, MonoBehaviour gameObject)`**
@@ -116,30 +117,7 @@ Once this API is invoked the SDK will start,  sessions will be immediately sent,
 
 ---
 
-##### <a id="sendEvent"> **`void sendEvent(string eventName, Dictionary<string, string> eventValues)`**
-
-In-App Events provide insight on what is happening in your app. It is recommended to take the time and define the events you want to measure to allow you to measure ROI (Return on Investment) and LTV (Lifetime Value).
-
-Recording in-app events is performed by calling sendEvent with event name and value parameters. See In-App Events documentation for more details.
-
-**Note:** An In-App Event name must be no longer than 45 characters. Events names with more than 45 characters do not appear in the dashboard, but only in the raw Data, Pull and Push APIs.
-
-
-| parameter      | type                         | description                                   |
-| -----------    |----------------------------- |------------------------------------------     |
-| `eventName`    | `string`                     | The name of the event                         |
-| `eventValues`  | `Dictionary<string, string>` | The event values that are sent with the event |
-
-
-*Example:*
-
-```c#
-Dictionary<string, string> eventValues = new Dictionary<string, string>();
-eventValues.Add(AFInAppEvents.CURRENCY, "USD");
-eventValues.Add(AFInAppEvents.REVENUE, "0.99");
-eventValues.Add("af_quantity", "1");
-AppsFlyer.sendEvent(AFInAppEvents.PURCHASE, eventValues);
-```
+## <a id="androidiOSApi"> Android & iOS API
 
 ---
 
