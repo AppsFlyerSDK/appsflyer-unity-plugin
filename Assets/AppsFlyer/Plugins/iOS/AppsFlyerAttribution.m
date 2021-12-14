@@ -76,8 +76,8 @@
         [[AppsFlyerLib shared] handleOpenUrl:self.url options:self.options];
         self.options = nil;
         self.url = nil;
-    }else if(self.userActivity && self.restorationHandler){
-        [[AppsFlyerLib shared] continueUserActivity:self.userActivity restorationHandler:self.restorationHandler];
+    }else if(self.userActivity){
+        [[AppsFlyerLib shared] continueUserActivity:self.userActivity restorationHandler:nil];
         self.userActivity = nil;
         self.restorationHandler = nil;
     }
