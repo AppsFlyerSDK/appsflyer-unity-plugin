@@ -1,5 +1,10 @@
 # Versions
 
+## v6.4.4
+* Update iOS SDK version - 6.4.4
+* Update Android SDK version - 6.4.3
+* Fixed issue with deep linking
+
 ## v6.4.1
 * Update iOS SDK version - 6.4.1
 * Update Android SDK version - 6.4.1
