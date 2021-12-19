@@ -1,7 +1,5 @@
-zzpackage com.appsflyer.unity;
+package com.appsflyer.unity;
 
-
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -21,10 +19,8 @@ import com.unity3d.player.UnityPlayer;
 
 import org.json.JSONObject;
 
-import java.sql.SQLOutput;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 
 public class AppsFlyerAndroidWrapper {
@@ -50,14 +46,13 @@ public class AppsFlyerAndroidWrapper {
 
         devkey = devKey;
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_6.2.63");
+        AppsFlyerLib.getInstance().setExtension("unity_android_6.4.4");
     }
 
     public static void startTracking(final boolean shouldCallback, final String objectName) {
         AppsFlyerLib.getInstance().start(UnityPlayer.currentActivity, devkey, new AppsFlyerRequestListener() {
             @Override
             public void onSuccess() {
-                System.out.println("AppsFlyer_ onsuccess");
                 if(shouldCallback && objectName != null){
                     Map<String,Object> map = new HashMap<String,Object>();
                     map.put("statusCode", 200);
@@ -68,7 +63,6 @@ public class AppsFlyerAndroidWrapper {
 
             @Override
             public void onError(int i, @NonNull String s) {
-                System.out.println("AppsFlyer_ onerror");
                 if(shouldCallback && objectName != null){
                     Map<String,Object> map = new HashMap<String,Object>();
                     map.put("statusCode", i);
