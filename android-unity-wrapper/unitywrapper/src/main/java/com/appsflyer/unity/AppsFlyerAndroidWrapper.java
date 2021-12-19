@@ -1,5 +1,7 @@
-package com.appsflyer.unity;
+zzpackage com.appsflyer.unity;
 
+
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -18,8 +20,11 @@ import com.appsflyer.share.ShareInviteHelper;
 import com.unity3d.player.UnityPlayer;
 
 import org.json.JSONObject;
+
+import java.sql.SQLOutput;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 
 public class AppsFlyerAndroidWrapper {
@@ -44,15 +49,15 @@ public class AppsFlyerAndroidWrapper {
         }
 
         devkey = devKey;
-
-        AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity.getApplicationContext());
+        AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
         AppsFlyerLib.getInstance().setExtension("unity_android_6.2.63");
     }
 
     public static void startTracking(final boolean shouldCallback, final String objectName) {
-        AppsFlyerLib.getInstance().start(UnityPlayer.currentActivity.getApplicationContext(), devkey, new AppsFlyerRequestListener() {
+        AppsFlyerLib.getInstance().start(UnityPlayer.currentActivity, devkey, new AppsFlyerRequestListener() {
             @Override
             public void onSuccess() {
+                System.out.println("AppsFlyer_ onsuccess");
                 if(shouldCallback && objectName != null){
                     Map<String,Object> map = new HashMap<String,Object>();
                     map.put("statusCode", 200);
@@ -63,6 +68,7 @@ public class AppsFlyerAndroidWrapper {
 
             @Override
             public void onError(int i, @NonNull String s) {
+                System.out.println("AppsFlyer_ onerror");
                 if(shouldCallback && objectName != null){
                     Map<String,Object> map = new HashMap<String,Object>();
                     map.put("statusCode", i);
@@ -79,7 +85,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void stopTracking(boolean isTrackingStopped) {
-        AppsFlyerLib.getInstance().stop(isTrackingStopped, UnityPlayer.currentActivity.getApplicationContext());
+        AppsFlyerLib.getInstance().stop(isTrackingStopped, UnityPlayer.currentActivity);
     }
 
     public static String getSdkVersion() {
@@ -87,7 +93,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void updateServerUninstallToken(String token) {
-        AppsFlyerLib.getInstance().updateServerUninstallToken(UnityPlayer.currentActivity.getApplicationContext(), token);
+        AppsFlyerLib.getInstance().updateServerUninstallToken(UnityPlayer.currentActivity, token);
     }
 
     public static void setIsDebug(boolean shouldEnable) {
@@ -112,11 +118,11 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setCustomerIdAndTrack(String id) {
-        AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, UnityPlayer.currentActivity.getApplicationContext());
+        AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, UnityPlayer.currentActivity);
     }
 
     public static String getOutOfStore() {
-        return AppsFlyerLib.getInstance().getOutOfStore(UnityPlayer.currentActivity.getApplicationContext());
+        return AppsFlyerLib.getInstance().getOutOfStore(UnityPlayer.currentActivity);
     }
 
     public static void setOutOfStore(String sourceName) {
@@ -164,11 +170,11 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void trackLocation(double latitude, double longitude) {
-        AppsFlyerLib.getInstance().logLocation(UnityPlayer.currentActivity.getApplicationContext(), latitude, longitude);
+        AppsFlyerLib.getInstance().logLocation(UnityPlayer.currentActivity, latitude, longitude);
     }
 
     public static void trackEvent(String eventName, HashMap<String, Object> eventValues, final boolean shouldCallback, final String objectName) {
-        AppsFlyerLib.getInstance().logEvent(UnityPlayer.currentActivity.getApplicationContext(), eventName, eventValues, new AppsFlyerRequestListener() {
+        AppsFlyerLib.getInstance().logEvent(UnityPlayer.currentActivity, eventName, eventValues, new AppsFlyerRequestListener() {
             @Override
             public void onSuccess() {
                 if(shouldCallback && objectName != null){
@@ -213,19 +219,19 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static boolean isPreInstalledApp() {
-        return AppsFlyerLib.getInstance().isPreInstalledApp(UnityPlayer.currentActivity.getApplicationContext());
+        return AppsFlyerLib.getInstance().isPreInstalledApp(UnityPlayer.currentActivity);
     }
 
     public static String getAttributionId() {
-        return AppsFlyerLib.getInstance().getAttributionId(UnityPlayer.currentActivity.getApplicationContext());
+        return AppsFlyerLib.getInstance().getAttributionId(UnityPlayer.currentActivity);
     }
 
     public static String getAppsFlyerId() {
-        return AppsFlyerLib.getInstance().getAppsFlyerUID(UnityPlayer.currentActivity.getApplicationContext());
+        return AppsFlyerLib.getInstance().getAppsFlyerUID(UnityPlayer.currentActivity);
     }
 
     public static void validateAndTrackInAppPurchase(String publicKey, String signature, String purchaseData, String price, String currency, HashMap<String, String> additionalParameters, String objectName) {
-        AppsFlyerLib.getInstance().validateAndLogInAppPurchase(UnityPlayer.currentActivity.getApplicationContext(), publicKey, signature, purchaseData, price, currency, additionalParameters);
+        AppsFlyerLib.getInstance().validateAndLogInAppPurchase(UnityPlayer.currentActivity, publicKey, signature, purchaseData, price, currency, additionalParameters);
         if (objectName != null){
             initInAppPurchaseValidatorListener(objectName);
         }
@@ -312,7 +318,7 @@ public class AppsFlyerAndroidWrapper {
 
 
     public static void initInAppPurchaseValidatorListener(final String objectName) {
-        AppsFlyerLib.getInstance().registerValidatorListener(UnityPlayer.currentActivity.getApplicationContext(), new AppsFlyerInAppPurchaseValidatorListener() {
+        AppsFlyerLib.getInstance().registerValidatorListener(UnityPlayer.currentActivity, new AppsFlyerInAppPurchaseValidatorListener() {
             @Override
             public void onValidateInApp() {
                 if(objectName != null){
@@ -338,16 +344,16 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void attributeAndOpenStore(String promoted_app_id, String campaign, Map<String, String> userParams) {
-        CrossPromotionHelper.logAndOpenStore(UnityPlayer.currentActivity.getApplicationContext(), promoted_app_id, campaign, userParams);
+        CrossPromotionHelper.logAndOpenStore(UnityPlayer.currentActivity, promoted_app_id, campaign, userParams);
     }
 
     public static void recordCrossPromoteImpression(String appID, String campaign, Map<String,String> params){
-        CrossPromotionHelper.logCrossPromoteImpression(UnityPlayer.currentActivity.getApplicationContext(), appID, campaign, params);
+        CrossPromotionHelper.logCrossPromoteImpression(UnityPlayer.currentActivity, appID, campaign, params);
     }
 
     public static void createOneLinkInviteListener(Map<String,String> params, final String objectName){
 
-        LinkGenerator linkGenerator = ShareInviteHelper.generateInviteUrl(UnityPlayer.currentActivity.getApplicationContext());
+        LinkGenerator linkGenerator = ShareInviteHelper.generateInviteUrl(UnityPlayer.currentActivity);
 
         linkGenerator.setChannel(params.get("channel"));
         linkGenerator.setCampaign(params.get("campaign"));
@@ -367,7 +373,7 @@ public class AppsFlyerAndroidWrapper {
 
         linkGenerator.addParameters(params);
 
-        linkGenerator.generateLink(UnityPlayer.currentActivity.getApplicationContext(), new CreateOneLinkHttpTask.ResponseListener() {
+        linkGenerator.generateLink(UnityPlayer.currentActivity, new CreateOneLinkHttpTask.ResponseListener() {
             @Override
             public void onResponse(String link) {
                 if(objectName != null){

@@ -57,7 +57,7 @@ extern "C" {
     }
 
     const void _setDisableCollectAppleAdSupport (bool disableAdvertisingIdentifier) {
-        AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
+        [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
     const void _setIsDebug (bool isDebug) {
