@@ -18,6 +18,7 @@ import com.appsflyer.share.ShareInviteHelper;
 import com.unity3d.player.UnityPlayer;
 
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,9 +45,8 @@ public class AppsFlyerAndroidWrapper {
         }
 
         devkey = devKey;
-
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
-        AppsFlyerLib.getInstance().setExtension("unity_android_6.2.63");
+        AppsFlyerLib.getInstance().setExtension("unity_android_6.4.4");
     }
 
     public static void startTracking(final boolean shouldCallback, final String objectName) {
