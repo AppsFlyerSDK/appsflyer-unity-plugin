@@ -312,8 +312,10 @@ namespace AppsFlyerSDK
             return AppsFlyeriOS.getAppsFlyerId();
 #elif UNITY_ANDROID && !UNITY_EDITOR
             return AppsFlyerAndroid.getAppsFlyerId();
-#else
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
             return AppsFlyerWindows.GetAppsFlyerId();
+#else
+            return ""; 
 #endif
 
         }
