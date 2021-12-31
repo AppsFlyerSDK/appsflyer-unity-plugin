@@ -313,7 +313,7 @@ namespace AppsFlyerSDK
 #elif UNITY_ANDROID && !UNITY_EDITOR
             return AppsFlyerAndroid.getAppsFlyerId();
 #else
-            return "";
+            return AppsFlyerWindows.GetAppsFlyerId();
 #endif
 
         }
