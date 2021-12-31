@@ -40,6 +40,15 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        public static string GetAppsFlyerId()
+        {
+#if ENABLE_WINMD_SUPPORT
+            Log("[GetAppsFlyerId]");
+            return AppsFlyerTracker.GetAppsFlyerTracker().GetAppsFlyerUID();
+#endif
+            return "";
+        }
+
         public static void SetCustomerUserId(string customerUserId)
         {
 #if ENABLE_WINMD_SUPPORT
