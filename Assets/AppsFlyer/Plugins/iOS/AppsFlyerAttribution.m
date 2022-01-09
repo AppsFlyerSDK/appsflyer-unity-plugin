@@ -67,7 +67,7 @@
 
 - (void) receiveBridgeReadyNotification:(NSNotification *) notification
 {
-    if(self.url && self.sourceApplication && self.annotation){
+    if(self.url && self.sourceApplication){
         [[AppsFlyerLib shared] handleOpenURL:self.url sourceApplication:self.sourceApplication withAnnotation:self.annotation];
         self.url = nil;
         self.sourceApplication = nil;

@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.4.4";
+        public static readonly string kAppsFlyerPluginVersion = "6.4.41";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -312,8 +312,10 @@ namespace AppsFlyerSDK
             return AppsFlyeriOS.getAppsFlyerId();
 #elif UNITY_ANDROID && !UNITY_EDITOR
             return AppsFlyerAndroid.getAppsFlyerId();
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
+            return AppsFlyerWindows.GetAppsFlyerId();
 #else
-            return "";
+            return ""; 
 #endif
 
         }
