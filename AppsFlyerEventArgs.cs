@@ -123,7 +123,6 @@ namespace AppsFlyerSDK
                     AppsFlyer.AFLog("DeepLinkEventsArgs.isDeferred", String.Format("{0} Exception caught.", e));
                 }
             }
-
             return false;
         }
 
@@ -156,7 +155,11 @@ namespace AppsFlyerSDK
                 {
                     this.deepLink = AppsFlyer.CallbackStringToDictionary(dictionary["deepLink"].ToString());
                 }
-                
+                if (dictionary.ContainsKey("is_deferred"))
+                {
+                    this.deepLink["is_deferred"] = dictionary["is_deferred"];
+                }
+
                 switch (status)
                 {
                     case "FOUND":
