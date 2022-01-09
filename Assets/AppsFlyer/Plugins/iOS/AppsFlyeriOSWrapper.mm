@@ -310,6 +310,7 @@ static BOOL didCallStart;
     
     if(result && result.deepLink){
         [dict setValue:result.deepLink.description forKey:@"deepLink"];
+        [dict setValue:@(result.deepLink.isDeferred) forKey:@"is_deferred"];
     }
     
     unityCallBack(onDeeplinkingObjectName, ON_DEEPLINKING, stringFromdictionary(dict));
