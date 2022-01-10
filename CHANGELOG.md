@@ -1,5 +1,9 @@
 # Versions
 
+## v6.4.41
+* Fix issue with deep linking
+* `getAppsFlyerUID` support for uwp
+
 ## v6.4.4
 * Update iOS SDK version - 6.4.4
 * Update Android SDK version - 6.4.3
