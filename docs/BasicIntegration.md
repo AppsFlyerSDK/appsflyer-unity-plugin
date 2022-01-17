@@ -102,18 +102,18 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     #endif
     ```
         
-4. In the `AppsFlyerAppController` class, add:
-    
-    ```objectivec
+4. Reques the tracking authorization where you wish to display the prompt: <br/>
+    You can use the following [package](https://github.com/Unity-Technologies/com.unity.ads.ios-support) or any other package that allows you to request the tracking authorization. 
+    ```c#
 
-    #import <AppTrackingTransparency/ATTrackingManager.h>
-    
-    -  (void)viewDidLoad {
-         [super viewDidLoad];
-    if #available(iOS 14, *) {
-        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
-        NSLog(@"Status: %lu", (unsigned long)status);
-        }];
+    using Unity.Advertisement.IosSupport;
+
+    /*  ... */
+  
+    if (ATTrackingStatusBinding.GetAuthorizationTrackingStatus() 
+         == ATTrackingStatusBinding.AuthorizationTrackingStatus.NOT_DETERMINED)
+        {
+            ATTrackingStatusBinding.RequestAuthorizationTracking();
         }
-    }
-
+     /*  ... */
+```
