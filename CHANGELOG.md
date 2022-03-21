@@ -1,5 +1,8 @@
 # Versions
 
+## v6.5.3
+* Additional solution for Swizzling using macroprocessor
+
 ## v6.5.2
 * Update iOS SDK version - 6.5.2
 * Update Android SDK version - 6.5.2
