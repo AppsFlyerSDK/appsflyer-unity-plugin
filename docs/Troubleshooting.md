@@ -69,4 +69,4 @@ public class MyBuildPostprocessor {
 
 ![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/releases/6.x.x/6.5.x/6.5.3/docs/Ressources/macroprocessor.jpg)
 
-*Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
+* Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
