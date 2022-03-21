@@ -9,12 +9,13 @@
 * When a conflict occurs these methods may not be invoked. 
 * The solution provided by the AppsFlyer Unity Plugin is [Swizzling](https://medium.com/rocknnull/ios-to-swizzle-or-not-to-swizzle-f8b0ed4a1ce6).
 * Starting from `v6.0.7` there is an option to enable swizzling automatically. 
-We recommend using the macroprocessor option, which is the easiest one. This option is supported from version v6.5.3.
 
 To enable Swizzling, you have 3 options: 
 - [Using info .plist](#info)
 - [Using a c# Script](#script)
 - [Using macroprocessor starting v6.5.3](#macro)
+
+We recommend using the macroprocessor option, which is the easiest one. This option is supported from version v6.5.3.
 
 #### <a id="info"> Using info .plist
 
