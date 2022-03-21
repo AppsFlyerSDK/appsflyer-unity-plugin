@@ -101,9 +101,11 @@
 
 @end
 
+#if !(AFSDK_SHOULD_SWIZZLE)
+
 IMPL_APP_CONTROLLER_SUBCLASS(AppsFlyerAppController)
 
-
+#endif
 /**
 Note if you would not like to use IMPL_APP_CONTROLLER_SUBCLASS you can replace it with the code below.
  <code>
