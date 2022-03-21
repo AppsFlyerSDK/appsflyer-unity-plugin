@@ -67,6 +67,6 @@ public class MyBuildPostprocessor {
 #### <a id="macro"> Using macroprocessor
 * Add the [preprocessor macro](https://stackoverflow.com/a/26928784) flag `​AFSDK_SHOULD_SWIZZLE=1` to the build settings of the project. 
 
-![alt text](ressources/macroprocessor.jpg)
+![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/releases/6.x.x/6.5.x/6.5.3/docs/Ressources/macroprocessor.jpg)
 
 *Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
