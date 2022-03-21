@@ -9,10 +9,23 @@
 * When a conflict occurs these methods may not be invoked. 
 * The solution provided by the AppsFlyer Unity Plugin is [Swizzling](https://medium.com/rocknnull/ios-to-swizzle-or-not-to-swizzle-f8b0ed4a1ce6).
 * Starting from `v6.0.7` there is an option to enable swizzling automatically. 
+We recommend using the macroprocessor option, which is the easiest one. This option is supported from version v6.5.3.
+
+To enable Swizzling, you have 3 options: 
+- [Using info .plist](#info)
+- [Using a c# Script](#script)
+- [Using macroprocessor starting v6.5.3](#macro)
+
+#### <a id="info"> Using info .plist
+
 * To enable swizzling, in the info.plist file, a boolean K/V called `AppsFlyerShouldSwizzle` should be set to 1 (true).
 * This will automatically enable swizzling and solve conflicts with other plugins.
-* This can also be accomplished on the c# side by following these steps:
+* Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
+* Comment out `IMPL_APP_CONTROLLER_SUBCLASS(AppsFlyerAppController)` in AppsFlyerAppController.mm.
 
+---
+
+#### <a id="script"> Using a c# Script
 1. Create a new c# script. (we called ours AFUpdatePlist.cs)
 2. Place the script in a editor folder (Assets > Editor > AFUpdatePlist.cs)
 3. The code in the script should look like this:
@@ -50,3 +63,11 @@ public class MyBuildPostprocessor {
 4. Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
 5. Comment out `IMPL_APP_CONTROLLER_SUBCLASS(AppsFlyerAppController)` in AppsFlyerAppController.mm.
 
+---
+
+#### <a id="macro"> Using macroprocessor
+* Add the [preprocessor macro](https://stackoverflow.com/a/26928784) flag `​AFSDK_SHOULD_SWIZZLE=1` to the build settings of the project. 
+
+![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/releases/6.x.x/6.5.x/6.5.3/docs/Ressources/macroprocessor.jpg)
+
+* Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
