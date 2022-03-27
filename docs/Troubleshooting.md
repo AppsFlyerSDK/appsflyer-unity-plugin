@@ -11,11 +11,14 @@
 * Starting from `v6.0.7` there is an option to enable swizzling automatically. 
 
 To enable Swizzling, you have 3 options: 
+## For versions up to `6.5.3`
 - [Using info .plist](#info)
 - [Using a c# Script](#script)
+## From version `6.5.3`
 - [Using macroprocessor starting v6.5.3](#macro)
 
-We recommend using the macroprocessor option, which is the easiest one. This option is supported from version v6.5.3.
+
+## From version `6.5.3`
 
 #### <a id="info"> Using info .plist
 
@@ -69,6 +72,6 @@ public class MyBuildPostprocessor {
 #### <a id="macro"> Using macroprocessor
 * Add the [preprocessor macro](https://stackoverflow.com/a/26928784) flag `​AFSDK_SHOULD_SWIZZLE=1` to the build settings of the project. 
 
-![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/releases/6.x.x/6.5.x/6.5.3/docs/Ressources/macroprocessor.jpg)
+![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/master/docs/Ressources/Swizzling.jpg)
 
 * Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
