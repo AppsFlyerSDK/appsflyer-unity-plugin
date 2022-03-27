@@ -1,6 +1,6 @@
 # Troubleshooting
 
-### iOS Swizzling 
+## iOS Swizzling 
 
 * AppsFlyer Unity Plugin uses the [iOS life cycle](https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle) events for the SDK to work. 
 * The plugins uses [UnityAppController](https://docs.unity3d.com/Manual/UnityasaLibrary-iOS.html) for the lifecycle events to be invoked.
@@ -11,10 +11,10 @@
 * Starting from `v6.0.7` there is an option to enable swizzling automatically. 
 
 To enable Swizzling, you have 3 options: 
-## For versions up to `6.5.3`
+### For versions up to `6.5.3`
 - [Using info .plist](#info)
 - [Using a c# Script](#script)
-## From version `6.5.3`
+### From version `6.5.3`
 - [Using macroprocessor starting v6.5.3](#macro)
 
 
@@ -73,3 +73,44 @@ public class MyBuildPostprocessor {
 ![alt text](https://raw.githubusercontent.com//AppsFlyerSDK/appsflyer-unity-plugin/master/docs/Ressources/Swizzling.jpg)
 
 * Validate that the code in the [AppsFlyer+AppController](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/Assets/AppsFlyer/Plugins/iOS/AppsFlyer%2BAppController.m) is called on the native side.
+    
+--- 
+    
+## Updating the info.plist
+In this example, we will update the info.plist to send SKAN postbacks to AppsFlyer.
+    
+1. Create a new c# script. (we called ours AFUpdatePlist.cs)
+2. Place the script in a editor folder (Assets > Editor > AFUpdatePlist.cs)
+3. The code in the script should look like this:
+
+```c#
+using System.IO;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEditor.iOS.Xcode;
+
+public class MyBuildPostprocessor
+{
+
+    [PostProcessBuildAttribute]
+    public static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
+    {
+
+        if (target == BuildTarget.iOS)
+        {
+            string plistPath = pathToBuiltProject + "/Info.plist";
+            PlistDocument plist = new PlistDocument();
+            plist.ReadFromString(File.ReadAllText(plistPath));
+
+            PlistElementDict rootDict = plist.root;
+            rootDict.SetString("NSAdvertisingAttributionReportEndpoint", "https://appsflyer-skadnetwork.com/");
+
+            File.WriteAllText(plistPath, plist.WriteToString());
+
+            Debug.Log("Info.plist updated with NSAdvertisingAttributionReportEndpoint");
+        }
+
+    }
+}
+```
