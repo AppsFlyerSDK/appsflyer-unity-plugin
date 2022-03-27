@@ -18,8 +18,6 @@ To enable Swizzling, you have 3 options:
 - [Using macroprocessor starting v6.5.3](#macro)
 
 
-## From version `6.5.3`
-
 #### <a id="info"> Using info .plist
 
 * To enable swizzling, in the info.plist file, a boolean K/V called `AppsFlyerShouldSwizzle` should be set to 1 (true).
