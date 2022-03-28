@@ -77,7 +77,7 @@ public class MyBuildPostprocessor {
 --- 
     
 ## Updating the info.plist
-In this example, we will update the info.plist to send SKAN postbacks to AppsFlyer.
+In this example, we will update the info.plist to send SKAN postbacks to AppsFlyer, but the script can be adjusted to update any key in the info.plist
     
 1. Create a new c# script. (we called ours AFUpdatePlist.cs)
 2. Place the script in a editor folder (Assets > Editor > AFUpdatePlist.cs)
@@ -105,6 +105,10 @@ public class MyBuildPostprocessor
 
             PlistElementDict rootDict = plist.root;
             rootDict.SetString("NSAdvertisingAttributionReportEndpoint", "https://appsflyer-skadnetwork.com/");
+    
+            /*** To add more keys :
+            ** rootDict.SetString("<your key>", "<your value>");
+            ***/
 
             File.WriteAllText(plistPath, plist.WriteToString());
 
