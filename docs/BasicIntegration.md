@@ -6,6 +6,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 - [Manual integration](#manual-integration)
 - [Init with the deeplinking callbacks](#init-sdk-deeplink)
 - [Collect IDFA with ATTrackingManager](#collect)
+- [Sending SKAN postbacks to AppsFlyer](#skan)
 
 ### <a id="using-prefab"> Using the AppsFlyerObject.prefab
 
@@ -116,4 +117,9 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
             ATTrackingStatusBinding.RequestAuthorizationTracking();
         }
      /*  ... */
-```
+  
+  
+---
+# <a id="skan"> Sending SKAN postback to Appsflyer
+  To register the AppsFlyer endpoint, you need to add the `NSAdvertisingAttributionReportEndpoint` key to your info.plist and set the value to `https://appsflyer-skadnetwork.com/`. 
+More info on how to update the info.plist can be found [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Troubleshooting.md#updating-the-infoplist). 
