@@ -694,6 +694,11 @@ namespace AppsFlyerSDK
         {
             throw new System.NotImplementedException();
         }
+
+        public void disableSKAdNetwork(int isDisabled)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 #endif

@@ -20,6 +20,7 @@ namespace AppsFlyerSDK
 		void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval);
 		void disableSKAdNetwork(int isDisabled);
 		void setCurrentDeviceLanguage(string language);
+		void disableSKAdNetwork(bool isDisabled);
 
 	}
 }
