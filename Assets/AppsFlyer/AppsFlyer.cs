@@ -64,7 +64,7 @@ namespace AppsFlyerSDK
 #if UNITY_IOS
              if (instance != null)
             {
-                new AppsFlyeriOS(devKey, appID, gameObject);
+                instance = new AppsFlyeriOS(devKey, appID, gameObject);
              }
             //AppsFlyeriOS.setAppsFlyerDevKey(devKey);
             //AppsFlyeriOS.setAppleAppID(appID);
@@ -176,13 +176,18 @@ namespace AppsFlyerSDK
         /// <param name="shouldEnable">shouldEnable boolean.</param>
         public static void setIsDebug(bool shouldEnable)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-                        AppsFlyeriOS.setIsDebug(shouldEnable);
-#elif UNITY_ANDROID && !UNITY_EDITOR
-                        AppsFlyerAndroid.setIsDebug(shouldEnable);
+            if (instance != null)
+            {
+                instance.setIsDebug(shouldEnable);
+            } else {
+#if UNITY_IOS                
+                instance = new AppsFlyeriOS();
+#elif UNITY_ANDROID
+                instance = new AppsFlyerAndroid();
 #else
 
 #endif
+            }
 
         }
 
@@ -261,7 +266,15 @@ namespace AppsFlyerSDK
             if (instance != null)
             {
                 instance.setOneLinkCustomDomain(domains);
-            }
+            } else {
+#if UNITY_IOS                
+                instance = new AppsFlyeriOS();
+#elif UNITY_ANDROID
+                instance = new AppsFlyerAndroid();
+#else
+
+#endif
+
 //#endif
 
         }

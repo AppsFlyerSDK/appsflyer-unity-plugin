@@ -150,7 +150,6 @@ namespace AppsFlyerSDK
         /// <param name="isDebug">shouldEnable boolean..</param>
         public void setIsDebug(bool isDebug)
         {
-            Debug.Log("set is debug with " + isDebug);
 #if !UNITY_EDITOR
            _setIsDebug(isDebug);
 #endif

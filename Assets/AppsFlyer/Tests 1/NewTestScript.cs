@@ -259,6 +259,7 @@ namespace AppsFlyerSDK.Tests
 
 
         [Test]
+        [System.Obsolete]
         public void Test_setSharingFilterForAllPartners_called()
         {
 
@@ -271,6 +272,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [System.Obsolete]
         public void Test_setSharingFilter_called()
         {
 
@@ -379,5 +381,421 @@ namespace AppsFlyerSDK.Tests
             AppsFlyerMOCKInterface.Received().addPushNotificationDeepLinkPath("path1", "path2");
 
         }
+
+#if UNITY_ANDROID
+        [Test]
+        public void updateServerUninstallToken_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.updateServerUninstallToken("tokenTest");
+            AppsFlyerMOCKInterface.Received().updateServerUninstallToken("tokenTest");
+
+        }
+
+        [Test]
+        public void setImeiData_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setImeiData("imei");
+            AppsFlyerMOCKInterface.Received().setImeiData("imei");
+
+        }
+
+        [Test]
+        public void setAndroidIdData_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setAndroidIdData("androidId");
+            AppsFlyerMOCKInterface.Received().setAndroidIdData("androidId");
+
+        }
+
+        [Test]
+        public void waitForCustomerUserId_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.waitForCustomerUserId(true);
+            AppsFlyerMOCKInterface.Received().waitForCustomerUserId(true);
+
+        }
+
+        [Test]
+        public void setCustomerIdAndStartSDK_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setCustomerIdAndStartSDK("01234");
+            AppsFlyerMOCKInterface.Received().setCustomerIdAndStartSDK("01234");
+
+        }
+
+
+        [Test]
+        public void getOutOfStore_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.getOutOfStore();
+            AppsFlyerMOCKInterface.Received().getOutOfStore();
+
+        }
+
+        [Test]
+        public void setOutOfStore_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setOutOfStore("test");
+            AppsFlyerMOCKInterface.Received().setOutOfStore("test");
+
+        }
+
+        [Test]
+        public void setCollectAndroidID_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setCollectAndroidID(true);
+            AppsFlyerMOCKInterface.Received().setCollectAndroidID(true);
+
+        }
+
+        [Test]
+        public void setCollectIMEI_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setCollectIMEI(true);
+            AppsFlyerMOCKInterface.Received().setCollectIMEI(true);
+
+        }
+
+        [Test]
+        public void setIsUpdate_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setIsUpdate(true);
+            AppsFlyerMOCKInterface.Received().setIsUpdate(true);
+
+        }
+
+        [Test]
+        public void setPreinstallAttribution_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setPreinstallAttribution("mediaSourceTestt", "campaign", "sideId");
+            AppsFlyerMOCKInterface.Received().setPreinstallAttribution("mediaSourceTestt", "campaign", "sideId");
+
+        }
+
+        [Test]
+        public void isPreInstalledApp_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.isPreInstalledApp();
+            AppsFlyerMOCKInterface.Received().isPreInstalledApp();
+
+        }
+
+        [Test]
+        public void getAttributionId_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.getAttributionId();
+            AppsFlyerMOCKInterface.Received().getAttributionId();
+
+        }
+
+        [Test]
+        public void handlePushNotifications_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.handlePushNotifications();
+            AppsFlyerMOCKInterface.Received().handlePushNotifications();
+
+        }
+
+        [Test]
+        public void validateAndSendInAppPurchase_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.validateAndSendInAppPurchase("ewjkekwjekw","hewjehwj", "purchaseData", "3.0", "USD", null, null);
+            AppsFlyerMOCKInterface.Received().validateAndSendInAppPurchase("ewjkekwjekw", "hewjehwj", "purchaseData", "3.0", "USD", null, null);
+
+        }
+
+        [Test]
+        public void setCollectOaid_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setCollectOaid(true);
+            AppsFlyerMOCKInterface.Received().setCollectOaid(true);
+
+        }
+
+        [Test]
+        public void setDisableAdvertisingIdentifiers_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableAdvertisingIdentifiers(true);
+            AppsFlyerMOCKInterface.Received().setDisableAdvertisingIdentifiers(true);
+
+        }
+#elif UNITY_IOS
+
+        [Test]
+        public void setDisableCollectAppleAdSupport_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableCollectAppleAdSupport(true);
+            AppsFlyerMOCKInterface.Received().setDisableCollectAppleAdSupport(true);
+
+        }
+
+        [Test]
+        public void setDisableCollectAppleAdSupport_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableCollectAppleAdSupport(false);
+            AppsFlyerMOCKInterface.Received().setDisableCollectAppleAdSupport(false);
+
+        }
+
+        [Test]
+        [System.Obsolete]
+        public void setShouldCollectDeviceName_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setShouldCollectDeviceName(true);
+            AppsFlyerMOCKInterface.Received().setShouldCollectDeviceName(true);
+
+        }
+
+        [Test]
+        [System.Obsolete]
+        public void setShouldCollectDeviceName_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setShouldCollectDeviceName(false);
+            AppsFlyerMOCKInterface.Received().setShouldCollectDeviceName(false);
+
+        }
+
+        [Test]
+        public void setDisableCollectIAd_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableCollectIAd(true);
+            AppsFlyerMOCKInterface.Received().setDisableCollectIAd(true);
+
+        }
+
+        [Test]
+        public void setDisableCollectIAd_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableCollectIAd(false);
+            AppsFlyerMOCKInterface.Received().setDisableCollectIAd(false);
+
+        }
+
+        [Test]
+        public void setUseReceiptValidationSandbox_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setUseReceiptValidationSandbox(true);
+            AppsFlyerMOCKInterface.Received().setUseReceiptValidationSandbox(true);
+
+        }
+
+        [Test]
+        public void setUseReceiptValidationSandbox_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setUseReceiptValidationSandbox(false);
+            AppsFlyerMOCKInterface.Received().setUseReceiptValidationSandbox(false);
+
+        }
+
+        [Test]
+        public void ssetUseUninstallSandbox_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setUseUninstallSandbox(true);
+            AppsFlyerMOCKInterface.Received().setUseUninstallSandbox(true);
+
+        }
+
+        [Test]
+        public void setUseUninstallSandbox_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setUseUninstallSandbox(false);
+            AppsFlyerMOCKInterface.Received().setUseUninstallSandbox(false);
+
+        }
+
+        [Test]
+        public void validateAndSendInAppPurchase_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.validateAndSendInAppPurchase("3d2", "5.0","USD", "45", null, null);
+            AppsFlyerMOCKInterface.Received().validateAndSendInAppPurchase("3d2", "5.0", "USD", "45", null, null);
+
+        }
+
+        [Test]
+        public void registerUninstall_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            byte[] token = System.Text.Encoding.UTF8.GetBytes("740f4707 bebcf74f 9b7c25d4 8e335894 5f6aa01d a5ddb387 462c7eaf 61bb78ad");
+            AppsFlyer.registerUninstall(token);
+            AppsFlyerMOCKInterface.Received().registerUninstall(token);
+
+        }
+
+        [Test]
+        public void handleOpenUrl_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.handleOpenUrl("www.test.com", "appTest", "test");
+            AppsFlyerMOCKInterface.Received().handleOpenUrl("www.test.com", "appTest", "test");
+
+        }
+
+        [Test]
+        public void waitForATTUserAuthorizationWithTimeoutInterval_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(30);
+            AppsFlyerMOCKInterface.Received().waitForATTUserAuthorizationWithTimeoutInterval(30);
+
+        }
+
+        [Test]
+        public void setCurrentDeviceLanguage_called()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setCurrentDeviceLanguage("en");
+            AppsFlyerMOCKInterface.Received().setCurrentDeviceLanguage("en");
+
+        }
+
+        [Test]
+        public void disableSKAdNetwork_called_true()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.disableSKAdNetwork(true);
+            AppsFlyerMOCKInterface.Received().disableSKAdNetwork(true);
+
+        }
+
+        [Test]
+        public void disableSKAdNetwork_called_false()
+        {
+
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerIOSBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.disableSKAdNetwork(false);
+            AppsFlyerMOCKInterface.Received().disableSKAdNetwork(false);
+
+        }
+
+#endif
     }
 }
