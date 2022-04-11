@@ -31,7 +31,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ secrets.TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           customParameters: -testPlatform iOS
       - uses: actions/upload-artifact@v2
