@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         projectPath:
-          - test-project
+          - appsflyer-unity-plugin
         testMode:
           - playmode
     steps:
