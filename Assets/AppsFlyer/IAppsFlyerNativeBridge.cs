@@ -62,5 +62,6 @@ namespace AppsFlyerSDK
         void setUserEmails(EmailCryptType cryptMethod, params string[] emails);
 
         void subscribeForDeepLink(string objectName);
+        void setIsDebug(bool shouldEnable);
     }
 }

@@ -2,7 +2,6 @@
 *.log
 Logs/
 Packages/
-ProjectSettings/
 Temp/
 Library/
 /*/outputs/

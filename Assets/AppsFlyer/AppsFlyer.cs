@@ -262,12 +262,14 @@ namespace AppsFlyerSDK
         /// <param name="domains">Array of domains.</param>
         public static void setOneLinkCustomDomain(params string[] domains)
         {
-//#if !UNITY_EDITOR
+            //#if !UNITY_EDITOR
             if (instance != null)
             {
                 instance.setOneLinkCustomDomain(domains);
-            } else {
-#if UNITY_IOS                
+            }
+            else
+            {
+#if UNITY_IOS
                 instance = new AppsFlyeriOS();
 #elif UNITY_ANDROID
                 instance = new AppsFlyerAndroid();
@@ -275,8 +277,9 @@ namespace AppsFlyerSDK
 
 #endif
 
-//#endif
+                //#endif
 
+            }
         }
 
         /// <summary>
