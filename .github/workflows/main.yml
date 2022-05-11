@@ -35,7 +35,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -testPlatform Android
+          customParameters: buildTarget Android
       - uses: actions/upload-artifact@v2
         if: always()
         with:
