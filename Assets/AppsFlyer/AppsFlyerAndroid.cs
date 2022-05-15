@@ -8,12 +8,10 @@ namespace AppsFlyerSDK
 #if UNITY_ANDROID 
     public class AppsFlyerAndroid : IAppsFlyerAndroidBridge
     {
-        public bool init = false;
-
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
         public AppsFlyerAndroid() { }
-
+          
         /// <summary>
         /// Use this method to init the sdk for the application.
         /// Call this method before startSDK.
@@ -35,7 +33,7 @@ namespace AppsFlyerSDK
         public void startSDK(bool onRequestResponse, string CallBackObjectName)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("startTracking", onRequestResponse, callBackObjectName);
+            appsFlyerAndroid.CallStatic("startTracking", onRequestResponse, CallBackObjectName);
 #endif
         }
 
