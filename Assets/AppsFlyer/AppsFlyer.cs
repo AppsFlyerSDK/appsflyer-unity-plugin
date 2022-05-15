@@ -54,16 +54,18 @@ namespace AppsFlyerSDK
             }
 
 #if UNITY_IOS
-             if (instance != null)
+            if (instance != null || !instance.isInit)
             {
                 instance = new AppsFlyeriOS(devKey, appID, gameObject);
+                instance.isInit = true;
             }
 #elif UNITY_ANDROID
-            if (instance != null)
+            if (instance != null || !instance.isInit)
             {
                 AppsFlyerAndroid appsFlyerAndroid = new AppsFlyerAndroid();
                 appsFlyerAndroid.initSDK(devKey, gameObject);
                 instance = appsFlyerAndroid;
+                instance.isInit = true;
                 
             }
 #elif UNITY_WSA_10_0 

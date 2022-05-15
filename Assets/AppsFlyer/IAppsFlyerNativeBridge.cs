@@ -7,6 +7,8 @@ namespace AppsFlyerSDK
 
     public interface IAppsFlyerNativeBridge
     {
+        bool isInit { get; set; }
+
         void startSDK(bool onRequestResponse, string CallBackObjectName);
 
         void sendEvent(string eventName, Dictionary<string, string> eventValues);

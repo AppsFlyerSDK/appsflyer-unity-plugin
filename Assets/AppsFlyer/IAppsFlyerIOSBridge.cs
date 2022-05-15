@@ -8,8 +8,7 @@ namespace AppsFlyerSDK
 
 	public interface IAppsFlyerIOSBridge : IAppsFlyerNativeBridge
 	{
-
-		void setDisableCollectAppleAdSupport(bool disable);
+        void setDisableCollectAppleAdSupport(bool disable);
 		void setShouldCollectDeviceName(bool shouldCollectDeviceName);
 		void setDisableCollectIAd(bool disableCollectIAd);
 		void setUseReceiptValidationSandbox(bool useReceiptValidationSandbox);

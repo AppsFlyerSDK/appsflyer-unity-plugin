@@ -8,6 +8,8 @@ namespace AppsFlyerSDK
 
     public class AppsFlyeriOS: IAppsFlyerIOSBridge
     {
+        public bool isInit { get; set;  }
+
         public AppsFlyeriOS() { }
 
         public AppsFlyeriOS(string devKey, string appID, MonoBehaviour gameObject)

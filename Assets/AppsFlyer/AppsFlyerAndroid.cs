@@ -8,6 +8,8 @@ namespace AppsFlyerSDK
 #if UNITY_ANDROID 
     public class AppsFlyerAndroid : IAppsFlyerAndroidBridge
     {
+        public bool init = false;
+
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
         public AppsFlyerAndroid() { }
