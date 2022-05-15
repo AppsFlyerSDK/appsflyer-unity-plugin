@@ -168,8 +168,10 @@ namespace AppsFlyerSDK
             } else {
 #if UNITY_IOS                
                 instance = new AppsFlyeriOS();
+                instance.setIsDebug(shouldEnable);
 #elif UNITY_ANDROID
                 instance = new AppsFlyerAndroid();
+                instance.setIsDebug(shouldEnable);
 #else
 
 #endif
@@ -563,6 +565,24 @@ namespace AppsFlyerSDK
             }
         }
 
+        public static void setDisableCollectAppleAdSupport(bool disable)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setDisableCollectAppleAdSupport(disable);
+            }
+        }
+
+        public static void setShouldCollectDeviceName(bool shouldCollectDeviceName)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setShouldCollectDeviceName(shouldCollectDeviceName);
+            }
+        }
+
 
         /// <summary>
         /// Use the following API to attribute the click and launch the app store's app page.
@@ -597,6 +617,15 @@ namespace AppsFlyerSDK
             }
         }
 
+        public static void setDisableCollectIAd(bool disableCollectIAd)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setDisableCollectIAd(disableCollectIAd);
+            }
+        }
+
         public static bool isPreInstalledApp()
         {
             if (instance != null && instance is IAppsFlyerAndroidBridge)
@@ -605,6 +634,15 @@ namespace AppsFlyerSDK
                 return appsFlyerAndroidInstance.isPreInstalledApp();
             }
             return false;
+        }
+
+        public static void setUseReceiptValidationSandbox(bool useReceiptValidationSandbox)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setUseReceiptValidationSandbox(useReceiptValidationSandbox);
+            }
         }
 
         /// <summary>
@@ -622,6 +660,15 @@ namespace AppsFlyerSDK
                 instance.recordCrossPromoteImpression(appID, campaign, parameters);
             }
             
+        }
+
+        public static void setUseUninstallSandbox(bool useUninstallSandbox)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setUseUninstallSandbox(useUninstallSandbox);
+            }
         }
 
         public static string getAttributionId()
@@ -643,12 +690,57 @@ namespace AppsFlyerSDK
             }
         }
 
+        public static void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.validateAndSendInAppPurchase(productIdentifier, price, currency, tranactionId, additionalParameters, gameObject);
+            }
+        }
+
         public static void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerAndroidBridge)
             {
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.validateAndSendInAppPurchase(publicKey, signature,purchaseData, price, currency, additionalParameters, gameObject);
+            }
+        }
+
+        public static void handleOpenUrl(string url, string sourceApplication, string annotation)
+        { 
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.handleOpenUrl(url, sourceApplication, annotation);
+            }
+        }
+
+        public static void registerUninstall(byte[] deviceToken)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.registerUninstall(deviceToken);
+            }
+        }
+
+        public static void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
+            }
+        }
+
+        public static void setCurrentDeviceLanguage(string language)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.setCurrentDeviceLanguage(language);
             }
         }
 
@@ -665,6 +757,15 @@ namespace AppsFlyerSDK
                 instance.generateUserInviteLink(parameters, gameObject);
             }
             
+        }
+
+        public static void disableSKAdNetwork(bool isDisabled)
+        {
+            if (instance != null && instance is IAppsFlyerIOSBridge)
+            {
+                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerAndroidInstance.disableSKAdNetwork(isDisabled);
+            }
         }
 
         public static void setCollectOaid(bool isCollect)

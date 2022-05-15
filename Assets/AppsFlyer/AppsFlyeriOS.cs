@@ -8,7 +8,7 @@ namespace AppsFlyerSDK
 
     public class AppsFlyeriOS: IAppsFlyerIOSBridge
     {
-
+        public AppsFlyeriOS() { }
 
         public AppsFlyeriOS(string devKey, string appID, MonoBehaviour gameObject)
         {
@@ -40,7 +40,6 @@ namespace AppsFlyerSDK
         /// <param name="eventValues">Contains dictionary of values for handling by backend.</param>
         public  void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
-            Debug.Log("AppsFlyeriOS sendEvent");
             sendEvent(eventName, eventValues, false, AppsFlyer.CallBackObjectName);
         }
         
