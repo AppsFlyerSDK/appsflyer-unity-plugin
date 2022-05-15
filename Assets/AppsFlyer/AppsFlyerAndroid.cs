@@ -11,12 +11,6 @@ namespace AppsFlyerSDK
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
         public AppsFlyerAndroid() { }
-          
-     
-        //public AppsFlyerAndroid(string devkey, MonoBehaviour gameObject)
-        //{
-        //    appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
-        //}
 
         /// <summary>
         /// Use this method to init the sdk for the application.

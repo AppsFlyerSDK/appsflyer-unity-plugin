@@ -25,3 +25,15 @@ dist
 build.gradle_mine
 .DS_Store
 *.idea
+
+.vs/appsflyer-unity-plugin/xs/project-cache/
+
+.vs/appsflyer-unity-plugin/xs/
+
+.vsconfig
+
+*.sln
+
+*.csproj
+
+*.cache

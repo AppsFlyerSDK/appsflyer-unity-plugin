@@ -14,14 +14,6 @@ namespace AppsFlyerSDK
         private static EventHandler onDeepLinkReceived;
         public static IAppsFlyerNativeBridge instance = null;
 
-//#if UNITY_IOS
-//        public static IAppsFlyerNativeBridge instance = new AppsFlyeriOS("2fRSe9XZe7mSNL47cmANsG", "0677951033", null);
-//#elif UNITY_ANDROID
-//        public static IAppsFlyerNativeBridge instance = new AppsFlyerAndroid();
-//#elif UNITY_WSA_10_0 && !UNITY_EDITOR
-//    public static IAppsFlyerNativeBridge instance = null;
-//#endif
-
 
         /// <summary>
         /// Initialize the AppsFlyer SDK with your devKey and appID.
@@ -65,15 +57,15 @@ namespace AppsFlyerSDK
              if (instance != null)
             {
                 instance = new AppsFlyeriOS(devKey, appID, gameObject);
-             }
-            //AppsFlyeriOS.setAppsFlyerDevKey(devKey);
-            //AppsFlyeriOS.setAppleAppID(appID);
-            //if(gameObject != null)
-            //{
-            //    AppsFlyeriOS.getConversionData(gameObject.name);
-            //}
-#elif UNITY_ANDROID 
-            AppsFlyerAndroid.initSDK(devKey, gameObject);
+            }
+#elif UNITY_ANDROID
+            if (instance != null)
+            {
+                AppsFlyerAndroid appsFlyerAndroid = new AppsFlyerAndroid();
+                appsFlyerAndroid.initSDK(devKey, gameObject);
+                instance = appsFlyerAndroid;
+                
+            }
 #elif UNITY_WSA_10_0 
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
             if (gameObject != null)
@@ -128,13 +120,10 @@ namespace AppsFlyerSDK
         /// <param name="isSDKStopped"> should sdk be stopped.</param>
         public static void stopSDK(bool isSDKStopped)
         {
-//#if !UNITY_EDITOR
             if (instance != null)
             {
                 instance.stopSDK(isSDKStopped);
             }
-//#endif
-
         }
 
         // <summary>
@@ -143,14 +132,12 @@ namespace AppsFlyerSDK
         /// <returns>boolean isSDKStopped.</returns>
         public static bool isSDKStopped()
         {
-//#if !UNITY_EDITOR
             if (instance != null)
             {
                 return instance.isSDKStopped();
             }
-//#endif
-            return false;
 
+            return false;
         }
 
         /// <summary>
@@ -159,12 +146,11 @@ namespace AppsFlyerSDK
         /// <returns>The current SDK version.</returns>
         public static string getSdkVersion()
         {
-//#if !UNITY_EDITOR
             if (instance != null)
             {
                 return instance.getSdkVersion();
             }
-//#endif
+
             return "";
 
         }
@@ -215,12 +201,12 @@ namespace AppsFlyerSDK
         /// <param name="oneLinkId">OneLink ID obtained from the AppsFlyer Dashboard.</param>
         public static void setAppInviteOneLinkID(string oneLinkId)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setAppInviteOneLinkID(oneLinkId);
             }
-//#endif
+
 
         }
 
@@ -230,12 +216,12 @@ namespace AppsFlyerSDK
         /// <param name="customData">additional data Dictionary.</param>
         public static void setAdditionalData(Dictionary<string, string> customData)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setAdditionalData(customData);
             }
-//#endif
+
 
         }
 
@@ -246,12 +232,12 @@ namespace AppsFlyerSDK
         /// <param name="urls">Array of urls.</param>
         public static void setResolveDeepLinkURLs(params string[] urls)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setResolveDeepLinkURLs(urls);
             }
-//#endif
+
 
         }
 
@@ -262,7 +248,7 @@ namespace AppsFlyerSDK
         /// <param name="domains">Array of domains.</param>
         public static void setOneLinkCustomDomain(params string[] domains)
         {
-            //#if !UNITY_EDITOR
+            
             if (instance != null)
             {
                 instance.setOneLinkCustomDomain(domains);
@@ -277,7 +263,7 @@ namespace AppsFlyerSDK
 
 #endif
 
-                //#endif
+                
 
             }
         }
@@ -290,12 +276,12 @@ namespace AppsFlyerSDK
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
         public static void setCurrencyCode(string currencyCode)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setCurrencyCode(currencyCode);
             }
-//#endif
+
 
         }
 
@@ -306,12 +292,12 @@ namespace AppsFlyerSDK
         /// <param name="longitude">longitude as double.</param>
         public static void recordLocation(double latitude, double longitude)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.recordLocation(latitude, longitude);
             }
-//#endif
+
 
         }
 
@@ -323,12 +309,12 @@ namespace AppsFlyerSDK
         /// <param name = "shouldAnonymizeUser" >shouldAnonymizeUser boolean.</param>
         public static void anonymizeUser(bool shouldAnonymizeUser)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.anonymizeUser(shouldAnonymizeUser);
             }
-//#endif
+
 
         }
 
@@ -343,7 +329,7 @@ namespace AppsFlyerSDK
 #else
             if (instance != null)
             {
-                instance.getAppsFlyerId();
+                return instance.getAppsFlyerId();
             }
 #endif
             return string.Empty;
@@ -357,12 +343,12 @@ namespace AppsFlyerSDK
         /// <param name="seconds">minimum time between 2 separate sessions in seconds.</param>
         public static void setMinTimeBetweenSessions(int seconds)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setMinTimeBetweenSessions(seconds);
             }
-//#endif
+
 
         }
 
@@ -373,12 +359,12 @@ namespace AppsFlyerSDK
         /// <param name="hostName">Host name.</param>
         public static void setHost(string hostPrefixName, string hostName)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setHost(hostPrefixName, hostName);
             }
-//#endif
+
 
         }
 
@@ -394,20 +380,21 @@ namespace AppsFlyerSDK
         /// <param name="emails">User emails.</param>
         public static void setUserEmails(EmailCryptType cryptMethod, params string[] emails)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setUserEmails(cryptMethod, emails);
             }
-//#endif
 
-            //#if UNITY_IOS && !UNITY_EDITOR
-            //            AppsFlyeriOS.setUserEmails(cryptMethod, emails.Length, emails);
-            //#elif UNITY_ANDROID && !UNITY_EDITOR
-            //            AppsFlyerAndroid.setUserEmails(cryptMethod, emails);
-            //#else
+        }
 
-            //#endif
+        public static void updateServerUninstallToken(string token)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.updateServerUninstallToken(token);
+            }
         }
 
         /// <summary>
@@ -416,12 +403,21 @@ namespace AppsFlyerSDK
         /// <param name="phoneNumber">phoneNumber string</param>
         public static void setPhoneNumber(string phoneNumber)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setPhoneNumber(phoneNumber);
             }
-//#endif
+
+        }
+
+        public static void setImeiData(string aImei)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setImeiData(aImei);
+            }
         }
 
         /// <summary>
@@ -430,13 +426,31 @@ namespace AppsFlyerSDK
         [Obsolete("Please use setSharingFilterForPartners api")]
         public static void setSharingFilterForAllPartners()
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setSharingFilterForAllPartners();
             }
-//#endif
 
+
+        }
+
+        public static void setAndroidIdData(string aAndroidId)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setAndroidIdData(aAndroidId);
+            }
+        }
+
+        public static void waitForCustomerUserId(bool wait)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.waitForCustomerUserId(wait);
+            }
         }
 
         /// <summary>
@@ -446,13 +460,22 @@ namespace AppsFlyerSDK
         [Obsolete("Please use setSharingFilterForPartners api")]
         public static void setSharingFilter(params string[] partners)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.setSharingFilter(partners);
             }
-//#endif
 
+
+        }
+
+        public static void setCustomerIdAndStartSDK(string id)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setCustomerIdAndStartSDK(id);
+            }
         }
 
         /// <summary>
@@ -468,6 +491,25 @@ namespace AppsFlyerSDK
 #else
 
 #endif
+        }
+
+        public static string getOutOfStore()
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                return appsFlyerAndroidInstance.getOutOfStore();
+            }
+            return string.Empty;
+        }
+
+        public static void setOutOfStore(string sourceName)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setOutOfStore(sourceName);
+            }
         }
 
         /// <summary>
@@ -494,6 +536,33 @@ namespace AppsFlyerSDK
 
         }
 
+        public static void setCollectAndroidID(bool isCollect)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setCollectAndroidID(isCollect);
+            }
+        }
+
+        public static void setIsUpdate(bool isUpdate)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setIsUpdate(isUpdate);
+            }
+        }
+
+        public static void setCollectIMEI(bool isCollect)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setCollectIMEI(isCollect);
+            }
+        }
+
 
         /// <summary>
         /// Use the following API to attribute the click and launch the app store's app page.
@@ -511,19 +580,31 @@ namespace AppsFlyerSDK
         /// </example>
         public static void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.attributeAndOpenStore(appID, campaign, userParams, gameObject);
             }
-//#endif
-            //#if UNITY_IOS && !UNITY_EDITOR
-            //            AppsFlyeriOS.attributeAndOpenStore(appID, campaign, userParams, gameObject);
-            //#elif UNITY_ANDROID && !UNITY_EDITOR
-            //            AppsFlyerAndroid.attributeAndOpenStore(appID, campaign, userParams);
-            //#else
+            
+        }
 
-            //#endif
+        public static void setPreinstallAttribution(string mediaSource, string campaign, string siteId)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setPreinstallAttribution(mediaSource, campaign, siteId);
+            }
+        }
+
+        public static bool isPreInstalledApp()
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                return appsFlyerAndroidInstance.isPreInstalledApp();
+            }
+            return false;
         }
 
         /// <summary>
@@ -535,19 +616,40 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.recordCrossPromoteImpression(appID, campaign, parameters);
             }
-//#endif
-            //#if UNITY_IOS && !UNITY_EDITOR
-            //            AppsFlyeriOS.recordCrossPromoteImpression(appID, campaign, parameters);
-            //#elif UNITY_ANDROID && !UNITY_EDITOR
-            //            AppsFlyerAndroid.recordCrossPromoteImpression(appID, campaign, parameters);
-            //#else
+            
+        }
 
-            //#endif
+        public static string getAttributionId()
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                return appsFlyerAndroidInstance.getAttributionId();
+            }
+            return string.Empty;
+        }
+
+        public static void handlePushNotifications()
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.handlePushNotifications();
+            }
+        }
+
+        public static void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.validateAndSendInAppPurchase(publicKey, signature,purchaseData, price, currency, additionalParameters, gameObject);
+            }
         }
 
         /// <summary>
@@ -557,19 +659,21 @@ namespace AppsFlyerSDK
         /// <param name="parameters">parameters Dictionary.</param>
         public static void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.generateUserInviteLink(parameters, gameObject);
             }
-//#endif
-            //#if UNITY_IOS && !UNITY_EDITOR
-            //            AppsFlyeriOS.generateUserInviteLink(parameters, gameObject);
-            //#elif UNITY_ANDROID && !UNITY_EDITOR
-            //            AppsFlyerAndroid.generateUserInviteLink(parameters, gameObject);
-            //#else
+            
+        }
 
-            //#endif
+        public static void setCollectOaid(bool isCollect)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setCollectOaid(isCollect);
+            }
         }
 
 
@@ -581,12 +685,21 @@ namespace AppsFlyerSDK
         /// <param name="paths">array of nested json path</param>
         public static void addPushNotificationDeepLinkPath(params string[] paths)
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.addPushNotificationDeepLinkPath(paths);
             }
-//#endif
+
+        }
+
+        public static void setDisableAdvertisingIdentifiers(bool disable)
+        {
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setDisableAdvertisingIdentifiers(disable);
+            }
         }
 
         /// <summary>
@@ -596,12 +709,12 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void subscribeForDeepLink()
         {
-//#if !UNITY_EDITOR
+
             if (instance != null)
             {
                 instance.subscribeForDeepLink(CallBackObjectName);
             }
-//#endif
+
         }
 
         /// <summary>

@@ -12,7 +12,6 @@ namespace AppsFlyerSDK
 
         public AppsFlyeriOS(string devKey, string appID, MonoBehaviour gameObject)
         {
-            Debug.Log("AppsFlyeriOS");
             setAppsFlyerDevKey(devKey);
             setAppleAppID(appID);
             if (gameObject != null)
@@ -26,12 +25,6 @@ namespace AppsFlyerSDK
         /// Start Session.
         /// This will record a session and then record all background forground sessions during the lifecycle of the app.
         /// </summary>
-        public  void startSDK()
-        {
-            Debug.Log("AppsFlyeriOS start sDK");
-            startSDK(false, AppsFlyer.CallBackObjectName);
-        }
-        
         public void startSDK(bool shouldCallback, string callBackObjectName)
         {
 #if !UNITY_EDITOR

@@ -7,10 +7,6 @@ namespace AppsFlyerSDK
 
     public interface IAppsFlyerNativeBridge
     {
-        //void initSDK(string devKey, string appID);
-
-        //void initSDK(string devKey, string appID, MonoBehaviour gameObject);
-
         void startSDK(bool onRequestResponse, string CallBackObjectName);
 
         void sendEvent(string eventName, Dictionary<string, string> eventValues);
@@ -62,6 +58,7 @@ namespace AppsFlyerSDK
         void setUserEmails(EmailCryptType cryptMethod, params string[] emails);
 
         void subscribeForDeepLink(string objectName);
+
         void setIsDebug(bool shouldEnable);
     }
 }
