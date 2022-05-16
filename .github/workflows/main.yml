@@ -41,7 +41,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           targetPlatform: ${{ matrix.targetPlatform }}
-          customParameters: -buildTarget (BuildTarget)9
+          customParameters: -buildTarget Android
       - uses: actions/upload-artifact@v2
         if: always()
         with:
