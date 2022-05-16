@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   testAndroid:
-    name: Test in ${{ matrix.testMode }}
+    name: Test in ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -13,6 +13,9 @@ jobs:
           - .
         testMode:
           - playmode
+        targetPlatform:
+          - iOS 
+          - Android
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,7 +38,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          targetPlatform: Android
+          targetPlatform: ${{ matrix.targetPlatform }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:
