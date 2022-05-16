@@ -14,7 +14,6 @@ jobs:
         testMode:
           - playmode
         targetPlatform:
-          - iOS 
           - Android
     steps:
       - uses: actions/checkout@v2
@@ -34,6 +33,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          customImage: gableroux/unity3d:2018.4.5f1-android
         with:
           projectPath: ${{ matrix.projectPath }}
           testMode: ${{ matrix.testMode }}
@@ -41,7 +41,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           targetPlatform: ${{ matrix.targetPlatform }}
-          customParameters: -testPlatform iOS -buildTarget (BuildTarget)9
+          customParameters: -buildTarget (BuildTarget)9
       - uses: actions/upload-artifact@v2
         if: always()
         with:
