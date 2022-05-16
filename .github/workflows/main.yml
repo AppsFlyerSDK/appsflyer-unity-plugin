@@ -35,7 +35,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -testPlatform Android -buildTarget Android 
+          targetPlatform: Android
       - uses: actions/upload-artifact@v2
         if: always()
         with:
@@ -73,7 +73,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -buildTarget iOS
+          targetPlatform: iOS
       - uses: actions/upload-artifact@v2
         if: always()
         with:
