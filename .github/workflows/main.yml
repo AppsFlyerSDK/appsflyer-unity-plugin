@@ -40,7 +40,6 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           customParameters: -buildTarget Android -nographics
-          customImage: unityci/editor:ubuntu-2020.1.1f1-android-0.3.0
       - name: "Freeing up disk space on CI system"
         run: |
           # Before
