@@ -14,7 +14,7 @@ jobs:
         testMode:
           - playmode
         targetPlatform:
-          - Android
+          - iOS
     steps:
       - uses: actions/checkout@v2
         with:
@@ -25,7 +25,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
-          targetPlatform: Android
+          targetPlatform: iOS
       - uses: actions/upload-artifact@v2
         with:
           name: Build
@@ -50,7 +50,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -buildTarget Android -testPlatform Android -nographics
+          customParameters: -buildTarget iOS -testPlatform iOS -nographics
       - name: "Freeing up disk space on CI system"
         run: |
           # Before
