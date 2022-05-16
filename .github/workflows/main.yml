@@ -12,9 +12,9 @@ jobs:
         projectPath:
           - .
         testMode:
-          - iOS
+          - playmode
         targetPlatform:
-          - iOS
+          - Android
     steps:
       - uses: actions/checkout@v2
         with:
@@ -39,7 +39,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -buildTarget Android -nographics
+          customParameters: -buildTarget Android -testPlatform Android -nographics
       - name: "Freeing up disk space on CI system"
         run: |
           # Before
