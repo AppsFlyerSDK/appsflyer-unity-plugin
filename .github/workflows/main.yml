@@ -12,7 +12,7 @@ jobs:
         projectPath:
           - .
         testMode:
-          - Android
+          - playmode
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,7 +35,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: buildTarget Android
+          customParameters: -testPlatform Android -buildTarget Android 
       - uses: actions/upload-artifact@v2
         if: always()
         with:
@@ -73,7 +73,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: buildTarget iOS
+          customParameters: -buildTarget iOS
       - uses: actions/upload-artifact@v2
         if: always()
         with:
