@@ -12,9 +12,9 @@ jobs:
         projectPath:
           - .
         testMode:
-          - playmode
+          - iOS
         targetPlatform:
-          - Android
+          - iOS
     steps:
       - uses: actions/checkout@v2
         with:
