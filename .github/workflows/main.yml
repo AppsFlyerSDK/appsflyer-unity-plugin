@@ -40,7 +40,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           customParameters: -buildTarget Android
-          customImage: gableroux/unity3d:2018.4.5f1-android
+          customImage: unityci/editor:ubuntu-2020.1.1f1-android-0.3.0
       - uses: actions/upload-artifact@v2
         if: always()
         with:
