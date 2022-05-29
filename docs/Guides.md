@@ -204,8 +204,9 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
         string currency = args.purchasedProduct.metadata.isoCurrencyCode;
 
         string receipt = args.purchasedProduct.receipt;
-        var recptToJSON = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(args.purchasedProduct.receipt);
-        var transactionID = (string)recptToJSON["TransactionID"];
+        var recptToJSON = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(product.receipt);
+        var receiptPayload = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize((string)recptToJSON["Payload"]);
+        var transactionID = product.transactionID;
 
         if (String.Equals(args.purchasedProduct.definition.id, kProductIDConsumable, StringComparison.Ordinal))
         {
@@ -218,8 +219,8 @@ public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidate
 
             AppsFlyeriOS.validateAndSendInAppPurchase(prodID, price, currency, transactionID, null, this);
 #elif UNITY_ANDROID
-        var purchaseData = (string)recptToJSON["json"];
-        var signature = (string)recptToJSON["signature"];
+        var purchaseData = (string)receiptPayload["json"];
+        var signature = (string)receiptPayload["signature"];
         AppsFlyerAndroid.validateAndSendInAppPurchase(
         "<google_public_key>", 
         signature, 
