@@ -1099,7 +1099,7 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 ```
 ---
 
-##### <a id="disableSKAdNetwork"> **` bools disableSKAdNetwork(int isDisabled)`**
+##### <a id="disableSKAdNetwork"> **` bools disableSKAdNetwork(bool isDisabled)`**
 
 
 | parameter     | type       | description  |
