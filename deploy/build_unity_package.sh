@@ -4,7 +4,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage"
 
 DEPLOY_PATH=outputs
 UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-PACKAGE_NAME="appsflyer-unity-plugin-6.5.4.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.6.0.unitypackage"
 mkdir -p $DEPLOY_PATH
 
 
@@ -20,7 +20,7 @@ mkdir -p $DEPLOY_PATH
 Assets \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.5.4.unitypackage" \
+&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.6.0.unitypackage" \
 || echo "Failed to export package. See create_unity_core.log for more info."
 
 

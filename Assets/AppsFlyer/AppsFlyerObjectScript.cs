@@ -13,6 +13,7 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     public string devKey;
     public string appID;
     public string UWPAppID;
+    public string macOSAppID;
     public bool isDebug;
     public bool getConversionData;
     //******************************//
@@ -25,6 +26,8 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
         AppsFlyer.setIsDebug(isDebug);
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
         AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
+#elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
+    AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
 #else
         AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
 #endif
