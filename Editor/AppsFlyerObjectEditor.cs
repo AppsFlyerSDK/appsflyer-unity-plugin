@@ -10,6 +10,7 @@ public class AppsFlyerObjectEditor : Editor
     SerializedProperty devKey;
     SerializedProperty appID;
     SerializedProperty UWPAppID;
+    SerializedProperty macOSAppID;
     SerializedProperty isDebug;
     SerializedProperty getConversionData;
 
@@ -19,6 +20,7 @@ public class AppsFlyerObjectEditor : Editor
         devKey = serializedObject.FindProperty("devKey");
         appID = serializedObject.FindProperty("appID");
         UWPAppID = serializedObject.FindProperty("UWPAppID");
+        macOSAppID = serializedObject.FindProperty("macOSAppID");
         isDebug = serializedObject.FindProperty("isDebug");
         getConversionData = serializedObject.FindProperty("getConversionData");
     }
@@ -38,6 +40,7 @@ public class AppsFlyerObjectEditor : Editor
         EditorGUILayout.PropertyField(devKey);
         EditorGUILayout.PropertyField(appID);
         EditorGUILayout.PropertyField(UWPAppID);
+        EditorGUILayout.PropertyField(macOSAppID);
         EditorGUILayout.Separator();
         EditorGUILayout.HelpBox("Enable get conversion data to allow your app to recive deeplinking callbacks", MessageType.None);
         EditorGUILayout.PropertyField(getConversionData);

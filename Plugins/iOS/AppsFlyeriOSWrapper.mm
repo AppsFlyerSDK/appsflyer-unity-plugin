@@ -275,6 +275,13 @@ extern "C" {
     const void _setCurrentDeviceLanguage(const char* language) {
         [[AppsFlyerLib shared] setCurrentDeviceLanguage:stringFromChar(language)];
     }
+<<<<<<< Updated upstream
+=======
+
+    const void _setPartnerData(const char* partnerId, const char* partnerInfo) {
+        [[AppsFlyerLib shared] setPartnerDataWithPartnerId: stringFromChar(partnerId) partnerInfo:dictionaryFromJson(partnerInfo)];
+    }
+>>>>>>> Stashed changes
 }
 
 @implementation AppsFlyeriOSWarpper

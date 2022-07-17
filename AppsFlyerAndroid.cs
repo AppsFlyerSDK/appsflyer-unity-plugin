@@ -6,11 +6,13 @@ namespace AppsFlyerSDK
 {
 
 #if UNITY_ANDROID 
-    public class AppsFlyerAndroid
+    public class AppsFlyerAndroid : IAppsFlyerAndroidBridge
     {
+        public bool isInit { get; set; }
 
         private static AndroidJavaClass appsFlyerAndroid = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 
+        public AppsFlyerAndroid() { }
 
         /// <summary>
         /// Use this method to init the sdk for the application.
@@ -18,7 +20,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         /// <param name="gameObject">The current game object. This is used to get the conversion data callbacks. Pass null if you do not need the callbacks.</param>
-        public static void initSDK(string devkey, MonoBehaviour gameObject)
+        public void initSDK(string devkey, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
@@ -30,15 +32,10 @@ namespace AppsFlyerSDK
         /// The AppsFlyer's Dev-Key must be provided.
         /// </summary>
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
-        public static void startSDK()
-        {
-            startSDK(false, AppsFlyer.CallBackObjectName);
-        }
-        
-        public static void startSDK(bool shouldCallback, string callBackObjectName)
+        public void startSDK(bool onRequestResponse, string CallBackObjectName)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("startTracking", shouldCallback, callBackObjectName);
+            appsFlyerAndroid.CallStatic("startTracking", onRequestResponse, CallBackObjectName);
 #endif
         }
 
@@ -48,7 +45,7 @@ namespace AppsFlyerSDK
         /// This can be achieved with the stopSDK API.
         /// </summary>
         /// <param name="isSDKStopped">boolean should SDK be stopped.</param>
-        public static void stopSDK(bool isSDKStopped)
+        public void stopSDK(bool isSDKStopped)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("stopTracking", isSDKStopped);
@@ -59,7 +56,7 @@ namespace AppsFlyerSDK
         /// Get the AppsFlyer SDK version used in app.
         /// </summary>
         /// <returns>AppsFlyer SDK version.</returns>
-        public static string getSdkVersion()
+        public string getSdkVersion()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getSdkVersion");
@@ -72,7 +69,7 @@ namespace AppsFlyerSDK
         /// Manually pass the Firebase / GCM Device Token for Uninstall measurement.
         /// </summary>
         /// <param name="token">Firebase Device Token.</param>
-        public static void updateServerUninstallToken(string token)
+        public void updateServerUninstallToken(string token)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("updateServerUninstallToken", token);
@@ -84,7 +81,7 @@ namespace AppsFlyerSDK
         /// Should only be set to true in development / debug.
         /// </summary>
         /// <param name="shouldEnable">shouldEnable boolean.</param>
-        public static void setIsDebug(bool shouldEnable)
+        public void setIsDebug(bool shouldEnable)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setIsDebug", shouldEnable);
@@ -97,7 +94,7 @@ namespace AppsFlyerSDK
         /// Use this API to explicitly send IMEI to AppsFlyer.
         /// </summary>
         /// <param name="aImei">device's IMEI.</param>
-        public static void setImeiData(string aImei)
+        public void setImeiData(string aImei)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setImeiData", aImei);
@@ -110,7 +107,7 @@ namespace AppsFlyerSDK
         /// Use this API to explicitly send Android ID to AppsFlyer.
         /// </summary>
         /// <param name="aAndroidId">device's Android ID.</param>
-        public static void setAndroidIdData(string aAndroidId)
+        public void setAndroidIdData(string aAndroidId)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAndroidIdData", aAndroidId);
@@ -122,7 +119,7 @@ namespace AppsFlyerSDK
         /// This ID is available in AppsFlyer CSV reports along with Postback APIs for cross-referencing with your internal IDs.
         /// </summary>
         /// <param name="id">Customer ID for client.</param>
-        public static void setCustomerUserId(string id)
+        public void setCustomerUserId(string id)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCustomerUserId", id);
@@ -135,7 +132,7 @@ namespace AppsFlyerSDK
         /// If this API is used, all in-app events and any other SDK API calls are discarded, until the customerUserID is provided.
         /// </summary>
         /// <param name="wait">wait boolean.</param>
-        public static void waitForCustomerUserId(bool wait)
+        public void waitForCustomerUserId(bool wait)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("waitForCustomerUserId", wait);
@@ -146,7 +143,7 @@ namespace AppsFlyerSDK
         /// Use this API to provide the SDK with the relevant customer user id and trigger the SDK to begin its normal activity.
         /// </summary>
         /// <param name="id">Customer ID for client.</param>
-        public static void setCustomerIdAndStartSDK(string id)
+        public void setCustomerIdAndStartSDK(string id)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCustomerIdAndTrack", id);
@@ -157,7 +154,7 @@ namespace AppsFlyerSDK
         /// Get the current AF_STORE value.
         /// </summary>
         /// <returns>AF_Store value.</returns>
-        public static string getOutOfStore()
+        public string getOutOfStore()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getOutOfStore");
@@ -170,7 +167,7 @@ namespace AppsFlyerSDK
         /// Manually set the AF_STORE value.
         /// </summary>
         /// <param name="sourceName">value to be set.</param>
-        public static void setOutOfStore(string sourceName)
+        public void setOutOfStore(string sourceName)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setOutOfStore", sourceName);
@@ -182,7 +179,7 @@ namespace AppsFlyerSDK
         /// The link that is generated for the user invite will use this OneLink as the base link.
         /// </summary>
         /// <param name="oneLinkId">OneLink ID obtained from the AppsFlyer Dashboard.</param>
-        public static void setAppInviteOneLinkID(string oneLinkId)
+        public void setAppInviteOneLinkID(string oneLinkId)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAppInviteOneLinkID", oneLinkId);
@@ -193,7 +190,7 @@ namespace AppsFlyerSDK
         /// Set additional data to be sent to AppsFlyer.
         /// </summary>
         /// <param name="customData">additional data Dictionary.</param>
-        public static void setAdditionalData(Dictionary<string, string> customData)
+        public void setAdditionalData(Dictionary<string, string> customData)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setAdditionalData", convertDictionaryToJavaMap(customData));
@@ -204,10 +201,10 @@ namespace AppsFlyerSDK
         /// Set the user emails.
         /// </summary>
         /// <param name="emails">User emails.</param>
-        public static void setUserEmails(params string[] emails)
+        public void setUserEmails(EmailCryptType cryptType, params string[] userEmails)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("setUserEmails", (object)emails);
+            appsFlyerAndroid.CallStatic("setUserEmails", (object)userEmails);
 #endif
         }
 
@@ -216,7 +213,7 @@ namespace AppsFlyerSDK
         /// Set the user phone number.
         /// </summary>
         /// <param name="phoneNumber">User phoneNumber.</param>
-        public static void setPhoneNumber(string phoneNumber){
+        public void setPhoneNumber(string phoneNumber){
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setPhoneNumber", phoneNumber);
 #endif
@@ -232,7 +229,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="cryptMethod">Encryption method.</param>
         /// <param name="emails">User emails.</param>
-        public static void setUserEmails(EmailCryptType cryptMethod, params string[] emails)
+        public void setUserEmails(EmailCryptType cryptMethod, params string[] emails)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setUserEmails", getEmailType(cryptMethod), (object)emails);
@@ -245,7 +242,7 @@ namespace AppsFlyerSDK
         /// However, apps with Google play services should avoid Android ID collection as this is in violation of the Google Play policy.
         /// </summary>
         /// <param name="isCollect">boolean, false to opt-out.</param>
-        public static void setCollectAndroidID(bool isCollect)
+        public void setCollectAndroidID(bool isCollect)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectAndroidID", isCollect);
@@ -258,7 +255,7 @@ namespace AppsFlyerSDK
         /// However, apps with Google play services should avoid IMEI collection as this is in violation of the Google Play policy.
         /// </summary>
         /// <param name="isCollect">boolean, false to opt-out.</param>
-        public static void setCollectIMEI(bool isCollect)
+        public void setCollectIMEI(bool isCollect)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectIMEI", isCollect);
@@ -270,7 +267,7 @@ namespace AppsFlyerSDK
         /// This Universal Link will invoke the app but any deep linking data will not propagate to AppsFlyer.
         /// </summary>
         /// <param name="urls">Array of urls.</param>
-        public static void setResolveDeepLinkURLs(params string[] urls)
+        public void setResolveDeepLinkURLs(params string[] urls)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("setResolveDeepLinkURLs", (object)urls);
@@ -282,7 +279,7 @@ namespace AppsFlyerSDK
         /// Advertisers can use this method to set vanity onelink domains.
         /// </summary>
         /// <param name="domains">Array of domains.</param>
-        public static void setOneLinkCustomDomain(params string[] domains)
+        public void setOneLinkCustomDomain(params string[] domains)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setOneLinkCustomDomain", (object)domains);
@@ -293,7 +290,7 @@ namespace AppsFlyerSDK
         /// Manually set that the application was updated.
         /// </summary>
         /// <param name="isUpdate">isUpdate boolean value.</param>
-        public static void setIsUpdate(bool isUpdate)
+        public void setIsUpdate(bool isUpdate)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setIsUpdate", isUpdate);
@@ -306,7 +303,7 @@ namespace AppsFlyerSDK
         /// You can set the currency code for all events by calling the following method.
         /// </summary>
         /// <param name="currencyCode">3 character ISO 4217 code.</param>
-        public static void setCurrencyCode(string currencyCode)
+        public void setCurrencyCode(string currencyCode)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCurrencyCode", currencyCode);
@@ -318,7 +315,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="latitude">latitude as double.</param>
         /// <param name="longitude">longitude as double.</param>
-        public static void recordLocation(double latitude, double longitude)
+        public void recordLocation(double latitude, double longitude)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("trackLocation", latitude, longitude);
@@ -331,7 +328,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="eventName">Event Name as String.</param>
         /// <param name="eventValues">Event Values as Dictionary.</param>
-        public static void sendEvent(string eventName, Dictionary<string, string> eventValues)
+        public void sendEvent(string eventName, Dictionary<string, string> eventValues)
         {
             sendEvent(eventName, eventValues, false, AppsFlyer.CallBackObjectName);
         }
@@ -349,7 +346,7 @@ namespace AppsFlyerSDK
         /// Default is false.
         /// </summary>
         /// <param name="isDisabled">isDisabled boolean.</param>
-        public static void anonymizeUser(bool isDisabled)
+        public void anonymizeUser(bool isDisabled)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("setDeviceTrackingDisabled", isDisabled);
@@ -362,7 +359,7 @@ namespace AppsFlyerSDK
         /// This API must be invoked prior to initializing the AppsFlyer SDK in order to function properly.
         /// </summary>
         /// <param name="isEnabled">should Facebook's deferred app links be processed by the AppsFlyer SDK.</param>
-        public static void enableFacebookDeferredApplinks(bool isEnabled)
+        public void enableFacebookDeferredApplinks(bool isEnabled)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("enableFacebookDeferredApplinks", isEnabled);
@@ -376,7 +373,7 @@ namespace AppsFlyerSDK
         /// The default value is false.
         /// </summary>
         /// <param name="doConsume">doConsume boolean.</param>
-        public static void setConsumeAFDeepLinks(bool doConsume)
+        public void setConsumeAFDeepLinks(bool doConsume)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setConsumeAFDeepLinks", doConsume);
@@ -389,7 +386,7 @@ namespace AppsFlyerSDK
         /// <param name="mediaSource">Manufacturer or media source name for preinstall attribution.</param>
         /// <param name="campaign">Campaign name for preinstall attribution.</param>
         /// <param name="siteId">Site ID for preinstall attribution.</param>
-        public static void setPreinstallAttribution(string mediaSource, string campaign, string siteId)
+        public void setPreinstallAttribution(string mediaSource, string campaign, string siteId)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setPreinstallAttribution", mediaSource, campaign, siteId);
@@ -400,7 +397,7 @@ namespace AppsFlyerSDK
         /// Boolean indicator for preinstall by Manufacturer.
         /// </summary>
         /// <returns>boolean isPreInstalledApp.</returns>
-        public static bool isPreInstalledApp()
+        public bool isPreInstalledApp()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<bool>("isPreInstalledApp");
@@ -413,7 +410,7 @@ namespace AppsFlyerSDK
         /// Get the Facebook attribution ID, if one exists.
         /// </summary>
         /// <returns>string Facebook attribution ID.</returns>
-        public static string getAttributionId()
+        public string getAttributionId()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getAttributionId");
@@ -426,7 +423,7 @@ namespace AppsFlyerSDK
         /// Get AppsFlyer's unique device ID is created for every new install of an app.
         /// </summary>
         /// <returns>AppsFlyer's unique device ID.</returns>
-        public static string getAppsFlyerId()
+        public string getAppsFlyerId()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getAppsFlyerId");
@@ -445,7 +442,7 @@ namespace AppsFlyerSDK
         /// <param name="price">Purchase price, should be derived from <code>skuDetails.getStringArrayList("DETAILS_LIST")</code></param>
         /// <param name="currency">Purchase currency, should be derived from <code>skuDetails.getStringArrayList("DETAILS_LIST")</code></param>
         /// <param name="additionalParameters">additionalParameters Freehand parameters to be sent with the purchase (if validated).</param>
-        public static void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
+        public void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
            appsFlyerAndroid.CallStatic("validateAndTrackInAppPurchase", publicKey, signature, purchaseData, price, currency, convertDictionaryToJavaMap(additionalParameters), gameObject ? gameObject.name : null);
@@ -456,7 +453,7 @@ namespace AppsFlyerSDK
         /// Was the stopSDK(boolean) API set to true.
         /// </summary>
         /// <returns>boolean isSDKStopped.</returns>
-        public static bool isSDKStopped()
+        public bool isSDKStopped()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<bool>("isTrackingStopped");
@@ -470,7 +467,7 @@ namespace AppsFlyerSDK
         /// By default, at least 5 seconds must lapse between 2 app launches to count as separate 2 sessions.
         /// </summary>
         /// <param name="seconds">minimum time between 2 separate sessions in seconds.</param>
-        public static void setMinTimeBetweenSessions(int seconds)
+        public void setMinTimeBetweenSessions(int seconds)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setMinTimeBetweenSessions", seconds);
@@ -482,7 +479,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="hostPrefixName">Host prefix.</param>
         /// <param name="hostName">Host name.</param>
-        public static void setHost(string hostPrefixName, string hostName)
+        public void setHost(string hostPrefixName, string hostName)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setHost", hostPrefixName, hostName);
@@ -494,7 +491,7 @@ namespace AppsFlyerSDK
         /// Default value is  "appsflyer.com".
         /// </summary>
         /// <returns>Host name.</returns>
-        public static string getHostName()
+        public string getHostName()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getHostName");
@@ -507,7 +504,7 @@ namespace AppsFlyerSDK
         /// Get the custom host prefix.
         /// </summary>
         /// <returns>Host prefix.</returns>
-        public static string getHostPrefix()
+        public string getHostPrefix()
         {
 #if !UNITY_EDITOR
             return appsFlyerAndroid.CallStatic<string>("getHostPrefix");
@@ -519,7 +516,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Used by advertisers to exclude all networks/integrated partners from getting data.
         /// </summary>
-        public static void setSharingFilterForAllPartners()
+        public void setSharingFilterForAllPartners()
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setSharingFilterForAllPartners");
@@ -530,7 +527,7 @@ namespace AppsFlyerSDK
         /// Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
         /// </summary>
         /// <param name="partners">partners to exclude from getting data</param>
-        public static void setSharingFilter(params string[] partners)
+        public void setSharingFilter(params string[] partners)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setSharingFilter", (object)partners);
@@ -554,7 +551,7 @@ namespace AppsFlyerSDK
         /// By doing this you can serve users with personalized content or send them to specific activities within the app,
         /// which can greatly enhance their engagement with your app.
         /// </summary>
-        public static void getConversionData(string objectName)
+        public void getConversionData(string objectName)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("getConversionData", objectName);
@@ -564,7 +561,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Register a validation listener for the validateAndSendInAppPurchase API.
         /// </summary>
-        public static void initInAppPurchaseValidatorListener(MonoBehaviour gameObject)
+        public void initInAppPurchaseValidatorListener(MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("initInAppPurchaseValidatorListener", gameObject ? gameObject.name : null);
@@ -576,7 +573,7 @@ namespace AppsFlyerSDK
         /// You must include the appsflyer oaid library for this api to work.
         /// </summary>
         /// <param name="isCollect">isCollect oaid - set fasle to opt out</param>
-        public static void setCollectOaid(bool isCollect)
+        public void setCollectOaid(bool isCollect)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setCollectOaid", isCollect);
@@ -589,7 +586,7 @@ namespace AppsFlyerSDK
         /// <param name="promoted_app_id">promoted App ID</param>
         /// <param name="campaign">cross promotion campaign</param>
         /// <param name="userParams">additional user params</param>
-        public static void attributeAndOpenStore(string promoted_app_id, string campaign, Dictionary<string, string> userParams)
+        public void attributeAndOpenStore(string promoted_app_id, string campaign, Dictionary<string, string> userParams)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("attributeAndOpenStore", promoted_app_id, campaign, convertDictionaryToJavaMap(userParams));
@@ -603,7 +600,7 @@ namespace AppsFlyerSDK
         /// <param name="appID">promoted App ID.</param>
         /// <param name="campaign">cross promotion campaign.</param>
         /// <param name="parameters">parameters Dictionary.</param>
-        public static void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
+        public void recordCrossPromoteImpression(string appID, string campaign, Dictionary<string, string> parameters)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("recordCrossPromoteImpression", appID, campaign, convertDictionaryToJavaMap(parameters));
@@ -615,7 +612,7 @@ namespace AppsFlyerSDK
         /// See - https://support.appsflyer.com/hc/en-us/articles/115004480866-User-invite-attribution-
         /// </summary>
         /// <param name="parameters">parameters Dictionary.</param>
-        public static void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
+        public void generateUserInviteLink(Dictionary<string, string> parameters, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("createOneLinkInviteListener", convertDictionaryToJavaMap(parameters), gameObject ? gameObject.name : null);
@@ -625,7 +622,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// To measure push notifications as part of a retargeting campaign.
         /// </summary>
-        public static void handlePushNotifications(){
+        public void handlePushNotifications(){
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("handlePushNotifications");
 #endif
@@ -637,7 +634,7 @@ namespace AppsFlyerSDK
         /// See docs for more info.
         /// </summary>
         /// <param name="paths">array of nested json path</param>
-        public static void addPushNotificationDeepLinkPath(params string[] paths)
+        public void addPushNotificationDeepLinkPath(params string[] paths)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("addPushNotificationDeepLinkPath", (object)paths);
@@ -647,7 +644,7 @@ namespace AppsFlyerSDK
         /// <summary>
         /// subscribe to unified deep link callbacks
         /// </summary>
-        public static void subscribeForDeepLink(string objectName){
+        public void subscribeForDeepLink(string objectName){
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("subscribeForDeepLink", objectName);
 #endif
@@ -657,10 +654,20 @@ namespace AppsFlyerSDK
         /// Disables collection of various Advertising IDs by the SDK. This includes Google Advertising ID (GAID), OAID and Amazon Advertising ID (AAID)
         /// </summary>
         /// <param name="disable">disable boolean.</param>
-        public static void setDisableAdvertisingIdentifiers(bool disable)
+        public void setDisableAdvertisingIdentifiers(bool disable)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("setDisableAdvertisingIdentifiers", disable);
+#endif
+        }
+
+        /// <summary>
+        /// Allows sending custom data for partner integration purposes.
+        /// </summary>
+        public void setPartnerData(string partnerId, Dictionary<string, string> partnerInfo)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setPartnerData", partnerId, convertDictionaryToJavaMap(partnerInfo));
 #endif
         }
 
@@ -705,6 +712,11 @@ namespace AppsFlyerSDK
             }
             
             return map;
+        }
+
+        public void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
+        {
+            //ios only
         }
     }
 
