@@ -29,4 +29,4 @@ jobs:
       - name: create tag
         run: |
           git tag v6.6.0
-          git push origin v.6.6.0
+          git push origin v6.6.0
