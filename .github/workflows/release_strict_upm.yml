@@ -1,4 +1,4 @@
-name: release for upm
+name: release for strict upm
 on:
   push:
     branches:
