@@ -11,7 +11,12 @@ jobs:
       - name: Modify package.json
         run: echo "`jq '.version = "6.6.0"' ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
       - name: Commit changes
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_MAIL }}
         run: |
+          git config user.name $COMMIT_AUTHOR
+          git config user.email $COMMIT_EMAIL
           git add -A
           git commit -m "update package.json"
       - name: split branch
