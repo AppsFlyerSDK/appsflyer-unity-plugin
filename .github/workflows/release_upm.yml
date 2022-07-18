@@ -5,13 +5,12 @@ on:
     - master
 jobs:
   split-upm:
-    name: split upm branch (force)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
+      - uses: actions/checkout@v2
+        with:
         fetch-depth: 0
-     - name: Modify package.json
+      - name: Modify package.json
         run: echo "`jq '.version = "6.6.0"' ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
       - name: Commit changes
         run: |
@@ -21,10 +20,10 @@ jobs:
           git add -A
           git commit -m "commit message"
       - name: split branch
-      run: |
-        git branch -d upm &> /dev/null || echo upm branch not found
-        git subtree split -P Assets/AppsFlyer -b upm
-        git checkout upm
-        git push -f -u origin upm
-      env:
+        run: |
+          git branch -d upm &> /dev/null || echo upm branch not found
+          git subtree split -P Assets/AppsFlyer -b upm
+          git checkout upm
+          git push -f -u origin upm
+    env:
         PKG_ROOT: Assets/AppsFlyer
