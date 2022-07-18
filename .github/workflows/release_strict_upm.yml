@@ -14,7 +14,7 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
       - name: Modify package.json
-        run: echo "`jq '.description = "AppsFlyer Unity plugin strict mode"' ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
+        run: echo "`jq '.description = "AppsFlyer Unity plugin strict mode"' package.json`" > package.json
       - name: Commit changes and push
         env:
             COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
