@@ -6,12 +6,10 @@ on:
 jobs:
   split-upm:
     runs-on: ubuntu-latest
-    env:
-          TAG_NAME: ${{ github.event.release.name }}
     steps:
       - uses: actions/checkout@v2
       - name: Modify package.json
-        run: echo "`jq '.version = $TAG_NAME ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
+        run: echo "`jq '.version = 6.6.0 ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
       - name: Commit changes
         env:
             COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
@@ -30,5 +28,5 @@ jobs:
           git push -f -u origin upm
       - name: create tag
         run: |
-          git tag ${{ github.event.release.name }}
-          git push origin ${{ github.event.release.name }}
+          git tag v6.6.0
+          git push origin v.6.6.0
