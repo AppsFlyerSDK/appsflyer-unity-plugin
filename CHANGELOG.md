@@ -1,5 +1,11 @@
 # Versions
 
+## v6.6.0
+* Update iOS SDK version - 6.6.0
+* Update Android SDK version - 6.6.0
+* add new API setPartnerData
+* Beta support for MacOS
+
 ## v6.5.4
 * Update iOS SDK version - 6.5.4
 * Update Android SDK version - 6.5.4

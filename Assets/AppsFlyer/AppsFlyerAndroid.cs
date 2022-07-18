@@ -201,7 +201,7 @@ namespace AppsFlyerSDK
         /// Set the user emails.
         /// </summary>
         /// <param name="emails">User emails.</param>
-        public void setUserEmails(EmailCryptType cryptType, params string[] userEmails)
+        public void setUserEmails(params string[] userEmails)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("setUserEmails", (object)userEmails);

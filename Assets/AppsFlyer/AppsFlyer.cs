@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.5.4";
+        public static readonly string kAppsFlyerPluginVersion = "6.6.0";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -54,14 +54,12 @@ namespace AppsFlyerSDK
             {
 #if UNITY_STANDALONE_OSX
                 CallBackObjectName = gameObject.GetType().ToString();
-                AppsFlyer.AFLog("CallBackObjectName", CallBackObjectName);
 #else
                 CallBackObjectName = gameObject.name;
 #endif
             }
 
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Debug.Log("UNITY_STANDALONE_OSX");
             if (instance == null || !instance.isInit)
             {
                 instance = new AppsFlyeriOS(devKey, appID, gameObject);
@@ -100,7 +98,6 @@ namespace AppsFlyerSDK
 #else
             if (instance != null)
             {
-                AppsFlyer.AFLog("startSDK AppsFlyer.cs" , CallBackObjectName);
                 instance.startSDK(onRequestResponse != null, CallBackObjectName);
             }
 #endif

@@ -1,2 +1,0 @@
-Assets/PlayServicesResolver/Editor/Google.VersionHandler.dll
-Assets/PlayServicesResolver/Editor/Google.VersionHandler.dll.mdb

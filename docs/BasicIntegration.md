@@ -7,6 +7,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 - [Init with the deeplinking callbacks](#init-sdk-deeplink)
 - [Collect IDFA with ATTrackingManager](#collect)
 - [Sending SKAN postbacks to AppsFlyer](#skan)
+- [Mac OS initialization beta](#macos)
 
 ### <a id="using-prefab"> Using the AppsFlyerObject.prefab
 
@@ -99,7 +100,7 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     
     ```c#
     #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
+    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
     #endif
     ```
         
@@ -123,3 +124,9 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 # <a id="skan"> Sending SKAN postback to Appsflyer
   To register the AppsFlyer endpoint, you need to add the `NSAdvertisingAttributionReportEndpoint` key to your info.plist and set the value to `https://appsflyer-skadnetwork.com/`. 
 More info on how to update the info.plist can be found [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Troubleshooting.md#updating-the-infoplist). 
+
+---
+# <a id="macos"> MacOS initialization
+1. Use the prefab `AppsFlyerObject`
+2. Add your MacOS app id
+3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.

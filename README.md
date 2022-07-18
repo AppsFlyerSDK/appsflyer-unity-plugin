@@ -19,6 +19,27 @@
 - Android AppsFlyer SDK **v6.5.4** 
 - iOS AppsFlyer SDK **v6.5.4**
 
+## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.6.0 ❗❗
+- Starting version 6.6.0, there is no more need to differiencate between iOS and Android API. All API must be called with `AppsFlyer` class (even if the API is only iOS or Android).
+
+Example:
+
+Before 6.6.0:
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
+#endif
+```
+---
+
+After 6.6.0:
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
+#endif
+```
+---
+
 ## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.3.0 ❗❗
 
 - 6.3.0 supports Universal Windows Platform. As part of this update, the AppsFlyerObjectScript changes to include the app_id for your UWP app. If you made changes to this file, please merge them with the new AppsFlyerObjectScript.

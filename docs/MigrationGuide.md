@@ -217,21 +217,21 @@ AppsFlyer.trackAndOpenStore(string appID, string campaign, Dictionary<string, st
 AppsFlyer.setIsSandbox(bool isSandbox);
 // new
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setUseReceiptValidationSandbox(true);
+        AppsFlyer.setUseReceiptValidationSandbox(true);
 #endif
 
 // old
 AppsFlyer.registerUninstall(byte[] token);
 // new
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.registerUninstall(token);
+        AppsFlyer.registerUninstall(token);
 #endif
 
 // old
 AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 // new
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+        AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 #endif
         
 
@@ -245,49 +245,49 @@ AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation)
 AppsFlyer.setCollectIMEI(bool shouldCollect);
 // new 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCollectIMEI(bool shouldCollect);
+        AppsFlyer.setCollectIMEI(bool shouldCollect);
 #endif
 
 // old
 AppsFlyer.setCollectAndroidID(bool shouldCollect);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCollectAndroidID(bool shouldCollect);
+        AppsFlyer.setCollectAndroidID(bool shouldCollect);
 #endif
 
 //old
 AppsFlyer.setImeiData(string imeiData);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setImeiData(string imeiData);
+        AppsFlyer.setImeiData(string imeiData);
 #endif
 
 //old
 AppsFlyer.updateServerUninstallToken(string token);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.updateServerUninstallToken(string token);
+        AppsFlyer.updateServerUninstallToken(string token);
 #endif
 
 //old
 AppsFlyer.setAndroidIdData(string androidIdData);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setAndroidIdData("androidId");
+        AppAppsFlyersFlyerAndroid.setAndroidIdData("androidId");
 #endif
 
 //old
 AppsFlyer.setPreinstallAttribution(string mediaSource, string campaign, string siteId);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setPreinstallAttribution("mediaSource", "campaign", "siteId");
+        AppsFlyer.setPreinstallAttribution("mediaSource", "campaign", "siteId");
 #endif
 
 //old
 AppsFlyer.handlePushNotification(Dictionary<string, string> payload);
 //new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.handlePushNotifications();
+        AppsFlyer.handlePushNotifications();
 #endif
 
 
@@ -306,7 +306,7 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
 
 // android new
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.validateAndSendInAppPurchase(
+        AppsFlyer.validateAndSendInAppPurchase(
         "publicKey", 
         "signature", 
         "purchaseData", 
@@ -318,7 +318,7 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
 
 // ios new 
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.validateAndSendInAppPurchase(
+        AppsFlyer.validateAndSendInAppPurchase(
         "productIdentifier", 
         "price", 
         "currency", 

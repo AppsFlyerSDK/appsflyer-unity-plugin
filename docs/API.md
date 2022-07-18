@@ -32,6 +32,7 @@ The list of available methods for this plugin is described below.
     - [setSharingFilterForAllPartners](#setSharingFilterForAllPartners)[Deprecated]
     - [setSharingFilter](#setSharingFilter)[Deprecated]
     - [setSharingFilterForPartners](#setSharingFilterForPartners)
+    - [setPartnerData](#setPartnerData)
 - [Android Only API](#androidOnly)
     - [updateServerUninstallToken](#updateServerUninstallToken)
     - [setImeiData](#setImeiData)
@@ -567,6 +568,29 @@ AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
 
 ---
 
+
+##### <a id="setPartnerData"> **`void setPartnerData(string partnerID, params string[] partnerInfo)`** 
+
+
+Allows sending custom data for partner integration purposes.
+
+
+| parameter    | type                         |description       |
+| -----------  |------------------------------| -----------------------------------------|
+| `partnerID` | `string` | ID of the partner (usually suffixed with "_int").|
+|`partnerInfo` | `params string[]` | Customer data, depends on the integration configuration with the specific partner. |
+
+
+*Example:*
+
+```c#
+   Dictionary<string, string> partnerInfo = new Dictionary<string, string>();
+        partnerInfo.Add("puid", "1234567890");
+        AppsFlyer.setPartnerData("partner_test", partnerInfo);
+```
+
+---- 
+
 ## <a id="androidOnly"> Android Only API
   
 ##### <a id="updateServerUninstallToken"> **`void updateServerUninstallToken(string token)`**
@@ -582,7 +606,7 @@ AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.updateServerUninstallToken("token");
+        AppsFlyer.updateServerUninstallToken("token");
 #endif
 ```
 
@@ -604,7 +628,7 @@ Use this API to explicitly send IMEI to AppsFlyer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setImeiData("imei");
+        AppsFlyer.setImeiData("imei");
 #endif
 ```
 
@@ -623,7 +647,7 @@ Use this API to explicitly send Android ID to AppsFlyer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setAndroidIdData("androidId");
+        AppsFlyer.setAndroidIdData("androidId");
 #endif
 ```
 
@@ -645,7 +669,7 @@ If this API is used, all in-app events and any other SDK API calls are discarded
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.waitForCustomerUserId(true);
+        AppsFlyer.waitForCustomerUserId(true);
 #endif
 ```
 
@@ -663,7 +687,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCustomerIdStartSDK("id");
+        AppsFlyer.setCustomerIdStartSDK("id");
 #endif
 ```
 
@@ -677,7 +701,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string af_store = AppsFlyerAndroid.getOutOfStore();
+        string af_store = AppsFlyer.getOutOfStore();
 #endif
 ```
 
@@ -695,7 +719,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setOutOfStore("sourceName");
+        AppsFlyer.setOutOfStore("sourceName");
 #endif
 ```
 
@@ -716,7 +740,7 @@ However, apps with Google play services should avoid Android ID collection as th
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCollectAndroidID(true);
+        AppsFlyer.setCollectAndroidID(true);
 #endif
 ```
 
@@ -737,7 +761,7 @@ However, apps with Google play services should avoid IMEI collection as this is 
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCollectIMEI(true);
+        AppsFlyer.setCollectIMEI(true);
 #endif
 ```
 
@@ -755,7 +779,7 @@ Manually set that the application was updated.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setIsUpdate(true);
+        AppsFlyer.setIsUpdate(true);
 #endif
 ```
 
@@ -775,7 +799,7 @@ Manually set that the application was updated.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setPreinstallAttribution("mediaSource", "campaign", "siteId");
+        AppsFlyer.setPreinstallAttribution("mediaSource", "campaign", "siteId");
 #endif
 ```
 
@@ -790,7 +814,7 @@ Boolean indicator for preinstall by Manufacturer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (AppsFlyerAndroid.isPreInstalledApp())
+        if (AppsFlyer.isPreInstalledApp())
         {
 
         }
@@ -808,7 +832,7 @@ Get the Facebook attribution ID, if one exists.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string attributionId = AppsFlyerAndroid.getAttributionId();
+        string attributionId = AppsFlyer.getAttributionId();
 #endif
 ```
 
@@ -822,7 +846,7 @@ When the handlePushNotifications API is called push notifications will be record
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.handlePushNotifications();
+        AppsFlyer.handlePushNotifications();
 #endif
 ```
 
@@ -848,7 +872,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.validateAndSendInAppPurchase(
+        AppsFlyer.validateAndSendInAppPurchase(
         "publicKey", 
         "signature", 
         "purchaseData", 
@@ -875,7 +899,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setCollectOaid(true);
+        AppsFlyer.setCollectOaid(true);
 #endif
 ```
 
@@ -895,7 +919,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyerAndroid.setDisableAdvertisingIdentifiers(true);
+        AppsFlyer.setDisableAdvertisingIdentifiers(true);
 #endif
 ```
 
@@ -917,7 +941,7 @@ You can disable this behavior by setting the following property to true.
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setDisableCollectAppleAdSupport(true);
+        AppsFlyer.setDisableCollectAppleAdSupport(true);
 #endif
 ```
 
@@ -935,7 +959,7 @@ Set this flag to true, to collect the current device name(e.g. "My iPhone"). Def
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setShouldCollectDeviceName(true);
+        AppsFlyer.setShouldCollectDeviceName(true);
 #endif
 ```
 
@@ -952,7 +976,7 @@ Opt-out for Apple Search Ads attributions.
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setDisableCollectIAd(true);
+        AppsFlyer.setDisableCollectIAd(true);
 #endif
 ```
 
@@ -971,7 +995,7 @@ In app purchase receipt validation Apple environment(production or sandbox). The
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setUseReceiptValidationSandbox(true);
+        AppsFlyer.setUseReceiptValidationSandbox(true);
 #endif
 ```
 
@@ -989,7 +1013,7 @@ Set this flag to test uninstall on Apple environment(production or sandbox). The
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.setUseUninstallSandbox(true);
+        AppsFlyer.setUseUninstallSandbox(true);
 #endif
 ```
 
@@ -1013,7 +1037,7 @@ To send and validate in app purchases you can call this method from the processP
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AppsFlyeriOS.validateAndSendInAppPurchase(
+        AppsFlyer.validateAndSendInAppPurchase(
         "productIdentifier", 
         "price", 
         "currency", 
@@ -1048,7 +1072,7 @@ Register uninstall - you should register for remote notification and provide App
             byte[] token = UnityEngine.iOS.NotificationServices.deviceToken;
             if (token != null)
             {
-                AppsFlyeriOS.registerUninstall(token);
+                AppsFlyer.registerUninstall(token);
                 tokenSent = true;
             }
         }
@@ -1076,7 +1100,7 @@ Register uninstall - you should register for remote notification and provide App
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.handleOpenUrl(string url, string sourceApplication, string annotation);
+    AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 #endif
 ```
 
@@ -1094,7 +1118,7 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.waitForATTUserAuthorizationWithTimeoutInterval(60);
+    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
 #endif
 ```
 ---
@@ -1110,7 +1134,7 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.disableSKAdNetwork(true);
+    AppsFlyer.disableSKAdNetwork(true);
 #endif
 ```
 
@@ -1127,7 +1151,7 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyeriOS.setCurrentDeviceLanguage("english");
+    AppsFlyer.setCurrentDeviceLanguage("english");
 #endif
 ```
 
