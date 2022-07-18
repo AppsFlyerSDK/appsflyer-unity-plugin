@@ -35,7 +35,7 @@ public class AppsFlyerObjectEditor : Editor
         GUILayout.Box((Texture)AssetDatabase.LoadAssetAtPath("Assets/AppsFlyer/Editor/logo.png", typeof(Texture)), new GUILayoutOption[] { GUILayout.Width(600) });
 
         EditorGUILayout.Separator();
-        EditorGUILayout.HelpBox("Set your devKey and appID to init the AppsFlyer SDK and start tracking. You must modify these fields and provide:\ndevKey - Your application devKey provided by AppsFlyer.\nappId - For iOS only. Your iTunes Application ID.\nUWP app id - For UWP only. Your application app id", MessageType.Info);
+        EditorGUILayout.HelpBox("Set your devKey and appID to init the AppsFlyer SDK and start tracking. You must modify these fields and provide:\ndevKey - Your application devKey provided by AppsFlyer.\nappId - For iOS only. Your iTunes Application ID.\nUWP app id - For UWP only. Your application app id \nMac OS app id - For MacOS app only.", MessageType.Info);
 
         EditorGUILayout.PropertyField(devKey);
         EditorGUILayout.PropertyField(appID);
