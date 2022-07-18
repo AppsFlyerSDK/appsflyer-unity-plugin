@@ -50,7 +50,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -buildTarget iOS -testPlatform iOS -nographics
+          customParameters: -buildTarget iOS -nographics
       - name: "Freeing up disk space on CI system"
         run: |
           # Before
