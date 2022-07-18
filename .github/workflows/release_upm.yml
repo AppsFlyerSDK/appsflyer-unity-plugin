@@ -10,7 +10,6 @@ jobs:
           TAG_NAME: ${{ github.event.release.name }}
     steps:
       - uses: actions/checkout@v2
-      - name: get version
       - name: Modify package.json
         run: echo "`jq '.version = $TAG_NAME ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
       - name: Commit changes
