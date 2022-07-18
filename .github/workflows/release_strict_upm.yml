@@ -1,0 +1,31 @@
+name: release for upm
+on:
+  push:
+    branches:
+    - master
+jobs:
+  split-upm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: split branch
+        run: |
+          git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
+          git subtree split -P Assets/AppsFlyer -b Strict-upm
+          git checkout Strict-upm
+      - name: Modify package.json
+        run: echo "`jq '.description = "AppsFlyer Unity plugin strict mode"' ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
+      - name: Commit changes and push
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
+        run: |
+          git config user.name $COMMIT_AUTHOR
+          git config user.email $COMMIT_EMAIL
+          git add -A
+          git commit -m "update package.json"
+          git push -f -u origin Strict-upm
+      - name: create tag
+        run: |
+          git tag Strict-v6.6.0
+          git push origin Strict-v6.6.0
