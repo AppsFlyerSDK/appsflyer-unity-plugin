@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-        fetch-depth: 0
       - name: Modify package.json
         run: echo "`jq '.version = "6.6.0"' ./Assets/AppsFlyer/package.json`" > ./Assets/AppsFlyer/package.json
       - name: Commit changes
