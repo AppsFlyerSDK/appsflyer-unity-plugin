@@ -25,3 +25,8 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           git push -f -u origin upm
+            create-tag:
+      - name: create tag
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "v6.6.0"
