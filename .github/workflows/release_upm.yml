@@ -26,6 +26,6 @@ jobs:
           git checkout upm
           git push -f -u origin upm
       - name: create tag
-      - uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "v6.6.0"
+        run: |
+          git tag v6.6.0
+          git push origin v6.6.0
