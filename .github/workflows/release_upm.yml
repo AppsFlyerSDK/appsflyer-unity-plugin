@@ -25,5 +25,3 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           git push -f -u origin upm
-    env:
-        PKG_ROOT: Assets/AppsFlyer
