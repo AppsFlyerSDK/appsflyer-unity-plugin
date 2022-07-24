@@ -9,7 +9,7 @@ mkdir -p $DEPLOY_PATH
 
 
 # Build the .unitypackage
-/Applications/Unity/Hub/Editor/2019.4.26f1/Unity.app/Contents/MacOS/Unity \
+/opt/Unity/Editor/Unity
 -gvh_disable \
 -batchmode \
 -importPackage external-dependency-manager-1.2.144.unitypackage \
@@ -31,8 +31,6 @@ echo "removing ./Logs"
 rm -rf ../Logs
 echo "removing ./Packages"
 rm -rf ../Packages
-echo "removing ./ProjectSettings"
-rm -rf ../ProjectSettings
 echo "removing ./deploy/create_unity_core.log"
 rm ./create_unity_core.log
 echo "Moving  $DEPLOY_PATH/$PACKAGE_NAME to root"
