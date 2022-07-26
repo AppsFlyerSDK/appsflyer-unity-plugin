@@ -11,6 +11,7 @@ on:
 jobs:
   Run-Unit-Tests:
     uses: ./.github/workflows/main.yml
+    secrets: inherit
     
   Deploy-To-QA:
     needs: Run-Unit-Tests
