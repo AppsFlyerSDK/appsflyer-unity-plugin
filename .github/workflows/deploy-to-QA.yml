@@ -2,7 +2,6 @@ name: Deploy To QA
 
 on:
   workflow_call:
-
 jobs:
   Deploy-to-QA:
     runs-on: ubuntu-latest
