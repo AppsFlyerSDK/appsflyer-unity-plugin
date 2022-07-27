@@ -9,11 +9,5 @@ on:
       - '**.yml'
 
 jobs:
- # Run-Unit-Tests:
-  # uses: ./.github/workflows/main.yml
-  # secrets: inherit
-    
-  Deploy-To-QA:
-   # needs: Run-Unit-Tests
+   Deploy-To-QA:
     uses: ./.github/workflows/deploy-to-QA.yml
-    secrets: inherit
