@@ -8,6 +8,13 @@ on:
       - '**.md'
       - '**.yml'
 
+
 jobs:
-   Deploy-To-QA:
-    uses: ./.github/workflows/deploy-to-QA.yml
+  Run-Unit-Tests:
+   uses: ./.github/workflows/deploy-to-QA.yml
+   secrets: inherit
+    
+  Deploy-To-QA:
+    needs: Run-Unit-Tests
+    uses: ./.github/workflows/main.yml
+    secrets: inherit
