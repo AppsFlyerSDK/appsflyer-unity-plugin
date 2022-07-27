@@ -8,13 +8,12 @@ on:
       - '**.md'
       - '**.yml'
 
-
 jobs:
   Run-Unit-Tests:
-   uses: ./.github/workflows/deploy-to-QA.yml
+   uses: ./.github/workflows/main.yml
    secrets: inherit
     
   Deploy-To-QA:
     needs: Run-Unit-Tests
-    uses: ./.github/workflows/main.yml
+    uses: ./.github/workflows/deploy-to-QA.yml
     secrets: inherit
