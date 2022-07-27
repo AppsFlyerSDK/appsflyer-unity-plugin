@@ -28,7 +28,7 @@ jobs:
           echo "JIRA_FIXED_VERSION=$jira_fixed_version" >> $GITHUB_ENV
           chmod +x .github/workflows/scripts/releaseNotesGenerator.sh
           .github/workflows/scripts/releaseNotesGenerator.sh $JIRA_TOKEN "$jira_fixed_version"
-          - name: Checkout project
+      - name: Checkout project
       - uses: pCYSl5EDgo/setup-unity@master
         with:
           unity-version: 2019.4.26f1
