@@ -32,15 +32,3 @@ jobs:
           echo "toto4"
           .github/workflows/scripts/releaseNotesGenerator.sh $JIRA_TOKEN "$jira_fixed_version"
            echo "toto5"
-      - name: Checkout project
-      - uses: pCYSl5EDgo/setup-unity@master
-        with:
-          unity-version: 2019.4.26f1
-      - name: Build package
-        run: |
-          mv deploy/external-dependency-manager-1.2.144.unitypackage .
-          cd deploy
-          sh build_unity_package.sh -p
-          cd ..
-          mv external-dependency-manager-1.2.144.unitypackage deploy/
-          git push
