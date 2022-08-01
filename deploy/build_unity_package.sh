@@ -7,6 +7,9 @@ UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
 PACKAGE_NAME="appsflyer-unity-plugin-6.8.0.unitypackage"
 mkdir -p $DEPLOY_PATH
 
+#move external dependency manager
+echo "moving the external dependency manager to root"
+mv external-dependency-manager-1.2.144.unitypackage ..
 
 # Build the .unitypackage
 /opt/Unity/Editor/Unity
@@ -21,11 +24,14 @@ Assets \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
 && echo "package exported successfully to outputs/appsflyer-unity-plugin-6.8.0.unitypackage" \
+
 || echo "Failed to export package. See create_unity_core.log for more info."
 
 echo "hellp"
 if [ $1 == "-p" ]; then
-echo "removing ./Library"
+echo "moving back the external dependency manager to deploy"
+mv ../external-dependency-manager-1.2.144.unitypackage .
+echo "removing ./Library"xa
 rm -rf ../Library
 echo "removing ./Logs"
 rm -rf ../Logs 
@@ -40,6 +46,7 @@ rm -rf ./outputs
 echo "removing ../Assets surplus"
   rm -rf ./Assets/ExternalDependencyManager
   rm -rf ./Assets/PlayServicesResolver
+
 else
 echo "dev mode. No files removed. Run with -p flag for production build."
 fi

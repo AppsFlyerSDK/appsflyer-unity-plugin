@@ -16,8 +16,8 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v6.5.4** 
-- iOS AppsFlyer SDK **v6.5.4**
+- Android AppsFlyer SDK **v6.6.0** 
+- iOS AppsFlyer SDK **v6.6.0**
 
 ## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differiencate between iOS and Android API. All API must be called with `AppsFlyer` class (even if the API is only iOS or Android).

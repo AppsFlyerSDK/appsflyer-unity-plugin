@@ -66,7 +66,7 @@ namespace AppsFlyerSDK
                 instance.isInit = true;
             }
 #elif UNITY_ANDROID
-            if (instance != null || !instance.isInit)
+            if (instance == null || !instance.isInit)
             {
                 AppsFlyerAndroid appsFlyerAndroid = new AppsFlyerAndroid();
                 appsFlyerAndroid.initSDK(devKey, gameObject);
