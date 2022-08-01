@@ -1,7 +1,6 @@
 name: Test runner unity-appsflyer-plugin
 
-on:
-  workflow_call:
+on: [push, pull_request]
 
 jobs:
   testAndroid:
