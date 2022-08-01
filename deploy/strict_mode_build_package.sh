@@ -5,7 +5,8 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
 
  DEPLOY_PATH=outputs
  UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.6.1.unitypackage"
+ PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.8.0.unitypackage"
+
  mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -37,8 +38,7 @@ echo "Commenting out functions. Done."
  Assets \
  $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
  -quit \
- && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.6.1.unitypackage" \
- || echo "Failed to export package. See create_unity_core.log for more info."
+ && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.8.0.unitypackage" \
 
 
  if [ $1 == "-p" ]; then
@@ -56,17 +56,12 @@ echo "Commenting out functions. Done."
  mv ./outputs/$PACKAGE_NAME ..
  echo "removing ./deploy/outputs"
  rm -rf ./outputs
- echo "removing ./Assets extra files"
- rm -rf ../Assets/ExternalDependencyManager
- rm -rf ../Assets/PlayServicesResolver
- rm ../Assets/ExternalDependencyManager.meta
- rm ../Assets/PlayServicesResolver.meta
- echo "Uncomment disableAdvertisingIdentifier"
- sed -i '' 's/\/\/\[AppsFlyerLib/\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+echo "removing ../Assets surplus
+  rm -rf ./Assets/ExternalDependencyManager
+  rm ./Assets/ExternalDependencyManager.meta
+  rm -rf ./Assets/PlayServicesResolver
+  rm ./Assets/PlayServicesResolver.meta
 
- echo "Uncomment waitForATTUserAuthorizationWithTimeoutInterval"
- sed -i '' 's/\/\/\[\[AppsFlyerLib/\[\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
- echo "Uncomment functions. Done."
  else
  echo "dev mode. No files removed. Run with -p flag for production build."
  fi

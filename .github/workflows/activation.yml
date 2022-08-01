@@ -2,7 +2,7 @@ name: Acquire activation file for Unity
 on:
   push:
     branches:
-      - dev/RD-81493/unit-tests
+      - releases/1.x.x/1.1.x/1.1.1
 jobs:
   activation:
     name: Request manual activation file 🔑
