@@ -407,4 +407,8 @@ public class AppsFlyerAndroidWrapper {
     public static void setSharingFilterForPartners(java.lang.String... partners){
         AppsFlyerLib.getInstance().setSharingFilterForPartners(partners);
     }
+
+    public static void setDisableNetworkData(boolean disable){
+        AppsFlyerLib.getInstance().setDisableNetworkData(disable);
+    }
 }
