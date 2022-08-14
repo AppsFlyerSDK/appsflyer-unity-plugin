@@ -4,7 +4,7 @@ buildscript {
     
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         
     }
     dependencies {
@@ -26,7 +26,7 @@ nexusStaging {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         
     }
 }

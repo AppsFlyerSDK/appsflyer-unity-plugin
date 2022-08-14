@@ -1,5 +1,10 @@
 # Versions
 
+## v6.8.1
+* Update iOS SDK version - 6.8.1
+* Update Android SDK version - 6.8.0
+* Added new Android API `setDisableNetworkData`
+
 ## v6.6.0
 * Update iOS SDK version - 6.6.0
 * Update Android SDK version - 6.6.0

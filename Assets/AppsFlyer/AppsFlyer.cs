@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.6.1";
+        public static readonly string kAppsFlyerPluginVersion = "6.8.1";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -843,6 +843,16 @@ namespace AppsFlyerSDK
                 instance.setPartnerData(partnerId, partnerInfo);
             }
 
+        }
+
+        /// <summary>
+        /// Use to opt-out of collecting the network operator name (carrier) and sim operator name from the device.
+        /// </summary>
+        public static void setDisableNetworkData(bool disable) {
+            if (instance != null && instance is IAppsFlyerAndroidBridge) {
+                IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
+                appsFlyerAndroidInstance.setDisableNetworkData(disable);
+            }
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ repositories {
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    compileOnly 'com.appsflyer:af-android-sdk:6.5.4'
+    compileOnly 'com.appsflyer:af-android-sdk:6.8.0'
 
 }
 

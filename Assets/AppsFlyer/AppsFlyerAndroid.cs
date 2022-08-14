@@ -672,6 +672,15 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Use to opt-out of collecting the network operator name (carrier) and sim operator name from the device.
+        /// </summary>
+        public void setDisableNetworkData(bool disable) {
+#if !UNITY_EDITOR
+                appsFlyerAndroid.CallStatic("setDisableNetworkData", disable);
+#endif
+        }
+
+        /// <summary>
         /// Internal Helper Method.
         /// </summary>
         private static AndroidJavaObject getEmailType(EmailCryptType cryptType)
