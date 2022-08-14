@@ -587,6 +587,15 @@ namespace AppsFlyerSDK.Tests
             AppsFlyerMOCKInterface.Received().setDisableAdvertisingIdentifiers(true);
 
         }
+
+        [Test]
+        public void setDisableNetworkData_called() {
+            var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerAndroidBridge>();
+
+            AppsFlyer.instance = AppsFlyerMOCKInterface;
+            AppsFlyer.setDisableNetworkData(true);
+            AppsFlyerMOCKInterface.Received().setDisableNetworkData(true);
+        }
 #elif UNITY_IOS
 
         [Test]

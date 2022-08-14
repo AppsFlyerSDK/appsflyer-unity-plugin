@@ -51,6 +51,7 @@ The list of available methods for this plugin is described below.
     - [validateAndSendInAppPurchase](#validateAndSendInAppPurchase)
     - [setCollectOaid](#setCollectOaid)
     - [setDisableAdvertisingIdentifiers](#setDisableAdvertisingIdentifiers)
+    - [setDisableNetworkData](#setDisableNetworkData)
 - [iOS Only API](#iOSOnly)
     - [setShouldCollectDeviceName](#deprecated)
     - [setDisableCollectIAd](#setDisableCollectIAd)
@@ -920,6 +921,28 @@ An af_purchase event with the relevant values will be automatically sent if the 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyer.setDisableAdvertisingIdentifiers(true);
+#endif
+```
+
+---
+
+---
+    
+##### <a id="setDisableNetworkData"> **`void setDisableNetworkData(boolean disable)`**
+
+    setDisableNetworkData
+
+    Use to opt-out of collecting the network operator name (carrier) and sim operator name from the device.
+
+| parameter   | type    | description             |
+| ----------- |-------- |-------------------------|
+| `disable` | `bool`  | true to opt-out|
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyer.setDisableNetworkData(true);
 #endif
 ```
 
