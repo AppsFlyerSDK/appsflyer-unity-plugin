@@ -4,7 +4,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage"
 
 DEPLOY_PATH=outputs
 UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-PACKAGE_NAME="appsflyer-unity-plugin-6.8.2.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.8.1.unitypackage"
 mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -12,7 +12,7 @@ echo "moving the external dependency manager to root"
 mv external-dependency-manager-1.2.144.unitypackage ..
 
 # Build the .unitypackage
-/Applications/Unity/Hub/Editor/2019.4.26f1/Unity.app/Contents/MacOS/Unity \
+/Applications/Unity/Hub/Editor/2020.3.15f2/Unity.app/Contents/MacOS/Unity \
 -gvh_disable \
 -batchmode \
 -importPackage external-dependency-manager-1.2.144.unitypackage \
@@ -23,14 +23,14 @@ mv external-dependency-manager-1.2.144.unitypackage ..
 Assets \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.8.2.unitypackage" \
+&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.8.1.unitypackage" \
 || echo "Failed to export package. See create_unity_core.log for more info."
 
 
 if [ $1 == "-p" ]; then
 echo "moving back the external dependency manager to deploy"
 mv ../external-dependency-manager-1.2.144.unitypackage .
-echo "removing ./Library"
+echo "removing ./Library"xa
 rm -rf ../Library
 echo "removing ./Logs"
 rm -rf ../Logs

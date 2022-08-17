@@ -333,7 +333,7 @@ namespace AppsFlyerSDK
             sendEvent(eventName, eventValues, false, AppsFlyer.CallBackObjectName);
         }
         
-        public void sendEvent(string eventName, Dictionary<string, string> eventValues, bool shouldCallback, string callBackObjectName)
+        public static void sendEvent(string eventName, Dictionary<string, string> eventValues, bool shouldCallback, string callBackObjectName)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("trackEvent", eventName, convertDictionaryToJavaMap(eventValues), shouldCallback, callBackObjectName);
