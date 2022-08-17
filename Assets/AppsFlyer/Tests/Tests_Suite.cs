@@ -26,7 +26,7 @@ namespace AppsFlyerSDK.Tests
             var eventParams = new Dictionary<string, string>();
             eventParams.Add("key", "value");
             AppsFlyer.sendEvent("testevent", eventParams);
-            AppsFlyerMOCKInterface.Received().sendEvent("testevent", eventParams);
+            AppsFlyerMOCKInterface.Received().sendEvent("testevent", eventParams, false, "");
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace AppsFlyerSDK.Tests
             var AppsFlyerMOCKInterface = Substitute.For<IAppsFlyerNativeBridge>();
             AppsFlyer.instance = AppsFlyerMOCKInterface;
             AppsFlyer.sendEvent("testevent", null);
-            AppsFlyerMOCKInterface.Received().sendEvent("testevent", null);
+            AppsFlyerMOCKInterface.Received().sendEvent("testevent", null, false, "");
         }
 
 
