@@ -1,5 +1,8 @@
 # Versions
 
+## v6.8.2
+* Fix in-app event callback
+
 ## v6.8.1
 * Update iOS SDK version - 6.8.1
 * Update Android SDK version - 6.8.0
