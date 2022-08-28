@@ -5,7 +5,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
 
  DEPLOY_PATH=outputs
  UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.8.1.unitypackage"
+ PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.8.2.unitypackage"
  mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -26,7 +26,7 @@ echo "Commenting out functions. Done."
 
 
  # Build the .unitypackage
- /Applications/Unity/Hub/Editor/2020.3.15f2/Unity.app/Contents/MacOS/Unity \
+ /Applications/Unity/Hub/Editor/2019.4.26f1/Unity.app/Contents/MacOS/Unity \
  -gvh_disable \
  -batchmode \
  -importPackage external-dependency-manager-1.2.144.unitypackage \
