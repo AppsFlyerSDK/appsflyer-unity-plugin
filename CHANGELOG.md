@@ -1,5 +1,9 @@
 # Versions
 
+## v6.8.3
+* Fix android issue
+* Fix in-app callback issue
+
 ## v6.8.2
 * Fix dependency for strict mode
 
