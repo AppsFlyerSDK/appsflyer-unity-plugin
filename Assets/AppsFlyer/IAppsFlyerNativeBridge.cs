@@ -11,7 +11,7 @@ namespace AppsFlyerSDK
 
         void startSDK(bool onRequestResponse, string CallBackObjectName);
 
-        void sendEvent(string eventName, Dictionary<string, string> eventValues, bool onInAppResponse, string CallBackObjectName);
+        void sendEvent(string eventName, Dictionary<string, string> eventValues);
 
         void stopSDK(bool isSDKStopped);
 
