@@ -16,7 +16,7 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v6.8.0** 
+- Android AppsFlyer SDK **v6.8.2** 
 - iOS AppsFlyer SDK **v6.8.1**
 
 ## AD_ID permission for Android
