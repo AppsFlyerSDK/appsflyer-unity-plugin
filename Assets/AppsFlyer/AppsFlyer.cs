@@ -121,7 +121,7 @@ namespace AppsFlyerSDK
 #else
             if (instance != null)
             {
-                instance.sendEvent(eventName, eventValues);
+                instance.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
             }
 #endif
         }
