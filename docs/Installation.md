@@ -56,7 +56,7 @@ Add this line for the regular mode
   
   * If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) then follow these steps:
   1. import `appsflyer-unity-plugin.v*.unitypackage` to your project but make sure to uncheck the `EDM4U` dependencies.
-  <img src="https://firebasestorage.googleapis.com/v0/b/firstintegrationapp.appspot.com/o/Screen%20Shot%202020-04-02%20at%2014.38.30.png?alt=media&token=e556a324-b3b7-418c-8d2f-52ea9cf70f86"  width="350">
+  <img src="assets/import_unity_package.png"  width="350">
 
   2. Download and add the required Android dependencies to the Assets/Plugins/Android folder:
       1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.4.3/af-android-sdk-6.4.3.aar)
