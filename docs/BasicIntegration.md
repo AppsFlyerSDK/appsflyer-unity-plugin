@@ -12,7 +12,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 ### <a id="using-prefab"> Using the AppsFlyerObject.prefab
 
 1. Go to Assets > AppsFlyer and drag AppsFlyerObject.prefab to your scene.
-<img src="https://firebasestorage.googleapis.com/v0/b/firstintegrationapp.appspot.com/o/Unity2_add_object.png?alt=media&token=526b87f4-d5aa-400b-805d-5efe3f38ac87" width="650">
+<img src="assets/unity_add_object.png" width="650">
 <br/>
 2. Update the following fields:
 
