@@ -1,7 +1,7 @@
 # Unified Deep Linking(UDL)
 
     
-![alt text](https://dev.appsflyer.com/hc/docs/unified-deep-linking-udl "")
+![alt text](https://files.readme.io/7309a5f-6577_Unified_Deep_Link_Android.png)
 
 
 #### The 3 Deep Linking Types:
