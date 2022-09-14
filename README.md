@@ -63,8 +63,9 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
   --
 ## <a id="plugin-build-for"> Deep Linking
-- [integrate](/docs/DeepLinkGettingStarted.md)
+- [integrate](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
+- [Direct and deffered Deep Link](/docs/UnifiedDeepLink.md)
 - [User invite](/docs/UserInvite.md)
   --
 ## <a id="plugin-build-for"> API refrence
