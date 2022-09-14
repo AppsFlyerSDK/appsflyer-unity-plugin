@@ -1,5 +1,8 @@
 # Versions
 
+## v6.8.4
+* Fix package
+
 ## v6.8.3
 * Fix android issue
 * Fix in-app callback issue
