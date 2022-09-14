@@ -5,11 +5,11 @@
 
 
 #### The 3 Deep Linking Types:
-Since users may or may not have the mobile app installed, there are 2 types of deep linking:
-
 1. Deferred Deep Linking - Serving personalized content to new or former users, directly after the installation. 
 2. Direct Deep Linking - Directly serving personalized content to existing users, which already have the mobile app installed.
-3. Starting from v6.1.3, the new Unified Deep Linking API is available to handle deeplinking logic.
+3. Unified deep linking (UDL) - enables you to send new and existing users to a specific in-app activity as soon as the app is opened.
+
+For more info please check out the [OneLink™ Deep Linking Guide](https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-Deep-Linking-Guide#Intro).
 
 ---
 
