@@ -86,9 +86,15 @@ More info on how to update the info.plist can be found [here](https://github.com
 
 --- 
 
+# <a id="macos"> MacOS initialization
+1. Use the prefab `AppsFlyerObject`
+2. Add your MacOS app id
+3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
 
+  
+---
 
-# <a id="listeners"> Request Listeners
+# <a id="listeners"> Request Listeners(Optional)
     
 1. Attach the 'AppsFlyer.cs' script to the game object with the AppsFlyer init code. (AppsFlyerObject, ect)
 2. Add the following code **before** startSDK()
