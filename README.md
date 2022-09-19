@@ -62,7 +62,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [In-app events](/docs/InAppEvents.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
 ## <a id="plugin-build-for"> Deep Linking
-- [integrate](/docs/DeepLinkIntegrate.md)
+- [Installation](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
 - [To remove - Direct and deffered Deep Link](/docs/DirectAndDeffredDeepLink.md)
 - [User invite](/docs/UserInvite.md)
