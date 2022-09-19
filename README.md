@@ -11,17 +11,17 @@
 
 > *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
+### <a id="plugin-build-for"> This plugin is built for
+
+- Android AppsFlyer SDK **v6.8.2** 
+- iOS AppsFlyer SDK **v6.8.1**
+
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
 In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
 
 ---  
-### <a id="plugin-build-for"> This plugin is built for
-
-- Android AppsFlyer SDK **v6.8.2** 
-- iOS AppsFlyer SDK **v6.8.1**
-
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differentiate between iOS and Android APIs. All APIs must be called with `AppsFlyer` class (even if the API is only iOS or Android).
 
