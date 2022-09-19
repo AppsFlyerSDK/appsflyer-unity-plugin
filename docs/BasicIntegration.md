@@ -48,45 +48,10 @@ public class AppsFlyerObjectScript : MonoBehaviour
 
 ---
 
-### <a id="init-sdk-deeplink"> Init SDK with deeplinking callbacks
+### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
-```c#
-using AppsFlyerSDK;
+In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
-{
-    void Start()
-    {
-        /* AppsFlyer.setDebugLog(true); */
-        AppsFlyer.initSDK("devkey", "appID", this);
-        AppsFlyer.startSDK();
-    }
-
-    public void onConversionDataSuccess(string conversionData)
-    {
-        AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
-        Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
-        // add deferred deeplink logic here
-    }
-
-    public void onConversionDataFail(string error)
-    {
-        AppsFlyer.AFLog("onConversionDataFail", error);
-    }
-
-    public void onAppOpenAttribution(string attributionData)
-    {
-        AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
-        Dictionary<string, object> attributionDataDictionary = AppsFlyer.CallbackStringToDictionary(attributionData);
-        // add direct deeplink logic here
-    }
-
-    public void onAppOpenAttributionFailure(string error)
-    {
-        AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
-    }
-}
-```
 
 ---
 # <a id="collect"> Collect IDFA with ATTrackingManager
