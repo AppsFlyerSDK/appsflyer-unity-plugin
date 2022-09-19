@@ -73,6 +73,17 @@ public class AppsFlyerObjectScript : MonoBehaviour
       {
           AppsFlyer.AFLog("onConversionDataFail", error);
       }
+  
+        public void onAppOpenAttribution(string attributionData)
+      {
+          AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
+          // add direct deeplink logic here
+      }
+
+      public void onAppOpenAttributionFailure(string error)
+      {
+          AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
+      }
   ```
         
 ---
