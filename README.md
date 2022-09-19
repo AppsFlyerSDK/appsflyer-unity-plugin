@@ -55,16 +55,16 @@ View the migration docs [here](/docs/MigrationGuide.md).
 ⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
 
  ---
-## <a id="plugin-build-for"> Plugin
-- [Install plugin](/docs/Installation.md)
-- [Integrate plugin](/docs/BasicIntegration.md)
+## <a id="plugin-build-for"> Getting Started
+- [Installation](/docs/Installation.md)
+- [Integration](/docs/BasicIntegration.md)
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
 ## <a id="plugin-build-for"> Deep Linking
 - [integrate](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
-- [Remove - Direct and deffered Deep Link](/docs/UnifiedDeepLink.md)
+- [To remove - Direct and deffered Deep Link](/docs/DirectAndDeffredDeepLink.md)
 - [User invite](/docs/UserInvite.md)
 
 ----  
