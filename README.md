@@ -64,7 +64,7 @@ View the migration docs [here](/docs/MigrationGuide.md).
 ## <a id="plugin-build-for"> Deep Linking
 - [integrate](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
-- [Direct and deffered Deep Link](/docs/UnifiedDeepLink.md)
+- [Remove - Direct and deffered Deep Link](/docs/UnifiedDeepLink.md)
 - [User invite](/docs/UserInvite.md)
 
 ----  
