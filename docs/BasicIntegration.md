@@ -50,7 +50,7 @@ public class AppsFlyerObjectScript : MonoBehaviour
 ---
   ### <a id="init-sdk-deeplink"> Init with the deeplinking callbacks
     
-    ```c#
+  ```c#
   using AppsFlyerSDK;
 
   public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
@@ -73,7 +73,7 @@ public class AppsFlyerObjectScript : MonoBehaviour
       {
           AppsFlyer.AFLog("onConversionDataFail", error);
       }
-    ```
+  ```
         
 ---
 # <a id="collect"> Collect IDFA with ATTrackingManager
