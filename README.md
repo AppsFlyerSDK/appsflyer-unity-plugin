@@ -56,22 +56,20 @@ View the migration docs [here](/docs/MigrationGuide.md).
 
  ---
 ## <a id="plugin-build-for"> Plugin
-- [Import plugin](/docs/Installation.md)
+- [Install plugin](/docs/Installation.md)
 - [Integrate plugin](/docs/BasicIntegration.md)
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
-  --
 ## <a id="plugin-build-for"> Deep Linking
-- [integrate](/docs/DeepLinkGettingStarted.md)
+- [integrate](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
+- [Remove - Direct and deffered Deep Link](/docs/UnifiedDeepLink.md)
 - [User invite](/docs/UserInvite.md)
-  --
-## <a id="plugin-build-for"> API refrence
-- [API](/docs/API.md)
-    
+
 ----  
-## [Troubleshooting](/docs/Troubleshooting.md)
+### [API refrence](/docs/API.md)    
+### [Troubleshooting](/docs/Troubleshooting.md)
 
 
 
