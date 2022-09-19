@@ -70,6 +70,17 @@ Parsing deeplink object example:
                 {
                     AppsFlyer.AFLog("OnDeepLink", "This is a direct deep link");
                 }
+                
+                // deepLinkParamsDictionary contains all the deep link parameters as keys
+                Dictionary<string, object> deepLinkParamsDictionary = null;
+        #if UNITY_IOS && !UNITY_EDITOR
+                if (deepLinkEventArgs.deepLink.ContainsKey("click_event") && deepLinkEventArgs.deepLink["click_event"] != null)
+                {
+                    deepLinkParamsDictionary = deepLinkEventArgs.deepLink["click_event"] as Dictionary<string, object>;
+                }
+        #elif UNITY_ANDROID && !UNITY_EDITOR
+                    deepLinkParamsDictionary = deepLinkEventArgs.deepLink;
+        #endif
 
                 break;
             case DeepLinkStatus.NOT_FOUND:
