@@ -47,7 +47,34 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > - Make sure not to call destroy on the game object. 
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
 
+---
+  ### <a id="init-sdk-deeplink"> Init with the deeplinking callbacks
+    
+    ```c#
+  using AppsFlyerSDK;
 
+  public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
+  {
+      void Start()
+      {
+          /* AppsFlyer.setDebugLog(true); */
+          AppsFlyer.initSDK("devkey", "appID", this);
+          AppsFlyer.startSDK();
+      }
+
+      public void onConversionDataSuccess(string conversionData)
+      {
+          AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
+          Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
+          // add deferred deeplink logic here
+      }
+
+      public void onConversionDataFail(string error)
+      {
+          AppsFlyer.AFLog("onConversionDataFail", error);
+      }
+    ```
+        
 ---
 # <a id="collect"> Collect IDFA with ATTrackingManager
 
