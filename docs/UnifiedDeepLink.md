@@ -1,8 +1,5 @@
 # Unified Deep Linking(UDL)
 
-    
-![alt text](https://files.readme.io/7309a5f-6577_Unified_Deep_Link_Android.png)
-
 
 The flow works as follows:
 
