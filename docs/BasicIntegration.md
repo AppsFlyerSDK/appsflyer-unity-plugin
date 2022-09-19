@@ -46,12 +46,6 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > - Make sure not to call destroy on the game object. 
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
 
----
-
-### <a id="init-sdk-deeplink"> AD_ID permission for Android
-
-In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
-
 
 ---
 # <a id="collect"> Collect IDFA with ATTrackingManager
