@@ -16,8 +16,8 @@ class checkPackage:
 
 
 def main():
-    package = checkPackage("appsflyer-unity-plugin-6.6.0.unitypackage")
-    strict_package = checkPackage("strict-mode-sdk/appsflyer-unity-plugin-strict-mode-6.6.0.unitypackage")
+    package = checkPackage(sys.argv[1])
+    strict_package = checkPackage(sys.argv[2])
 
     #testing integreity of files
     print("Testing AppsFlyeriOSWrapper.mm in unity package")
