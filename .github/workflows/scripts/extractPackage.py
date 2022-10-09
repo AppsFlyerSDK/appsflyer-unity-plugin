@@ -81,7 +81,7 @@ def hasCommentedMethods(file):
     matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
     matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
     matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
-    return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
+    return len(matches1) == 1 and len(matches2) == 1 and not maches3
 
 #check that we are using the strict dependency in strict mode package
 def isSrictModeDependency(file):
