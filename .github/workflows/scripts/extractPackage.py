@@ -40,8 +40,11 @@ def main():
         for file in files:
             print (os.path.join(subdir, file))            
             f1 = os.path.join(*[path_of_the_directory, subdir,file])
-            f2 = os.path.join(path_of_repo, file)
+            f2 = os.path.join(subdir, file)
             f3 = os.path.join(*[path_of_the_strict_directory, subdir,file])
+            print("f1 is ", f1)
+            print("f2 is ", f2)
+            print("f3 is ", f3)
             if os.path.isfile(f1) and os.path.isfile(f2) and os.path.isfile(f3):
                 print(file)
                 if filename == "AppsFlyeriOSWrapper.mm":
