@@ -3,6 +3,7 @@ from nis import match
 import re
 import hashlib
 import os
+import sys
 from unitypackage_extractor.extractor import extractPackage
 
 class checkPackage:
@@ -61,6 +62,7 @@ def main():
             if os.path.isfile(f2):
                 if getHash(f1) != getHash(f2):
                     print("the file ", filename, "is not the same")
+                    sys.exit(5)
 
     
 def getHash(filePath):
