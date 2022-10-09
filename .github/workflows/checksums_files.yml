@@ -1,5 +1,7 @@
 name: checksum
 
+on: workflow_dispatch
+
 jobs:
   build:
     runs-in: ubuntu-latest
