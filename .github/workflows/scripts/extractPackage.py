@@ -18,8 +18,10 @@ class checkPackage:
         textfile = open(file, 'r')
         filetext = textfile.read()
         textfile.close()
-        matches = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
-        return len(matches) > 0
+        matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
+        matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
+        matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
+        return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
 
 
 
@@ -40,6 +42,8 @@ def main():
     files_to_not_check = ["package.json"]
     files_for_strict_mode_only = ["AppsFlyeriOSWrapper.mm", "AppsFlyerDependencies.xml"]
     
+    
+    #checksum of files
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
             print (os.path.join(subdir, file))            
@@ -57,13 +61,19 @@ def main():
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
+                     if file == "AppsFlyeriOSWrapper.mm":
+                        if not hasCommentedMethods(file_in_strict_package):
+                            print("the methods are not commented in  ", file)
+                        
+                        
                 else:
                     if getHash(file_in_package) != getHash(file_in_repo) or getHash(file_in_repo) != getHash(file_in_strict_package):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
 
-            
-               
+     
+    #check strict mode file:
+        
 
     
 def getHash(filePath):
@@ -72,6 +82,17 @@ def getHash(filePath):
         hash = file.read()
         md5.update(hash)
         return md5.hexdigest()
+    
+    
+
+def hasCommentedMethods(file):
+    textfile = open(file, 'r')
+    filetext = textfile.read()
+    textfile.close()
+    matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
+    matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
+    matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
+    return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
 
 if __name__ == "__main__":
     main()
