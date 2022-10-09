@@ -36,6 +36,10 @@ def main():
     path_of_the_strict_directory= 'strictPackageUnity/'
     path_of_the_directory= 'packageUnity/'
     path_of_repo = "Assets/"
+    
+    files_to_not_check = ["package.json"]
+    files_for_strict_mode_only = ["AppsFlyeriOSWrapper.mm", "AppsFlyerDependencies.xml"]
+    
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
             print (os.path.join(subdir, file))            
@@ -47,9 +51,9 @@ def main():
             print("file_in_strict_package is ", file_in_strict_package, os.path.isfile(file_in_strict_package))
             if os.path.isfile(file_in_package) and os.path.isfile(file_in_repo) and os.path.isfile(file_in_strict_package):
                 print(file)
-                if file == "package.json":
+                if file in files_to_not_check:
                     continue
-                if file == "AppsFlyeriOSWrapper.mm" or file == "AppsFlyerDependencies.xml":
+                if file in files_for_strict_mode_only:
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
