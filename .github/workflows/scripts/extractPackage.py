@@ -38,7 +38,7 @@ def main():
     path_of_repo = "Assets/"
     for subdir, dirs, files in os.walk(path_of_the_directory):
         for file in files:
-            print os.path.join(subdir, file)
+            print (os.path.join(subdir, file))
             f1 = os.path.join(path_of_the_directory,filename)
             f2 = os.path.join(path_of_repo, filename)
             f3 = os.path.join(path_of_the_strict_directory, filename)
