@@ -19,5 +19,5 @@ jobs:
           pip install unitypackage_extractor
       - name: execute py script
         run:
-          python .github/workflows/scripts/extractPackage.py
+          python .github/workflows/scripts/extractPackage.py appsflyer-unity-plugin-6.6.0.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-6.6.0.unitypackage
      
