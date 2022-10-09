@@ -39,20 +39,20 @@ def main():
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
             print (os.path.join(subdir, file))            
-            f1 = os.path.join(*[path_of_the_directory, subdir,file])
-            f2 = os.path.join(subdir, file)
-            f3 = os.path.join(*[path_of_the_strict_directory, subdir,file])
-            print("f1 is ", f1)
-            print("f2 is ", f2)
-            print("f3 is ", f3)
-            if os.path.isfile(f1) and os.path.isfile(f2) and os.path.isfile(f3):
+            file_in_package = os.path.join(*[path_of_the_directory, subdir,file])
+            file_in_repo = os.path.join(subdir, file)
+            file_in_strict_package = os.path.join(*[path_of_the_strict_directory, subdir,file])
+            print("file_in_package is ", file_in_package, os.path.isfile(file_in_package))
+            print("file_in_repo is ", file_in_repo, os.path.isfile(file_in_repo))
+            print("file_in_strict_package is ", file_in_strict_package, os.path.isfile(file_in_strict_package))
+            if os.path.isfile(file_in_package) and os.path.isfile(file_in_repo) and os.path.isfile(file_in_strict_package):
                 print(file)
                 if filename == "AppsFlyeriOSWrapper.mm":
-                    if getHash(f1) != getHash(f2):
+                    if getHash(file_in_package) != getHash(file_in_repo):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
                 else:
-                    if getHash(f1) != getHash(f2) or getHash(f3) != getHash(f2):
+                    if getHash(file_in_package) != getHash(file_in_repo) or getHash(f3) != getHash(file_in_strict_package):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
 
