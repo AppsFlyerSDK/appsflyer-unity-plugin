@@ -6,6 +6,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: checkout repo
+        uses: actions/checkout@v2.3.4
       - name: test emv
         run:
           echo "action path $GITHUB_ACTION_PATH"
