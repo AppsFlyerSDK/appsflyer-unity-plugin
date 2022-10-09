@@ -1,0 +1,11 @@
+name: checksum
+
+jobs:
+  build:
+    runs-in: ubuntu-latest
+    steps:
+      - name: test emv
+        shell: bash
+        run: |
+          echo "action path $GITHUB_ACTION_PATH"
+     
