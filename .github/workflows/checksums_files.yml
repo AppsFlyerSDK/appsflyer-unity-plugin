@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test emv
-        shell: bash
-        run: |
+        run:
           echo "action path $GITHUB_ACTION_PATH"
      
