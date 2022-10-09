@@ -52,7 +52,7 @@ def main():
                         print("the file ", file, "is not the same")
                         sys.exit(5)
                 else:
-                    if getHash(file_in_package) != getHash(file_in_repo) or getHash(f3) != getHash(file_in_strict_package):
+                    if getHash(file_in_package) != getHash(file_in_repo) or getHash(file_in_repo) != getHash(file_in_strict_package):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
 
