@@ -33,8 +33,8 @@ def main():
     package.extractPackage("./packageUnity")
     strict_package.extractPackage("./strictPackageUnity")
     
-    path_of_the_strict_directory= 'strictPackageUnity/Assets/'
-    path_of_the_directory= 'packageUnity/Assets/'
+    path_of_the_strict_directory= 'strictPackageUnity/'
+    path_of_the_directory= 'packageUnity/'
     path_of_repo = "Assets/"
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
