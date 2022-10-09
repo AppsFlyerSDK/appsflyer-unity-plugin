@@ -8,7 +8,16 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v2.3.4
-      - name: test emv
+        
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7.8'
+      -name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install unitypackage_extractor.extractor
+      - name: execute py script
         run:
-          cat README.md
+          python .github/workflows/scripts/extractPacakge.py
      
