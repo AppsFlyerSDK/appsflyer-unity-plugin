@@ -39,18 +39,18 @@ def main():
     for subdir, dirs, files in os.walk(path_of_the_directory):
         for file in files:
             print (os.path.join(subdir, file))
-            f1 = os.path.join(path_of_the_directory,filename)
-            f2 = os.path.join(path_of_repo, filename)
-            f3 = os.path.join(path_of_the_strict_directory, filename)
+            f1 = os.path.join(path_of_the_directory,file)
+            f2 = os.path.join(path_of_repo, file)
+            f3 = os.path.join(path_of_the_strict_directory, file)
             if os.path.isfile(f1) and os.path.isfile(f2) and os.path.isfile(f3):
-                print(filename)
+                print(file)
                 if filename == "AppsFlyeriOSWrapper.mm":
                     if getHash(f1) != getHash(f2):
-                        print("the file ", filename, "is not the same")
+                        print("the file ", file, "is not the same")
                         sys.exit(5)
                 else:
                     if getHash(f1) != getHash(f2) or getHash(f3) != getHash(f2):
-                        print("the file ", filename, "is not the same")
+                        print("the file ", file, "is not the same")
                         sys.exit(5)
 
             
