@@ -61,9 +61,12 @@ def main():
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
-                     if file == "AppsFlyeriOSWrapper.mm":
-                        if not hasCommentedMethods(file_in_strict_package):
-                            print("the methods are not commented in  ", file)
+                    if file == "AppsFlyeriOSWrapper.mm":
+                       if not hasCommentedMethods(file_in_strict_package):
+                           print("the methods are not commented in  ", file_in_strict_package)
+                    if file == "AppsFlyerDependencies.xml":
+                        if not isSrictModeDependency(file_in_strict_package):
+                            print("the dependecy is not strict in ",file_in_strict_package )
                         
                         
                 else:
@@ -94,5 +97,11 @@ def hasCommentedMethods(file):
     matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
     return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
 
+def isSrictModeDependency(file):
+    textfile = open(file, 'r')
+    filetext = textfile.read()
+    textfile.close()
+    match = re.findall("AppsFlyerFramework/Strict", filetext)
+    return len(match)>0
 if __name__ == "__main__":
     main()
