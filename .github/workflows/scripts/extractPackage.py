@@ -14,17 +14,6 @@ class checkPackage:
     def extractPackage(self, pathToOuptut):
         extractPackage(self.pathToPackage, outputPath=pathToOuptut)
 
-    def hasCommentedMethods(self, file):
-        textfile = open(file, 'r')
-        filetext = textfile.read()
-        textfile.close()
-        matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
-        matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
-        matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
-        return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
-
-
-
 
 def main():
     package = checkPackage("appsflyer-unity-plugin-6.6.0.unitypackage")
@@ -50,9 +39,6 @@ def main():
             file_in_package = os.path.join(*[path_of_the_directory, subdir,file])
             file_in_repo = os.path.join(subdir, file)
             file_in_strict_package = os.path.join(*[path_of_the_strict_directory, subdir,file])
-            print("file_in_package is ", file_in_package, os.path.isfile(file_in_package))
-            print("file_in_repo is ", file_in_repo, os.path.isfile(file_in_repo))
-            print("file_in_strict_package is ", file_in_strict_package, os.path.isfile(file_in_strict_package))
             if os.path.isfile(file_in_package) and os.path.isfile(file_in_repo) and os.path.isfile(file_in_strict_package):
                 print(file)
                 if file in files_to_not_check:
@@ -64,9 +50,11 @@ def main():
                     if file == "AppsFlyeriOSWrapper.mm":
                        if not hasCommentedMethods(file_in_strict_package):
                            print("the methods are not commented in  ", file_in_strict_package)
+                            sys.exit(5)
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
                             print("the dependecy is not strict in ",file_in_strict_package )
+                            sys.exit(5)
                         
                         
                 else:
@@ -74,10 +62,8 @@ def main():
                         print("the file ", file, "is not the same")
                         sys.exit(5)
 
-     
-    #check strict mode file:
-        
 
+        
     
 def getHash(filePath):
     md5 = hashlib.md5()
@@ -87,7 +73,7 @@ def getHash(filePath):
         return md5.hexdigest()
     
     
-
+#check that only the two methods are commented in the strict mode package
 def hasCommentedMethods(file):
     textfile = open(file, 'r')
     filetext = textfile.read()
@@ -97,6 +83,7 @@ def hasCommentedMethods(file):
     matches3 = re.findall("[/]+.*\[+AppsFlyerLib", filetext)
     return len(matches1) == 1 and len(matches2) == 1 and len(matches3) == 0
 
+#check that we are using the strict dependency in strict mode package
 def isSrictModeDependency(file):
     textfile = open(file, 'r')
     filetext = textfile.read()
