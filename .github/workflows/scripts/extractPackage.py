@@ -47,7 +47,7 @@ def main():
             print("file_in_strict_package is ", file_in_strict_package, os.path.isfile(file_in_strict_package))
             if os.path.isfile(file_in_package) and os.path.isfile(file_in_repo) and os.path.isfile(file_in_strict_package):
                 print(file)
-                if filename == "AppsFlyeriOSWrapper.mm":
+                if file == "AppsFlyeriOSWrapper.mm":
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("the file ", file, "is not the same")
                         sys.exit(5)
