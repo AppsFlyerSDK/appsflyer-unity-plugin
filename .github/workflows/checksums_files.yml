@@ -19,5 +19,5 @@ jobs:
           pip install unitypackage_extractor
       - name: execute py script
         run:
-          python .github/workflows/scripts/extractPacakge.py
+          python .github/workflows/scripts/extractPackage.py
      
