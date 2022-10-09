@@ -31,6 +31,7 @@ def main():
     #testing integreity of files
     print("Testing AppsFlyeriOSWrapper.mm in unity package")
     package.extractPackage("./packageUnity")
+    strict_package.extractPackage("./strictPackageUnity")
     
     path_of_the_strict_directory= 'strictPackageUnity/Assets/AppsFlyer/Plugins/iOS/'
     path_of_the_directory= 'packageUnity/Assets/AppsFlyer/Plugins/iOS/'
