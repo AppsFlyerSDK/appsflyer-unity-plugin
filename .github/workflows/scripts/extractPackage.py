@@ -50,7 +50,7 @@ def main():
                     if file == "AppsFlyeriOSWrapper.mm":
                        if not hasCommentedMethods(file_in_strict_package):
                            print("the methods are not commented in  ", file_in_strict_package)
-                            sys.exit(5)
+                           sys.exit(5)
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
                             print("the dependecy is not strict in ",file_in_strict_package )
