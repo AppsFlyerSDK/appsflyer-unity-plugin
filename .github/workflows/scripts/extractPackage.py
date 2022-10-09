@@ -21,7 +21,7 @@ class checkPackage:
 
 def main():
     package = checkPackage("appsflyer-unity-plugin-6.6.0.unitypackage")
-    #strict_package = checkPackage("/Users/margotguetta/Desktop/Projects/Plugin/Unity/appsflyer-unity-plugin/strict-mode-sdk/appsflyer-unity-plugin-strict-mode-6.8.4.unitypackage")
+    strict_package = checkPackage("strict-mode-sdk/appsflyer-unity-plugin-strict-mode-6.6.0.unitypackage")
 
     #testing regular package
     print("Testing AppsFlyeriOSWrapper.mm in unity package")
@@ -29,12 +29,12 @@ def main():
     hasComments = package.hasCommentedMethods("packageUnity/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm")
     print("The file in the unity package has comments : ", hasComments)
 
-    # #testing strict mode package
-    # print("Testing AppsFlyeriOSWrapper.mm in unity strict package")
-    # strict_package.extractPackage()
-    # strict_package.extractPackage()
-    # hasComments = strict_package.hasCommentedMethods("packageUnity/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm")
-    # print("The file in the unity strict package has comments : ", hasComments)
+     #testing strict mode package
+     print("Testing AppsFlyeriOSWrapper.mm in unity strict package")
+     strict_package.extractPackage()
+     strict_package.extractPackage()
+     hasComments = strict_package.hasCommentedMethods("packageUnity/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm")
+     print("The file in the unity strict package has comments : ", hasComments)
     
 
 
