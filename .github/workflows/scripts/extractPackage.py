@@ -36,12 +36,12 @@ def main():
     path_of_the_strict_directory= 'strictPackageUnity/Assets/'
     path_of_the_directory= 'packageUnity/Assets/'
     path_of_repo = "Assets/"
-    for subdir, dirs, files in os.walk(path_of_the_directory):
+    for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
-            print (os.path.join(subdir, file))
-            f1 = os.path.join(path_of_the_directory,file)
+            print (os.path.join(subdir, file))            
+            f1 = os.path.join(*[path_of_the_directory, subdir,file])
             f2 = os.path.join(path_of_repo, file)
-            f3 = os.path.join(path_of_the_strict_directory, file)
+            f3 = os.path.join(*[path_of_the_strict_directory, subdir,file])
             if os.path.isfile(f1) and os.path.isfile(f2) and os.path.isfile(f3):
                 print(file)
                 if filename == "AppsFlyeriOSWrapper.mm":
