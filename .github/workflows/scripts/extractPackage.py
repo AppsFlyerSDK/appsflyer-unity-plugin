@@ -33,9 +33,9 @@ def main():
     package.extractPackage("./packageUnity")
     strict_package.extractPackage("./strictPackageUnity")
     
-    path_of_the_strict_directory= 'strictPackageUnity/Assets/AppsFlyer/Plugins/iOS/'
-    path_of_the_directory= 'packageUnity/Assets/AppsFlyer/Plugins/iOS/'
-    path_of_repo = "Assets/AppsFlyer/Plugins/iOS/"
+    path_of_the_strict_directory= 'strictPackageUnity/Assets/'
+    path_of_the_directory= 'packageUnity/Assets/'
+    path_of_repo = "Assets/"
     for filename in os.listdir(path_of_the_directory):
         f1 = os.path.join(path_of_the_directory,filename)
         f2 = os.path.join(path_of_repo, filename)
