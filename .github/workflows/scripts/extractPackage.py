@@ -20,7 +20,7 @@ def main():
     strict_package = checkPackage(sys.argv[2])
 
     #testing integreity of files
-    print("testing integreity of files")
+    print("###################### \n testing integreity of files \n ######################")
     package.extractPackage("./packageUnity")
     strict_package.extractPackage("./strictPackageUnity")
     
@@ -44,22 +44,26 @@ def main():
                     continue
                 if file in files_for_strict_mode_only:
                     if getHash(file_in_package) != getHash(file_in_repo):
-                        print("the file ", file, "is not the same")
+                        print("\U000274C the file ", file, "is not the same")
                         sys.exit(5)
+                    print("file for non strict mode ", file, "md5 check passed \U0002705") 
                     if file == "AppsFlyeriOSWrapper.mm":
                        if not hasCommentedMethods(file_in_strict_package):
-                           print("the methods are not commented in  ", file_in_strict_package)
+                           print("\U000274C the methods are not commented in  ", file_in_strict_package)
                            sys.exit(5)
+                    print("file in strict mode ", file, " has the correct methods commented out \U0002705")
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
-                            print("the dependecy is not strict in ",file_in_strict_package )
+                            print("\U000274C the dependecy is not strict in ",file_in_strict_package )
                             sys.exit(5)
+                    rint("file in strict mode ", file, " has the correct depdendency \U0002705")
                         
-                        
+        
                 else:
                     if getHash(file_in_package) != getHash(file_in_repo) or getHash(file_in_repo) != getHash(file_in_strict_package):
-                        print("the file ", file, "is not the same")
+                        print("\U000274C the file ", file, "is not the same")
                         sys.exit(5)
+                    print("file ", file, "md5 check passed \U0002705")
 
 
         
@@ -74,7 +78,7 @@ def getHash(filePath):
     
 #check that only the two methods are commented in the strict mode package
 def hasCommentedMethods(file):
-    print("checking that the methods are commented in the strict mode package")
+    print("###################### \n checking that the methods are commented in the strict mode package \n ######################")
     textfile = open(file, 'r')
     filetext = textfile.read()
     textfile.close()
@@ -84,7 +88,7 @@ def hasCommentedMethods(file):
 
 #check that we are using the strict dependency in strict mode package
 def isSrictModeDependency(file):
-    print("checking the depdendency for the strict mode")
+    print("###################### \nchecking the depdendency for the strict mode \n ######################")
     textfile = open(file, 'r')
     filetext = textfile.read()
     textfile.close()
