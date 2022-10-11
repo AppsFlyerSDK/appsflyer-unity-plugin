@@ -35,7 +35,6 @@ def main():
     #checksum of files
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
-            print (os.path.join(subdir, file))            
             file_in_package = os.path.join(*[path_of_the_directory, subdir,file])
             file_in_repo = os.path.join(subdir, file)
             file_in_strict_package = os.path.join(*[path_of_the_strict_directory, subdir,file])
