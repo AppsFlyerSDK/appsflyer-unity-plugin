@@ -14,7 +14,7 @@ jobs:
         
       - name: Name of the branch
         run: | 
-          VERSION = $(echo "${{ github.head_ref}}" | grep -Eo '[0-9].[0-9].[0-9]+')
+          VERSION = echo "${{ github.head_ref}}"
           echo "PLUGIN_VERSION=$VERSION" >> $GITHUB_ENV
         
       - name: setup python
