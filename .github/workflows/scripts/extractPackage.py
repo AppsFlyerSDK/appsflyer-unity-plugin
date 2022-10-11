@@ -46,7 +46,7 @@ def main():
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("❌ the file ", file, "is not the same")
                         sys.exit(5)
-                    print("file for non strict mode ", file, "md5 check passed \U0002705") 
+                    print("file for non strict mode ", file, "md5 check passed ✅") 
                     if file == "AppsFlyeriOSWrapper.mm":
                        if not hasCommentedMethods(file_in_strict_package):
                            print("❌ the methods are not commented in  ", file_in_strict_package)
