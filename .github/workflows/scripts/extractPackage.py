@@ -50,12 +50,12 @@ def main():
                        if not hasCommentedMethods(file_in_strict_package):
                            print("❌ the methods are not commented in  ", file_in_strict_package)
                            sys.exit(5)
-                    print("file in strict mode ", file, " has the correct methods commented out ✅")
+                       print("file in strict mode ", file, " has the correct methods commented out ✅")
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
                             print("❌ the dependecy is not strict in ",file_in_strict_package )
                             sys.exit(5)
-                    print("file in strict mode ", file, " has the correct depdendency ✅")
+                        print("file in strict mode ", file, " has the correct depdendency ✅")
                         
         
                 else:
