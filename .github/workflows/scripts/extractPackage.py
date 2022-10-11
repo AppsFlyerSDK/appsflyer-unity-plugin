@@ -20,7 +20,7 @@ def main():
     strict_package = checkPackage(sys.argv[2])
 
     #testing integreity of files
-    print("###################### \n testing integreity of files \n ######################")
+    print("###################### \n Extracting files in unity packages \n ######################")
     package.extractPackage("./packageUnity")
     strict_package.extractPackage("./strictPackageUnity")
     
@@ -33,6 +33,8 @@ def main():
     
     
     #checksum of files
+    print("###################### \n testing integreity of files \n ######################")
+    package.extractPackage("./packageUnity")
     for subdir, dirs, files in os.walk(path_of_repo):
         for file in files:
             file_in_package = os.path.join(*[path_of_the_directory, subdir,file])
