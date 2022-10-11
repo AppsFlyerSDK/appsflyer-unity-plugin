@@ -20,7 +20,7 @@ def main():
     strict_package = checkPackage(sys.argv[2])
 
     #testing integreity of files
-    print("Testing AppsFlyeriOSWrapper.mm in unity package")
+    print("testing integreity of files")
     package.extractPackage("./packageUnity")
     strict_package.extractPackage("./strictPackageUnity")
     
@@ -40,7 +40,6 @@ def main():
             file_in_repo = os.path.join(subdir, file)
             file_in_strict_package = os.path.join(*[path_of_the_strict_directory, subdir,file])
             if os.path.isfile(file_in_package) and os.path.isfile(file_in_repo) and os.path.isfile(file_in_strict_package):
-                print(file)
                 if file in files_to_not_check:
                     continue
                 if file in files_for_strict_mode_only:
@@ -75,17 +74,17 @@ def getHash(filePath):
     
 #check that only the two methods are commented in the strict mode package
 def hasCommentedMethods(file):
+    print("checking that the methods are commented in the strict mode package")
     textfile = open(file, 'r')
     filetext = textfile.read()
     textfile.close()
     matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
     matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
-    print(matches1)
-    print(matches2)
     return len(matches1) == 1 and len(matches2) == 1
 
 #check that we are using the strict dependency in strict mode package
 def isSrictModeDependency(file):
+    print("checking the depdendency for the strict mode")
     textfile = open(file, 'r')
     filetext = textfile.read()
     textfile.close()
