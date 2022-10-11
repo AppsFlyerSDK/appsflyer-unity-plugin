@@ -14,8 +14,7 @@ jobs:
         
       - name: Name of the branch
         run: | 
-          VERSION = $(echo "${{  github.ref_name }}")
-          echo "PLUGIN_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "PLUGIN_VERSION=${{  github.ref_name }}" >> $GITHUB_ENV
         
       - name: setup python
         uses: actions/setup-python@v2
