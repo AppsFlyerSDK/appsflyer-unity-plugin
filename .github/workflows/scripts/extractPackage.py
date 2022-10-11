@@ -44,26 +44,26 @@ def main():
                     continue
                 if file in files_for_strict_mode_only:
                     if getHash(file_in_package) != getHash(file_in_repo):
-                        print("\U000274C the file ", file, "is not the same")
+                        print("❌ the file ", file, "is not the same")
                         sys.exit(5)
                     print("file for non strict mode ", file, "md5 check passed \U0002705") 
                     if file == "AppsFlyeriOSWrapper.mm":
                        if not hasCommentedMethods(file_in_strict_package):
-                           print("\U000274C the methods are not commented in  ", file_in_strict_package)
+                           print("❌ the methods are not commented in  ", file_in_strict_package)
                            sys.exit(5)
-                    print("file in strict mode ", file, " has the correct methods commented out \U0002705")
+                    print("file in strict mode ", file, " has the correct methods commented out ✅")
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
-                            print("\U000274C the dependecy is not strict in ",file_in_strict_package )
+                            print("❌ the dependecy is not strict in ",file_in_strict_package )
                             sys.exit(5)
-                    rint("file in strict mode ", file, " has the correct depdendency \U0002705")
+                    rint("file in strict mode ", file, " has the correct depdendency ✅")
                         
         
                 else:
                     if getHash(file_in_package) != getHash(file_in_repo) or getHash(file_in_repo) != getHash(file_in_strict_package):
-                        print("\U000274C the file ", file, "is not the same")
+                        print("❌ the file" , file, "is not the same")
                         sys.exit(5)
-                    print("file ", file, "md5 check passed \U0002705")
+                    print("file ", file, "md5 check passed ✅")
 
 
         
