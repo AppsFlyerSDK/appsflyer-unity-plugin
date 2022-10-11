@@ -1,6 +1,9 @@
 name: checksum
 
-on: workflow_dispatch
+on:
+  push:
+    tags:        
+      - '*'           
 
 jobs:
   build:
@@ -8,6 +11,11 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v2.3.4
+        
+      - name: Name of the branch
+        run: | 
+          VERSION = $(echo "${{ github.head_ref}}" grep -Eo '[0-9].[0-9].[0-9]+'|)
+          echo "PLUGIN_VERSION=$VERSION" >> $GITHUB_ENV
         
       - name: setup python
         uses: actions/setup-python@v2
@@ -19,5 +27,5 @@ jobs:
           pip install unitypackage_extractor
       - name: execute py script
         run:
-          python .github/workflows/scripts/extractPackage.py appsflyer-unity-plugin-6.6.0.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-6.6.0.unitypackage
+          python .github/workflows/scripts/extractPackage.py appsflyer-unity-plugin-${{env.PLUGIN_VERSION}}.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{env.PLUGIN_VERSION}}.unitypackage
      
