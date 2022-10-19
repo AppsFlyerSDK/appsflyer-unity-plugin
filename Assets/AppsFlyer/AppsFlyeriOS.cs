@@ -17,7 +17,7 @@ namespace AppsFlyerSDK
 
         public AppsFlyeriOS() { }
 
-        public AppsFlyeriOS(string devKey, string appID, MonoBehaviour gameObject)
+        public void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
             setAppsFlyerDevKey(devKey);
             setAppleAppID(appID);

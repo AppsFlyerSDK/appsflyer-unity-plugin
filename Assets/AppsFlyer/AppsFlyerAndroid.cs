@@ -20,7 +20,7 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="devkey"> AppsFlyer's Dev-Key, which is accessible from your AppsFlyer account under 'App Settings' in the dashboard.</param>
         /// <param name="gameObject">The current game object. This is used to get the conversion data callbacks. Pass null if you do not need the callbacks.</param>
-        public void initSDK(string devkey, MonoBehaviour gameObject)
+        public void initSDK(string devKey, string appID, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
              appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);

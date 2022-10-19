@@ -8,6 +8,8 @@ namespace AppsFlyerSDK
     public interface IAppsFlyerNativeBridge
     {
         bool isInit { get; set; }
+        
+        void initSDK(string devKey, string appID, MonoBehaviour gameObject);
 
         void startSDK(bool onRequestResponse, string CallBackObjectName);
 
