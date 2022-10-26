@@ -6,19 +6,16 @@ order: 2
 hidden: false
 ---
 
-# Basic Integration
-
 You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 
-- [Initialization using the prefab](#using-prefab)
+- [Using the AppsFlyerObject.prefab](#using-the-appsflyerobjectprefab)
 - [Manual integration](#manual-integration)
-- [Init with the deeplinking callbacks](#init-sdk-deeplink)
-- [Collect IDFA with ATTrackingManager](#collect)
-- [Sending SKAN postbacks to AppsFlyer](#skan)
-- [Mac OS initialization beta](#macos)
-- [Optional - Request Listeners](#requestlisteners)
+- [Collect IDFA with ATTrackingManager](#collect-idfa-with-attrackingmanager)
+- [Sending SKAN postback to Appsflyer](#sending-skan-postback-to-appsflyer)
+- [MacOS initialization](#macos-initialization)
+- [Request Listeners (Optional)](#request-listeners-optional)
 
-### <a id="using-prefab"> Using the AppsFlyerObject.prefab
+## Using the AppsFlyerObject.prefab
 
 1. Go to Assets > AppsFlyer and drag AppsFlyerObject.prefab to your scene.
 <img src="assets/unity_add_object.png" width="650">
@@ -34,7 +31,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 
 3. Update the code in Assets > AppsFlyer > AppsFlyerObjectScript.cs with other available [API](/docs/API.md).
 
-### <a id="manual-integration"> Manual integration
+## Manual integration
 
 Create a game object and add the following init code:
 
@@ -56,46 +53,7 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
 
 ---
-  ### <a id="init-sdk-deeplink"> Init with the deeplinking callbacks
-    
-  ```c#
-  using AppsFlyerSDK;
-
-  public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
-  {
-      void Start()
-      {
-          /* AppsFlyer.setDebugLog(true); */
-          AppsFlyer.initSDK("devkey", "appID", this);
-          AppsFlyer.startSDK();
-      }
-
-      public void onConversionDataSuccess(string conversionData)
-      {
-          AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
-          Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
-          // add deferred deeplink logic here
-      }
-
-      public void onConversionDataFail(string error)
-      {
-          AppsFlyer.AFLog("onConversionDataFail", error);
-      }
-  
-        public void onAppOpenAttribution(string attributionData)
-      {
-          AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
-          // add direct deeplink logic here
-      }
-
-      public void onAppOpenAttributionFailure(string error)
-      {
-          AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
-      }
-  ```
-        
----
-# <a id="collect"> Collect IDFA with ATTrackingManager
+## Collect IDFA with ATTrackingManager
 
 1. Add the `AppTrackingTransparency` framework to your xcode project. 
 2. In the `Info.plist`:
@@ -127,21 +85,19 @@ public class AppsFlyerObjectScript : MonoBehaviour
   
   
 ---
-# <a id="skan"> Sending SKAN postback to Appsflyer
+## Sending SKAN postback to Appsflyer
   To register the AppsFlyer endpoint, you need to add the `NSAdvertisingAttributionReportEndpoint` key to your info.plist and set the value to `https://appsflyer-skadnetwork.com/`. 
 More info on how to update the info.plist can be found [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Troubleshooting.md#updating-the-infoplist). 
 
 --- 
 
-# <a id="macos"> MacOS initialization
+## MacOS initialization
 1. Use the prefab `AppsFlyerObject`
 2. Add your MacOS app id
 3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
-
   
 ---
-
-# <a id="requestlisteners"> Request Listeners(Optional)
+## Request Listeners (Optional)
     
 1. Attach the 'AppsFlyer.cs' script to the game object with the AppsFlyer init code. (AppsFlyerObject, ect)
 2. Add the following code **before** startSDK()
