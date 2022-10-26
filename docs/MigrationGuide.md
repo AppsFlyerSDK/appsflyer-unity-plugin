@@ -1,3 +1,11 @@
+---
+title: Migration guide from v4
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 11
+hidden: false
+---
+
 # Unity migration guide
 
 1. [Remove the old Plugin](#removeOldPlugin)
