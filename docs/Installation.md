@@ -1,3 +1,11 @@
+---
+title: Syncing Docs via CLI / GitHub
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 1
+hidden: false
+---
+
 # Adding appsflyer-unity-plugin to your project
 
 
