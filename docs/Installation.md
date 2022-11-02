@@ -1,20 +1,25 @@
+---
+title: Installation
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 1
+hnameden: false
+---
+
 # Adding appsflyer-unity-plugin to your project
 
+## Adding the SDK to your project
 
-## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
-
-In order to add the plugin to your project, you can either add the unitypackage **or**  use Unity Package Manager. 
-- [Installation adding the unitypackage](#installation-with-unitypackage)
-- [Installation using Unity Package Manager](#installation-using-upm)
-
+In order to add the plugin to your project, you can either add the *unitypackage* **or** use *Unity Package Manager*. 
+- [Installation adding the unitypackage](#using-unitypackage)
+- [Installation using Unity Package Manager](#using-unity-package-manager)
 
 **Note:**  The plugin is built with [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) (EDM4U) (formerly Play Services Resolver / Jar Resolver)
 * The External Dependency Manager for Unity is distributed with the `appsflyer-unity-plugin` by default.
 * This will ease the integration process, by resolving dependency conflicts between your plugin and other plugins in your project.
 * Adding the `appsflyer-unity-plugin.v*.unitypackage` will automatically import all the assets required for both the AppsFlyer SDK and the External Dependency Manager for Unity.
 
-
-## <a id="installation-with-unitypackage"> **Using unitypackage:**
+## Using unitypackage
 1. Clone / download this repository.
 2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the appsflyer-unity-plugin-*.unitypackage into your Unity project.
 3. Go to Assets >> Import Package >> Custom Package.
@@ -22,7 +27,7 @@ In order to add the plugin to your project, you can either add the unitypackage 
 
 **Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-with-unity-jar-resolver).
 
-## <a id="installation-using-upm"> **Using Unity Package Manager:**
+## Using Unity Package Manager
 
 1. Go to your packages folder, and open `manifest.json` 
 2. Add Google game package registery fpr the external dependency Manager. 
@@ -37,7 +42,7 @@ In order to add the plugin to your project, you can either add the unitypackage 
     }
   ]
 ```
-**Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to steps 2 & 3 [here](#installation-with-unity-jar-resolver).
+**Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to steps 2 & 3 [here](#installation-without-unity-jar-resolver).
 
 
 4. Add appsflyer-unity-plugin in the dependency :
@@ -52,11 +57,11 @@ Add this line for the regular mode
 
 ---
 
-## <a id="installation-without-using-unity-jar-resolver"> Installation without unity-jar-resolver
+# Installation without unity-jar-resolver
   
   * If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) then follow these steps:
   1. import `appsflyer-unity-plugin.v*.unitypackage` to your project but make sure to uncheck the `EDM4U` dependencies.
-  <img src="assets/import_unity_package.png"  width="350">
+  <img src="https://user-images.githubusercontent.com/61788924/199495968-7aa911ed-27c4-4e5b-a496-3771d0405fd4.jpeg"  width="350">
 
   2. Download and add the required Android dependencies to the Assets/Plugins/Android folder:
       1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.4.3/af-android-sdk-6.4.3.aar)

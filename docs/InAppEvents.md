@@ -1,15 +1,24 @@
-# Send event
+---
+title: In-App Events
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 4
+hidden: false
+---
 
-In-App Events provide insight on what is happening in your app. It is recommended to take the time and define the events you want to measure to allow you to measure ROI (Return on Investment) and LTV (Lifetime Value).
+- [Overview](#overview)
+- [Send Event](#send-event)
+- [In-app purchase validation](#in-app-purchase-validation)
 
-Recording in-app events is performed by calling sendEvent with event name and value parameters. See In-App Events documentation for more details.
+## Overview
+
+In-App Events provide insight on what is happening in your app. It is recommended to take the time and define the events you want to measure to allow you to measure *ROI* (Return on Investment) and *LTV* (Lifetime Value).
+
+Recording in-app events is performed by calling `sendEvent` with event name and value parameters. See In-App Events [documentation](https://support.appsflyer.com/hc/en-us/articles/115005544169-Rich-in-app-events-for-Android-and-iOS#introduction-predefined-and-custom-events) for more details.
 
 Find more info about recording events [here](https://dev.appsflyer.com/hc/docs/in-app-events-sdk).
 
-- [sendEvent](#sendEvent)
-
-
-## <a id="sendEvent"> Send Event
+## Send Event
 
 `void sendEvent(string eventName, Dictionary<string, string> eventValues)`
 
@@ -32,13 +41,13 @@ AppsFlyer.sendEvent(AFInAppEvents.PURCHASE, eventValues);
 
 
 ---
-# <a id="iae"> In-app purchase validation
+## In-app purchase validation
 
 For In-App Purchase Receipt Validation, follow the instructions according to your operating system.
 
 **Notes**
-Calling validateReceipt automatically generates an af_purchase in-app event, so you don't need to send this event yourself.
-The validate purchase response is triggered in the AppsFlyerTrackerCallbacks.cs class.
+Calling validateReceipt automatically generates an `af_purchase` in-app event, so you don't need to send this event yourself.
+The validate purchase response is triggered in the `AppsFlyerTrackerCallbacks.cs` class.
 
 `void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`
 

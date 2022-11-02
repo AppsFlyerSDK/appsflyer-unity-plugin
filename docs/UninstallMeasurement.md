@@ -1,10 +1,15 @@
-
-# <a id="uninstall"> Measure Uninstall
+---
+title: Uninstall Measurement
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 5
+hidden: false
+---
 
 - [iOS uninstall](#track-app-uninstalls-ios)
 - [Android Uninstall](#track-app-uninstalls-android)
 
-#### <a id="track-app-uninstalls-ios"> iOS
+## iOS
 
 AppsFlyer enables you to track app uninstalls. To handle notifications it requires  to modify your `AppDelegate.m`. Use [didRegisterForRemoteNotificationsWithDeviceToken](https://developer.apple.com/reference/uikit/uiapplicationdelegate) to register to the uninstall feature.
 
@@ -59,7 +64,7 @@ Read more about Uninstall register: [Appsflyer SDK support site](https://support
 
 ---
 
-#### <a id="track-app-uninstalls-android"> Android
+## Android
 
 
 1. Download the Unity Firebase SDK from: https://firebase.google.com/docs/unity/setup.
