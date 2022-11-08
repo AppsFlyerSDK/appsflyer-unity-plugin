@@ -8,6 +8,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 - [Collect IDFA with ATTrackingManager](#collect)
 - [Sending SKAN postbacks to AppsFlyer](#skan)
 - [Mac OS initialization beta](#macos)
+- [Optional - Request Listeners](#requestlisteners)
 
 ### <a id="using-prefab"> Using the AppsFlyerObject.prefab
 
@@ -47,47 +48,44 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
 
 ---
+  ### <a id="init-sdk-deeplink"> Init with the deeplinking callbacks
+    
+  ```c#
+  using AppsFlyerSDK;
 
-### <a id="init-sdk-deeplink"> Init SDK with deeplinking callbacks
+  public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
+  {
+      void Start()
+      {
+          /* AppsFlyer.setDebugLog(true); */
+          AppsFlyer.initSDK("devkey", "appID", this);
+          AppsFlyer.startSDK();
+      }
 
-```c#
-using AppsFlyerSDK;
+      public void onConversionDataSuccess(string conversionData)
+      {
+          AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
+          Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
+          // add deferred deeplink logic here
+      }
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
-{
-    void Start()
-    {
-        /* AppsFlyer.setDebugLog(true); */
-        AppsFlyer.initSDK("devkey", "appID", this);
-        AppsFlyer.startSDK();
-    }
+      public void onConversionDataFail(string error)
+      {
+          AppsFlyer.AFLog("onConversionDataFail", error);
+      }
+  
+        public void onAppOpenAttribution(string attributionData)
+      {
+          AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
+          // add direct deeplink logic here
+      }
 
-    public void onConversionDataSuccess(string conversionData)
-    {
-        AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
-        Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
-        // add deferred deeplink logic here
-    }
-
-    public void onConversionDataFail(string error)
-    {
-        AppsFlyer.AFLog("onConversionDataFail", error);
-    }
-
-    public void onAppOpenAttribution(string attributionData)
-    {
-        AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
-        Dictionary<string, object> attributionDataDictionary = AppsFlyer.CallbackStringToDictionary(attributionData);
-        // add direct deeplink logic here
-    }
-
-    public void onAppOpenAttributionFailure(string error)
-    {
-        AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
-    }
-}
-```
-
+      public void onAppOpenAttributionFailure(string error)
+      {
+          AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
+      }
+  ```
+        
 ---
 # <a id="collect"> Collect IDFA with ATTrackingManager
 
@@ -125,8 +123,65 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
   To register the AppsFlyer endpoint, you need to add the `NSAdvertisingAttributionReportEndpoint` key to your info.plist and set the value to `https://appsflyer-skadnetwork.com/`. 
 More info on how to update the info.plist can be found [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Troubleshooting.md#updating-the-infoplist). 
 
----
+--- 
+
 # <a id="macos"> MacOS initialization
 1. Use the prefab `AppsFlyerObject`
 2. Add your MacOS app id
 3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
+
+  
+---
+
+# <a id="requestlisteners"> Request Listeners(Optional)
+    
+1. Attach the 'AppsFlyer.cs' script to the game object with the AppsFlyer init code. (AppsFlyerObject, ect)
+2. Add the following code **before** startSDK()
+
+Sessions response example:
+
+```c#
+    void Start()
+    {
+        AppsFlyer.OnRequestResponse += AppsFlyerOnRequestResponse;
+        
+        AppsFlyer.initSDK(devKey, appID, this);
+        AppsFlyer.startSDK();
+    }
+
+    void AppsFlyerOnRequestResponse(object sender, EventArgs e)
+    {
+        var args = e as AppsFlyerRequestEventArgs;
+        AppsFlyer.AFLog("AppsFlyerOnRequestResponse", " status code " + args.statusCode);
+    }
+```
+
+In-App response example:
+
+```c#
+    void Start()
+    {
+        AppsFlyer.OnInAppResponse += (sender, args) =>
+        {
+            var af_args = args as AppsFlyerRequestEventArgs;
+            AppsFlyer.AFLog("AppsFlyerOnRequestResponse", " status code " + af_args.statusCode);
+        };
+        
+        AppsFlyer.initSDK(devKey, appID, this);
+        AppsFlyer.startSDK();
+    }
+
+
+```
+
+| statusCode      | errorDescription | 
+| ----------- | ----------- | 
+| 200      | null       | 
+| 10   | "Event timeout. Check 'minTimeBetweenSessions' param"        | 
+| 11   | "Skipping event because 'isStopTracking' enabled"        | 
+| 40   | Network error: Error description comes from Android        | 
+| 41   | "No dev key"        | 
+| 50   | "Status code failure" + actual response code from the server        | 
+
+---
+
