@@ -1,8 +1,16 @@
+---
+title: User Invite
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 8
+hidden: false
+---
 
-
-##  <a id="UserInviteAttribution"> User invite attribution
+# User invite attribution
 
 AppsFlyer allows you to attribute and record installs originating from user invites within your app. Allowing your existing users to invite their friends and contacts as new users to your app can be a key growth factor for your app.
+
+More information can be found [here](https://dev.appsflyer.com/hc/docs/user-invite-attribution).
 
 Example:
 ```c#

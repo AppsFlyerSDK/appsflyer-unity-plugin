@@ -1,9 +1,15 @@
-# Unity migration guide
+---
+title: Migration guide from v4
+category: 600892a5042c550044d58e1b
+parentDoc: 6358e561b49b560010d89e2e
+order: 11
+hidden: false
+---
 
-1. [Remove the old Plugin](#removeOldPlugin)
-2. [Init the new Plugin](#initnewplugin)
-3. [Update deeplink logic](#updateolddeeplink)
-4. [Update code](#updateoldcode)
+1. [Remove the old Plugin](#remove-the-old-plugin)
+2. [Init the new Plugin](#init-the-new-plugin)
+3. [Update deeplink logic](#update-deeplink-logic)
+4. [Update code](#update-other-code)
 
 :warning: There are breaking changes when migrating to Unity v5. This includes:
 * New class names
@@ -11,7 +17,7 @@
 * `com.appsflyer.GetDeepLinkingActivity` does not exist in Unity v5. This is no longer required for deeplinking
 * unity-jar-resolver is used to import assets
 
-## <a id="removeOldPlugin"> Remove the old plugin 
+# Remove the old plugin 
 
 1. Remove all the items contained in `AppsFlyerUnityPlugin_v4.x.x.unitypackage`
 
@@ -39,7 +45,7 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
 
 ```
 
-## <a id="initnewplugin"> Init New Plugin
+# Init the new plugin
     
 1. Add the new .unitypackage, which can be found in the new plugin. 
     
@@ -47,11 +53,11 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
    1. Remove all old init code and use the new .prefab object. 
    2. Update your existing init code.
    
-#### 1. remove all old init code 
+## 1. remove all old init code 
 To do this simpily remove the game object or all the appsflyer code in the game object where there sdk is being initalized.
 Then follow the init guide for the new plugin.
     
-#### 2. Update old init code with new code
+## 2. Update old init code with new code
 
 Replace old init code:
 
@@ -81,7 +87,7 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     void Start()
     {
         /* AppsFlyer.setDebugLog(true); */
-        AppsFlyer.initSDK("devkey", "appID", this);
+        AppsFlyer.init-sdk("devkey", "appID", this);
         AppsFlyer.startSDK();
     }
     
@@ -91,51 +97,51 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 **Important**
 If you are also implementing conversion data and/or deeplinking then you need to initialize the SDK with the `IAppsFlyerConversionData` interface.
 
-## <a id="updateolddeeplink"> Update deeplink logic 
+## Update deeplink logic 
     
 Unity v5 does not include `com.appsflyer.GetDeepLinkingActivity`. <br>This was used in Unity v4 as a workaround for deeplinking.<br>
 If you are using this class for deeplinking, then make sure to remove the GetDeepLinkingActivity from the AndroidManifest.xml file. 
 
-## <a id="updateoldcode"> update other Code
+## Update other Code
 
 Here is a list of all the old API, and the new API.
 
-API
+**API**
 
-- [setAppsFlyerKey](#initSDK)
-- [trackAppLaunch](#initSDK)
-- [setAppID](#initSDK)
-- [getConversionData](#initSDK)
-- [init](#initSDK)
-- [loadConversionData](#initSDK)
-- [setCurrencyCode](#sameapi)
-- [setCustomerUserID](#sameapi)
-- [setAdditionalData](#sameapi)
-- [trackCrossPromoteImpression](#sameapi)
-- [setMinTimeBetweenSessions](#sameapi)
-- [setHost](#sameapi)
-- [setUserEmails](#sameapi)
-- [setResolveDeepLinkURLs](#sameapi)
-- [setOneLinkCustomDomain](#sameapi)
-- [trackRichEvent](#codeapi)
-- [stopTracking](#codeapi)
-- [setIsDebug](#sameapi)
-- [getAppsFlyerId](#sameapi)
-- [setDeviceTrackingDisabled](#codeapi)
-- [setAppInviteOneLinkID](#sameapi)
-- [generateUserInviteLink](#codeapi)
-- [trackAndOpenStore](#codeapi)
-- [setIsSandbox](#iosOnlyApi)
-- [registerUninstall](#iosOnlyApi)
-- [setCollectIMEI](#androidOnlyApi)
-- [setCollectAndroidID](#androidOnlyApi)
-- [setImeiData](#androidOnlyApi)
-- [updateServerUninstallToken](#androidOnlyApi)
-- [setAndroidIdData](#androidOnlyApi)
-- [setPreinstallAttribution](#androidOnlyApi)
-- [validateReceipt (ios)](#validateReceipt)
-- [validateReceipt (android)](#validateReceipt)
-- [createValidateInAppListener](#validateReceipt)
+- [setAppsFlyerKey](#init-sdk)
+- [trackAppLaunch](#init-sdk)
+- [setAppID](#init-sdk)
+- [getConversionData](#init-sdk)
+- [init](#init-sdk)
+- [loadConversionData](#init-sdk)
+- [setCurrencyCode](#api-that-did-not-change)
+- [setCustomerUserID](#api-that-did-not-change)
+- [setAdditionalData](#api-that-did-not-change)
+- [trackCrossPromoteImpression](#api-that-did-not-change)
+- [setMinTimeBetweenSessions](#api-that-did-not-change)
+- [setHost](#api-that-did-not-change)
+- [setUserEmails](#api-that-did-not-change)
+- [setResolveDeepLinkURLs](#api-that-did-not-change)
+- [setOneLinkCustomDomain](#api-that-did-not-change)
+- [trackRichEvent](#updated-core-api)
+- [stopTracking](#updated-core-api)
+- [setIsDebug](#api-that-did-not-change)
+- [getAppsFlyerId](#api-that-did-not-change)
+- [setDeviceTrackingDisabled](#updated-core-api)
+- [setAppInviteOneLinkID](#api-that-did-not-change)
+- [generateUserInviteLink](#updated-core-api)
+- [trackAndOpenStore](#updated-core-api)
+- [setIsSandbox](#ios-only-api)
+- [registerUninstall](#ios-only-api)
+- [setCollectIMEI](#android-only-api)
+- [setCollectAndroidID](#android-only-api)
+- [setImeiData](#android-only-api)
+- [updateServerUninstallToken](#android-only-api)
+- [setAndroidIdData](#android-only-api)
+- [setPreinstallAttribution](#android-only-api)
+- [validate-receipt (ios)](#validate-receipt)
+- [validate-receipt (android)](#validate-receipt)
+- [createValidateInAppListener](#validate-receipt)
 - [handlePushNotification](#deprecated)
 - [enableUninstallTracking](#deprecated)
 - [handleOpenUrl](#deprecated)
@@ -145,8 +151,7 @@ API
 - [setShouldCollectDeviceName](#deprecated)
 
 
-#### <a id="initSDK"> Init SDK
-
+## Init SDK
 ```c#
 // Old API's
 AppsFlyer.setAppsFlyerKey(string key);
@@ -163,8 +168,7 @@ AppsFlyer.initSDK(string key, string app_id, MonoBehaviour gameObject); // with 
 AppsFlyer.startSDK();
 ```
 
-#### <a id="sameapi"> API that did not change
-
+## API that did not change
 ```c#
 AppsFlyer.setCurrencyCode(string currencyCode);
 AppsFlyer.setCustomerUserID(string customerUserID);
@@ -180,8 +184,7 @@ AppsFlyer.getAppsFlyerId();
 AppsFlyer.setAppInviteOneLinkID(string oneLinkID);
 ```
 
-#### <a id="codeapi"> Updated core API
-    
+## Updated core API
 ```c#
 // old
 AppsFlyer.trackRichEvent(string eventName, Dictionary<string, string> eventValues);
@@ -207,11 +210,9 @@ AppsFlyer.generateUserInviteLink(Dictionary<string, string> parameters, MonoBeha
 AppsFlyer.trackAndOpenStore(string promotedAppId, string campaign, Dictionary<string,string> customParams);
 // new 
 AppsFlyer.trackAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject);
-
 ```
 
-
-#### <a id="iosOnlyApi"> iOS Only API
+## iOS Only API
 ```c#
 // old
 AppsFlyer.setIsSandbox(bool isSandbox);
@@ -233,12 +234,10 @@ AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation)
 #if UNITY_IOS && !UNITY_EDITOR
         AppsFlyer.handleOpenUrl(string url, string sourceApplication, string annotation);
 #endif
-        
-
 ```
 
 
-#### <a id="androidOnlyApi"> Android Only API
+## Android Only API
 
 ```c#
 // old
@@ -289,19 +288,16 @@ AppsFlyer.handlePushNotification(Dictionary<string, string> payload);
 #if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyer.handlePushNotifications();
 #endif
-
-
 ```
 
-
-#### <a id="validateReceipt"> Validate Receipt
+## Validate Receipt
 
 ```c#
 // android old api
-AppsFlyer.validateReceipt(string publicKey, string purchaseData, string signature, string price, string currency, Dictionary<string, string> extraParams);
+AppsFlyer.validate-receipt(string publicKey, string purchaseData, string signature, string price, string currency, Dictionary<string, string> extraParams);
 
  // iOS old api
-AppsFlyer.validateReceipt(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParametes);
+AppsFlyer.validate-receipt(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParametes);
 AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, string callbackFailedMethod);  
 
 // android new
@@ -326,11 +322,9 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
         null, 
         this);
 #endif
-
 ```
 
-
-#### <a id="deprecated"> Deprecated
+## Deprecated
     
 ```c#
 //@Deprecated
