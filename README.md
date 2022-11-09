@@ -12,21 +12,18 @@
 
 > *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
-
-
-
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK **v6.8.2** 
 - iOS AppsFlyer SDK **v6.8.1**
 
-## AD_ID permission for Android
-In v6.8.0 of the AppsFlyer SDK, we added the normal permission `com.google.android.gms.permission.AD_ID` to the SDK's AndroidManifest, 
-to allow the SDK to collect the Android Advertising ID on apps targeting API 33.
-If your app is targeting children, you need to revoke this permission to comply with Google's Data policy.
-You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
+---
+### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
-## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.6.0 ❗❗
+In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
+
+---  
+## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differentiate between iOS and Android APIs. All APIs must be called with `AppsFlyer` class (even if the API is only iOS or Android).
 
 Example:
@@ -47,7 +44,7 @@ After 6.6.0:
 ```
 ---
 
-## <a id="breaking-changes"> 	❗❗ Breaking changes when updating to 6.3.0 ❗❗
+## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.3.0 ❗❗
 
 - 6.3.0 supports Universal Windows Platform. As part of this update, the AppsFlyerObjectScript changes to include the app_id for your UWP app. If you made changes to this file, please merge them with the new AppsFlyerObjectScript.
 Please also note that you can leave the uwp app id field empty. 
@@ -61,16 +58,21 @@ View the migration docs [here](/docs/MigrationGuide.md).
 
 ⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
 
+ ---
+## <a id="plugin-build-for"> 🚀 Getting Started
+- [Installation](/docs/Installation.md)
+- [Integration](/docs/BasicIntegration.md)
+- [Test integration](/docs/Testing.md)
+- [In-app events](/docs/InAppEvents.md)
+- [Uninstall measurement](/docs/UninstallMeasurement.md)
+## <a id="plugin-build-for"> 🌟 Deep Linking
+- [Integration](/docs/DeepLinkIntegrate.md)
+- [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
+- [User invite](/docs/UserInvite.md)
 
- ## <a id="guides"> 📖 Guides
-- [Adding the SDK to your project](/docs/Installation.md)
-- [Initializing the SDK](/docs/BasicIntegration.md)
-- [In-app Events](/docs/InAppEvents.md)
-- [Deep Linking](/docs/DeepLink.md)
-- [Guides](/docs/Guides.md)
-- [Testing the integration](/docs/Testing.md)
-- [API](/docs/API.md)
-- [Troubleshooting](/docs/Troubleshooting.md)
+----  
+### [API refrence](/docs/API.md)    
+### [Troubleshooting](/docs/Troubleshooting.md)
 
 
 
