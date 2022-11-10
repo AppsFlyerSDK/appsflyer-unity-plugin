@@ -1,5 +1,8 @@
 # Versions
 
+## v6.8.5
+* Fix setHost API for iOS
+
 ## v6.8.4
 * Fix package
 
