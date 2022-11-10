@@ -362,7 +362,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         /// </summary>
         /// <param name="host">Host Name.</param>
         /// <param name="host">Host prefix.</param>
-        public void setHost(string host, string hostPrefix)
+        public void setHost(string hostPrefix, string host)
         {
 #if !UNITY_EDITOR
             _setHost(host, hostPrefix);
