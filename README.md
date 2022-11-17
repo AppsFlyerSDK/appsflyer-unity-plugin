@@ -12,7 +12,7 @@
 
 > *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
-# 📖 The Unity documentation also be found [here](https://dash.readme.com/project/hc/v0.1/docs/unity-plugin)
+## 📖 The Unity documentation also be found [here](https://dev.appsflyer.com/hc/docs/unity-plugin)
 
 ### <a id="plugin-build-for"> This plugin is built for
 
