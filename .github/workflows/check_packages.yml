@@ -48,7 +48,7 @@ jobs:
           git push origin v${{env.plugin_version}}
 
 
-  split-upm:
+  strict-upm:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -64,11 +64,11 @@ jobs:
           echo "Changing package.json to Strict Mode"
           sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
           echo "Changing AppsFlyerFramework to Strict Mode"
-          sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
           echo "Commenting out disableAdvertisingIdentifier"
-          sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
           echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
-          sed -i '' 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '' 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
 
       - name: Commit changes and push
         env:
