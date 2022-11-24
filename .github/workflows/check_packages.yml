@@ -61,10 +61,10 @@ jobs:
       - name: Modify for strict mode
         run: |
           ls
-          echo "Changing package.json to Strict Mode"
-          sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
           echo "Changing AppsFlyerFramework to Strict Mode"
           sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
+          echo "Changing package.json to Strict Mode"
+          sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
           echo "Commenting out disableAdvertisingIdentifier"
           sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
           echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
