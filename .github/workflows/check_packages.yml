@@ -41,11 +41,12 @@ jobs:
           git branch -d upm &> /dev/null || echo upm branch not found
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
-          git push -f -u origin upm
+          echo "Checked out to upm branch"
       - name: create tag
         run: |
           git tag v${{env.plugin_version}}
           git push origin v${{env.plugin_version}}
+          echo "Release v${{env.plugin_version}} to upm :bookmark:"
 
 
   strict-upm:
@@ -58,9 +59,9 @@ jobs:
           git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
+          echo "Checked out to Strict-upm branch"
       - name: Modify for strict mode
         run: |
-          ls
           echo "Changing AppsFlyerFramework to Strict Mode"
           sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
           echo "Changing package.json to Strict Mode"
@@ -84,5 +85,6 @@ jobs:
         run: |
           git tag Strict-v${{env.plugin_version}}
           git push origin Strict-v${{env.plugin_version}}
+          echo "Release Strict mode v${{env.plugin_version}} to upm :bookmark:"
       
      
