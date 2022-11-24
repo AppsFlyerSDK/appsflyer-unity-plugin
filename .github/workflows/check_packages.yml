@@ -50,6 +50,7 @@ jobs:
 
   split-upm:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v2
       - name: split branch
@@ -60,7 +61,7 @@ jobs:
       - name: Modify for strict mode
         run: |
           echo "Changing package.json to Strict Mode"
-          sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' package.json
+          sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
           echo "Changing AppsFlyerFramework to Strict Mode"
           sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           echo "Commenting out disableAdvertisingIdentifier"
