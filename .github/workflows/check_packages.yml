@@ -60,6 +60,7 @@ jobs:
           git checkout Strict-upm
       - name: Modify for strict mode
         run: |
+          ls
           echo "Changing package.json to Strict Mode"
           sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
           echo "Changing AppsFlyerFramework to Strict Mode"
