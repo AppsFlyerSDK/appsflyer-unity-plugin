@@ -39,6 +39,9 @@ eventValues.Add("af_quantity", "1");
 AppsFlyer.sendEvent(AFInAppEvents.PURCHASE, eventValues);
 ```
 
+> 📘 Note
+> 
+> Do not add currency symbols to the revenue value.
 
 ---
 ## In-app purchase validation
