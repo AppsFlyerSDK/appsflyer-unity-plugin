@@ -1,12 +1,15 @@
-name: check packages
+name: check packages and release to upm
 
 on:
   push:
     tags:        
-      - '[0-9]+.[0-9]+.[0-9]+'         
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  plugin_version: ${{  github.ref_name }}   
 
 jobs:
-  build:
+  check-packages:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
@@ -26,5 +29,62 @@ jobs:
           pip install unitypackage_extractor
       - name: execute py script
         run:
-          python .github/workflows/Scripts/extractPackage.py appsflyer-unity-plugin-${{env.PLUGIN_VERSION}}.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{env.PLUGIN_VERSION}}.unitypackage
+          python .github/workflows/scripts/extractPackage.py appsflyer-unity-plugin-${{env.PLUGIN_VERSION}}.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{env.PLUGIN_VERSION}}.unitypackage
+          
+  release-upm:
+    runs-on: ubuntu-latest
+    needs: check-packages
+    steps:
+      - uses: actions/checkout@v2
+      - name: split branch
+        run: |
+          git branch -d upm &> /dev/null || echo upm branch not found
+          git subtree split -P Assets/AppsFlyer -b upm
+          git checkout upm
+          echo "Checked out to upm branch"
+      - name: create tag
+        run: |
+          git tag v${{env.plugin_version}}
+          git push origin v${{env.plugin_version}}
+          echo "Release v${{env.plugin_version}} to upm :bookmark:"
+
+
+  strict-upm:
+    runs-on: ubuntu-latest
+    needs: check-packages
+    steps:
+      - uses: actions/checkout@v2
+      - name: split branch
+        run: |
+          git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
+          git subtree split -P Assets/AppsFlyer -b Strict-upm
+          git checkout Strict-upm
+          echo "Checked out to Strict-upm branch"
+      - name: Modify for strict mode
+        run: |
+          echo "Changing AppsFlyerFramework to Strict Mode"
+          sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
+          echo "Changing package.json to Strict Mode"
+          sed -i 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
+          echo "Commenting out disableAdvertisingIdentifier"
+          sed -i 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
+          echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
+          sed -i 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
+
+      - name: Commit changes and push
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
+        run: |
+          git config user.name $COMMIT_AUTHOR
+          git config user.email $COMMIT_EMAIL
+          git add -A
+          git commit -m "update package.json"
+          git push -f -u origin Strict-upm
+      - name: create tag
+        run: |
+          git tag Strict-v${{env.plugin_version}}
+          git push origin Strict-v${{env.plugin_version}}
+          echo "Release Strict mode v${{env.plugin_version}} to upm :bookmark:"
+      
      
