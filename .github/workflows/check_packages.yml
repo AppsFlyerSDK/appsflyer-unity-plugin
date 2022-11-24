@@ -46,5 +46,41 @@ jobs:
         run: |
           git tag v${{env.plugin_version}}
           git push origin v${{env.plugin_version}}
+
+
+  split-upm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: split branch
+        run: |
+          git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
+          git subtree split -P Assets/AppsFlyer -b Strict-upm
+          git checkout Strict-upm
+      - name: Modify for strict mode
+        run: |
+          echo "Changing package.json to Strict Mode"
+          sed -i '' 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' package.json
+          echo "Changing AppsFlyerFramework to Strict Mode"
+          sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          echo "Commenting out disableAdvertisingIdentifier"
+          sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
+          sed -i '' 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+
+      - name: Commit changes and push
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
+        run: |
+          git config user.name $COMMIT_AUTHOR
+          git config user.email $COMMIT_EMAIL
+          git add -A
+          git commit -m "update package.json"
+          git push -f -u origin Strict-upm
+      - name: create tag
+        run: |
+          git tag Strict-v${{env.plugin_version}}
+          git push origin Strict-v${{env.plugin_version}}
       
      
