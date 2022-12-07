@@ -62,8 +62,13 @@ jobs:
           echo "Checked out to Strict-upm branch"
       - name: Modify for strict mode
         run: |
+          grep -q "AppsFlyerFramework" Editor/AppsFlyerDependencies.xml
+          echo $?
+          sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
+          echo "Changing AppsFlyerFramework to Strict Mode"
+          sed -i '/AppsFlyerFramework/!{Q1};  {s/AppsFlyerFramework/AppsFlyerFramework\/Strict/g}' Editor/AppsFlyerDependencies.xml
           echo "Changing package.json to Strict Mode"
-          sed -i '/AppsFlyer Unity plugin/!{q10}; {s/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g}' ./package.json
+          sed -i '/AppsFlyer Unity plugin/!{q1}; {s/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g}' ./package.json
           echo "Commenting out disableAdvertisingIdentifier"
           sed -i '/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/!{q1} {s/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g}' Plugins/iOS/AppsFlyeriOSWrapper.mm
           echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
