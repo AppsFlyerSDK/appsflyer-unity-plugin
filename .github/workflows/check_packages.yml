@@ -63,7 +63,7 @@ jobs:
       - name: Modify for strict mode
         run: |
           echo "Changing AppsFlyerFramework to Strict Mode"
-          grep -q "AppsFlyerFrameork" Editor/AppsFlyerDependencies.xml
+          grep -q "AppsFlyerFramework" Editor/AppsFlyerDependencies.xml
           sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
           echo "Changing package.json to Strict Mode"
           grep -q "AppsFlyer Unity plugin" ./package.json
