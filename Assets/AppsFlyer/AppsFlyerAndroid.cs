@@ -725,7 +725,7 @@ namespace AppsFlyerSDK
 
         public void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
         {
-            //ios only
+            appsFlyerAndroid.CallStatic("attributeAndOpenStore", appID, campaign, convertDictionaryToJavaMap(userParams));
         }
     }
 
