@@ -63,13 +63,13 @@ jobs:
       - name: Modify for strict mode
         run: |
           echo "Changing AppsFlyerFramework to Strict Mode"
-          sed -i '/AppsFlyerFraork/!{q1};  {s/AppsFlyerFraork/AppsFlyerFramework\/Stri/g}' Editor/AppsFlyerDependencies.xml
+          sed -i '/AppsFlyerFramework/!{q1};  {s/AppsFlyerFramework/AppsFlyerFramework\/Stri/g}' Editor/AppsFlyerDependencies.xml
           echo "Changing package.json to Strict Mode"
-          sed -i 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g q' ./package.json
+          sed -i '/AppsFlyer Unity plugin/!{q1}; {s/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g}' ./package.json
           echo "Commenting out disableAdvertisingIdentifier"
-          sed -i 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/!{q1} {s/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g}' Plugins/iOS/AppsFlyeriOSWrapper.mm
           echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
-          sed -i 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/!q{1} {s/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g}' Plugins/iOS/AppsFlyeriOSWrapper.mm
 
       - name: Commit changes and push
         env:
