@@ -62,7 +62,7 @@ jobs:
           echo "Checked out to Strict-upm branch"
       - name: Modify for strict mode
         run: |
-          grep -q "AppsFlyerFramework" Editor/AppsFlyerDependencies.xml
+          grep -q "AppsFlyerFrameork" Editor/AppsFlyerDependencies.xml
           echo $?
           sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
           echo "Changing AppsFlyerFramework to Strict Mode"
