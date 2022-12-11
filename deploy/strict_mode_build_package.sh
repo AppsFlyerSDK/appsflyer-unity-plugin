@@ -67,6 +67,11 @@ echo "Commenting out functions. Done."
  echo "Uncomment waitForATTUserAuthorizationWithTimeoutInterval"
  sed -i '' 's/\/\/\[\[AppsFlyerLib/\[\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
  echo "Uncomment functions. Done."
+
+ echo "Uncommenting dependencies"
+ sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+ echo "Uncommenting dependencies. Done."
+
  else
  echo "dev mode. No files removed. Run with -p flag for production build."
  fi
