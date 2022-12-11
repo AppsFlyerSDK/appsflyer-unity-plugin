@@ -586,7 +586,7 @@ namespace AppsFlyerSDK
         /// <param name="promoted_app_id">promoted App ID</param>
         /// <param name="campaign">cross promotion campaign</param>
         /// <param name="userParams">additional user params</param>
-        public void attributeAndOpenStore(string promoted_app_id, string campaign, Dictionary<string, string> userParams)
+        public void attributeAndOpenStore(string promoted_app_id, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
             appsFlyerAndroid.CallStatic("attributeAndOpenStore", promoted_app_id, campaign, convertDictionaryToJavaMap(userParams));
@@ -721,11 +721,6 @@ namespace AppsFlyerSDK
             }
             
             return map;
-        }
-
-        public void attributeAndOpenStore(string appID, string campaign, Dictionary<string, string> userParams, MonoBehaviour gameObject)
-        {
-            //ios only
         }
     }
 

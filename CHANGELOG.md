@@ -1,5 +1,11 @@
 # Versions
 
+## v6.9.4
+* Update iOS SDK version - 6.9.1
+* Update Android SDK version - 6.9.4
+* Fix appsflyer logo on prefab
+* Fix attributeAndOpenStore issue on Android
+
 ## v6.8.5
 * Fix setHost API for iOS
 

@@ -5,7 +5,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
 
  DEPLOY_PATH=outputs
  UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.8.5.unitypackage"
+ PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.9.4.unitypackage"
  mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -26,7 +26,7 @@ echo "Commenting out functions. Done."
 
 
  # Build the .unitypackage
- /Applications/Unity/Hub/Editor/2020.3.41f1/Unity.app/Contents/MacOS/Unity \
+ /Applications/Unity/Hub/Editor/2021.3.11f1/Unity.app/Contents/MacOS/Unity \
  -gvh_disable \
  -batchmode \
  -importPackage external-dependency-manager-1.2.144.unitypackage \
@@ -37,7 +37,7 @@ echo "Commenting out functions. Done."
  Assets \
  $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
  -quit \
- && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.8.5.unitypackage" \
+ && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.9.4.unitypackage" \
  || echo "Failed to export package. See create_unity_core.log for more info."
 
 
@@ -67,6 +67,11 @@ echo "Commenting out functions. Done."
  echo "Uncomment waitForATTUserAuthorizationWithTimeoutInterval"
  sed -i '' 's/\/\/\[\[AppsFlyerLib/\[\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
  echo "Uncomment functions. Done."
+
+ echo "Uncommenting dependencies"
+ sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+ echo "Uncommenting dependencies. Done."
+
  else
  echo "dev mode. No files removed. Run with -p flag for production build."
  fi
