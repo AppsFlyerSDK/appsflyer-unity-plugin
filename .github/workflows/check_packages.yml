@@ -42,6 +42,7 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           echo "Checked out to upm branch"
+          git push -f -u origin upm
       - name: create tag
         run: |
           git tag v${{env.plugin_version}}
