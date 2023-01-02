@@ -20,7 +20,7 @@ In order to add the plugin to your project, you can either add the *unitypackage
 * Adding the `appsflyer-unity-plugin.v*.unitypackage` will automatically import all the assets required for both the AppsFlyer SDK and the External Dependency Manager for Unity.
 
 ## Using unitypackage
-1. Clone / download this repository.
+1. Clone / download the [plugin repository](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin).
 2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the appsflyer-unity-plugin-*.unitypackage into your Unity project.
 3. Go to Assets >> Import Package >> Custom Package.
 4. Select the appsflyer-unity-plugin-*.unitypackage file.
