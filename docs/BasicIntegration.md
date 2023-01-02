@@ -29,7 +29,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 | **Get Conversion Data**    | Set this to true if your app is using AppsFlyer for deep linking.  |
 | **Is Debug**    | Set this to true to view the debug logs. (for development only!)  |
 
-3. Update the code in Assets > AppsFlyer > AppsFlyerObjectScript.cs with other available [API](/docs/API.md).
+3. Update the code in Assets > AppsFlyer > AppsFlyerObjectScript.cs with other available [API](/docs/API).
 
 ## Manual integration
 
