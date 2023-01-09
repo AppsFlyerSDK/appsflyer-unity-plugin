@@ -52,8 +52,8 @@ echo "Commenting out functions. Done."
  rm -rf ../Packages
  echo "removing ./deploy/create_unity_core.log"
  rm ./create_unity_core.log
- echo "Moving  $DEPLOY_PATH/$PACKAGE_NAME to root"
- mv ./outputs/$PACKAGE_NAME ..
+ echo "Moving $DEPLOY_PATH/$PACKAGE_NAME to strict-mode-sdk folder"
+ mv ./outputs/$PACKAGE_NAME ../strict-mode-sdk
  echo "removing ./deploy/outputs"
  rm -rf ./outputs
  echo "removing ./Assets extra files"
@@ -68,9 +68,9 @@ echo "Commenting out functions. Done."
  sed -i '' 's/\/\/\[\[AppsFlyerLib/\[\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
  echo "Uncomment functions. Done."
 
- echo "Uncommenting dependencies"
+ echo "Changing AppsFlyerFramework back"
  sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
- echo "Uncommenting dependencies. Done."
+ echo "Changing AppsFlyerFramework back. Done."
 
  else
  echo "dev mode. No files removed. Run with -p flag for production build."
