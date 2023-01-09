@@ -7,6 +7,7 @@ hidden: false
 ---
 
 The list of available methods for this plugin is described below.
+test test test
 - [Android, iOS and Windows API](#android-ios-and-windows-api)
   - [initSDK](#initsdk)
   - [startSDK](#startsdk)
