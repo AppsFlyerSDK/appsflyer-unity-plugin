@@ -2,7 +2,7 @@ name: check headers
 on:
   push:
     branches:
-      - 'main'
+      - main
 
 jobs:
   conditional_job_check_files:
