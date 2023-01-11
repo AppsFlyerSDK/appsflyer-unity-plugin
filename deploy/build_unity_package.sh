@@ -7,7 +7,7 @@ UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
 PACKAGE_NAME="appsflyer-unity-plugin-6.6.0.unitypackage"
 mkdir -p $DEPLOY_PATH
 
-#add comment to test github action test
+#add comment to test github actions test
 # Build the .unitypackage
 /opt/Unity/Editor/Unity
 -gvh_disable \
