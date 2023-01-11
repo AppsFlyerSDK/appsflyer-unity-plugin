@@ -1,8 +1,10 @@
 name: check headers
 on:
-  push:
+  pull_request:
+    types:
+      - opened
     branches:
-      - main
+      - 'master'
 
 jobs:
   conditional_job_check_files:
