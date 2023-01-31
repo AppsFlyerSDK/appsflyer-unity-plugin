@@ -1,7 +1,8 @@
 name: Test runner unity-appsflyer-plugin
 
-on: [pull_request]
-
+on:
+  workflow_call:
+  
 jobs:
   testAndroid:
     name: Test in ${{ matrix.targetPlatform }}

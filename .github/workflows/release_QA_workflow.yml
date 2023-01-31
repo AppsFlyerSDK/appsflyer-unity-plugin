@@ -1,0 +1,18 @@
+name: plugin release to QA
+
+on:
+  push:
+    branches:
+      - releases/[0-9]+.x.x/[0-9]+.[0-9]+.x/[0-9]+.[0-9]+.[0-9]+-rc[0-9]+
+    paths-ignore:
+      - master
+
+jobs:
+  Run-Unit-Tests:
+    uses: ./.github/workflows/main.yml
+    secrets: inherit
+
+  Release-To-QA:
+    needs: [Run-Unit-Tests]
+    uses: ./.github/workflows/release_to_QA.yml
+    secrets: inherit
