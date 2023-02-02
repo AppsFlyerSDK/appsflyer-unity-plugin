@@ -1,0 +1,59 @@
+name: plugin release to Production
+
+on:
+  workflow_call:
+    inputs:
+      plugin_version:
+        required: true
+        type: string
+      branch_name:
+        required: true
+        type: string
+
+jobs:
+  Release-To-Production:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to Github
+        env:
+          COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+          COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
+        run: |
+          git config --global user.name $COMMIT_AUTHOR
+          git config --global user.email $COMMIT_EMAIL
+
+      - name: Create GitHub Release
+        env:
+          VTAG: v${{ inputs.plugin_version }}
+          TAG: ${{ inputs.plugin_version }}
+        uses: "actions/github-script@v5"
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            try {
+              await github.rest.repos.createRelease({
+                draft: false,
+                generate_release_notes: false,
+                name: process.env.VTAG,
+                owner: context.repo.owner,
+                prerelease: false,
+                repo: context.repo.repo,
+                tag_name: process.env.TAG
+              });
+            } catch (error) {
+              core.setFailed(error.message);
+            }
+      - name: Send slack report
+        env:
+          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
+          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+        run: |
+          jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
+          chmod +x .github/workflows/Scripts/checkJira.sh
+          .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
+          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
+          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
+          version_changes=$(cat "$jira_fixed_version-releasenotes".txt)
+          curl -X POST -H 'Content-type: application/json' --data '{"plugin_version": "'"$jira_fixed_version"'", "ios_sdk_dependency": "'"$ios_af_sdk_version"'", "android_sdk_dependency": "'"$android_af_sdk_version"'", "version_changes": "'"$version_changes"'", "deploy_type": "Production", "git_branch": "'"${{inputs.branch_name}}"'"}' "$SLACK_TOKEN"

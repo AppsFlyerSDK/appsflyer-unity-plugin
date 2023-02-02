@@ -1,0 +1,68 @@
+name: plugin release to Production workflow
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - 'master'
+    paths-ignore:
+      - '**.md'
+      - '**.yml'
+      - 'docs/**.md'
+      - '**.sh'
+
+jobs:
+  Prepare-Release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.tag-step.outputs.PLUGIN_VERSION}}
+      output2: ${{ steps.tag-step.outputs.RELEASE_BRANCH_NAME}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub
+        env:
+          COMMIT_AUTHOR: ${{ secrets.CI_USERNAME}}
+          COMMIT_EMAIL: ${{ secrets.CI_EMAIL}}
+        run: |
+          git config --global user.name $COMMIT_AUTHOR
+          git config --global user.email $COMMIT_EMAIL
+
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Determine release tag and release branch
+        id: tag-step
+        run: |
+          TAG=$(echo "${{ steps.vars.outputs.branch }}" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
+          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_ENV
+          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_OUTPUT
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_OUTPUT
+
+      - name: Create a version tag and push it
+        run: |
+          echo "Pushing release tag: ${{ env.PLUGIN_VERSION }}!"
+          git checkout master
+          echo "Checked out to master"
+          git tag ${{ env.PLUGIN_VERSION }}
+          echo "Created release tag"
+          git push origin ${{env.PLUGIN_VERSION}}
+          echo "Pushed release tag ${{ env.PLUGIN_VERSION }}"
+
+  Check-Packages:
+    needs: [Prepare-Release]
+    uses: ./.github/workflows/check_packages.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
+    secrets: inherit
+
+  Release-To-Production:
+    needs: [Prepare-Release, Check-Packages]
+    uses: ./.github/workflows/release_to_production.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
+      branch_name: ${{ needs.Prepare-Release.outputs.output2 }}
+    secrets: inherit
