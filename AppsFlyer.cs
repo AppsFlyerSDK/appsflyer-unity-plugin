@@ -305,6 +305,7 @@ namespace AppsFlyerSDK
 #else
 #endif
         }
+        }
 
         /// <summary>
         /// Manually record the location of the user.
