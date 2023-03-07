@@ -302,6 +302,8 @@ namespace AppsFlyerSDK
 #elif UNITY_ANDROID
                 instance = new AppsFlyerAndroid();
                 instance.setCurrencyCode(currencyCode);
+#else
+#endif
         }
 
         /// <summary>
@@ -390,8 +392,8 @@ namespace AppsFlyerSDK
                 instance = new AppsFlyerAndroid();
                 instance.setHost(hostPrefixName, hostName);
         }
-
-
+#else
+#endif
         }
 
         /// <summary>
@@ -795,6 +797,8 @@ namespace AppsFlyerSDK
                 IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
                 appsFlyeriOSInstance.disableSKAdNetwork(isDisabled);
         }
+#else
+#endif
         }
 
         public static void setCollectOaid(bool isCollect)
