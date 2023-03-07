@@ -79,6 +79,7 @@ namespace AppsFlyerSDK
             AppsFlyerRequestEventArgs eventArgs = new AppsFlyerRequestEventArgs((int)code, code.ToString());
             if (_gameObject != null) {
                 var method = _gameObject.GetType().GetMethod("AppsFlyerOnRequestResponse");
+            }
                 if (method != null) {
                     method.Invoke(_gameObject, new object[] { AppsFlyerTracker.GetAppsFlyerTracker(), eventArgs });
                 }
