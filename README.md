@@ -16,8 +16,8 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v6.9.4** 
-- iOS AppsFlyer SDK **v6.9.1**
+- Android AppsFlyer SDK **v6.10.1** 
+- iOS AppsFlyer SDK **v6.10.0**
 
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
@@ -27,6 +27,7 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 ---  
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differentiate between iOS and Android APIs. All APIs must be called with `AppsFlyer` class (even if the API is only iOS or Android).
+- Please take into consideration that since version 6.6.0, most of the APIs require `initSDK` to be called prior to using them, only a handful of APIs will properly work when called prior to initialization: `setIsDebug`, `setCurrencyCode`, `setHost`, `disableSKAdNetwork`.
 
 Example:
 
