@@ -295,9 +295,13 @@ namespace AppsFlyerSDK
             if (instance != null)
             {
                 instance.setCurrencyCode(currencyCode);
-            }
-
-
+            } else {
+#if UNITY_IOS || UNITY_STANDALONE_OSX
+                instance = new AppsFlyeriOS();
+                instance.setCurrencyCode(currencyCode);
+#elif UNITY_ANDROID
+                instance = new AppsFlyerAndroid();
+                instance.setCurrencyCode(currencyCode);
         }
 
         /// <summary>
@@ -378,7 +382,14 @@ namespace AppsFlyerSDK
             if (instance != null)
             {
                 instance.setHost(hostPrefixName, hostName);
-            }
+            } else {
+#if UNITY_IOS || UNITY_STANDALONE_OSX
+                instance = new AppsFlyeriOS();
+                instance.setHost(hostPrefixName, hostName);
+#elif UNITY_ANDROID
+                instance = new AppsFlyerAndroid();
+                instance.setHost(hostPrefixName, hostName);
+        }
 
 
         }
@@ -582,8 +593,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setDisableCollectAppleAdSupport(disable);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setDisableCollectAppleAdSupport(disable);
             }
         }
 
@@ -591,8 +602,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setShouldCollectDeviceName(shouldCollectDeviceName);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setShouldCollectDeviceName(shouldCollectDeviceName);
             }
         }
 
@@ -634,8 +645,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setDisableCollectIAd(disableCollectIAd);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setDisableCollectIAd(disableCollectIAd);
             }
         }
 
@@ -653,8 +664,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setUseReceiptValidationSandbox(useReceiptValidationSandbox);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setUseReceiptValidationSandbox(useReceiptValidationSandbox);
             }
         }
 
@@ -679,8 +690,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setUseUninstallSandbox(useUninstallSandbox);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setUseUninstallSandbox(useUninstallSandbox);
             }
         }
 
@@ -707,8 +718,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.validateAndSendInAppPurchase(productIdentifier, price, currency, tranactionId, additionalParameters, gameObject);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.validateAndSendInAppPurchase(productIdentifier, price, currency, tranactionId, additionalParameters, gameObject);
             }
         }
 
@@ -725,8 +736,8 @@ namespace AppsFlyerSDK
         { 
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.handleOpenUrl(url, sourceApplication, annotation);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.handleOpenUrl(url, sourceApplication, annotation);
             }
         }
 
@@ -734,8 +745,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.registerUninstall(deviceToken);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.registerUninstall(deviceToken);
             }
         }
 
@@ -743,8 +754,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.waitForATTUserAuthorizationWithTimeoutInterval(timeoutInterval);
             }
         }
 
@@ -752,8 +763,8 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.setCurrentDeviceLanguage(language);
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.setCurrentDeviceLanguage(language);
             }
         }
 
@@ -776,9 +787,14 @@ namespace AppsFlyerSDK
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
-                IAppsFlyerIOSBridge appsFlyerAndroidInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyerAndroidInstance.disableSKAdNetwork(isDisabled);
-            }
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.disableSKAdNetwork(isDisabled);
+            } else {
+#if UNITY_IOS || UNITY_STANDALONE_OSX
+                instance = new AppsFlyeriOS();
+                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyeriOSInstance.disableSKAdNetwork(isDisabled);
+        }
         }
 
         public static void setCollectOaid(bool isCollect)
