@@ -39,6 +39,8 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           echo "Checked out to upm branch"
+          git config --global user.name "af-do"
+          git config --global user.email "dmitry.o@appsflyer.com"
           git rm -r Tests
           git commit -m "Remove Tests folder from upm branch"
           echo "Removed Tests folder"
@@ -61,6 +63,8 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
           echo "Checked out to Strict-upm branch"
+          git config --global user.name "af-do"
+          git config --global user.email "dmitry.o@appsflyer.com"
           git rm -r Tests
           git commit -m "Remove Tests folder from Strict-upm branch"
           echo "Removed Tests folder"
