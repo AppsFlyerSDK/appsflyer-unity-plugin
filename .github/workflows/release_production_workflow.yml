@@ -8,7 +8,6 @@ on:
       - 'master'
     paths-ignore:
       - '**.md'
-      - '**.yml'
       - 'docs/**.md'
       - '**.sh'
 
