@@ -39,6 +39,9 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           echo "Checked out to upm branch"
+          git rm -r Tests
+          git commit -m "Remove Tests folder from upm branch"
+          echo "Removed Tests folder"
           git push -f -u origin upm
       - name: create tag
         run: |
@@ -58,6 +61,9 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
           echo "Checked out to Strict-upm branch"
+          git rm -r Tests
+          git commit -m "Remove Tests folder from Strict-upm branch"
+          echo "Removed Tests folder"
       - name: Modify for strict mode
         run: |
           echo "Changing AppsFlyerFramework to Strict Mode"

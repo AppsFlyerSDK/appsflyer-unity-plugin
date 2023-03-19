@@ -1,5 +1,11 @@
 # Versions
 
+## v6.10.10
+* Update iOS SDK version - 6.10.0
+* Update Android SDK version - 6.10.1
+* Fix NullReferenceException when not using Request Listeners with UWP
+* Align `setHost`, `disableSKAdNetwork` and `setCurrencyCode` to work if called prior to `initSdk`
+
 ## v6.9.4
 * Update iOS SDK version - 6.9.1
 * Update Android SDK version - 6.9.4
