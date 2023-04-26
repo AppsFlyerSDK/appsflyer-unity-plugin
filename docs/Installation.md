@@ -25,7 +25,7 @@ In order to add the plugin to your project, you can either add the *unitypackage
 3. Go to Assets >> Import Package >> Custom Package.
 4. Select the appsflyer-unity-plugin-*.unitypackage file.
 
-**Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-with-unity-jar-resolver).
+**Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-without-unity-jar-resolver).
 
 ## Using Unity Package Manager
 
