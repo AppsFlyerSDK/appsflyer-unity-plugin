@@ -7,14 +7,13 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.10.10";
+        public static readonly string kAppsFlyerPluginVersion = "6.10.30";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
         private static EventHandler onDeepLinkReceived;
         public static IAppsFlyerNativeBridge instance = null;
         public delegate void unityCallBack(string message);
-
 
 
         /// <summary>
