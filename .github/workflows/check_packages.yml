@@ -34,13 +34,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: split branch
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
           git branch -d upm &> /dev/null || echo upm branch not found
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           echo "Checked out to upm branch"
-          git config --global user.name "af-do"
-          git config --global user.email "dmitry.o@appsflyer.com"
+          git config --global user.name $COMMIT_AUTHOR
+          git config --global user.email $COMMIT_EMAIL
           git rm -r Tests
           git commit -m "Remove Tests folder from upm branch"
           echo "Removed Tests folder"
@@ -58,13 +61,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: split branch
+        env:
+            COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+            COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
           git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
           echo "Checked out to Strict-upm branch"
-          git config --global user.name "af-do"
-          git config --global user.email "dmitry.o@appsflyer.com"
+          git config --global user.name $COMMIT_AUTHOR
+          git config --global user.email $COMMIT_EMAIL
           git rm -r Tests
           git commit -m "Remove Tests folder from Strict-upm branch"
           echo "Removed Tests folder"

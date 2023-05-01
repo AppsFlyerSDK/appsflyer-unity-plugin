@@ -12,6 +12,8 @@ import com.appsflyer.CreateOneLinkHttpTask;
 import com.appsflyer.attribution.AppsFlyerRequestListener;
 import com.appsflyer.deeplink.DeepLinkListener;
 import com.appsflyer.deeplink.DeepLinkResult;
+import com.appsflyer.internal.platform_extension.Plugin;
+import com.appsflyer.internal.platform_extension.PluginInfo;
 import com.appsflyer.share.CrossPromotionHelper;
 import com.appsflyer.share.LinkGenerator;
 import com.appsflyer.share.ShareInviteHelper;
@@ -36,6 +38,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
+    private static final String PLUGIN_VERSION = "6.10.30";
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
 
@@ -45,6 +48,7 @@ public class AppsFlyerAndroidWrapper {
         }
 
         devkey = devKey;
+        setPluginInfo();
         AppsFlyerLib.getInstance().init(devKey, conversionListener, UnityPlayer.currentActivity);
         AppsFlyerLib.getInstance().setExtension("unity_android_6.4.4");
     }
@@ -410,5 +414,10 @@ public class AppsFlyerAndroidWrapper {
 
     public static void setDisableNetworkData(boolean disable){
         AppsFlyerLib.getInstance().setDisableNetworkData(disable);
+    }
+
+    public static void setPluginInfo() {
+        PluginInfo pluginInfo = new PluginInfo(Plugin.UNITY, PLUGIN_VERSION);
+        AppsFlyerLib.getInstance().setPluginInfo(pluginInfo);
     }
 }

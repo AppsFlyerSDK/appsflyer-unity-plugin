@@ -17,6 +17,9 @@ static void unityCallBack(NSString* objectName, const char* method, const char* 
 extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
+        [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
+                                pluginVersion:@"6.10.30"
+                                additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
         [AppsFlyerAttribution shared].isBridgeReady = YES;
