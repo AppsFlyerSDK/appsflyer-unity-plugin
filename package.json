@@ -1,0 +1,11 @@
+{
+	"name": "appsflyer-unity-plugin",
+	"displayName": "AppsFlyer",
+	"description": "AppsFlyer Unity plugin",
+	"version": "6.9.4",
+	"unity": "2020.3",
+	"license": "MIT",
+	"dependencies": {
+	  "com.google.external-dependency-manager": "1.2.144"
+	}
+  }
