@@ -29,19 +29,7 @@ In order to add the plugin to your project, you can either add the *unitypackage
 
 ## Using Unity Package Manager
 
-1. Go to your packages folder, and open `manifest.json` 
-2. Add Google game package registery fpr the external dependency Manager. 
-```
-  "scopedRegistries": [
-    {
-      "name": "Game Package Registry by Google",
-      "url": "https://unityregistry-pa.googleapis.com",
-      "scopes": [
-        "com.google"
-      ]
-    }
-  ]
-```
+1. Follow Google's [guide](https://developers.google.com/unity/instructions) in order to integrate UPM (Unity Package Manager).
 **Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to steps 2 & 3 [here](#installation-without-unity-jar-resolver).
 
 
