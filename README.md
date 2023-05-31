@@ -68,13 +68,15 @@ View the migration docs [here](/docs/MigrationGuide.md).
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
-## <a id="plugin-build-for"> 🌟 Deep Linking
+## <a id="plugin-build-for"> 🔗 Deep Linking
 - [Integration](/docs/DeepLinkIntegrate.md)
 - [Unified Deep Link (UDL)](/docs/UnifiedDeepLink.md)
 - [User invite](/docs/UserInvite.md)
+## <a id="plugin-build-for"> 🧪 Sample App
+- [ButterFlyer](https://github.com/AppsFlyerSDK/appsflyer-unity-sample-app)
 
 ----  
-### [API refrence](/docs/API.md)    
+### [API reference](/docs/API.md)    
 ### [Troubleshooting](/docs/Troubleshooting.md)
 
 
