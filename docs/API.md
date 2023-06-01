@@ -15,6 +15,7 @@ The list of available methods for this plugin is described below.
   - [isSDKStopped](#issdkstopped)
   - [getSdkVersion](#getsdkversion)
   - [setIsDebug](#setisdebug)
+  - [addPushNotificationDeepLinkPath](#addpushnotificationdeeplinkpath)
   - [setCustomerUserId](#setcustomeruserid)
   - [setAppInviteOneLinkID](#setappinviteonelinkid)
   - [setAdditionalData](#setadditionaldata)
@@ -57,6 +58,7 @@ The list of available methods for this plugin is described below.
   - [setDisableNetworkData](#setdisablenetworkdata)
 - [iOS Only API](#ios-only-api)
   - [setDisableCollectAppleAdSupport](#setdisablecollectappleadsupport)
+  - [handlePushNotifications](#handlepushnotificationsios)
   - [setShouldCollectDeviceName](#setshouldcollectdevicename)
   - [setDisableCollectIAd](#setdisablecollectiad)
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)
@@ -205,6 +207,54 @@ Only set to true in development / debug.
 
 ```c#
 AppsFlyer.setIsDebug(true);
+```
+
+---
+
+### addPushNotificationDeepLinkPath
+
+**`void addPushNotificationDeepLinkPath(params string[] paths)`**
+
+Adds array of keys, which are used to compose key path to resolve deeplink from push notification payload.
+
+| parameter      | type   | description                                 |
+| -----------    |------- |---------------------------------------------|
+| `paths` | `string[]` | array of strings that represent the key path to the deeplink in the push notification payload |
+
+*Example:*
+
+**Usage example**  
+Basic configuration:
+
+```c#
+AppsFlyer.addPushNotificationDeepLinkPath("af_push_link")
+```
+
+This call matches the following payload structure:
+
+```json
+{
+  "af_push_link": "https://yourdeeplink2.onelink.me"
+}
+```
+
+ֿAdvanced configuration:
+
+```c#
+string[] paths = {"deeply", "nested", "deep_link"};
+AppsFlyer.addPushNotificationDeepLinkPath(paths);
+```
+
+This call matches the following payload structure:
+
+```json
+{
+  "deeply": {
+      "nested": {
+          "deep_link": "https://yourdeeplink2.onelink.me"
+      }
+  }
+}
 ```
 
 ---
@@ -841,8 +891,8 @@ Manually set that the application was updated.
 #endif
 ```
 
----
 
+---
 
  ### isPreInstalledApp
  **`bool isPreInstalledApp()`**
@@ -858,6 +908,18 @@ Boolean indicator for preinstall by Manufacturer.
 
         }
 #endif
+```
+---
+
+### handlePushNotifications
+
+**`void handlePushNotifications()`**
+When the handlePushNotifications API is called push notifications will be recorded.
+
+*Example:*
+
+```c#
+AppsFlyer.handlePushNotifications();
 ```
 
 ---
@@ -876,20 +938,6 @@ Get the Facebook attribution ID, if one exists.
 #endif
 ```
 
----
-
-### handlePushNotifications
-**`void handlePushNotifications()`**
- 
-When the handlePushNotifications API is called push notifications will be recorded.
-
-*Example:*
-
-```c#
-#if UNITY_ANDROID && !UNITY_EDITOR
-        AppsFlyer.handlePushNotifications();
-#endif
-```
 
 ---
 
@@ -1009,6 +1057,27 @@ You can disable this behavior by setting the following property to true.
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
         AppsFlyer.setDisableCollectAppleAdSupport(true);
+#endif
+```
+
+---
+
+### handlePushNotifications(iOS)
+
+**`void handlePushNotification(Dictionary<string, string> pushPayload)`**
+When the handlePushNotifications API is called from a service that is swizzling, like Firebase, the push notifications payload will be handled by the AppsflyerSDK.
+
+| parameter     | type                         | description                   |
+| --------------|------------------------------|-------------------------------|
+| `pushPayload` | `Dictionary<string, string>` | the push notification payload |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    // e.Message.Data = push notification payload
+    var dataDict = new Dictionary<string, string>(e.Message.Data);
+    AppsFlyeriOS.handlePushNotification(dataDict);
 #endif
 ```
 
