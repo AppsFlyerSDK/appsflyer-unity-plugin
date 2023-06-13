@@ -27,7 +27,7 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 ---  
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differentiate between iOS and Android APIs. All APIs must be called with `AppsFlyer` class (even if the API is only iOS or Android).
-- Please take into consideration that since version 6.6.0, most of the APIs require `initSDK` to be called prior to using them, only a handful of APIs will properly work when called prior to initialization: `setIsDebug`, `setCurrencyCode`, `setHost`, `disableSKAdNetwork`.
+- Please take into consideration that since version 6.6.0, most of the APIs require `initSDK` to be called prior to using them, and since version 6.10.10 only a handful of APIs will properly work when called prior to initialization: `setIsDebug`, `setCurrencyCode`, `setHost`, `disableSKAdNetwork`.
 
 Example:
 
@@ -60,6 +60,11 @@ Migrating from the old plugin? (version V4) <br/>
 View the migration docs [here](/docs/MigrationGuide.md).
 
 ⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
+
+## <a id="strict-mode"> Strict Mode
+The plugin supports a Strict Mode which completely removes the IDFA collection functionality and AdSupport framework dependencies.
+Use the Strict Mode when developing apps for kids, for example.
+More information about how to install the Strict Mode is available [here](/docs/Installation.md).
 
  ---
 ## <a id="plugin-build-for"> 🚀 Getting Started
