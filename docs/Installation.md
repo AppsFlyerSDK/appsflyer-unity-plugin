@@ -21,9 +21,9 @@ In order to add the plugin to your project, you can either add the *unitypackage
 
 ## Using unitypackage
 1. Clone / download the [plugin repository](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin).
-2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the appsflyer-unity-plugin-*.unitypackage into your Unity project.
+2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the `appsflyer-unity-plugin-*.unitypackage` or `appsflyer-unity-plugin-strict-mode.*.unitypackage` file from the `strict-mode-sdk` folder for the Strict version of the plugin, into your Unity project.
 3. Go to Assets >> Import Package >> Custom Package.
-4. Select the appsflyer-unity-plugin-*.unitypackage file.
+4. Select the `appsflyer-unity-plugin-*.unitypackage` file or the `appsflyer-unity-plugin-strict-mode.*.unitypackage` file from the `strict-mode-sdk` folder for the Strict version of the plugin.
 
 **Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-with-unity-jar-resolver).
 
@@ -34,14 +34,16 @@ In order to add the plugin to your project, you can either add the *unitypackage
 
 
 4. Add appsflyer-unity-plugin in the dependency :
-Add this line for the regular mode
+Add this line for the latest version of the regular mode
 ```
  "appsflyer-unity-plugin": "https://github.com/AppsFlyerSDK/appsflyer-unity-plugin.git#upm"
 ```
- Or this line for Strict mode :
+ Or this line for latest version of the Strict mode :
 ```
  "appsflyer-unity-plugin": "https://github.com/AppsFlyerSDK/appsflyer-unity-plugin.git#Strict-upm"
 ```
+
+**Note:** To choose an earlier version and not the latest, you can replace the `upm` or `Strict-upm` with the specific version, `v6.10.30` for the regular version of 6.10.30 or `Strict-v6.10.30` for the Strict version of 6.10.30.
 
 ---
 

@@ -51,7 +51,7 @@ public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
             }
              if (req.Granted && req.DeviceToken != "")
              {
-                  AppsFlyeriOS.registerUninstall(Encoding.UTF8.GetBytes(req.DeviceToken));
+                  AppsFlyer.registerUninstall(Encoding.UTF8.GetBytes(req.DeviceToken));
       
              }
         }
@@ -87,7 +87,7 @@ Firebase.Messaging.FirebaseMessaging.TokenReceived += OnTokenReceived;
     public void OnTokenReceived(object sender, Firebase.Messaging.TokenReceivedEventArgs token)
     {
 #if UNITY_ANDROID
-        AppsFlyerAndroid.updateServerUninstallToken(token.Token);
+        AppsFlyer.updateServerUninstallToken(token.Token);
 #endif
     }
 ```
