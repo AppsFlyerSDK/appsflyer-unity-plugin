@@ -1,0 +1,41 @@
+name: update sdk links
+
+on:
+    workflow_call:
+
+jobs:
+  update-links:
+    runs-on: ubuntu-20.04
+    steps:
+        - name: Check out repo
+          uses: actions/checkout@v2
+        - name: Update links
+          env:
+              COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+              COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
+          run: |
+            echo "Getting the versions"
+            grep -o 'spec="com.appsflyer:[^"]\+"' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml | sed -E 's/spec="com.appsflyer:([^"]+)"/\1/' | awk -F':' '{print $2}' > output.txt
+            grep -o 'name="AppsFlyerFramework" version="[^"]\+"' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml | sed -E 's/name="AppsFlyerFramework" version="([^"]+)"/\1/' >> output.txt
+
+            echo "Changing links"
+            android_version=$(sed -n '1p' output.txt)
+            sed -E -i "s/af-android-sdk\/[0-9]+.[0-9]+.[0-9]+/af-android-sdk\/$android_version/g" docs/Installation.md
+            sed -E -i "s/af-android-sdk-[0-9]+.[0-9]+.[0-9]+/af-android-sdk-$android_version/g" docs/Installation.md
+
+            wrapper_version=$(sed -n '2p' output.txt)
+            sed -E -i "s/unity-wrapper\/[0-9]+.[0-9]+.[0-9]+/unity-wrapper\/$wrapper_version/g" docs/Installation.md
+            sed -E -i "s/unity-wrapper-[0-9]+.[0-9]+.[0-9]+/unity-wrapper-$wrapper_version/g" docs/Installation.md
+
+            ios_version=$(sed -n '3p' output.txt)
+            major_version="${ios_version%%.*}"
+            minor_version="${ios_version%.*}"
+            sed -E -i "s/appsflyer.com\/ios\/[0-9]+.x.x\/[0-9]+.[0-9]+.x\/[0-9]+.[0-9]+.[0-9]+\/AF-iOS-SDK-v[0-9]+.[0-9]+.[0-9]+/appsflyer.com\/ios\/$major_version.x.x\/$minor_version.x\/$ios_version\/AF-iOS-SDK-v$ios_version/g" docs/Installation.md
+            sed -E -i "s/unity-wrapper-[0-9]+.[0-9]+.[0-9]+/unity-wrapper-$wrapper_version/g" docs/Installation.md
+
+            echo "Commit and push"
+            git config --global user.name $COMMIT_AUTHOR
+            git config --global user.email $COMMIT_EMAIL
+            git add docs/Installation.md
+            git commit -m "generate links"
+            git push -f -u origin master
