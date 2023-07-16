@@ -58,8 +58,13 @@ jobs:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
     secrets: inherit
 
-  Release-To-Production:
+  Update-Links:
     needs: [Prepare-Release, Check-Packages]
+    uses: ./.github/workflows/update_links.yml
+    secrets: inherit
+
+  Release-To-Production:
+    needs: [Prepare-Release, Check-Packages, Update-Links]
     uses: ./.github/workflows/release_to_production.yml
     with:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
