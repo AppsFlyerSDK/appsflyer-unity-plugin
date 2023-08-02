@@ -875,6 +875,17 @@ namespace AppsFlyerSDK
             }
         }
 
+
+        /// <summary>
+        /// Use to disable app vendor identifier (IDFV) collection, 'true' to disable.
+        /// </summary>
+        public static void disableIDFVCollection(bool disable) {
+            if (instance != null && instance is IAppsFlyerIOSBridge) {
+                IAppsFlyerIOSBridge appsFlyerIOSInstance = (IAppsFlyerIOSBridge)instance;
+                appsFlyerIOSInstance.disableIDFVCollection(disable);
+            }
+    }
+
         /// <summary>
         /// Start callback event.
         /// </summary>
