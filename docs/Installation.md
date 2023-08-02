@@ -42,6 +42,7 @@ Add this line for the latest version of the regular mode
 ```
  "appsflyer-unity-plugin": "https://github.com/AppsFlyerSDK/appsflyer-unity-plugin.git#Strict-upm"
 ```
+5. Download the [External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver) to be able to resolve our Android / iOS dependencies.
 
 **Note:** To choose an earlier version and not the latest, you can replace the `upm` or `Strict-upm` with the specific version, `v6.10.30` for the regular version of 6.10.30 or `Strict-v6.10.30` for the Strict version of 6.10.30.
 
