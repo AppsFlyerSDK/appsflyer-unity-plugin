@@ -41,16 +41,6 @@ jobs:
           echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_ENV
           echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_OUTPUT
 
-      - name: Create a version tag and push it
-        run: |
-          echo "Pushing release tag: ${{ env.PLUGIN_VERSION }}!"
-          git checkout master
-          echo "Checked out to master"
-          git tag ${{ env.PLUGIN_VERSION }}
-          echo "Created release tag"
-          git push origin ${{env.PLUGIN_VERSION}}
-          echo "Pushed release tag ${{ env.PLUGIN_VERSION }}"
-
   Check-Packages:
     needs: [Prepare-Release]
     uses: ./.github/workflows/check_packages.yml
@@ -63,8 +53,24 @@ jobs:
     uses: ./.github/workflows/update_links.yml
     secrets: inherit
 
-  Release-To-Production:
+  Generate-Tag:
     needs: [Prepare-Release, Check-Packages, Update-Links]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create a version tag and push it
+        run: |
+          echo "Pushing release tag: ${{ needs.Prepare-Release.outputs.output1 }}!"
+          git checkout master
+          echo "Checked out to master"
+          git pull origin master
+          git tag ${{ needs.Prepare-Release.outputs.output1 }}
+          echo "Created release tag"
+          git push origin ${{needs.Prepare-Release.outputs.output1}}
+          echo "Pushed release tag ${{ needs.Prepare-Release.outputs.output1 }}"
+
+  Release-To-Production:
+    needs: [Prepare-Release, Check-Packages, Update-Links, Generate-Tag]
     uses: ./.github/workflows/release_to_production.yml
     with:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
