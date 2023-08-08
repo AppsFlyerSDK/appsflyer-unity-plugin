@@ -283,6 +283,10 @@ extern "C" {
         [[AppsFlyerLib shared] setPartnerDataWithPartnerId: stringFromChar(partnerId) partnerInfo:dictionaryFromJson(partnerInfo)];
     }
 
+    const void _disableIDFVCollection(bool isDisabled) {
+        [AppsFlyerLib shared].disableIDFVCollection = isDisabled;
+    }
+
 }
 
 @implementation AppsFlyeriOSWarpper

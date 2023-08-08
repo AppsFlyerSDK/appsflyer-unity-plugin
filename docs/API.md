@@ -69,6 +69,7 @@ The list of available methods for this plugin is described below.
   - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
   - [disableSKAdNetwork](#disableskadnetwork)
   - [setLanguage](#setlanguage)
+  - [disableIDFVCollection](#disableidfvcollection)
 - [IAppsFlyerConversionData](#iappsflyerconversiondata)
   - [onConversionDataSuccess](#onconversiondatasuccess)
   - [onConversionDataFail](#onconversiondatafail)
@@ -1298,6 +1299,24 @@ See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
     AppsFlyer.setCurrentDeviceLanguage("english");
+#endif
+```
+
+---
+
+### disableIDFVCollection
+**` disableIDFVCollection(bool isDisabled)`**
+
+
+| parameter     | type       | description  |
+| -----------   |----------  |--------------|
+| `isDisabled`         | `bool`   |    True to disable IDFV collection   |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+    AppsFlyer.disableIDFVCollection(true);
 #endif
 ```
 
