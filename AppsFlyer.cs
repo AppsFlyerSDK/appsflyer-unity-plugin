@@ -881,17 +881,16 @@ namespace AppsFlyerSDK
         /// </summary>
         public static void disableIDFVCollection(bool isDisabled) 
         {
+#if UNITY_IOS || UNITY_STANDALONE_OSX
+            if (instance == null) { 
+                instance = new AppsFlyeriOS();
+            }
             if (instance != null && instance is IAppsFlyerIOSBridge) {
                 IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
                 appsFlyeriOSInstance.disableIDFVCollection(isDisabled);
-            } else {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
-                instance = new AppsFlyeriOS();
-                IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyeriOSInstance.disableIDFVCollection(isDisabled);
+            }
 #else
 #endif
-        }
         }
 
         /// <summary>
