@@ -1,5 +1,11 @@
 # Versions
 
+## v6.12.20
+* Update iOS SDK version - 6.12.1
+* Update Android SDK version - 6.12.2
+* UPM distribution change, [see breaking changes](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/tree/development#------breaking-changes-when-updating-to-61220-).
+* Added new iOS API `disableIDFVCollection`
+
 ## v6.12.10
 * Update iOS SDK version - 6.12.0
 * Update Android SDK version - 6.12.1

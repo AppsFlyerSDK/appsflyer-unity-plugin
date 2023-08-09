@@ -567,6 +567,15 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 #endif
         }
 
+        /// <summary>
+        /// Use to disable app vendor identifier (IDFV) collection, 'true' to disable.
+        /// </summary>
+        public void disableIDFVCollection(bool isDisabled){
+#if !UNITY_EDITOR
+            _disableIDFVCollection(isDisabled);
+#endif
+        }
+
         delegate void unityCallBack(string message);
 
         [AOT.MonoPInvokeCallback(typeof(unityCallBack))]
@@ -896,6 +905,13 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         [DllImport("AppsFlyerBundle")]
 #endif
         private static extern void _setPartnerData(string partnerId, string partnerInfo);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _disableIDFVCollection(bool isDisabled);
 
     }
 

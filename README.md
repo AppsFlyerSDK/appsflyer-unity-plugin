@@ -16,8 +16,8 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK **v6.12.1** 
-- iOS AppsFlyer SDK **v6.12.0**
+- Android AppsFlyer SDK **v6.12.2**
+- iOS AppsFlyer SDK **v6.12.1**
 
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
@@ -25,6 +25,10 @@
 In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
 
 ---  
+## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.12.20 ❗❗
+- Starting from version 6.12.20, we have changed the way we distribute the plugin via UPM. The UPM branches will no longer hold a dependency for `com.google.external-dependency-manager` as it was proved to cause issues in different versions of Unity - to be clear, this dependency is still required to utilize our plugin, we just can't distribute the plugin with it in UPM form as the EDM4U dependency is [not available via UPM for quite a while already](https://github.com/googlesamples/unity-jar-resolver/issues/434#issuecomment-827028132) but is still available via `.unitypackage` or `.tgz` files, if you use UPM to fetch our plugin - [please download a suitable version of EDM4U](https://github.com/googlesamples/unity-jar-resolver) so you will be able to resolve the dependencies, or opt for [an installation without EDM4U](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Installation.md#installation-without-unity-jar-resolver).
+---  
+
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.6.0 ❗❗
 - Starting version 6.6.0, there is no more need to differentiate between iOS and Android APIs. All APIs must be called with `AppsFlyer` class (even if the API is only iOS or Android).
 - Please take into consideration that since version 6.6.0, most of the APIs require `initSDK` to be called prior to using them, and since version 6.10.10 only a handful of APIs will properly work when called prior to initialization: `setIsDebug`, `setCurrencyCode`, `setHost`, `disableSKAdNetwork`.

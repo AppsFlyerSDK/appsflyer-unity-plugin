@@ -19,6 +19,7 @@ namespace AppsFlyerSDK
 		void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval);
 		void setCurrentDeviceLanguage(string language);
 		void disableSKAdNetwork(bool isDisabled);
+		void disableIDFVCollection(bool isDisabled);
 
 	}
 }
