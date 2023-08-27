@@ -4,14 +4,14 @@
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-sdk:6.12.2">
     </androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:6.12.20">
+    <androidPackage spec="com.appsflyer:unity-wrapper:6.12.21">
     </androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1">
     </androidPackage>
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework" version="6.12.1" minTargetSdk="9.0">
+    <iosPod name="AppsFlyerFramework" version="6.12.2" minTargetSdk="9.0">
     </iosPod>
   </iosPods>
 
