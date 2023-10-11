@@ -53,6 +53,28 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
 
 ---
+
+## Set customer user ID
+
+Set your own unique customer user ID (CUID) and cross-reference it with the unique AppsFlyer ID.
+
+- Appear in AppsFlyer raw data CSV reports.
+- Can be used in postback APIs to cross-reference with internal IDs.  
+  To set the CUID, use:
+
+```c#
+AppsFlyer.setCustomerUserId("someId");
+```
+
+**Good practice!** Set the CUID early in the app flow—it is only associated with events reported after its setup.
+
+- Recorded events will be associated with the CUID.
+- Related data will appear in the raw data reports for installs and events..
+
+### Associate the CUID with the install event
+
+If it’s important for you to associate the install event with the CUID, call `setCustomerUserId` before calling `startSDK`.
+
 ## Collect IDFA with ATTrackingManager
 
 1. Add the `AppTrackingTransparency` framework to your xcode project. 
