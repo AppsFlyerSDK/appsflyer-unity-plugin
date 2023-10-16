@@ -5,12 +5,7 @@
 //  Created by Jonathan Wesfield on 24/07/2019.
 //
 
-#if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
-#import <AppsFlyerLib/AppsFlyerLib.h>
-#else
-#import "AppsFlyerLib.h"
-#endif
-
+#import "AFUnityUtils.h"
 
 static NSString* stringFromChar(const char *str) {
     return str ? [NSString stringWithUTF8String:str] : nil;
