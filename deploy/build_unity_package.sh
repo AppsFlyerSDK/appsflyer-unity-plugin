@@ -9,13 +9,13 @@ mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
 echo "moving the external dependency manager to root"
-mv external-dependency-manager-1.2.144.unitypackage ..
+mv external-dependency-manager-1.2.177.unitypackage ..
 
 # Build the .unitypackage
  /Applications/Unity/Hub/Editor/2021.3.11f1/Unity.app/Contents/MacOS/Unity \
 -gvh_disable \
 -batchmode \
--importPackage external-dependency-manager-1.2.144.unitypackage \
+-importPackage external-dependency-manager-1.2.177.unitypackage \
 -nographics \
 -logFile create_unity_core.log \
 -projectPath $PWD/../ \
@@ -29,7 +29,7 @@ $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 
 if [ $1 == "-p" ]; then
 echo "moving back the external dependency manager to deploy"
-mv ../external-dependency-manager-1.2.144.unitypackage .
+mv ../external-dependency-manager-1.2.177.unitypackage .
 echo "removing ./Library"
 rm -rf ../Library
 echo "removing ./Logs"
