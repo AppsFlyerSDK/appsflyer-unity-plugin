@@ -20,6 +20,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           lfs: true
+      - name: free up space
+        run: |
+          rm -rf /usr/share/dotnet/
+          rm -rf "/usr/local/share/boost"
+          rm -rf "$AGENT_TOOLSDIRECTORY"
+          rm -rf /opt/ghc
       - uses: game-ci/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -65,6 +71,7 @@ jobs:
           # https://github.com/actions/virtual-environments/issues/709#issuecomment-612569242
           rm -rf "/usr/local/share/boost"
           rm -rf "$AGENT_TOOLSDIRECTORY"
+          rm -rf /opt/ghc
 
           # After
           echo "Disk space after:"
