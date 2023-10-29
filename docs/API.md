@@ -2,7 +2,7 @@
 title: API reference
 category: 5f9705393c689a065c409b23
 parentDoc: 6370c9e2441a4504d6bca3bd
-order: 9
+order: 12
 hidden: false
 ---
 
@@ -50,15 +50,15 @@ The list of available methods for this plugin is described below.
   - [setIsUpdate](#setisupdate)
   - [setPreinstallAttribution](#setpreinstallattribution)
   - [isPreInstalledApp](#ispreinstalledapp)
-  - [getAttributionId](#getattributionid)
   - [handlePushNotifications](#handlepushnotifications)
+  - [getAttributionId](#getattributionid)
   - [validateAndSendInAppPurchase](#validateandsendinapppurchase)
   - [setCollectOaid](#setcollectoaid)
   - [setDisableAdvertisingIdentifiers](#setdisableadvertisingidentifiers)
   - [setDisableNetworkData](#setdisablenetworkdata)
 - [iOS Only API](#ios-only-api)
   - [setDisableCollectAppleAdSupport](#setdisablecollectappleadsupport)
-  - [handlePushNotifications](#handlepushnotificationsios)
+  - [handlePushNotifications(iOS)](#handlepushnotificationsios)
   - [setShouldCollectDeviceName](#setshouldcollectdevicename)
   - [setDisableCollectIAd](#setdisablecollectiad)
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)

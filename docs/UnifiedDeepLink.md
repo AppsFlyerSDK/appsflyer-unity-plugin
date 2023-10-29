@@ -2,7 +2,7 @@
 title: Unified Deep Linking (UDL)
 category: 5f9705393c689a065c409b23
 parentDoc: 6370c9e2441a4504d6bca3bd
-order: 6
+order: 7
 hidden: false
 ---
 
@@ -28,11 +28,15 @@ hidden: false
 # Implementation
 
 1. Attach `AppsFlyer.cs` script to the game object with the AppsFlyer init code. (AppsFlyerObject)
-2. Assign `OnDeepLink` to `AppsFlyer.OnDeepLinkReceived` in `Start()`
+2. Call initSDK with the `this` parameter in order for the `OnDeepLinkReceived` callback to be invoked:
+    ```c#
+    AppsFlyer.initSDK("devkey", "appID", this);
+    ```    
+3. Assign `OnDeepLink` to `AppsFlyer.OnDeepLinkReceived` in `Start()`
    ```c#
     AppsFlyer.OnDeepLinkReceived += OnDeepLink;
    ``` 
-3. After `initSDK()` implement `OnDeepLink`.
+4. After `initSDK()` implement `OnDeepLink`.
 
 ## Example
 
