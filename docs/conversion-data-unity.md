@@ -4,23 +4,21 @@ category: 5f9705393c689a065c409b23
 parentDoc: 6370c9e2441a4504d6bca3bd
 order: 4
 hidden: false
----# Conversion data
+---
 
 In this guide, you will learn how to get conversion data using [`IAppsFlyerConversionData`](https://dev.appsflyer.com/hc/docs/api#iappsflyerconversiondata), as well as examples for using the conversion data.
 
 Learn more about [what is conversion data](https://dev.appsflyer.com/hc/docs/conversion-data).
 
-### Obtain AppsFlyer conversion data
-
-**To obtain AppsFlyer conversion data:**
+## Obtain AppsFlyer conversion data
 
 1. Implement the [`IAppsFlyerConversionData`](https://dev.appsflyer.com/hc/docs/api#iappsflyerconversiondata) class.
-2. Call the [`initSDK`](https://dev.appsflyer.com/hc/docs/api#initsdk) method with this as the last parameter.
+2. Call the [`initSDK`](https://dev.appsflyer.com/hc/docs/api#initsdk) method with `this` as the last parameter.
 3. Use the [`onConversionDataSuccess`](https://dev.appsflyer.com/hc/docs/api#onconversiondatasuccess) method to redirect the user.
 
-### Example
+## Example
 
-```csharp
+```c#
 using AppsFlyerSDK;
 
 public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData{
@@ -35,7 +33,6 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData{
     {
         AppsFlyer.AFLog("onConversionDataSuccess", conversionData);
         Dictionary<string, object> conversionDataDictionary = AppsFlyer.CallbackStringToDictionary(conversionData);
-        // add deferred deeplink logic here
     }
 
     public void onConversionDataFail(string error)
@@ -45,14 +42,12 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData{
 
     public void onAppOpenAttribution(string attributionData)
     {
-        AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
-        Dictionary<string, object> attributionDataDictionary = AppsFlyer.CallbackStringToDictionary(attributionData);
-        // add direct deeplink logic here
+        AppsFlyer.AFLog("onAppOpenAttribution: This method was replaced by UDL. This is a fake call.", attributionData);
     }
 
     public void onAppOpenAttributionFailure(string error)
     {
-        AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
+        AppsFlyer.AFLog("onAppOpenAttributionFailure: This method was replaced by UDL. This is a fake call.", error);
     }
 }
 ```

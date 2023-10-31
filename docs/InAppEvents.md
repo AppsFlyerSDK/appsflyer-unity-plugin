@@ -61,8 +61,9 @@ Currency code requirements when sending revenue events
 This purchase event is for 200.12 Euros. For the revenue to reflect in the dashboard use the following.
 
 ```c#
-System.Collections.Generic.Dictionary<string, string> purchaseEvent = new
-System.Collections.Generic.Dictionary<string, string> ();
+using System.Collections.Generic;
+
+Dictionary<string, string> purchaseEvent = new Dictionary<string, string> ();
 purchaseEvent.Add(AFInAppEvents.CURRENCY, "EUR");
 purchaseEvent.Add(AFInAppEvents.REVENUE, "200.12");
 purchaseEvent.Add(AFInAppEvents.QUANTITY, "1");
@@ -71,7 +72,6 @@ AppsFlyer.sendEvent ("af_purchase", purchaseEvent);
 ```
 
 > 📘 Note
-> 
 > Do not add currency symbols to the revenue value.
 
 ### Logging negative revenue
@@ -82,8 +82,9 @@ Record negative revenue using a minus sign.
 **Example: App user receives a refund or cancels a subscription**
 
 ```c#
-System.Collections.Generic.Dictionary<string, string> purchaseEvent = new 
-System.Collections.Generic.Dictionary<string, string> ();
+using System.Collections.Generic;
+
+Dictionary<string, string> purchaseEvent = new Dictionary<string, string> ();
 purchaseEvent.Add(AFInAppEvents.CURRENCY, "USD");
 purchaseEvent.Add(AFInAppEvents.REVENUE, "-200");
 purchaseEvent.Add(AFInAppEvents.QUANTITY, "1");
