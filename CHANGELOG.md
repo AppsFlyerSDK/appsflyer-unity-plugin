@@ -1,5 +1,9 @@
 # Versions
 
+## v6.12.22
+* Update EDM4U - 1.2.177
+* Fix AFUnityUtils import
+
 ## v6.12.21
 * Update iOS SDK version - 6.12.2
 
