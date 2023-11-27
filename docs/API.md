@@ -757,9 +757,12 @@ If this API is used, all in-app events and any other SDK API calls are discarded
 
 ---
 
- ### setCustomerIdAndStartSDK 
- **`void setCustomerIdAndStartSDK(string id)`**
- 
+### setCustomerIdAndStartSDK
+
+**`void setCustomerIdAndStartSDK(string id)`**
+
+> ⚠️ Before calling this method, the method [`waitForCustomerUserId`](#waitforcustomeruserid) must be called
+
 Use this API to provide the SDK with the relevant customer user id and trigger the SDK to begin its normal activity.
 
 | parameter   | type      | description             |
