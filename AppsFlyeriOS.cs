@@ -186,6 +186,17 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         }
 
         /// <summary>
+        /// Set the deepLink timeout value that should be used for DDL.
+        /// </summary>
+        /// <param name="deepLinkTimeout">deepLink timeout in milliseconds.</param>
+        public void setDeepLinkTimeout(long deepLinkTimeout)
+        {
+#if !UNITY_EDITOR
+            _setDeepLinkTimeout(deepLinkTimeout);
+#endif
+         }
+
+        /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
         /// Default is false
@@ -674,6 +685,13 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         [DllImport("AppsFlyerBundle")]
 #endif
         private static extern void _setAppInviteOneLinkID(string appInviteOneLinkID);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _setDeepLinkTimeout(long deepLinkTimeout);
 
 #if UNITY_IOS
     [DllImport("__Internal")]

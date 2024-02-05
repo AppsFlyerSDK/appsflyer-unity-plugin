@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.12.22";
+        public static readonly string kAppsFlyerPluginVersion = "6.12.52";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -219,6 +219,21 @@ namespace AppsFlyerSDK
             if (instance != null)
             {
                 instance.setAppInviteOneLinkID(oneLinkId);
+            }
+
+
+        }
+
+        /// <summary>
+        /// Set the deepLink timeout value that should be used for DDL.
+        /// </summary>
+        /// <param name="deepLinkTimeout">deepLink timeout in milliseconds.</param>
+        public static void setDeepLinkTimeout(long deepLinkTimeout)
+        {
+
+            if (instance != null)
+            {
+                instance.setDeepLinkTimeout(deepLinkTimeout);
             }
 
 
