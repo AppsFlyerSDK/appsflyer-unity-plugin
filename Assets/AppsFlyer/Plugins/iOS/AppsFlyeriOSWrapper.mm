@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.12.22"
+                                pluginVersion:@"6.12.52"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -73,6 +73,10 @@ extern "C" {
 
     const void _setAppInviteOneLinkID (const char*  appInviteOneLinkID) {
         [[AppsFlyerLib shared] setAppInviteOneLink:stringFromChar(appInviteOneLinkID)];
+    }
+
+    const void _setDeepLinkTimeout (long  deepLinkTimeout) {
+        [AppsFlyerLib shared].deepLinkTimeout = deepLinkTimeout;
     }
 
     const void _anonymizeUser (bool anonymizeUser) {

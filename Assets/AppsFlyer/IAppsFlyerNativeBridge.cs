@@ -25,6 +25,8 @@ namespace AppsFlyerSDK
 
         void setAdditionalData(Dictionary<string, string> customData);
 
+        void setDeepLinkTimeout(long deepLinkTimeout);
+
         void setResolveDeepLinkURLs(params string[] urls);
 
         void setOneLinkCustomDomain(params string[] domains);

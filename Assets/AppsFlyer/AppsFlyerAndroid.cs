@@ -197,6 +197,17 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        //// <summary>
+        /// Set the deepLink timeout value that should be used for DDL.
+        /// </summary>
+        /// <param name="deepLinkTimeout">deepLink timeout in milliseconds.</param>
+        public static void setDeepLinkTimeout(long deepLinkTimeout)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setDeepLinkTimeout", deepLinkTimeout);
+#endif
+        }
+
         /// <summary>
         /// Set the user emails.
         /// </summary>
