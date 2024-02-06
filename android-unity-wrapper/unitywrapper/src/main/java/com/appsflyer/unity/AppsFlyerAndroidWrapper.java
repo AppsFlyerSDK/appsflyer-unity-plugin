@@ -37,9 +37,11 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
-    private static final String PLUGIN_VERSION = "6.12.22";
+    private static final String PLUGIN_VERSION = "6.12.52";
+    private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
+    private static long DDLTimeout = DDL_TIMEOUT_DEFAULT;
 
     public static void initSDK(String devKey, String objectName) {
         if (conversionListener == null && objectName != null){
@@ -388,14 +390,26 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void subscribeForDeepLink(final String objectName){
-        AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
-            @Override
-            public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
-                if(objectName != null){
-                    UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
+        if (DDLTimeout != DDL_TIMEOUT_DEFAULT) {
+            AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
+                @Override
+                public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
+                    if(objectName != null){
+                        UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
+                    }
                 }
-            }
-        });
+            }, DDLTimeout);
+        } else
+        {
+            AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
+                @Override
+                public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
+                    if(objectName != null){
+                        UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
+                    }
+                }
+            });
+        }
     }
 
     public static void addPushNotificationDeepLinkPath(String ... path){
@@ -417,5 +431,9 @@ public class AppsFlyerAndroidWrapper {
     public static void setPluginInfo() {
         PluginInfo pluginInfo = new PluginInfo(Plugin.UNITY, PLUGIN_VERSION);
         AppsFlyerLib.getInstance().setPluginInfo(pluginInfo);
+    }
+
+    public static void setDeepLinkTimeout(long deepLinkTimeout) {
+        DDLTimeout = deepLinkTimeout;
     }
 }
