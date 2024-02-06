@@ -1,5 +1,10 @@
 # Versions
 
+## v6.12.52
+* Update iOS SDK version - 6.12.3
+* Update Android SDK version - 6.12.5
+* Added new iOS and Android API `setDeepLinkTimeout`
+
 ## v6.12.22
 * Update EDM4U - 1.2.177
 * Fix AFUnityUtils import
