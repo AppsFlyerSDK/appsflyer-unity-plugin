@@ -22,6 +22,7 @@ The list of available methods for this plugin is described below.
   - [setResolveDeepLinkURLs](#setresolvedeeplinkurls)
   - [setOneLinkCustomDomain](#setonelinkcustomdomain)
   - [setCurrencyCode](#setcurrencycode)
+  - [setDeepLinkTimeout](#setDeepLinkTimeout)
   - [recordLocation](#recordlocation)
   - [anonymizeUser](#anonymizeuser)
   - [getAppsFlyerId](#getappsflyerid)
@@ -365,6 +366,27 @@ AppsFlyer.setCurrencyCode("GBP");
 ```
 
 ---
+
+---
+
+### setDeepLinkTimeout 
+**`void setDeepLinkTimeout(long deepLinkTimeout)`**
+
+Setting the deepLink timeout value that should be used for DDL.
+If you want to use it, set it before the DDL setting.
+
+| parameter          | type     | description      |
+| ------------------ |----------|------------------|
+| `deepLinkTimeout`  | `long`   | in milliseconds  |
+
+*Example:*
+
+```c#
+AppsFlyer.setDeepLinkTimeout(2000);
+```
+
+---
+
 
 ### recordLocation
 **`void recordLocation(double latitude, double longitude)`**
