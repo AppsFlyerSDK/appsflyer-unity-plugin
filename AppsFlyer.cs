@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.12.52";
+        public static readonly string kAppsFlyerPluginVersion = "6.13.0";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -322,6 +322,32 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// call this method when GDPR user is true
+        /// </summary>
+        /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
+        /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
+        public static void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
+        {
+            if (instance != null)
+            {
+                instance.setConsentData(hasConsentForDataUsage, hasConsentForAdsPersonalization);
+            }
+        }
+
+        /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// call this method when GDPR user is false
+        /// </summary>
+        public static void setNonGDPRUser()
+        {
+            if (instance != null)
+            {
+                instance.setNonGDPRUser();
+            }
+        }
+
+        /// <summary>
         /// Manually record the location of the user.
         /// </summary>
         /// <param name="latitude">latitude as double.</param>
@@ -352,6 +378,19 @@ namespace AppsFlyerSDK
             }
 
 
+        }
+
+        /// <summary>
+        /// Calling enableTCFDataCollection(true) will enable collecting and sending any TCF related data.
+        /// Calling enableTCFDataCollection(false) will disable the collection of TCF related data and from sending it.
+        /// </summary>
+        /// <param name = "shouldCollectTcfData" >should start TCF Data collection boolean.</param>
+        public static void enableTCFDataCollection(bool shouldCollectTcfData)
+        {
+            if (instance != null)
+            {
+                instance.enableTCFDataCollection(shouldCollectTcfData);
+            }
         }
 
         /// <summary>
