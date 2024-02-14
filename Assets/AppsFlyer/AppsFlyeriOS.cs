@@ -197,6 +197,42 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
          }
 
         /// <summary>
+        /// Calling enableTCFDataCollection(true) will enable collecting and sending any TCF related data.
+        /// Calling enableTCFDataCollection(false) will disable the collection of TCF related data and from sending it.
+        /// </summary>
+        /// <param name = "shouldCollectTcfData" >should start TCF Data collection boolean.</param>
+        public void enableTCFDataCollection(bool shouldCollectTcfData)
+        {
+#if !UNITY_EDITOR
+            _enableTCFDataCollection(shouldCollectTcfData);
+#endif
+         }
+
+        /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// call this method when GDPR user is true
+        /// </summary>
+        /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
+        /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
+        public void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
+        {
+#if !UNITY_EDITOR
+            _setConsentData(hasConsentForDataUsage, hasConsentForAdsPersonalization);
+#endif
+         }
+
+        /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// call this method when GDPR user is false
+        /// </summary>
+        public void setNonGDPRUser()
+        {
+#if !UNITY_EDITOR
+            _setNonGDPRUser();
+#endif
+         }
+
+        /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
         /// Default is false
@@ -699,6 +735,27 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         [DllImport("AppsFlyerBundle")]
 #endif
         private static extern void _anonymizeUser(bool shouldAnonymizeUser);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _enableTCFDataCollection(bool shouldCollectTcfData);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _setNonGDPRUser();
 
 #if UNITY_IOS
     [DllImport("__Internal")]

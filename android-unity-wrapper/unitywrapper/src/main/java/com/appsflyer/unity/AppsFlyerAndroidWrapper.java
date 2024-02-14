@@ -4,6 +4,7 @@ package com.appsflyer.unity;
 import androidx.annotation.NonNull;
 
 import com.appsflyer.AFLogger;
+import com.appsflyer.AppsFlyerConsent;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerInAppPurchaseValidatorListener;
 import com.appsflyer.AppsFlyerLib;
@@ -37,11 +38,11 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
-    private static final String PLUGIN_VERSION = "6.12.52";
+    private static final String PLUGIN_VERSION = "6.13.0";
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
-    private static long DDLTimeout = DDL_TIMEOUT_DEFAULT;
+    private static long ddlTimeout = DDL_TIMEOUT_DEFAULT;
 
     public static void initSDK(String devKey, String objectName) {
         if (conversionListener == null && objectName != null){
@@ -117,6 +118,23 @@ public class AppsFlyerAndroidWrapper {
 
     public static void setCustomerIdAndTrack(String id) {
         AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, UnityPlayer.currentActivity);
+    }
+
+    public static void enableTCFDataCollection(boolean shouldCollectTcfData) {
+        AppsFlyerLib.getInstance().enableTCFDataCollection(shouldCollectTcfData);
+    }
+
+    public static void setConsentData(boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
+        AppsFlyerConsent consent = AppsFlyerConsent.forGDPRUser(
+                hasConsentForDataUsage = hasConsentForDataUsage,
+                hasConsentForAdsPersonalization = hasConsentForAdsPersonalization
+        );
+        AppsFlyerLib.getInstance().setConsentData(consent);
+    }
+
+    public static void setNonGDPRUser() {
+        AppsFlyerConsent consent = AppsFlyerConsent.forNonGDPRUser();
+        AppsFlyerLib.getInstance().setConsentData(consent);
     }
 
     public static String getOutOfStore() {
@@ -390,7 +408,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void subscribeForDeepLink(final String objectName){
-        if (DDLTimeout != DDL_TIMEOUT_DEFAULT) {
+        if (ddlTimeout != DDL_TIMEOUT_DEFAULT) {
             AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
                 @Override
                 public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
@@ -398,7 +416,7 @@ public class AppsFlyerAndroidWrapper {
                         UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
                     }
                 }
-            }, DDLTimeout);
+            }, ddlTimeout);
         } else
         {
             AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
@@ -434,6 +452,6 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setDeepLinkTimeout(long deepLinkTimeout) {
-        DDLTimeout = deepLinkTimeout;
+        ddlTimeout = deepLinkTimeout;
     }
 }

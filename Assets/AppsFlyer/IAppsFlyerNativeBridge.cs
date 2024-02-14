@@ -39,6 +39,12 @@ namespace AppsFlyerSDK
 
         string getAppsFlyerId();
 
+        void enableTCFDataCollection(bool shouldCollectTcfData);
+
+        void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
+
+        void setNonGDPRUser();
+
         void setMinTimeBetweenSessions(int seconds);
 
         void setHost(string hostPrefixName, string hostName);
