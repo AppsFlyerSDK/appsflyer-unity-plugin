@@ -22,6 +22,9 @@ The list of available methods for this plugin is described below.
   - [setResolveDeepLinkURLs](#setresolvedeeplinkurls)
   - [setOneLinkCustomDomain](#setonelinkcustomdomain)
   - [setCurrencyCode](#setcurrencycode)
+  - [setDeepLinkTimeout](#setDeepLinkTimeout)
+  - [enableTCFDataCollection](#enableTCFDataCollection)
+  - [setConsentData](#setConsentData)
   - [recordLocation](#recordlocation)
   - [anonymizeUser](#anonymizeuser)
   - [getAppsFlyerId](#getappsflyerid)
@@ -362,6 +365,62 @@ You can set the currency code for all events by calling the following method.
 
 ```c#
 AppsFlyer.setCurrencyCode("GBP");
+```
+
+---
+
+---
+
+### setDeepLinkTimeout 
+**`void setDeepLinkTimeout(long deepLinkTimeout)`**
+
+Setting the deepLink timeout value that should be used for DDL.
+If you want to use it, set it before the DDL setting.
+
+| parameter          | type     | description      |
+| ------------------ |----------|------------------|
+| `deepLinkTimeout`  | `long`   | in milliseconds  |
+
+*Example:*
+
+```c#
+AppsFlyer.setDeepLinkTimeout(2000);
+```
+
+---
+
+### enableTCFDataCollection 
+**`void enableTCFDataCollection(bool shouldCollectTcfData)`**
+
+Calling enableTCFDataCollection(true) will enable collecting and sending any TCF related data.
+Calling enableTCFDataCollection(false) will disable the collection of TCF related data and from sending it.
+
+| parameter                | type     | description                     |
+| ------------------------ |----------|-------------------------------- |
+| `shouldCollectTcfData`   | `bool`   | true to enable data collection  |
+
+*Example:*
+
+```c#
+AppsFlyer.enableTCFDataCollection(true);;
+```
+
+---
+
+### setConsentData 
+**`void setConsentData(AppsFlyerConsent appsFlyerConsent)`**
+
+Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+
+| parameter                   | type                | description                                                           |
+| --------------------------- |----------           |------------------------------------ |
+| `appsFlyerConsent`          | `AppsFlyerConsent`  | Instance of AppsFlyerConsent class  |
+
+*Example:*
+
+```c#
+AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(false, false);
+AppsFlyer.setConsentData(consent);
 ```
 
 ---
@@ -1609,4 +1668,3 @@ For iOS : the callback will return a JSON string from apples verifyReceipt API. 
 ```
 
 ---
-
