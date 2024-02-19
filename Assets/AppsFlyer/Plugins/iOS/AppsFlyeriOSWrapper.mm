@@ -87,13 +87,13 @@ extern "C" {
        [[AppsFlyerLib shared] enableTCFDataCollection:shouldCollectTcfData];
     }
 
-    const void _setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
-        AppsFlyerConsent *consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
-       [[AppsFlyerLib shared] setConsentData:consentData];
-    }
-
-    const void _setNonGDPRUser() {
-       AppsFlyerConsent *consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
+    const void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
+        AppsFlyerConsent *consentData = nil;
+        if (isUserSubjectToGDPR) {
+            consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
+        } else {
+            consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
+        }
        [[AppsFlyerLib shared] setConsentData:consentData];
     }
 

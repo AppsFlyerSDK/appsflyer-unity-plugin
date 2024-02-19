@@ -395,21 +395,10 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
         /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
-        public void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
+        public void setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("setConsentData", hasConsentForDataUsage, hasConsentForAdsPersonalization);
-#endif
-        }
-
-        /// <summary>
-        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-        /// call this method when GDPR user is false
-        /// </summary>
-        public void setNonGDPRUser()
-        {
-#if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("setNonGDPRUser");
+            appsFlyerAndroid.CallStatic("setConsentData", appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
 #endif
         }
 

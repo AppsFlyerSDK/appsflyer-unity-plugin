@@ -124,16 +124,12 @@ public class AppsFlyerAndroidWrapper {
         AppsFlyerLib.getInstance().enableTCFDataCollection(shouldCollectTcfData);
     }
 
-    public static void setConsentData(boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
-        AppsFlyerConsent consent = AppsFlyerConsent.forGDPRUser(
-                hasConsentForDataUsage = hasConsentForDataUsage,
-                hasConsentForAdsPersonalization = hasConsentForAdsPersonalization
-        );
-        AppsFlyerLib.getInstance().setConsentData(consent);
-    }
-
-    public static void setNonGDPRUser() {
-        AppsFlyerConsent consent = AppsFlyerConsent.forNonGDPRUser();
+    public static void setConsentData(boolean isUserSubjectToGDPR, boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
+        AppsFlyerConsent consent;
+        if (isUserSubjectToGDPR)
+            consent = AppsFlyerConsent.forGDPRUser(hasConsentForDataUsage, hasConsentForAdsPersonalization);
+        else
+            consent = AppsFlyerConsent.forNonGDPRUser();
         AppsFlyerLib.getInstance().setConsentData(consent);
     }
 

@@ -41,9 +41,7 @@ namespace AppsFlyerSDK
 
         void enableTCFDataCollection(bool shouldCollectTcfData);
 
-        void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
-
-        void setNonGDPRUser();
+        void setConsentData(AppsFlyerConsent appsFlyerConsent);
 
         void setMinTimeBetweenSessions(int seconds);
 
