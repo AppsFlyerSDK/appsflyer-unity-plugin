@@ -197,6 +197,17 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        //// <summary>
+        /// Set the deepLink timeout value that should be used for DDL.
+        /// </summary>
+        /// <param name="deepLinkTimeout">deepLink timeout in milliseconds.</param>
+        public void setDeepLinkTimeout(long deepLinkTimeout)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("setDeepLinkTimeout", deepLinkTimeout);
+#endif
+        }
+
         /// <summary>
         /// Set the user emails.
         /// </summary>
@@ -354,6 +365,18 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Calling enableTCFDataCollection(true) will enable collecting and sending any TCF related data.
+        /// Calling enableTCFDataCollection(false) will disable the collection of TCF related data and from sending it.
+        /// </summary>
+        /// <param name = "shouldCollectTcfData" >should start TCF Data collection boolean.</param>
+        public void enableTCFDataCollection(bool shouldCollectTcfData)
+        {
+#if !UNITY_EDITOR
+             appsFlyerAndroid.CallStatic("enableTCFDataCollection", shouldCollectTcfData);
+#endif
+        }
+
+        /// <summary>
         /// Enable the collection of Facebook Deferred AppLinks.
         /// Requires Facebook SDK and Facebook app on target/client device.
         /// This API must be invoked prior to initializing the AppsFlyer SDK in order to function properly.
@@ -366,6 +389,18 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// call this method when GDPR user is true
+        /// </summary>
+        /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
+        /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
+        public void setConsentData(AppsFlyerConsent appsFlyerConsent)
+        {
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("setConsentData", appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
+#endif
+        }
 
         /// <summary>
         /// Restrict reengagement via deep-link to once per each unique deep-link.

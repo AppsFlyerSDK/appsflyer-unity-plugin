@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.12.22"
+                                pluginVersion:@"6.13.0"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -75,8 +75,26 @@ extern "C" {
         [[AppsFlyerLib shared] setAppInviteOneLink:stringFromChar(appInviteOneLinkID)];
     }
 
+    const void _setDeepLinkTimeout (long  deepLinkTimeout) {
+        [AppsFlyerLib shared].deepLinkTimeout = deepLinkTimeout;
+    }
+
     const void _anonymizeUser (bool anonymizeUser) {
         [AppsFlyerLib shared].anonymizeUser = anonymizeUser;
+    }
+
+    const void _enableTCFDataCollection (bool shouldCollectTcfData) {
+       [[AppsFlyerLib shared] enableTCFDataCollection:shouldCollectTcfData];
+    }
+
+    const void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
+        AppsFlyerConsent *consentData = nil;
+        if (isUserSubjectToGDPR) {
+            consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
+        } else {
+            consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
+        }
+       [[AppsFlyerLib shared] setConsentData:consentData];
     }
 
     const void _setDisableCollectIAd (bool disableCollectASA) {

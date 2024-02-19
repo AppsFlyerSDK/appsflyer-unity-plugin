@@ -186,6 +186,40 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         }
 
         /// <summary>
+        /// Set the deepLink timeout value that should be used for DDL.
+        /// </summary>
+        /// <param name="deepLinkTimeout">deepLink timeout in milliseconds.</param>
+        public void setDeepLinkTimeout(long deepLinkTimeout)
+        {
+#if !UNITY_EDITOR
+            _setDeepLinkTimeout(deepLinkTimeout);
+#endif
+         }
+
+        /// <summary>
+        /// Calling enableTCFDataCollection(true) will enable collecting and sending any TCF related data.
+        /// Calling enableTCFDataCollection(false) will disable the collection of TCF related data and from sending it.
+        /// </summary>
+        /// <param name = "shouldCollectTcfData" >should start TCF Data collection boolean.</param>
+        public void enableTCFDataCollection(bool shouldCollectTcfData)
+        {
+#if !UNITY_EDITOR
+            _enableTCFDataCollection(shouldCollectTcfData);
+#endif
+         }
+
+        /// <summary>
+        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
+        /// </summary>
+        /// <param name = "appsFlyerConsent" >instance of AppsFlyerConsent.</param>
+        public void setConsentData(AppsFlyerConsent appsFlyerConsent)
+        {
+#if !UNITY_EDITOR
+            _setConsentData(appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
+#endif
+         }
+
+        /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
         /// Default is false
@@ -680,7 +714,28 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 #elif UNITY_STANDALONE_OSX
         [DllImport("AppsFlyerBundle")]
 #endif
+        private static extern void _setDeepLinkTimeout(long deepLinkTimeout);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
         private static extern void _anonymizeUser(bool shouldAnonymizeUser);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _enableTCFDataCollection(bool shouldCollectTcfData);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
 
 #if UNITY_IOS
     [DllImport("__Internal")]
