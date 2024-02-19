@@ -38,7 +38,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
-    private static final String PLUGIN_VERSION = "6.13.02";
+    private static final String PLUGIN_VERSION = "6.13.0";
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
