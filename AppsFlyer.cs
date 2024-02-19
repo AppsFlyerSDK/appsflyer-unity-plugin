@@ -7,7 +7,7 @@ namespace AppsFlyerSDK
     public class AppsFlyer : MonoBehaviour
     {
 
-        public static readonly string kAppsFlyerPluginVersion = "6.13.0";
+        public static readonly string kAppsFlyerPluginVersion = "6.13.02";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -325,25 +325,12 @@ namespace AppsFlyerSDK
         /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
         /// call this method when GDPR user is true
         /// </summary>
-        /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
-        /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
-        public static void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
+        /// <param name = "appsFlyerConsent" >instance of AppsFlyerConsent.</param>
+        public static void setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
             if (instance != null)
             {
-                instance.setConsentData(hasConsentForDataUsage, hasConsentForAdsPersonalization);
-            }
-        }
-
-        /// <summary>
-        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-        /// call this method when GDPR user is false
-        /// </summary>
-        public static void setNonGDPRUser()
-        {
-            if (instance != null)
-            {
-                instance.setNonGDPRUser();
+                instance.setConsentData(appsFlyerConsent);
             }
         }
 
