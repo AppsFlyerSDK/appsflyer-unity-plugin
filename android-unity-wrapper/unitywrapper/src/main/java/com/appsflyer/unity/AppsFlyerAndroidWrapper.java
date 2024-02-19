@@ -38,7 +38,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
-    private static final String PLUGIN_VERSION = "6.13.0";
+    private static final String PLUGIN_VERSION = "6.13.02";
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
@@ -124,16 +124,12 @@ public class AppsFlyerAndroidWrapper {
         AppsFlyerLib.getInstance().enableTCFDataCollection(shouldCollectTcfData);
     }
 
-    public static void setConsentData(boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
-        AppsFlyerConsent consent = AppsFlyerConsent.forGDPRUser(
-                hasConsentForDataUsage = hasConsentForDataUsage,
-                hasConsentForAdsPersonalization = hasConsentForAdsPersonalization
-        );
-        AppsFlyerLib.getInstance().setConsentData(consent);
-    }
-
-    public static void setNonGDPRUser() {
-        AppsFlyerConsent consent = AppsFlyerConsent.forNonGDPRUser();
+    public static void setConsentData(boolean isUserSubjectToGDPR, boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
+        AppsFlyerConsent consent;
+        if (isUserSubjectToGDPR)
+            consent = AppsFlyerConsent.forGDPRUser(hasConsentForDataUsage, hasConsentForAdsPersonalization);
+        else
+            consent = AppsFlyerConsent.forNonGDPRUser();
         AppsFlyerLib.getInstance().setConsentData(consent);
     }
 

@@ -210,25 +210,12 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 
         /// <summary>
         /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-        /// call this method when GDPR user is true
         /// </summary>
-        /// <param name = "hasConsentForDataUsage" >hasConsentForDataUsage boolean.</param>
-        /// <param name = "hasConsentForAdsPersonalization" >hasConsentForAdsPersonalization boolean.</param>
-        public void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
+        /// <param name = "appsFlyerConsent" >instance of AppsFlyerConsent.</param>
+        public void setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
 #if !UNITY_EDITOR
-            _setConsentData(hasConsentForDataUsage, hasConsentForAdsPersonalization);
-#endif
-         }
-
-        /// <summary>
-        /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-        /// call this method when GDPR user is false
-        /// </summary>
-        public void setNonGDPRUser()
-        {
-#if !UNITY_EDITOR
-            _setNonGDPRUser();
+            _setConsentData(appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
 #endif
          }
 
@@ -748,14 +735,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 #elif UNITY_STANDALONE_OSX
         [DllImport("AppsFlyerBundle")]
 #endif
-        private static extern void _setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
-
-#if UNITY_IOS
-    [DllImport("__Internal")]
-#elif UNITY_STANDALONE_OSX
-        [DllImport("AppsFlyerBundle")]
-#endif
-        private static extern void _setNonGDPRUser();
+        private static extern void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
 
 #if UNITY_IOS
     [DllImport("__Internal")]

@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.13.0"
+                                pluginVersion:@"6.13.02"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -87,13 +87,13 @@ extern "C" {
        [[AppsFlyerLib shared] enableTCFDataCollection:shouldCollectTcfData];
     }
 
-    const void _setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
-        AppsFlyerConsent *consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
-       [[AppsFlyerLib shared] setConsentData:consentData];
-    }
-
-    const void _setNonGDPRUser() {
-       AppsFlyerConsent *consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
+    const void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
+        AppsFlyerConsent *consentData = nil;
+        if (isUserSubjectToGDPR) {
+            consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
+        } else {
+            consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
+        }
        [[AppsFlyerLib shared] setConsentData:consentData];
     }
 
