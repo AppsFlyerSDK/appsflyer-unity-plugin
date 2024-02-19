@@ -323,7 +323,6 @@ namespace AppsFlyerSDK
 
         /// <summary>
         /// Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-        /// call this method when GDPR user is true
         /// </summary>
         /// <param name = "appsFlyerConsent" >instance of AppsFlyerConsent.</param>
         public static void setConsentData(AppsFlyerConsent appsFlyerConsent)
