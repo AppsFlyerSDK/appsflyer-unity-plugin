@@ -25,7 +25,6 @@ The list of available methods for this plugin is described below.
   - [setDeepLinkTimeout](#setDeepLinkTimeout)
   - [enableTCFDataCollection](#enableTCFDataCollection)
   - [setConsentData](#setConsentData)
-  - [setNonGDPRUser](#setNonGDPRUser)
   - [recordLocation](#recordlocation)
   - [anonymizeUser](#anonymizeuser)
   - [getAppsFlyerId](#getappsflyerid)
@@ -409,34 +408,19 @@ AppsFlyer.enableTCFDataCollection(true);;
 ---
 
 ### setConsentData 
-**`void setConsentData(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)`**
+**`void setConsentData(AppsFlyerConsent appsFlyerConsent)`**
 
 Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-call this method when GDPR user is true
 
-| parameter                          | type     | description                                                           |
-| ---------------------------------- |----------|---------------------------------------------------------------------- |
-| `hasConsentForDataUsage`           | `bool`   | user agrees / disagrees to using their data for advertising purposes  |
-| `hasConsentForAdsPersonalization`  | `bool`   | user agrees / disagrees to using their data for ad personalization    |
+| parameter                   | type                | description                                                           |
+| --------------------------- |----------           |------------------------------------ |
+| `appsFlyerConsent`          | `AppsFlyerConsent`  | Instance of AppsFlyerConsent class  |
 
 *Example:*
 
 ```c#
-AppsFlyer.setConsentData(true, true);
-```
-
----
-
-### setNonGDPRUser 
-**`void setNonGDPRUser()`**
-
-Sets or updates the user consent data related to GDPR and DMA regulations for advertising and data usage purposes within the application.
-call this method when GDPR user is false
-
-*Example:*
-
-```c#
-AppsFlyer.setNonGDPRUser();
+AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(false, false);
+AppsFlyer.setConsentData(consent);
 ```
 
 ---

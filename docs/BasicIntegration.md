@@ -128,6 +128,8 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
     
     ```c#
         AppsFlyer.initSDK(devKey, appID, this);
+
+        AppsFlyer.enableTCFDataCollection(true);
         
         //YOUR_CMP_FLOW()
         // if already has consent ready - you can start
@@ -148,10 +150,11 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
     i.  If there is no consent data stored, show the consent dialog to capture the user consent decision.
     ii. If there is consent data stored continue to the next step.
     
-2. Call setConsentData() with the following parameters:
+2. To transfer the consent data to the SDK create an AppsFlyerConsent object with the following parameters:
     - hasConsentForDataUsage - Indicates whether the user has consented to use their data for advertising purposes.
     - hasConsentForAdsPersonalization - Indicates whether the user has consented to use their data for personalized advertising.
-3. Call start().
+3. Call setConsentData()with the AppsFlyerConsent object.
+5. Call start().
     
     ```c#
             
@@ -159,18 +162,21 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
         // or retrieve it from the storage
         ...
         // Set the consent data to the SDK:
-            AppsFlyer.setConsentData(true, true);
+        AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(true, true);
+        AppsFlyer.setConsentData(consent);
             
-            AppsFlyer.startSDK();
+        AppsFlyer.startSDK();
     ```
 
 ### When GDPR does not apply to the user
-1. Call setNonGDPRUser().
+1. Create an AppsFlyerConsent object using the ForNonGDPRUser() initializer. This initializer doesn’t accept any parameters.
+2. Pass the empty AppsFlyerConsent object to setConsentData().
 2. Call start().
     
     ```c#
         // If the user is not subject to GDPR:
-        AppsFlyer.setNonGDPRUser();
+        AppsFlyerConsent consent = AppsFlyerConsent.ForNonGDPRUser();
+        AppsFlyer.setConsentData(consent);
             
         AppsFlyer.startSDK();
     ```

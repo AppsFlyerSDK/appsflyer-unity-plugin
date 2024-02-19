@@ -6,7 +6,6 @@
 * Added new iOS and Android API `setDeepLinkTimeout`
 * Added new iOS and Android API `enableTCFDataCollection`
 * Added new iOS and Android API `setConsentData`
-* Added new iOS and Android API `setNonGDPRUser`
 
 ## v6.12.22
 * Update EDM4U - 1.2.177
