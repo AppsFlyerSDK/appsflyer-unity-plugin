@@ -107,6 +107,90 @@ If it’s important for you to associate the install event with the CUID, call `
   
   
 ---
+
+## Send consent for DMA compliance
+
+Unity SDK plugin offers two alternative methods for gathering consent data:
+
+Through a Consent Management Platform (CMP): If the app uses a CMP that complies with the Transparency and Consent Framework (TCF) v2.2 protocol, the Unity SDK can automatically retrieve the consent details.
+
+OR
+
+Through a dedicated Unity SDK API: Developers can pass Google's required consent data directly to the Unity SDK using a specific API designed for this purpose.
+
+### Use CMP to collect consent data
+
+1. Initialize the SDK.
+2. Call enableTCFDataCollection(true) api before startSDK() to instruct the SDK to collect the TCF data from the device.
+3. Use the CMP to decide if you need the consent dialog in the current session to acquire the consent data. If you need the consent dialog move to step 4; otherwise move to step 5.
+4. Get confirmation from the CMP that the user has made their consent decision and the data is available.
+5. Call start().
+    
+    ```c#
+        AppsFlyer.initSDK(devKey, appID, this);
+
+        AppsFlyer.enableTCFDataCollection(true);
+        
+        //YOUR_CMP_FLOW()
+        // if already has consent ready - you can start
+            AppsFlyer.startSDK();
+            
+        //else Waiting for CMP completion and data ready and then start
+        
+            AppsFlyer.startSDK();
+    ```
+
+### Manually collect consent data
+
+1. Initialize the SDK.
+2. Determine whether the GDPR applies or not to the user.
+
+### When GDPR applies to the user
+1. Given that GDPR is applicable to the user, determine whether the consent data is already stored for this session.
+    i.  If there is no consent data stored, show the consent dialog to capture the user consent decision.
+    ii. If there is consent data stored continue to the next step.
+    
+2. To transfer the consent data to the SDK create an AppsFlyerConsent object with the following parameters:
+    - hasConsentForDataUsage - Indicates whether the user has consented to use their data for advertising purposes.
+    - hasConsentForAdsPersonalization - Indicates whether the user has consented to use their data for personalized advertising.
+3. Call setConsentData()with the AppsFlyerConsent object.
+5. Call start().
+    
+    ```c#
+            
+        // If the user is subject to GDPR - collect the consent data
+        // or retrieve it from the storage
+        ...
+        // Set the consent data to the SDK:
+        AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(true, true);
+        AppsFlyer.setConsentData(consent);
+            
+        AppsFlyer.startSDK();
+    ```
+
+### When GDPR does not apply to the user
+1. Create an AppsFlyerConsent object using the ForNonGDPRUser() initializer. This initializer doesn’t accept any parameters.
+2. Pass the empty AppsFlyerConsent object to setConsentData().
+2. Call start().
+    
+    ```c#
+        // If the user is not subject to GDPR:
+        AppsFlyerConsent consent = AppsFlyerConsent.ForNonGDPRUser();
+        AppsFlyer.setConsentData(consent);
+            
+        AppsFlyer.startSDK();
+    ```
+
+ ## Verify consent data is sent
+ To test whether your SDK sends DMA consent data with each event, perform the following steps:
+ 
+ 1. Enable the SDK debug mode.
+ 2. Search for consent_data in the log of the outgoing request.
+ 
+ for more information visit [iOS](https://dev.appsflyer.com/hc/docs/ios-send-consent-for-dma-compliance)  
+                            [Android](https://dev.appsflyer.com/hc/docs/android-send-consent-for-dma-compliance)  
+---
+
 ## Sending SKAN postback to Appsflyer
   To register the AppsFlyer endpoint, you need to add the `NSAdvertisingAttributionReportEndpoint` key to your info.plist and set the value to `https://appsflyer-skadnetwork.com/`. 
 More info on how to update the info.plist can be found [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Troubleshooting.md#updating-the-infoplist). 
@@ -170,4 +254,3 @@ In-App response example:
 | 50   | "Status code failure" + actual response code from the server        | 
 
 ---
-

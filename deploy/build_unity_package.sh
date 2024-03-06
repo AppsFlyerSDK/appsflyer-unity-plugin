@@ -4,7 +4,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage"
 
 DEPLOY_PATH=outputs
 UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-PACKAGE_NAME="appsflyer-unity-plugin-6.12.22.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.13.0.unitypackage"
 mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -12,7 +12,7 @@ echo "moving the external dependency manager to root"
 mv external-dependency-manager-1.2.177.unitypackage ..
 
 # Build the .unitypackage
- /Volumes/T7Shield/Unity/2022.3.10f1/Unity.app/Contents/MacOS/Unity \
+/Applications/Unity/Hub/Editor/2020.3.34f1/Unity.app/Contents/MacOS/Unity \
 -gvh_disable \
 -batchmode \
 -importPackage external-dependency-manager-1.2.177.unitypackage \
@@ -23,7 +23,7 @@ mv external-dependency-manager-1.2.177.unitypackage ..
 Assets \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.12.22.unitypackage" \
+&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.13.0.unitypackage" \
 || echo "Failed to export package. See create_unity_core.log for more info."
 
 

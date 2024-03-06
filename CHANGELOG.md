@@ -1,5 +1,12 @@
 # Versions
 
+## v6.13.0
+* Update iOS SDK version - 6.13.0
+* Update Android SDK version - 6.13.0
+* Added new iOS and Android API `setDeepLinkTimeout`
+* Added new iOS and Android API `enableTCFDataCollection`
+* Added new iOS and Android API `setConsentData`
+
 ## v6.12.22
 * Update EDM4U - 1.2.177
 * Fix AFUnityUtils import
@@ -240,5 +247,4 @@
 
 Changes and fixes: 
  - New plugin with breaking changes. Please see migration doc with details.
-
 
