@@ -11,6 +11,7 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 - [Using the AppsFlyerObject.prefab](#using-the-appsflyerobjectprefab)
 - [Manual integration](#manual-integration)
 - [Collect IDFA with ATTrackingManager](#collect-idfa-with-attrackingmanager)
+- [Send consent for DMA compliance](#send-consent-for-dma-compliance)
 - [Sending SKAN postback to Appsflyer](#sending-skan-postback-to-appsflyer)
 - [MacOS initialization](#macos-initialization)
 - [Request Listeners (Optional)](#request-listeners-optional)
@@ -90,7 +91,7 @@ If it’s important for you to associate the install event with the CUID, call `
     #endif
     ```
         
-4. Reques the tracking authorization where you wish to display the prompt: <br/>
+4. Request the tracking authorization where you wish to display the prompt: <br/>
     You can use the following [package](https://github.com/Unity-Technologies/com.unity.ads.ios-support) or any other package that allows you to request the tracking authorization. 
     ```c#
 
@@ -105,6 +106,11 @@ If it’s important for you to associate the install event with the CUID, call `
         }
      /*  ... */
   
+### Customizing the ATT consent dialog
+
+The ATT consent dialog can be customized by modifying your Xcode project's `info.plist`:
+
+For detailed instructions, see [Apple's documentation](https://developer.apple.com/documentation/bundleresources/information_property_list/nsusertrackingusagedescription).
   
 ---
 
