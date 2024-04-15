@@ -141,7 +141,7 @@ BOOL __swizzled_didReceiveRemoteNotification(id self, SEL _cmd, UIApplication* a
     [[AppsFlyerLib shared] handlePushNotification:userInfo];
     
     if(__original_didReceiveRemoteNotification_Imp){
-        return ((BOOL(*)(id, SEL, UIApplication*, NSDictionary*, (UIBackgroundFetchResult)))__original_didReceiveRemoteNotification_Imp)(self, _cmd, application, userInfo, nil);
+        return ((BOOL(*)(id, SEL, UIApplication*, NSDictionary*, int(UIBackgroundFetchResult)))__original_didReceiveRemoteNotification_Imp)(self, _cmd, application, userInfo, nil);
     }
     return YES;
 }
