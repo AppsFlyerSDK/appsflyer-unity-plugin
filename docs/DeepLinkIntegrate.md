@@ -35,7 +35,7 @@ Full setup guide for URI scheme in Android can be found [here](https://dev.appsf
 
 ## Universal Links 
 
-Essentially, the Universal Links method links between an iOS mobile app and an associate website/domain, such as AppsFlyer’s OneLink domain (xxx.onelink.me). For more on Universal Links check out the guide [here](https://dev.appsflyer.com/hc/docs/dl_android_init_setup#procedures-for-uri-scheme).
+Essentially, the Universal Links method links between an iOS mobile app and an associate website/domain, such as AppsFlyer’s OneLink domain (xxx.onelink.me). For more on Universal Links check out the guide [here](https://dev.appsflyer.com/hc/docs/dl_ios_init_setup#procedures-for-ios-universal-links).
 
 ## URI scheme in iOS
 
