@@ -36,11 +36,14 @@ static const char* OPEN_STORE_LINK_CALLBACK = "onOpenStoreLinkGenerated";
 static const char* START_REQUEST_CALLBACK = "requestResponseReceived";
 static const char* IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
 static const char* ON_DEEPLINKING = "onDeepLinking";
+static const char* VALIDATE_AND_LOG_V2_CALLBACK = "onValidateAndLogComplete";
+static const char* VALIDATE_AND_LOG_V2_ERROR_CALLBACK = "onValidateAndLogFailure";
 
 
 static NSString* validateObjectName = @"";
 static NSString* openStoreObjectName = @"";
 static NSString* generateInviteObjectName = @"";
+static NSString* validateAndLogObjectName = @"";
 static NSString* startRequestObjectName = @"";
 static NSString* inAppRequestObjectName = @"";
 static NSString* onDeeplinkingObjectName = @"";
