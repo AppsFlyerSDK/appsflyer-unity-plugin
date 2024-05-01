@@ -32,6 +32,21 @@ static const char* stringFromdictionary(NSDictionary* dictionary) {
     return nil;
 }
 
+static NSDictionary* dictionaryFromNSError(NSError* error) {
+    if(error){
+            NSInteger code = [error code];
+            NSString *localizedDescription = [error localizedDescription];
+            
+            NSDictionary *errorDictionary = @{
+                @"code" : @(code) ?: @(-1),
+                @"localizedDescription" : localizedDescription,
+            };
+        return  errorDictionary;
+    }
+
+    return nil;
+}
+
 
 static NSArray<NSString*> *NSArrayFromCArray(int length, const char **arr) {
     NSMutableArray<NSString *> *res = [[NSMutableArray alloc] init];
