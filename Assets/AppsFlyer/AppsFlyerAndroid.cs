@@ -485,6 +485,19 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// API for server verification of in-app purchases.
+        /// An af_purchase event with the relevant values will be automatically sent if the validation is successful.
+        /// </summary>
+        /// <param name="details">AFPurchaseDetailsAndroid instance.</param>
+        /// <param name="additionalParameters">additionalParameters Freehand parameters to be sent with the purchase (if validated).</param>
+        public void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
+        {
+#if !UNITY_EDITOR
+           appsFlyerAndroid.CallStatic("validateAndTrackInAppPurchaseV2", (int)details.purchaseType, details.purchaseToken, details.productId, details.price, details.currency, convertDictionaryToJavaMap(additionalParameters), gameObject ? gameObject.name : null);
+#endif
+        }
+
+        /// <summary>
         /// Was the stopSDK(boolean) API set to true.
         /// </summary>
         /// <returns>boolean isSDKStopped.</returns>

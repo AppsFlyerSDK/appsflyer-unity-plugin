@@ -1,5 +1,10 @@
 # Versions
 
+## v6.14.0
+* Update iOS SDK version - 6.14.0
+* iOS Privacy Manifest support, [for more information about privacy manifest](https://support.appsflyer.com/hc/en-us/articles/21677433322641-Privacy-Manifest)
+* Xcode 15.3 bug fix
+
 ## v6.13.10
 * Update iOS SDK version - 6.13.1
 
