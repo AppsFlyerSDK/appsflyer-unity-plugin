@@ -1,4 +1,11 @@
 # Versions
+## v6.14.3
+* Update iOS SDK version - 6.14.3
+* Update Android SDK version - 6.14.0
+* Added new version of iOS and Android API `validateAndSendInAppPurchase`
+(This API is currently in closed beta. Please contact AppsFlyer before using it).
+* Android Huawei install referrer update - [huawei-install-referrer](https://dev.appsflyer.com/hc/docs/install-android-sdk#huawei-install-referrer)
+
 
 ## v6.14.0
 * Update iOS SDK version - 6.14.0

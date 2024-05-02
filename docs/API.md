@@ -55,7 +55,8 @@ The list of available methods for this plugin is described below.
   - [isPreInstalledApp](#ispreinstalledapp)
   - [handlePushNotifications](#handlepushnotifications)
   - [getAttributionId](#getattributionid)
-  - [validateAndSendInAppPurchase](#validateandsendinapppurchase)
+  - [validateAndSendInAppPurchase (legacy)](#validateandsendinapppurchase)
+  - [validateAndSendInAppPurchase (beta)](#validateAndSendInAppPurchase-beta)
   - [setCollectOaid](#setcollectoaid)
   - [setDisableAdvertisingIdentifiers](#setdisableadvertisingidentifiers)
   - [setDisableNetworkData](#setdisablenetworkdata)
@@ -66,7 +67,8 @@ The list of available methods for this plugin is described below.
   - [setDisableCollectIAd](#setdisablecollectiad)
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)
   - [setUseUninstallSandbox](#setuseuninstallsandbox)
-  - [validateAndSendInAppPurchase](#validateandsendinapppurchase-1)
+  - [validateAndSendInAppPurchase (legacy)](#validateandsendinapppurchase-1)
+  - [validateAndSendInAppPurchase (beta)](#validateAndSendInAppPurchase-beta-iOS) 
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
   - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
@@ -85,6 +87,9 @@ The list of available methods for this plugin is described below.
 - [IAppsFlyerValidateReceipt](#iappsflyervalidatereceipt)
   - [didFinishValidateReceipt](#didfinishvalidatereceipt)
   - [didFinishValidateReceiptWithError](#didfinishvalidatereceiptwitherror)
+- [IAppsFlyerValidateAndLog](#IAppsFlyerValidateAndLog)
+  - [onValidateAndLogComplete](#onValidateAndLogComplete)
+  - [onValidateAndLogFailure](#onValidateAndLogFailure)
 - [Events](#events)
   - [onRequestResponse](#onrequestresponse)
   - [onInAppResponse](#oninappresponse)
@@ -1004,6 +1009,35 @@ Get the Facebook attribution ID, if one exists.
 
 ---
 
+### validateAndSendInAppPurchase-beta
+**`void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, string> additionalParameters, MonoBehaviour gameObject)`**
+ 
+API for server verification of in-app purchases.
+An af_purchase event with the relevant values will be automatically sent if the validation is successful.
+
+
+| parameter              | type                         | description                                        |
+| -----------            |------------------------------|----------------------------------------------------|
+| `details`              | `AFPurchaseDetailsAndroid`   | Instance of AFPurchaseDetailsAndroid class |
+|`additionalParameters`  | `Dictionary<string, string>` | parameters to be sent with the purchase.           |
+| `gameObject`           | `MonoBehaviour`              | Game object for the callbacks to be sent           |
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, 
+        "token", "productId", "price", "currency");
+        
+        AppsFlyer.validateAndSendInAppPurchase(
+        details, 
+        null, 
+        this);
+#endif
+```
+
+---
+
 ### validateAndSendInAppPurchase 
 **`void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
  
@@ -1222,6 +1256,31 @@ Set this flag to test uninstall on Apple environment(production or sandbox). The
 
 ---
 
+### validateAndSendInAppPurchase-beta-iOS
+**`void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)`**
+ 
+To send and validate in app purchases you can call this method from the processPurchase method.
+
+| parameter              | type                           | description  |
+| -----------            |-------------------             | ------------------------------------------|
+| `details`              | `AFSDKPurchaseDetailsIOS`      | Instance of AFSDKPurchaseDetailsIOS class.     |
+| `extraEventValues`     | `Dictionary<string, string>`   | The additional param, which you want to receive it in the raw reports.          |
+| `gameObject`           | `MonoBehaviour`                |      the game object for the              |
+
+*Example:*
+
+```c#
+#if UNITY_IOS && !UNITY_EDITOR
+        AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init("productId", "price", "currency",
+        "transactionId");
+        AppsFlyer.validateAndSendInAppPurchase(
+        details, 
+        null, 
+        this);
+#endif
+```
+
+---
 
 ### validateAndSendInAppPurchase 
 **`void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
@@ -1567,22 +1626,48 @@ For iOS : the callback will return a JSON string from apples verifyReceipt API. 
 
 ---
 
-### didFinishValidateReceiptWithError 
-**`public void didFinishValidateReceiptWithError(string error)`**
+##  IAppsFlyerValidateAndLog
+  
+### onValidateAndLogComplete 
+**`public void didFinishValidateReceipt(string result)`**
  
- The error callback for validating receipts.<br>
+The success callback for validateAndSendInAppPurchase API.<br>
+The callback will return a JSON string which can be converted to dictionary. <br>
 
 | parameter   | type      | description        |
 | ----------  |---------- |--------------------|
+| `result`    | `string`  | validate result     |
+
+
+*Example:*
+
+```c#
+   public void onValidateAndLogComplete(string result)
+    {
+        AppsFlyer.AFLog("onValidateAndLogComplete", result);
+        Dictionary<string, object> validateAndLogDataDictionary = AppsFlyer.CallbackStringToDictionary(result);
+    }
+```
+
+---
+
+### onValidateAndLogFailure 
+**`public void onValidateAndLogFailure(string error)`**
+ 
+ The error callback for validating receipts.<br>
+ The callback will return a JSON string which can be converted to dictionary. <br>
+
+| parameter   | type      | description                   |
+| ----------  |---------- |----------------------------   |
 | `error`     | `string`  | A string describing the error |
 
 
 *Example:*
 
 ```c#
-    public void didFinishValidateReceiptWithError(string error)
+    public void onValidateAndLogFailure(string error)
     {
-      
+         AppsFlyer.AFLog("onValidateAndLogFailure", error); 
     }
 ```
 
