@@ -8,7 +8,8 @@ hidden: false
 
 - [Overview](#overview)
 - [Send Event](#send-event)
-- [In-app purchase validation](#in-app-purchase-validation)
+- [In-app purchase validation (beta)](#in-app-purchase-validation-beta)
+- [In-app purchase validation (legacy)](#in-app-purchase-validation)
 
 ## Overview
 
@@ -90,6 +91,91 @@ purchaseEvent.Add(AFInAppEvents.REVENUE, "-200");
 purchaseEvent.Add(AFInAppEvents.QUANTITY, "1");
 purchaseEvent.Add(AFInAppEvents.CONTENT_TYPE, "category_a");
 AppsFlyer.sendEvent ("cancel_purchase", purchaseEvent);
+```
+
+## In-app purchase validation Beta 
+This API is currently in closed beta. Please contact AppsFlyer before using it.
+
+For In-App Purchase Receipt Validation, follow the instructions according to your operating system.
+
+**Notes**
+Calling validateReceipt automatically generates an `af_purchase` in-app event, so you don't need to send this event yourself.
+The validate purchase response is triggered in the `AppsFlyerTrackerCallbacks.cs` class.
+
+```c#
+// for Android 
+`void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`
+// for iOS 
+`void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)`
+
+```
+
+```c#
+using UnityEngine.Purchasing;
+using AppsFlyerSDK;
+
+public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
+{
+
+    public static string kProductIDConsumable = "com.test.cons";
+
+    void Start()
+    {
+        AppsFlyer.initSDK("devKey", "devKey");
+        AppsFlyer.startSDK();
+    }
+
+    public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
+    {
+        string prodID = args.purchasedProduct.definition.id;
+        string price = args.purchasedProduct.metadata.localizedPrice.ToString();
+        string currency = args.purchasedProduct.metadata.isoCurrencyCode;
+
+        string receipt = args.purchasedProduct.receipt;
+        var recptToJSON = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(product.receipt);
+        var receiptPayload = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize((string)recptToJSON["Payload"]);
+        var transactionID = product.transactionID;
+
+        if (String.Equals(args.purchasedProduct.definition.id, kProductIDConsumable, StringComparison.Ordinal))
+        {
+#if UNITY_IOS
+
+            if(isSandbox)
+            {
+                AppsFlyeriOS.setUseReceiptValidationSandbox(true);
+            }
+
+            AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init(prodID, price, currency, transactionID);
+
+            AppsFlyeriOS.validateAndSendInAppPurchase(details, null, this);
+#elif UNITY_ANDROID
+
+        AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, "token", prodID, price, currency);
+
+        AppsFlyerAndroid.validateAndSendInAppPurchase(
+        details,
+        null, 
+        this);
+#endif
+        }
+
+        return PurchaseProcessingResult.Complete;
+    }
+
+    public void onValidateAndLogComplete(string result)
+    {
+        AppsFlyer.AFLog("onValidateAndLogComplete", result);
+        Dictionary<string, object> validateAndLogDataDictionary = AppsFlyer.CallbackStringToDictionary(result);
+    }
+
+    public void onValidateAndLogFailure(string error)
+    {
+        AppsFlyer.AFLog("onValidateAndLogFailure", error);
+        Dictionary<string, object> validateAndLogErrorDictionary = AppsFlyer.CallbackStringToDictionary(error);
+    }
+
+}
+
 ```
 
 ## In-app purchase validation
