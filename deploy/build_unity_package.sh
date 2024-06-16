@@ -4,7 +4,7 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage"
 
 DEPLOY_PATH=outputs
 UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-PACKAGE_NAME="appsflyer-unity-plugin-6.14.3.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.14.4.unitypackage"
 mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
@@ -23,7 +23,7 @@ mv external-dependency-manager-1.2.177.unitypackage ..
 Assets \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.14.3.unitypackage" \
+&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.14.4.unitypackage" \
 || echo "Failed to export package. See create_unity_core.log for more info."
 
 
@@ -37,7 +37,7 @@ rm -rf ../Logs
 echo "removing ./Packages"
 rm -rf ../Packages
 echo "removing ./deploy/create_unity_core.log"
-rm ./create_unity_core.log
+#rm ./create_unity_core.log
 echo "Moving  $DEPLOY_PATH/$PACKAGE_NAME to root"
 mv ./outputs/$PACKAGE_NAME ..
 echo "removing ./deploy/outputs"
