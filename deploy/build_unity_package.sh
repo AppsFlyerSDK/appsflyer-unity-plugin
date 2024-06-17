@@ -37,7 +37,7 @@ rm -rf ../Logs
 echo "removing ./Packages"
 rm -rf ../Packages
 echo "removing ./deploy/create_unity_core.log"
-#rm ./create_unity_core.log
+rm ./create_unity_core.log
 echo "Moving  $DEPLOY_PATH/$PACKAGE_NAME to root"
 mv ./outputs/$PACKAGE_NAME ..
 echo "removing ./deploy/outputs"
