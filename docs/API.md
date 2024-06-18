@@ -86,7 +86,7 @@ The list of available methods for this plugin is described below.
   - [onOpenStoreLinkGenerated](#onopenstorelinkgenerated)
 - [IAppsFlyerValidateReceipt](#iappsflyervalidatereceipt)
   - [didFinishValidateReceipt](#didfinishvalidatereceipt)
- - [IAppsFlyerValidateAndLog](#iappsflyervalidateandlog)
+- [IAppsFlyerValidateAndLog](#iappsflyervalidateandlog)
   - [onValidateAndLogComplete](#onvalidateandlogcomplete)
   - [onValidateAndLogFailure](#onvalidateandlogfailure)
 - [Events](#events)
