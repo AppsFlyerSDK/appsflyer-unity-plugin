@@ -1,0 +1,8 @@
+{
+	"name": "appsflyer-unity-plugin",
+	"displayName": "AppsFlyer",
+	"description": "AppsFlyer Unity plugin",
+	"version": "6.14.4",
+	"unity": "2019.4",
+	"license": "MIT"
+  }
