@@ -1,4 +1,7 @@
 # Versions
+## v6.14.5
+* Update iOS SDK version - 6.14.5
+
 ## v6.14.4
 * Update iOS SDK version - 6.14.4
 * Update Android SDK version - 6.14.2
