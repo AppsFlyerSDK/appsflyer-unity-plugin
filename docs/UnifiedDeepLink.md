@@ -8,7 +8,7 @@ hidden: false
 
 > 📘 **UDL privacy protection**
 > 
-> For new users, the UDL method only returns parameters relevant to deferred deep linking: `deep_link_value` and `deep_link_sub1-10`. Other parameters (`media_source`, `campaign`, `af_sub1-5`, etc.), return null.
+> For new users, the UDL method only returns parameters relevant to deferred deep linking: `deep_link_value` and `deep_link_sub1` to `deep_link_sub10`. If you try to get any other parameters (`media_source`, `campaign`, `af_sub1-5`, etc.), they return `null`.
 
 # UDL flow
 
