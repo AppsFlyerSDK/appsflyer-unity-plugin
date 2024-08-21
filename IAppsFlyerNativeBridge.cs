@@ -43,6 +43,8 @@ namespace AppsFlyerSDK
 
         void setConsentData(AppsFlyerConsent appsFlyerConsent);
 
+        void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters);
+
         void setMinTimeBetweenSessions(int seconds);
 
         void setHost(string hostPrefixName, string hostName);

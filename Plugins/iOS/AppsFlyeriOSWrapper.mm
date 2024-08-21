@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.14.5"
+                                pluginVersion:@"6.15.1"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -95,6 +95,14 @@ extern "C" {
             consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
         }
        [[AppsFlyerLib shared] setConsentData:consentData];
+    }
+
+    const void _logAdRevenue(const char* monetizationNetwork, int mediationNetworkInt, const char* currencyIso4217Code, double eventRevenue, const char* additionalParameters) {
+        AppsFlyerAdRevenueMediationNetworkType mediationNetwork = mediationNetworkTypeFromInt(mediationNetworkInt);
+        NSString *formattedString = [NSString localizedStringWithFormat:@"%.2f", eventRevenue];
+        NSNumber *revenue = [NSDecimalNumber decimalNumberWithString:formattedString];
+        AFAdRevenueData *adRevenue = [[AFAdRevenueData alloc] initWithMonetizationNetwork:stringFromChar(monetizationNetwork) mediationNetwork:mediationNetwork currencyIso4217Code:stringFromChar(currencyIso4217Code) eventRevenue:revenue];
+        [[AppsFlyerLib shared] logAdRevenue: adRevenue additionalParameters:dictionaryFromJson(additionalParameters)];
     }
 
     const void _setDisableCollectIAd (bool disableCollectASA) {
