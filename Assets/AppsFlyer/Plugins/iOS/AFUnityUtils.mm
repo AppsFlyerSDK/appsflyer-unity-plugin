@@ -108,6 +108,60 @@ static EmailCryptType emailCryptTypeFromInt(int emailCryptTypeInt){
     return emailCryptType;
 }
 
+static AppsFlyerAdRevenueMediationNetworkType mediationNetworkTypeFromInt(int mediationNetworkInt){
+    
+    AppsFlyerAdRevenueMediationNetworkType mediationNetworkType;
+    switch (mediationNetworkInt){
+        case 1:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeGoogleAdMob;
+            break;
+        case 2:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeIronSource;
+            break;
+        case 3:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeApplovinMax;
+            break;
+        case 4:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeFyber;
+            break;
+        case 5:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeAppodeal;
+            break;
+        case 6:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeAdmost;
+            break;
+        case 7:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeTopon;
+            break;
+        case 8:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeTradplus;
+            break;
+        case 9:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeYandex;
+            break;
+        case 10:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeChartBoost;
+            break;
+        case 11:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeUnity;
+            break;
+        case 12:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeToponPte;
+            break;
+        case 13:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeCustom;
+            break;
+        case 14:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeDirectMonetization;
+            break;
+        default:
+            mediationNetworkType = AppsFlyerAdRevenueMediationNetworkTypeCustom;
+            break;
+    }
+
+    return mediationNetworkType;
+}
+
 static NSString* stringFromDeepLinkResultStatus(AFSDKDeepLinkResultStatus deepLinkResult){
     NSString* result;
     switch (deepLinkResult){
