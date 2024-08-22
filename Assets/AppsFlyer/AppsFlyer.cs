@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
 {
     public class AppsFlyer : MonoBehaviour
     {
-        public static readonly string kAppsFlyerPluginVersion = "6.14.5";
+        public static readonly string kAppsFlyerPluginVersion = "6.15.1";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -329,6 +329,19 @@ namespace AppsFlyerSDK
             if (instance != null)
             {
                 instance.setConsentData(appsFlyerConsent);
+            }
+        }
+
+        /// <summary>
+        /// Logs ad revenue data along with additional parameters if provided.
+        /// </summary>
+        /// <param name = "adRevenueData" >instance of AFAdRevenueData containing ad revenue information.</param>
+        /// <param name = "additionalParameters" >An optional map of additional parameters to be logged with ad revenue data. This can be null if there are no additional parameters.</param>
+        public static void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
+        {
+            if (instance != null)
+            {
+                instance.logAdRevenue(adRevenueData, additionalParameters);
             }
         }
 

@@ -403,6 +403,17 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Logs ad revenue data along with additional parameters if provided.
+        /// <param name = "adRevenueData" >instance of AFAdRevenueData containing ad revenue information.</param>
+        /// <param name = "additionalParameters" >An optional map of additional parameters to be logged with ad revenue data. This can be null if there are no additional parameters.</param>
+        public void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
+        {
+#if !UNITY_EDITOR
+            appsFlyerAndroid.CallStatic("logAdRevenue", adRevenueData.monetizationNetwork, getMediationNetwork(adRevenueData.mediationNetwork), adRevenueData.currencyIso4217Code, adRevenueData.eventRevenue, convertDictionaryToJavaMap(additionalParameters));
+#endif
+        }
+
+        /// <summary>
         /// Restrict reengagement via deep-link to once per each unique deep-link.
         /// Otherwise deep re-occurring deep-links will be permitted for non-singleTask Activities and deep-linking via AppsFlyer deep-links.
         /// The default value is false.
@@ -752,6 +763,65 @@ namespace AppsFlyerSDK
         /// <summary>
         /// Internal Helper Method.
         /// </summary>
+        private static AndroidJavaObject getMediationNetwork(MediationNetwork mediationNetwork)
+        {
+            AndroidJavaClass mediationNetworkEnumClass = new AndroidJavaClass("com.appsflyer.MediationNetwork");
+            AndroidJavaObject mediationNetworkObject;
+
+            switch (mediationNetwork)
+            {
+                case MediationNetwork.IronSource:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("IRONSOURCE");
+                    break;
+                case MediationNetwork.ApplovinMax:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("APPLOVIN_MAX");
+                    break;
+                case MediationNetwork.GoogleAdMob:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("GOOGLE_ADMOB");
+                    break;
+                case MediationNetwork.Fyber:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("FYBER");
+                    break;
+                case MediationNetwork.Appodeal:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("APPODEAL");
+                    break;
+                case MediationNetwork.Admost:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("ADMOST");
+                    break;
+                case MediationNetwork.Topon:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("TOPON");
+                    break;
+                case MediationNetwork.Tradplus:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("TRADPLUS");
+                    break;
+                case MediationNetwork.Yandex:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("YANDEX");
+                    break;
+                case MediationNetwork.ChartBoost:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("CHARTBOOST");
+                    break;
+                case MediationNetwork.Unity:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("UNITY");
+                    break;
+                case MediationNetwork.ToponPte:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("TOPON_PTE");
+                    break;
+                case MediationNetwork.Custom:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("CUSTOM_MEDIATION");
+                    break;
+                case MediationNetwork.DirectMonetization:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("DIRECT_MONETIZATION_NETWORK");
+                    break;
+                default:
+                    mediationNetworkObject = mediationNetworkEnumClass.GetStatic<AndroidJavaObject>("NONE");
+                    break;
+        }
+        return mediationNetworkObject;
+        }
+
+        /// <summary>
+        /// Internal Helper Method.
+        /// </summary>
         private static AndroidJavaObject convertDictionaryToJavaMap(Dictionary<string, string> dictionary)
         {
             AndroidJavaObject map = new AndroidJavaObject("java.util.HashMap");
@@ -771,9 +841,6 @@ namespace AppsFlyerSDK
             return map;
         }
     }
-
 #endif
-
-
 
 }

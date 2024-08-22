@@ -220,6 +220,18 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
          }
 
         /// <summary>
+        /// Logs ad revenue data along with additional parameters if provided.
+        /// </summary>
+        /// <param name = "adRevenueData" >instance of AFAdRevenueData containing ad revenue information.</param>
+        /// <param name = "additionalParameters" >An optional map of additional parameters to be logged with ad revenue data. This can be null if there are no additional parameters.</param>
+        public void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
+        {
+#if !UNITY_EDITOR
+            _logAdRevenue(adRevenueData.monetizationNetwork, adRevenueData.mediationNetwork, adRevenueData.currencyIso4217Code, adRevenueData.eventRevenue, AFMiniJSON.Json.Serialize(additionalParameters));
+#endif
+         }
+
+        /// <summary>
         /// Anonymize user Data.
         /// Use this API during the SDK Initialization to explicitly anonymize a user's installs, events and sessions.
         /// Default is false
@@ -749,6 +761,13 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         [DllImport("AppsFlyerBundle")]
 #endif
         private static extern void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+#elif UNITY_STANDALONE_OSX
+        [DllImport("AppsFlyerBundle")]
+#endif
+        private static extern void _logAdRevenue(string monetizationNetwork, MediationNetwork mediationNetwork, string currencyIso4217Code, double eventRevenue, string additionalParameters);
 
 #if UNITY_IOS
     [DllImport("__Internal")]

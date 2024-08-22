@@ -3,6 +3,8 @@ package com.appsflyer.unity;
 
 import androidx.annotation.NonNull;
 
+import com.appsflyer.AFAdRevenueData;
+import com.appsflyer.MediationNetwork;
 import com.appsflyer.AFLogger;
 import com.appsflyer.AFPurchaseDetails;
 import com.appsflyer.AFPurchaseType;
@@ -43,7 +45,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
-    private static final String PLUGIN_VERSION = "6.14.5";
+    private static final String PLUGIN_VERSION = "6.15.1";
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
@@ -136,6 +138,11 @@ public class AppsFlyerAndroidWrapper {
         else
             consent = AppsFlyerConsent.forNonGDPRUser();
         AppsFlyerLib.getInstance().setConsentData(consent);
+    }
+
+    public static void logAdRevenue(String monetizationNetwork, MediationNetwork mediationNetwork, String currencyIso4217Code, double revenue, HashMap<String, Object> additionalParameters) {
+        AFAdRevenueData adRevenueData = new AFAdRevenueData(monetizationNetwork, mediationNetwork, currencyIso4217Code, revenue);
+        AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters);
     }
 
     public static String getOutOfStore() {

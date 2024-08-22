@@ -34,6 +34,7 @@ The list of available methods for this plugin is described below.
   - [setPhoneNumber](#setphonenumber)
   - [getConversionData](#getconversiondata)
   - [attributeAndOpenStore](#attributeandopenstore)
+  - [logAdRevenue](#logAdRevenue)
   - [recordCrossPromoteImpression](#recordcrosspromoteimpression)
   - [generateUserInviteLink](#generateuserinvitelink)
   - [setSharingFilterForAllPartners *Deprecated*](#setsharingfilterforallpartners-deprecated)
@@ -608,6 +609,28 @@ Dictionary<string, string> parameters = new Dictionary<string, string>();
 parameters.Add("af_sub1", "val");
 parameters.Add("custom_param", "val2");
 AppsFlyer.attributeAndOpenStore("123456789", "test campaign", parameters, this);
+```
+
+---
+
+### logAdRevenue
+**`void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)`**
+
+Logs ad revenue data along with additional parameters if provided.
+
+| parameter               | type                         | description                                         |
+| -------------------     |----------------------------- |-----------------------------------------------------|
+| `adRevenueData`         | `AFAdRevenueData`            |  Instance of AFAdRevenueData containing ad revenue information                                                   |
+| `additionalParameters`  | `Dictionary<string, string> `|  An optional map of additional parameters to be logged with ad revenue data                                                  |
+
+*Example:*
+
+```c#
+Dictionary<string, string> parameters = new Dictionary<string, string>();
+parameters.Add("value1", "5");
+parameters.Add(AdRevenueScheme.COUNTRY, "USA");
+var logRevenue = new AFAdRevenueData("monetizationNetworkEx", MediationNetwork.GoogleAdMob, "USD", 0.99);
+AppsFlyer.logAdRevenue(logRevenue, parameters);
 ```
 
 ---
