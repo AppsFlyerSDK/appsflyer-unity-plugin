@@ -60,7 +60,7 @@ extern "C" {
     }
 
     const void _setDisableCollectAppleAdSupport (bool disableAdvertisingIdentifier) {
-       [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
+       //[AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
     const void _setIsDebug (bool isDebug) {
@@ -298,7 +298,7 @@ extern "C" {
     }
 
     const void _waitForATTUserAuthorizationWithTimeoutInterval (int timeoutInterval) {
-       [[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];
+       //[[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];
     }
 
     const void _disableSKAdNetwork (bool isDisabled) {
