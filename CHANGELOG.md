@@ -1,4 +1,12 @@
 # Versions
+## v6.15.2
+* Update iOS SDK version - 6.15.2
+
+## v6.15.1
+* Update iOS SDK version - 6.15.1
+* Update Android SDK version - 6.15.0
+* Added new iOS and Android API `logAdRevenue`
+
 ## v6.14.5
 * Update iOS SDK version - 6.14.5
 
