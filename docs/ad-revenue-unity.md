@@ -29,13 +29,12 @@ When an impression with revenue occurs, invoke the [`logAdRevenue`](doc:api#loga
 
 ```c#
 Dictionary<string, string> additionalParams = new Dictionary<string, string>();
-additionalParams.Add("value1", "5");
 additionalParams.Add(AdRevenueScheme.COUNTRY, "USA");
 additionalParams.Add(AFAdRevenueEvent.AD_UNIT, "89b8c0159a50ebd1");
 additionalParams.Add(AFAdRevenueEvent.AD_TYPE, "Banner");
 additionalParams.Add(AFAdRevenueEvent.PLACEMENT, "place");
 var logRevenue = new AFAdRevenueData("monetizationNetworkEx", MediationNetwork.GoogleAdMob, "USD", 0.99);
-AppsFlyer.logAdRevenue(logRevenue, parameters);
+AppsFlyer.logAdRevenue(logRevenue, additionalParams);
 ```
 
 > 📘 Note 
@@ -130,7 +129,7 @@ Send ad revenue data from the impression payload to AppsFlyer regardless of the 
 | mediationNetwork     | AppsFlyerAdRevenueMediationNetworkType | Enum for mediaton network type   |
 | eventRevenue         | string                                 | event revenue                    |
 | revenueCurrency      | string                                 | revenue currency                 |
-| additionalParameters | Dictionary\<string, string>            | Any custom additional parameters |
+| additionalParameters | Dictionary<string, string>            | Any custom additional parameters |
 |                      |                                        |                                  |
 
 _Example:_
