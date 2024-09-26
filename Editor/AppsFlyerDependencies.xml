@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+
+  <androidPackages>
+    <androidPackage spec="com.appsflyer:af-android-sdk:6.15.0">
+    </androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:6.15.3">
+    </androidPackage>
+    <androidPackage spec="com.android.installreferrer:installreferrer:2.1">
+    </androidPackage>
+  </androidPackages>
+
+  <iosPods>
+    <iosPod name="AppsFlyerFramework" version="6.15.2" minTargetSdk="12.0">
+    </iosPod>
+  </iosPods>
+
+</dependencies>
