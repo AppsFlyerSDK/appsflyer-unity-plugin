@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.15.2"
+                                pluginVersion:@"6.15.3"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -99,9 +99,8 @@ extern "C" {
 
     const void _logAdRevenue(const char* monetizationNetwork, int mediationNetworkInt, const char* currencyIso4217Code, double eventRevenue, const char* additionalParameters) {
         AppsFlyerAdRevenueMediationNetworkType mediationNetwork = mediationNetworkTypeFromInt(mediationNetworkInt);
-        NSString *formattedString = [NSString localizedStringWithFormat:@"%.2f", eventRevenue];
-        NSNumber *revenue = [NSDecimalNumber decimalNumberWithString:formattedString];
-        AFAdRevenueData *adRevenue = [[AFAdRevenueData alloc] initWithMonetizationNetwork:stringFromChar(monetizationNetwork) mediationNetwork:mediationNetwork currencyIso4217Code:stringFromChar(currencyIso4217Code) eventRevenue:revenue];
+        NSNumber *number = [NSNumber numberWithDouble:eventRevenue];
+        AFAdRevenueData *adRevenue = [[AFAdRevenueData alloc] initWithMonetizationNetwork:stringFromChar(monetizationNetwork) mediationNetwork:mediationNetwork currencyIso4217Code:stringFromChar(currencyIso4217Code) eventRevenue:number];
         [[AppsFlyerLib shared] logAdRevenue: adRevenue additionalParameters:dictionaryFromJson(additionalParameters)];
     }
 
