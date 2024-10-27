@@ -30,9 +30,9 @@ When an impression with revenue occurs, invoke the [`logAdRevenue`](doc:api#loga
 ```c#
 Dictionary<string, string> additionalParams = new Dictionary<string, string>();
 additionalParams.Add(AdRevenueScheme.COUNTRY, "USA");
-additionalParams.Add(AFAdRevenueEvent.AD_UNIT, "89b8c0159a50ebd1");
-additionalParams.Add(AFAdRevenueEvent.AD_TYPE, "Banner");
-additionalParams.Add(AFAdRevenueEvent.PLACEMENT, "place");
+additionalParams.Add(AdRevenueScheme.AD_UNIT, "89b8c0159a50ebd1");
+additionalParams.Add(AdRevenueScheme.AD_TYPE, "Banner");
+additionalParams.Add(AdRevenueScheme.PLACEMENT, "place");
 var logRevenue = new AFAdRevenueData("monetizationNetworkEx", MediationNetwork.GoogleAdMob, "USD", 0.99);
 AppsFlyer.logAdRevenue(logRevenue, additionalParams);
 ```
