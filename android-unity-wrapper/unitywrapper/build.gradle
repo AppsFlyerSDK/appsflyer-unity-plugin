@@ -7,8 +7,6 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 33
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -32,6 +30,8 @@ dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly 'com.appsflyer:af-android-sdk:6.15.0'
+    compileOnly 'com.appsflyer:purchase-connector:2.0.1'
+    compileOnly 'com.android.billingclient:billing:5.2.0'
 
 }
 

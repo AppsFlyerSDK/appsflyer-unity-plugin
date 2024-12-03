@@ -13,8 +13,13 @@
 #else
 #import "AppsFlyerLib.h"
 #endif
+#if __has_include(<PurchaseConnector/PurchaseConnector.h>)
+#import  <PurchaseConnector/PurchaseConnector.h>
+#else
+#import "PurchaseConnector.h"
+#endif
 
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate>
+@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate>
 + (BOOL) didCallStart;
 + (void) setDidCallStart:(BOOL)val;
 @end
@@ -48,3 +53,7 @@ static NSString* startRequestObjectName = @"";
 static NSString* inAppRequestObjectName = @"";
 static NSString* onDeeplinkingObjectName = @"";
 
+static const char* PURCHASE_REVENUE_VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
+static const char* PURCHASE_REVENUE_ERROR_CALLBACK = "didReceivePurchaseRevenueError";
+
+static NSString* onPurchaseValidationObjectName = @"";

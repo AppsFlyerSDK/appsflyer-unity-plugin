@@ -6,7 +6,7 @@ buildscript {
         agp_version = '8.5.0'
         agp_version1 = '7.4.2'
         agp_version2 = '7.1.0'
-        agp_version3 = '3.6.1'
+        agp_version3 = '4.2.2'
     }
     repositories {
         google()
