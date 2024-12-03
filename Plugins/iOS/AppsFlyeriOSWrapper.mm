@@ -332,6 +332,38 @@ extern "C" {
         [AppsFlyerLib shared].disableIDFVCollection = isDisabled;
     }
 
+    // Purchase connector
+    const void _startObservingTransactions() {
+        [[PurchaseConnector shared] startObservingTransactions];
+    }
+
+    const void _stopObservingTransactions() {
+        [[PurchaseConnector shared] stopObservingTransactions];
+    }
+
+    const void _setIsSandbox(bool isSandBox) {
+        [[PurchaseConnector shared] setIsSandbox:isSandBox];
+    }
+
+    const void _setPurchaseRevenueDelegate() {
+        if (_AppsFlyerdelegate== nil) {
+            _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+               }
+        [[PurchaseConnector shared] setPurchaseRevenueDelegate:_AppsFlyerdelegate];
+    }
+
+    const void _setAutoLogPurchaseRevenue(int option) {
+           [[PurchaseConnector shared] setAutoLogPurchaseRevenue:option];
+
+    }
+
+    const void _initPurchaseConnector(const char* objectName) {
+        if (_AppsFlyerdelegate == nil) {
+            _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+        }
+        onPurchaseValidationObjectName = stringFromChar(objectName);
+    }
+
 }
 
 @implementation AppsFlyeriOSWarpper
@@ -371,6 +403,15 @@ static BOOL didCallStart;
     }
     
     unityCallBack(onDeeplinkingObjectName, ON_DEEPLINKING, stringFromdictionary(dict));
+}
+
+// Purchase Connector
+- (void)didReceivePurchaseRevenueValidationInfo:(NSDictionary *)validationInfo error:(NSError *)error {
+    if (error != nil) {
+        unityCallBack(onPurchaseValidationObjectName, PURCHASE_REVENUE_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
+    } else {
+        unityCallBack(onPurchaseValidationObjectName, PURCHASE_REVENUE_VALIDATION_CALLBACK, stringFromdictionary(validationInfo));
+    }
 }
 
 @end
