@@ -8,6 +8,14 @@ hidden: false
 order: 13
 ---
 
+## Overview
+
+The AppsFlyer ROI360 purchase connector is used to validate and report in-app purchase and subscription revenue events. It’s part of the ROI360 in-app purchase and subscription revenue measurement solution.
+
+- Using the purchase connector requires an ROI360 subscription.
+- If you use this in-app purchase and subscription revenue measurement solution, you shouldn’t send [in-app events](https://dev.appsflyer.com/hc/docs/inappevents) with revenue or execute [`validateAndLogInAppPurchase`](https://dev.appsflyer.com/hc/docs/validate-and-log-purchase-ios), as doing so results in duplicate revenue being reported.
+- Before implementing the purchase connector, the ROI360 in-app purchase and subscription revenue measurement needs to be integrated with Google Play and the App Store. [See instructions (steps 1 and 2)](https://support.appsflyer.com/hc/en-us/articles/7459048170769)
+
 ## Prerequisites
 
 - StoreKit SDK v1
