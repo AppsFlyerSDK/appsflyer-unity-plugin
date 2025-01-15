@@ -43,6 +43,7 @@ _Android Only_ - If you are using ProGuard, add the following keep rules to your
 -keep class com.appsflyer.** { *; }
 -keep class kotlin.jvm.internal.Intrinsics{ *; }
 -keep class kotlin.collections.**{ *; }
+-keep class kotlin.Result$Companion { *; }
 ```
 
 ## Strict Mode
