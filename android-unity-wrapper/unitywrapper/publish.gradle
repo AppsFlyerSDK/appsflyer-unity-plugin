@@ -1,70 +1,114 @@
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 def isReleaseBuild() {
-    return !VERSION_NAME.contains("SNAPSHOT")
+    return !VERSION_NAME.contains("-SNAPSHOT")
 }
 
-afterEvaluate { project ->
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                pom.groupId = GROUP
-                pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-                pom.project {
-                    name POM_NAME
-                    packaging POM_PACKAGING
-                    description POM_DESCRIPTION
-                    url POM_URL
-                    scm {
-                        url POM_SCM_URL
-                        connection POM_SCM_CONNECTION
-                        developerConnection POM_SCM_DEV_CONNECTION
-                    }
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+android {
+    publishing {
+        singleVariant("release") {
+            // if you don't want sources/javadoc, remove these lines
+            withJavadocJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                // The coordinates of the library
+                groupId = GROUP
+                artifactId = POM_ARTIFACT_ID
+                version = VERSION_NAME
+
+                // Artifacts to publish
+                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+
+                // Configure POM metadata
+                pom {
+                    name.set(POM_NAME)
+                    description.set(POM_DESCRIPTION)
+                    url.set(POM_URL)
+
                     licenses {
                         license {
-                            name POM_LICENCE_NAME
-                            url POM_LICENCE_URL
-                            distribution POM_LICENCE_DIST
+                            name.set(POM_LICENCE_NAME)
+                            url.set(POM_LICENCE_URL)
+                            distribution.set(POM_LICENCE_DIST)
                         }
                     }
+
                     developers {
                         developer {
-                            id POM_DEVELOPER_ID
-                            name POM_DEVELOPER_NAME
+                            id.set(POM_DEVELOPER_ID)
+                            name.set(POM_DEVELOPER_NAME)
                         }
+                    }
+
+                    scm {
+                        connection.set(POM_SCM_CONNECTION)
+                        developerConnection.set(POM_SCM_DEV_CONNECTION)
+                        url.set(POM_SCM_URL)
+                    }
+                }
+
+                // Add dependencies to the POM
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    configurations.implementation.allDependencies.each { dependency ->
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', dependency.group ?: '')
+                        dependencyNode.appendNode('artifactId', dependency.name)
+                        dependencyNode.appendNode('version', dependency.version ?: '')
                     }
                 }
             }
         }
-    }
-    signing {
-        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
-    }
-    task androidJavadocs(type: Javadoc) {
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        if (JavaVersion.current().isJava8Compatible()) {
-            allprojects {
-                tasks.withType(Javadoc) { options.addStringOption('Xdoclint:none', '-quiet') }
+
+        repositories {
+            maven {
+                name = "sonatype"
+                url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+
+                credentials {
+                    username = ossrhUsername
+                    password = ossrhPassword
+                }
             }
         }
     }
-    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-        archiveClassifier = 'javadoc'
-        from androidJavadocs.destinationDir
+
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.release
     }
-    task androidSourcesJar(type: Jar) {
-        classifier = 'sources'
-        from android.sourceSets.main.java.sourceFiles
-    }
-    artifacts { archives androidJavadocsJar }
+//    task androidJavadocs(type: Javadoc) {
+//        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//        if (JavaVersion.current().isJava8Compatible()) {
+//            allprojects {
+//                tasks.withType(Javadoc) { options.addStringOption('Xdoclint:none', '-quiet') }
+//            }
+//        }
+//    }
+//    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//        archiveClassifier = 'javadoc'
+//        from androidJavadocs.destinationDir
+//    }
+//    task androidSourcesJar(type: Jar) {
+//        classifier = 'sources'
+//        from android.sourceSets.main.java.sourceFiles
+//    }
+//    artifacts { archives androidJavadocsJar }
 }
