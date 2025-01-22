@@ -1,4 +1,8 @@
 # Versions
+## v6.16.0
+* Update iOS SDK version - 6.16.0
+* Update Android SDK version - 6.16.0
+
 ## v6.15.3
 * Fix logAdRevenue - revenue value will not be rounded
 
