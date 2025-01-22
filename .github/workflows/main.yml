@@ -5,8 +5,8 @@ on:
   
 jobs:
   testAndroid:
-    name: Test in ${{ matrix.targetPlatform }}
     permissions: write-all
+    name: Test in ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
