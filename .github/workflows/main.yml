@@ -5,7 +5,10 @@ on:
   
 jobs:
   testAndroid:
-    permissions: write-all
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     name: Test in ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
