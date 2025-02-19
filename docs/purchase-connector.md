@@ -22,7 +22,7 @@ The AppsFlyer ROI360 purchase connector is used to validate and report in-app pu
 - iOS version 9 and higher.
 - Unity AppsFlyer plugin **6.12.2** and higher.
 - Unity version **2020.3** and higher.
-- Google Billing Play version **5.x.x** and **6.x.x** and **7.x.x**
+- Google Play Billing library version **5.x.x** and **6.x.x** and **7.x.x**
 
 To use the module with earlier Unity AppsFlyer plugin versions, check the previous versions of this module, for instance, **v1.0.0** supports versions **6.8.1** and higher.
 
