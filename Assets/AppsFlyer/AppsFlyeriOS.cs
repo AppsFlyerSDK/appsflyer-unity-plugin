@@ -215,7 +215,12 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         public void setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
 #if !UNITY_EDITOR
-            _setConsentData(appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
+           string isUserSubjectToGDPR = appsFlyerConsent.isUserSubjectToGDPR?.ToString().ToLower() ?? "null";
+           string hasConsentForDataUsage = appsFlyerConsent.hasConsentForDataUsage?.ToString().ToLower() ?? "null";
+           string hasConsentForAdsPersonalization = appsFlyerConsent.hasConsentForAdsPersonalization?.ToString().ToLower() ?? "null";
+           string hasConsentForAdStorage = appsFlyerConsent.hasConsentForAdStorage?.ToString().ToLower() ?? "null";
+
+           _setConsentData(isUserSubjectToGDPR, hasConsentForDataUsage, hasConsentForAdsPersonalization, hasConsentForAdStorage);
 #endif
          }
 
@@ -760,7 +765,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 #elif UNITY_STANDALONE_OSX
         [DllImport("AppsFlyerBundle")]
 #endif
-        private static extern void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization);
+        private static extern void _setConsentData(string isUserSubjectToGDPR, string hasConsentForDataUsage, string hasConsentForAdsPersonalization, string hasConsentForAdStorage);
 
 #if UNITY_IOS
     [DllImport("__Internal")]
