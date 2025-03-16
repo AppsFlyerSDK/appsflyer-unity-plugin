@@ -424,7 +424,7 @@ Sets or updates the user consent data related to GDPR and DMA regulations for ad
 *Example:*
 
 ```c#
-AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(false, false);
+AppsFlyerConsent consent = new AppsFlyerConsent(true, false, false, false);
 AppsFlyer.setConsentData(consent);
 ```
 

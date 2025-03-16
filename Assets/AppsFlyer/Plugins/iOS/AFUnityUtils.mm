@@ -108,6 +108,18 @@ static EmailCryptType emailCryptTypeFromInt(int emailCryptTypeInt){
     return emailCryptType;
 }
 
+static NSNumber *intFromNullableBool(const char *cStr) {
+    if (!cStr) return nil;
+    NSString *str = [NSString stringWithUTF8String:cStr];
+
+    if ([str caseInsensitiveCompare:@"true"] == NSOrderedSame) {
+        return @YES;
+    } else if ([str caseInsensitiveCompare:@"false"] == NSOrderedSame) {
+        return @NO;
+    }
+    return nil;
+}
+
 static AppsFlyerAdRevenueMediationNetworkType mediationNetworkTypeFromInt(int mediationNetworkInt){
     
     AppsFlyerAdRevenueMediationNetworkType mediationNetworkType;
