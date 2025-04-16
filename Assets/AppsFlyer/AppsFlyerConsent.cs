@@ -65,7 +65,7 @@ namespace AppsFlyerSDK
         [Obsolete("Use new AppsFlyerConsent(...) instead.")]
         public static AppsFlyerConsent ForNonGDPRUser()
         {
-            return new AppsFlyerConsent(false, false, false);
+            return new AppsFlyerConsent(false);
         }
     }
 }
