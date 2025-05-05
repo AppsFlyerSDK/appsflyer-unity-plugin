@@ -18,7 +18,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.15.3"
+                                pluginVersion:@"6.16.21"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -87,14 +87,19 @@ extern "C" {
        [[AppsFlyerLib shared] enableTCFDataCollection:shouldCollectTcfData];
     }
 
-    const void _setConsentData(bool isUserSubjectToGDPR, bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization) {
-        AppsFlyerConsent *consentData = nil;
-        if (isUserSubjectToGDPR) {
-            consentData = [[AppsFlyerConsent alloc] initForGDPRUserWithHasConsentForDataUsage:hasConsentForDataUsage hasConsentForAdsPersonalization:hasConsentForAdsPersonalization];
-        } else {
-            consentData = [[AppsFlyerConsent alloc] initNonGDPRUser];
-        }
-       [[AppsFlyerLib shared] setConsentData:consentData];
+    const void _setConsentData(const char* isUserSubjectToGDPR, const char* hasConsentForDataUsage, const char* hasConsentForAdsPersonalization, const char* hasConsentForAdStorage) {
+    
+        NSNumber *gdpr = intFromNullableBool(isUserSubjectToGDPR);
+        NSNumber *dataUsage = intFromNullableBool(hasConsentForDataUsage);
+        NSNumber *adsPersonalization = intFromNullableBool(hasConsentForAdsPersonalization);
+        NSNumber *adStorage = intFromNullableBool(hasConsentForAdStorage);
+
+        AppsFlyerConsent *consentData = [[AppsFlyerConsent alloc] initWithIsUserSubjectToGDPR:gdpr
+                                                                       hasConsentForDataUsage:dataUsage
+                                                           hasConsentForAdsPersonalization:adsPersonalization
+                                                                   hasConsentForAdStorage:adStorage];
+
+        [[AppsFlyerLib shared] setConsentData:consentData];
     }
 
     const void _logAdRevenue(const char* monetizationNetwork, int mediationNetworkInt, const char* currencyIso4217Code, double eventRevenue, const char* additionalParameters) {
