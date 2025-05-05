@@ -62,7 +62,8 @@ public class AppsFlyerAndroidWrapper {
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
     private static final String VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
     private static final String ERROR_CALLBACK = "didReceivePurchaseRevenueError";
-    private static final String PLUGIN_VERSION = "6.15.31";
+    private static final String PLUGIN_VERSION = "6.16.21";
+
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
     private static String devkey = "";
@@ -153,13 +154,14 @@ public class AppsFlyerAndroidWrapper {
         AppsFlyerLib.getInstance().enableTCFDataCollection(shouldCollectTcfData);
     }
 
-    public static void setConsentData(boolean isUserSubjectToGDPR, boolean hasConsentForDataUsage, boolean hasConsentForAdsPersonalization) {
-        AppsFlyerConsent consent;
-        if (isUserSubjectToGDPR)
-            consent = AppsFlyerConsent.forGDPRUser(hasConsentForDataUsage, hasConsentForAdsPersonalization);
-        else
-            consent = AppsFlyerConsent.forNonGDPRUser();
-        AppsFlyerLib.getInstance().setConsentData(consent);
+    public static void setConsentData(String isUserSubjectToGDPR, String hasConsentForDataUsage, String hasConsentForAdsPersonalization, String hasConsentForAdStorage) {
+
+        Boolean gdprApplies = parseNullableBoolean(isUserSubjectToGDPR);
+        Boolean dataUsage = parseNullableBoolean(hasConsentForDataUsage);
+        Boolean adsPersonalization = parseNullableBoolean(hasConsentForAdsPersonalization);
+        Boolean adStorage = parseNullableBoolean(hasConsentForAdStorage);
+
+        AppsFlyerLib.getInstance().setConsentData(new AppsFlyerConsent(gdprApplies, dataUsage, adsPersonalization, adStorage));
     }
 
     public static void logAdRevenue(String monetizationNetwork, MediationNetwork mediationNetwork, String currencyIso4217Code, double revenue, HashMap<String, Object> additionalParameters) {
@@ -372,6 +374,12 @@ public class AppsFlyerAndroidWrapper {
         };
     }
 
+    private static Boolean parseNullableBoolean(String value) {
+        if (value == null) return null;
+        if (value.equalsIgnoreCase("true")) return true;
+        if (value.equalsIgnoreCase("false")) return false;
+        return null;
+    }
 
     public static void initInAppPurchaseValidatorListener(final String objectName) {
         AppsFlyerLib.getInstance().registerValidatorListener(UnityPlayer.currentActivity, new AppsFlyerInAppPurchaseValidatorListener() {

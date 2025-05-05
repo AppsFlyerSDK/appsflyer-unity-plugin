@@ -398,7 +398,12 @@ namespace AppsFlyerSDK
         public void setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("setConsentData", appsFlyerConsent.isUserSubjectToGDPR, appsFlyerConsent.hasConsentForDataUsage, appsFlyerConsent.hasConsentForAdsPersonalization);
+           string isUserSubjectToGDPR = appsFlyerConsent.isUserSubjectToGDPR?.ToString().ToLower() ?? "null";
+           string hasConsentForDataUsage = appsFlyerConsent.hasConsentForDataUsage?.ToString().ToLower() ?? "null";
+           string hasConsentForAdsPersonalization = appsFlyerConsent.hasConsentForAdsPersonalization?.ToString().ToLower() ?? "null";
+           string hasConsentForAdStorage = appsFlyerConsent.hasConsentForAdStorage?.ToString().ToLower() ?? "null";
+
+           appsFlyerAndroid.CallStatic("setConsentData", isUserSubjectToGDPR, hasConsentForDataUsage, hasConsentForAdsPersonalization, hasConsentForAdStorage);
 #endif
         }
 

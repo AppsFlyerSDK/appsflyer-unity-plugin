@@ -2,49 +2,39 @@ name: Test runner unity-appsflyer-plugin
 
 on:
   workflow_call:
-  
+
 jobs:
-  testAndroid:
-    name: Test in ${{ matrix.targetPlatform }}
+  run-unity-tests:
+    name: Run ${{ matrix.testMode }} tests for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - .
-        testMode:
-          - playmode
-        targetPlatform:
-          - iOS
+        testMode: [playmode]
+        targetPlatform: [iOS, Android, Shared]
+
     steps:
       - uses: actions/checkout@v2
         with:
           lfs: true
-      - name: free up space
+
+      - name: Free up disk space
         run: |
           rm -rf /usr/share/dotnet/
           rm -rf "/usr/local/share/boost"
           rm -rf "$AGENT_TOOLSDIRECTORY"
           rm -rf /opt/ghc
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
+      - uses: actions/cache@v4
         with:
-          targetPlatform: iOS
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Build
-          path: build
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{ hashFiles(matrix.projectPath) }}
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ matrix.testMode }}-${{ hashFiles('**/*.cs') }}
           restore-keys: |
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
-            Library-${{ matrix.projectPath }}-
+            Library-${{ matrix.targetPlatform }}-${{ matrix.testMode }}-
+            Library-${{ matrix.targetPlatform }}-
             Library-
+
       - uses: game-ci/unity-test-runner@v2
         id: tests
         env:
@@ -52,32 +42,19 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath: ${{ matrix.projectPath }}
+          projectPath: .
           testMode: ${{ matrix.testMode }}
-          artifactsPath: ${{ matrix.testMode }}-artifacts
+          artifactsPath: ${{ matrix.targetPlatform }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: ${{ matrix.testMode }} Test Results
-          customParameters: -buildTarget iOS -nographics
-      - name: "Freeing up disk space on CI system"
-        run: |
-          # Before
-          echo "Disk space before:"
-          df -h
+          checkName: ${{ matrix.targetPlatform }} Test Results
+          customParameters: >
+            -nographics
+            -buildTarget ${{ matrix.targetPlatform == 'Shared' && 'StandaloneLinux64' || matrix.targetPlatform }}
+            -defineSymbols ${{ matrix.targetPlatform == 'Shared' && '' || format('UNITY_{0}', matrix.targetPlatform) }}
 
-          echo "Removing large directories"
-          # https://github.com/apache/flink/blob/master/tools/azure-pipelines/free_disk_space.sh
-          rm -rf /usr/share/dotnet/
-
-          # https://github.com/actions/virtual-environments/issues/709#issuecomment-612569242
-          rm -rf "/usr/local/share/boost"
-          rm -rf "$AGENT_TOOLSDIRECTORY"
-          rm -rf /opt/ghc
-
-          # After
-          echo "Disk space after:"
-          df -h
-      - uses: actions/upload-artifact@v4
+      - name: Upload test results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: Test results for ${{ matrix.testMode }}
+          name: Test results - ${{ matrix.targetPlatform }}
           path: ${{ steps.tests.outputs.artifactsPath }}

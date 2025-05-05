@@ -1,4 +1,16 @@
 # Versions
+## v6.16.21
+* Bug fix - AppsflyerConsent - nonGDPR init
+
+## v6.16.2
+* Update iOS SDK version - 6.16.2
+* Update Android SDK version - 6.16.2
+* Update AppsflyerConsent object and methods + deprecation of old methods
+
+## v6.16.0
+* Update iOS SDK version - 6.16.0
+* Update Android SDK version - 6.16.0
+
 ## v6.15.3
 * Fix logAdRevenue - revenue value will not be rounded
 
