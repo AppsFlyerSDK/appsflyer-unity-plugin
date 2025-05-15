@@ -10,10 +10,8 @@
 #import "AppsFlyerAttribution.h"
 #if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
 #import <AppsFlyerLib/AppsFlyerLib.h>
-#import "AppsFlyerLib/AppsFlyerLib-Swift.h"
 #else
 #import "AppsFlyerLib.h"
-#import "AppsFlyerLib-Swift.h"
 #endif
 #if __has_include(<PurchaseConnector/PurchaseConnector.h>)
 #import  <PurchaseConnector/PurchaseConnector.h>
@@ -21,7 +19,8 @@
 #import "PurchaseConnector.h"
 #endif
 
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate>
+@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource>
+
 + (BOOL) didCallStart;
 + (void) setDidCallStart:(BOOL)val;
 @end

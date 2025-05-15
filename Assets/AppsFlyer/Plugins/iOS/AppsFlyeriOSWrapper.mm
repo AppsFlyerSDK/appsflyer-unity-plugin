@@ -7,6 +7,7 @@
 
 #import "AppsFlyeriOSWrapper.h"
 
+#import <StoreKit/StoreKit.h>
 
 static void unityCallBack(NSString* objectName, const char* method, const char* msg) {
     if(objectName){
@@ -18,7 +19,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.16.21"
+                                pluginVersion:@"6.15.3"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -369,6 +370,13 @@ extern "C" {
         onPurchaseValidationObjectName = stringFromChar(objectName);
     }
 
+    const void _setPurchaseRevenueDataSource(const char* objectName, const char* params) {
+        if (_AppsFlyerdelegate == nil) {
+            _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
+        }
+
+        [PurchaseConnector shared].purchaseRevenueDataSource = _AppsFlyerdelegate;
+    }
 }
 
 @implementation AppsFlyeriOSWarpper
@@ -419,5 +427,71 @@ static BOOL didCallStart;
     }
 }
 
+const char *(*UnityPurchasesGetAdditionalParamsCallback)(const char *, const char *) = NULL;
+
+- (NSDictionary *)purchaseRevenueAdditionalParametersForProducts:(NSSet<SKProduct *> *)products
+                                                     transactions:(NSSet<SKPaymentTransaction *> *)transactions {
+
+    NSMutableArray *productsArray = [NSMutableArray array];
+    for (SKProduct *product in products) {
+        [productsArray addObject:@{
+            @"productIdentifier": product.productIdentifier ?: @"",
+            @"localizedTitle": product.localizedTitle ?: @"",
+            @"localizedDescription": product.localizedDescription ?: @"",
+            @"price": [product.price stringValue] ?: @""
+        }];
+    }
+
+    NSMutableArray *transactionsArray = [NSMutableArray array];
+    for (SKPaymentTransaction *txn in transactions) {
+        [transactionsArray addObject:@{
+            @"transactionIdentifier": txn.transactionIdentifier ?: @"",
+            @"transactionState": @(txn.transactionState),
+            @"transactionDate": txn.transactionDate ? [@(txn.transactionDate.timeIntervalSince1970) stringValue] : @""
+        }];
+    }
+
+    NSDictionary *input = @{
+        @"products": productsArray,
+        @"transactions": transactionsArray
+    };
+
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:input options:0 error:&error];
+    if (error || !jsonData) {
+        NSLog(@"[AppsFlyer] Failed to serialize Unity purchase data: %@", error);
+        return @{};
+    }
+
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    if (!jsonString || !UnityPurchasesGetAdditionalParamsCallback) {
+        NSLog(@"[AppsFlyer] Unity callback not registered");
+        return @{};
+    }
+
+    const char *resultCStr = UnityPurchasesGetAdditionalParamsCallback([jsonString UTF8String], "");
+    if (!resultCStr) {
+        NSLog(@"[AppsFlyer] Unity callback returned null");
+        return @{};
+    }
+
+    NSString *resultJson = [NSString stringWithUTF8String:resultCStr];
+    NSData *resultData = [resultJson dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *parsedResult = [NSJSONSerialization JSONObjectWithData:resultData options:0 error:&error];
+
+    if (error || ![parsedResult isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"[AppsFlyer] Failed to parse Unity response: %@", error);
+        return @{};
+    }
+
+    return parsedResult;
+}
+
 @end
+
+extern "C" void RegisterUnityPurchaseRevenueParamsCallback(const char *(*callback)(const char *, const char *)) {
+    UnityPurchasesGetAdditionalParamsCallback = callback;
+    NSLog(@"Registered Unity callback for additional purchase parameters");
+}
+
 

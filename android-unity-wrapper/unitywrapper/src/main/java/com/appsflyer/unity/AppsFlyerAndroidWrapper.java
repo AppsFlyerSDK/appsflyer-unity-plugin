@@ -530,6 +530,7 @@ public class AppsFlyerAndroidWrapper {
         Store s = mappingEnum(store);
         if (s != null) {
             builder = new PurchaseClient.Builder(UnityPlayer.currentActivity, s);
+            builder = PurchaseRevenueBridge.configurePurchaseClient(builder);
         } else {
             Log.w("AppsFlyer_Connector", "[PurchaseConnector]: Please choose a valid store.");
         }
