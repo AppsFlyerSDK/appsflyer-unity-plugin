@@ -6,7 +6,7 @@ using System;
 using UnityEngine;
 
 [System.Serializable]
-class InAppPurchaseValidationResult : EventArgs
+public class InAppPurchaseValidationResult : EventArgs
 {
     public bool success;
     public ProductPurchase? productPurchase;
@@ -15,7 +15,7 @@ class InAppPurchaseValidationResult : EventArgs
 }
 
 [System.Serializable]
-class ProductPurchase
+public class ProductPurchase
 {
     public string? kind;
     public string? purchaseTimeMillis;
@@ -34,14 +34,14 @@ class ProductPurchase
 }
 
 [System.Serializable]
-class ValidationFailureData
+public class ValidationFailureData
 {
     public int status;
     public string? description;
 }
 
 [System.Serializable]
-class SubscriptionValidationResult
+public class SubscriptionValidationResult
 {
     public bool success;
     public SubscriptionPurchase? subscriptionPurchase;
@@ -50,7 +50,7 @@ class SubscriptionValidationResult
 }
 
 [System.Serializable]
-class SubscriptionPurchase
+public class SubscriptionPurchase
 {
     public string? acknowledgementState;
     public CanceledStateContext? canceledStateContext;
@@ -68,7 +68,7 @@ class SubscriptionPurchase
 }
 
 [System.Serializable]
-class CanceledStateContext
+public class CanceledStateContext
 {
     public DeveloperInitiatedCancellation? developerInitiatedCancellation;
     public ReplacementCancellation? replacementCancellation;
@@ -78,7 +78,7 @@ class CanceledStateContext
 }
 
 [System.Serializable]
-class ExternalAccountIdentifiers
+public class ExternalAccountIdentifiers
 {
     public string? externalAccountId;
     public string? obfuscatedExternalAccountId;
@@ -86,7 +86,7 @@ class ExternalAccountIdentifiers
 }
 
 [System.Serializable]
-class SubscriptionPurchaseLineItem
+public class SubscriptionPurchaseLineItem
 {
     public AutoRenewingPlan? autoRenewingPlan;
     public DeferredItemReplacement? deferredItemReplacement;
@@ -97,13 +97,13 @@ class SubscriptionPurchaseLineItem
 }
 
 [System.Serializable]
-class PausedStateContext
+public class PausedStateContext
 {
     public string? autoResumeTime;
 }
 
 [System.Serializable]
-class SubscribeWithGoogleInfo
+public class SubscribeWithGoogleInfo
 {
     public string? emailAddress;
     public string? familyName;
@@ -113,39 +113,39 @@ class SubscribeWithGoogleInfo
 }
 
 [System.Serializable]
-class TestPurchase{}
+public class TestPurchase{}
 
 [System.Serializable]
-class DeveloperInitiatedCancellation{}
+public class DeveloperInitiatedCancellation{}
 
 [System.Serializable]
-class ReplacementCancellation{}
+public class ReplacementCancellation{}
 
 [System.Serializable]
-class SystemInitiatedCancellation{}
+public class SystemInitiatedCancellation{}
 
 [System.Serializable]
-class UserInitiatedCancellation
+public class UserInitiatedCancellation
 {
     public CancelSurveyResult? cancelSurveyResult;
     public string? cancelTime;
 }
 
 [System.Serializable]
-class AutoRenewingPlan
+public class AutoRenewingPlan
 {
     public string? autoRenewEnabled;
     public SubscriptionItemPriceChangeDetails? priceChangeDetails;
 }
 
 [System.Serializable]
-class DeferredItemReplacement
+public class DeferredItemReplacement
 {
     public string? productId;
 }
 
 [System.Serializable]
-class OfferDetails
+public class OfferDetails
 {
     public List<string>? offerTags;
     public string? basePlanId;
@@ -153,20 +153,20 @@ class OfferDetails
 }
 
 [System.Serializable]
-class PrepaidPlan
+public class PrepaidPlan
 {
     public string? allowExtendAfterTime;
 }
 
 [System.Serializable]
-class CancelSurveyResult
+public class CancelSurveyResult
 {
     public string? reason;
     public string? reasonUserInput;
 }
 
 [System.Serializable]
-class SubscriptionItemPriceChangeDetails
+public class SubscriptionItemPriceChangeDetails
 {
     public string? expectedNewPriceChargeTime;
     public Money? newPrice;
@@ -175,7 +175,7 @@ class SubscriptionItemPriceChangeDetails
 }
 
 [System.Serializable]
- class Money
+ public class Money
  {
     public string? currencyCode;
     public long nanos;
