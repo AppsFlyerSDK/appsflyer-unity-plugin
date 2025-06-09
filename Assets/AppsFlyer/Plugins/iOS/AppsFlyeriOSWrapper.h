@@ -18,11 +18,7 @@
 #else
 #import "PurchaseConnector.h"
 #endif
-#import "AFSDKStoreKit.h"
-#import "AFSDKProduct.h"
-#import "AFSDKStoreKitFactory.h"
 #import <PurchaseConnector/PurchaseConnector-Swift.h>
-#import <AppsFlyerLib-Swift-Internal.h>
 
 // Add StoreKit 2 support
 #if __has_include(<StoreKit/StoreKit.h>)
