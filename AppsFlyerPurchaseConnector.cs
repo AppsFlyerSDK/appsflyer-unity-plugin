@@ -11,26 +11,43 @@ namespace AppsFlyerSDK
                 Dictionary<string, object> PurchaseRevenueAdditionalParametersForProducts(HashSet<object> products, HashSet<object> transactions);
         }
 
+        public interface IAppsFlyerPurchaseRevenueDataSourceStoreKit2
+        {
+                Dictionary<string, object> PurchaseRevenueAdditionalParametersStoreKit2ForProducts(HashSet<object> products, HashSet<object> transactions);
+        }
+
         public class AppsFlyerPurchaseRevenueBridge : MonoBehaviour
         {
                         #if UNITY_IOS && !UNITY_EDITOR
 [DllImport("__Internal")]
 private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<string, string, string> callback);
+
+[DllImport("__Internal")]
+private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<string, string, string> callback);
 #endif
                 
                 private static IAppsFlyerPurchaseRevenueDataSource _dataSource;
+                private static IAppsFlyerPurchaseRevenueDataSourceStoreKit2 _dataSourceSK2;
 
                 public static void RegisterDataSource(IAppsFlyerPurchaseRevenueDataSource dataSource)
                 {
                         _dataSource = dataSource;
         #if UNITY_IOS && !UNITY_EDITOR
-                 RegisterUnityPurchaseRevenueParamsCallback(GetAdditionalParameters);
+                        RegisterUnityPurchaseRevenueParamsCallback(GetAdditionalParameters);
         #elif UNITY_ANDROID && !UNITY_EDITOR
                         using (AndroidJavaClass jc = new AndroidJavaClass("com.appsflyer.unity.PurchaseRevenueBridge"))
                         {
                                 jc.CallStatic("setUnityBridge", new UnityPurchaseRevenueBridgeProxy());
                         }
         #endif
+                }
+
+                public static void RegisterDataSourceStoreKit2(IAppsFlyerPurchaseRevenueDataSourceStoreKit2 dataSource)
+                {
+                #if UNITY_IOS && !UNITY_EDITOR
+                        _dataSourceSK2 = dataSource;
+                        RegisterUnityPurchaseRevenueParamsCallbackSK2(GetAdditionalParametersSK2);
+                #endif
                 }
 
                 public static Dictionary<string, object> GetAdditionalParametersForAndroid(HashSet<object> products, HashSet<object> transactions)
@@ -45,9 +62,6 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
                 {
                         try
                         {
-                                Debug.Log($"[AppsFlyer] productsJson: {productsJson}");
-                                Debug.Log($"[AppsFlyer] transactionsJson: {transactionsJson}");
-
                                 HashSet<object> products = new HashSet<object>();
                                 HashSet<object> transactions = new HashSet<object>();
 
@@ -71,6 +85,40 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
                         catch (Exception e)
                         {
                                 Debug.LogError($"[AppsFlyer] Exception in GetAdditionalParameters: {e}");
+                                return "{}";
+                        }
+                }
+        #endif
+
+        #if UNITY_IOS && !UNITY_EDITOR
+                [AOT.MonoPInvokeCallback(typeof(Func<string, string, string>))]
+                public static string GetAdditionalParametersSK2(string productsJson, string transactionsJson)
+                {
+                        try
+                        {
+                                HashSet<object> products = new HashSet<object>();
+                                HashSet<object> transactions = new HashSet<object>();
+
+                                if (!string.IsNullOrEmpty(productsJson))
+                                {
+                                        var dict = AFMiniJSON.Json.Deserialize(productsJson) as Dictionary<string, object>;
+                                        if (dict != null && dict.TryGetValue("products", out var productsObj) && productsObj is List<object> productList)
+                                                products = new HashSet<object>(productList);
+                                }
+                                if (!string.IsNullOrEmpty(transactionsJson))
+                                {
+                                        var dict = AFMiniJSON.Json.Deserialize(transactionsJson) as Dictionary<string, object>;
+                                        if (dict != null && dict.TryGetValue("transactions", out var transactionsObj) && transactionsObj is List<object> transactionList)
+                                                transactions = new HashSet<object>(transactionList);
+                                }
+
+                                var parameters = _dataSourceSK2?.PurchaseRevenueAdditionalParametersStoreKit2ForProducts(products, transactions)
+                                                ?? new Dictionary<string, object>();
+                                return AFMiniJSON.Json.Serialize(parameters);
+                        }
+                        catch (Exception e)
+                        {
+                                Debug.LogError($"[AppsFlyer] Exception in GetAdditionalParametersSK2: {e}");
                                 return "{}";
                         }
                 }
@@ -193,35 +241,6 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
             }
         }
 
-        public void OnPurchaseRevenueAdditionalParameters(string jsonParams)
-        {
-            try
-            {
-                // Parse the JSON parameters from native
-                Dictionary<string, object> parameters = AppsFlyer.CallbackStringToDictionary(jsonParams);
-                
-                // Get the products and transactions from the parameters
-                List<object> products = parameters["products"] as List<object>;
-                List<object> transactions = parameters["transactions"] as List<object>;
-
-                // Create custom parameters based on the products and transactions
-                Dictionary<string, object> customParams = new Dictionary<string, object>
-                {
-                    ["additionalParameters"] = new Dictionary<string, object>
-                    {
-                        ["custom_param1"] = "value1",
-                        ["custom_param2"] = "value2",
-                        ["product_count"] = products.Count,
-                        ["transaction_count"] = transactions.Count
-                    }
-                };
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error in OnPurchaseRevenueAdditionalParameters: {e.Message}");
-            }
-        }
-
 #if UNITY_ANDROID && !UNITY_EDITOR
         private static AndroidJavaClass appsFlyerAndroidConnector = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
 #endif
@@ -310,14 +329,35 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
 #endif
         }
 
-        public static void setPurchaseRevenueDataSource(IAppsFlyerPurchaseRevenueDataSource dataSource) {
+        public static void setPurchaseRevenueDataSource(IAppsFlyerPurchaseRevenueDataSource dataSource)
+        {
 #if UNITY_IOS && !UNITY_EDITOR
-                _setPurchaseRevenueDataSource(dataSource.GetType().Name);
-                AppsFlyerPurchaseRevenueBridge.RegisterDataSource(dataSource);
+
+                if (dataSource != null)
+                {
+                        _setPurchaseRevenueDataSource(dataSource.GetType().Name);
+                        AppsFlyerPurchaseRevenueBridge.RegisterDataSource(dataSource);
+                }
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                AppsFlyerPurchaseRevenueBridge.RegisterDataSource(dataSource);
+                if (dataSource != null)
+                {
+                        AppsFlyerPurchaseRevenueBridge.RegisterDataSource(dataSource);
+                }
 #endif
         }
+
+
+        public static void setPurchaseRevenueDataSourceStoreKit2(IAppsFlyerPurchaseRevenueDataSourceStoreKit2 dataSourceSK2)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+                if (dataSourceSK2 != null)
+                {
+                        AppsFlyerPurchaseRevenueBridge.RegisterDataSourceStoreKit2(dataSourceSK2);
+                        _setPurchaseRevenueDataSource("AppsFlyerObjectScript_StoreKit2");
+                }
+#endif
+        }
+
 
         private static int mapStoreToInt(Store s) {
                 switch(s) {
@@ -326,6 +366,24 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
                         default:
                                 return -1;
                 }
+        }
+
+        public static void setStoreKitVersion(StoreKitVersion storeKitVersion) {
+#if UNITY_IOS && !UNITY_EDITOR
+                _setStoreKitVersion((int)storeKitVersion);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+                // Android doesn't use StoreKit
+#else
+#endif
+        }
+
+        public static void logConsumableTransaction(string transactionJson) {
+#if UNITY_IOS && !UNITY_EDITOR
+                _logConsumableTransaction(transactionJson);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+                // Android doesn't use StoreKit
+#else
+#endif
         }
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -344,9 +402,13 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
     private static extern void _setAutoLogPurchaseRevenue(int option);
     [DllImport("__Internal")]
     private static extern void _initPurchaseConnector(string objectName);
+    [DllImport("__Internal")]
+    private static extern void _setStoreKitVersion(int storeKitVersion);
+    [DllImport("__Internal")]
+    private static extern void _logConsumableTransaction(string transactionJson);
 
 #endif
-    }
+        }
     public enum Store {
     GOOGLE = 0
     }
@@ -357,4 +419,8 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallback(Func<strin
         AppsFlyerAutoLogPurchaseRevenueOptionsInAppPurchases = 1 << 1
     }
 
+    public enum StoreKitVersion {
+        SK1 = 0,
+        SK2 = 1
+    }
 }
