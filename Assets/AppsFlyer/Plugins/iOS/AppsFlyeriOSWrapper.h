@@ -14,15 +14,30 @@
 #import "AppsFlyerLib.h"
 #endif
 #if __has_include(<PurchaseConnector/PurchaseConnector.h>)
-#import  <PurchaseConnector/PurchaseConnector.h>
+#import <PurchaseConnector/PurchaseConnector.h>
 #else
 #import "PurchaseConnector.h"
 #endif
+#import "AFSDKStoreKit.h"
+#import "AFSDKProduct.h"
+#import "AFSDKStoreKitFactory.h"
+#import <PurchaseConnector/PurchaseConnector-Swift.h>
+#import <AppsFlyerLib-Swift-Internal.h>
 
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource>
+// Add StoreKit 2 support
+#if __has_include(<StoreKit/StoreKit.h>)
+#import <StoreKit/StoreKit.h>
+#endif
+
+@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource, AppsFlyerPurchaseRevenueDataSourceStoreKit2>
 
 + (BOOL) didCallStart;
 + (void) setDidCallStart:(BOOL)val;
+
+// Add StoreKit 2 methods
+- (void)setStoreKitVersion:(int)storeKitVersion;
+- (void)logConsumableTransaction:(id)transaction;
+
 @end
 
 
