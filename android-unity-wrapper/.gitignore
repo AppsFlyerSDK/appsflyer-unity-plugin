@@ -12,3 +12,9 @@
 /captures
 .externalNativeBuild
 .cxx
+
+# Signing keys
+signing-key.gpg
+
+# Gradle properties with secrets
+gradle.properties
