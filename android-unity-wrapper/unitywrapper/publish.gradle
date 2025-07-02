@@ -83,21 +83,34 @@ afterEvaluate {
                 url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
 
                 credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
+                    username = project.findProperty("ossrhUsername")
+                    password = project.findProperty("ossrhPassword")
                 }
             }
         }
     }
 
+
+    def decodedKey = project.findProperty("signing.secretKey")?.replace('\\n', '\n')
+
     signing {
-        required { isReleaseBuild() && gradle.taskGraph.hasTask("publish") }
+        // 🧪 STEP 2: Use the decoded key INSIDE the signing block
+        if (project.hasProperty("signing.keyId") &&
+                decodedKey &&
+                project.hasProperty("signing.password")) {
+
+            useInMemoryPgpKeys(
+                    project.findProperty("signing.keyId")?.toString(),
+                    decodedKey,
+                    project.findProperty("signing.password")?.toString()
+            )
+        }
+
         sign publishing.publications.release
     }
 //    task androidJavadocs(type: Javadoc) {
 //        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 //        if (JavaVersion.current().isJava8Compatible()) {
-//            allprojects {
 //                tasks.withType(Javadoc) { options.addStringOption('Xdoclint:none', '-quiet') }
 //            }
 //        }
