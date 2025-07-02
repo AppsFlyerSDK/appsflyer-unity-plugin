@@ -15,6 +15,9 @@
 
 # Signing keys
 signing-key.gpg
+temp_key.asc
+*.asc
+*.gpg
 
 # Gradle properties with secrets
 gradle.properties
