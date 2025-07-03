@@ -16,9 +16,10 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.16.2
-- iOS AppsFlyer SDK v6.16.2
-
+- Android AppsFlyer SDK v6.17.0
+- Android Purchase Connector 2.1.0
+- iOS AppsFlyer SDK v6.17.1
+- iOS Purchase Connector 6.17.1
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
