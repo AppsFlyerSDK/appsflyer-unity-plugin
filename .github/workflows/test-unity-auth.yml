@@ -1,0 +1,21 @@
+name: Test Unity Authentication
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-auth:
+    name: Test Unity License Activation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Unity activation
+        uses: game-ci/unity-activate@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
+      - name: Success message
+        run: echo "Unity authentication successful!" 
