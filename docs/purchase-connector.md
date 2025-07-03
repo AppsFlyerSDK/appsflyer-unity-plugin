@@ -21,11 +21,11 @@ The AppsFlyer ROI360 purchase connector is used to validate and report in-app pu
 ### iOS Requirements
 - StoreKit SDK v1 or v2 (StoreKit 2 requires iOS 15+)
 - iOS version 9 and higher
-- Unity AppsFlyer plugin **6.17.0** and higher
+- Unity AppsFlyer plugin **6.17.1** and higher
 
 ### Android Requirements
 - Google Play Billing library version **5.x.x**, **6.x.x**, and **7.x.x**
-- Unity AppsFlyer plugin **6.17.0** and higher
+- Unity AppsFlyer plugin **6.17.1** and higher
 
 ### General Requirements
 - Unity version **2020.3** and higher
@@ -33,22 +33,23 @@ The AppsFlyer ROI360 purchase connector is used to validate and report in-app pu
 
 ## Installation
 
-### Method 1: Integrated Approach (v6.17.0+) - **Recommended**
+### Method 1: Integrated Approach (v6.17.1+) - **Recommended**
 
-**Starting with version 6.17.0, the Purchase Connector is integrated directly into the main AppsFlyer Unity plugin.** You no longer need to download or import a separate package.
+**Starting with version 6.17.1, the Purchase Connector is integrated directly into the main AppsFlyer Unity plugin.** You no longer need to download or import a separate package.
 
-1. Download the latest [AppsFlyer Unity plugin](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin) (v6.17.0 or higher)
+1. Download the latest [AppsFlyer Unity plugin](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin) (v6.17.1 or higher)
 2. [Import](https://docs.unity3d.com/Manual/AssetPackages.html) the `appsflyer-unity-plugin-x.x.x.unitypackage` into your Unity project
    - Go to **Assets** → **Import Package** → **Custom Package**
    - Select the `appsflyer-unity-plugin-x.x.x.unitypackage`
 
 The Purchase Connector functionality is now included automatically - no additional imports required!
+If you previously used the standalone Purchase Connector, simply remove any references to using AppsFlyerConnector; from your codebase, as its functionality is now included in the main plugin.
 
-### Method 2: Separate Repository Approach (Pre-v6.17.0)
+### Method 2: Separate Repository Approach (Pre-v6.17.1)
 
-**This approach is only relevant for versions prior to 6.17.0.** Starting with version 6.17.0, the Purchase Connector is integrated into the main AppsFlyer Unity plugin and this separate repository approach is no longer needed.
+**This approach is only relevant for versions prior to 6.17.1.** Starting with version 6.17.1, the Purchase Connector is integrated into the main AppsFlyer Unity plugin and this separate repository approach is no longer needed.
 
-If you are using a version older than 6.17.0:
+If you are using a version older than 6.17.1:
 
 1. Download the [AppsFlyer Unity plugin](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin)
 2. Download the [Purchase Connector repository](https://github.com/AppsFlyerSDK/appsflyer-unity-purchase-connector)
@@ -58,7 +59,7 @@ If you are using a version older than 6.17.0:
 
 **Note:** When using the separate repository approach, make sure the Purchase Connector version is compatible with your AppsFlyer Unity plugin version.
 
-**Recommendation:** Consider upgrading to version 6.17.0+ to use the integrated approach for simplified setup and access to the latest features.
+**Recommendation:** Consider upgrading to version 6.17.1+ to use the integrated approach for simplified setup and access to the latest features.
 
 ## ProGuard Rules
 
@@ -79,10 +80,10 @@ Make sure to use the strict mode AppsFlyer Unity plugin along with the Purchase 
 
 ## Choosing Your Implementation Method
 
-### When to Use Integrated Approach (v6.17.0+)
+### When to Use Integrated Approach (v6.17.1+)
 ✅ **Recommended for:**
-- New projects starting with v6.17.0+
-- Existing projects that can upgrade to v6.17.0+
+- New projects starting with v6.17.1+
+- Existing projects that can upgrade to v6.17.1+
 - Simplified setup and maintenance
 - Access to latest features like StoreKit 2 support
 
@@ -94,7 +95,7 @@ The implementation differs slightly depending on which installation method you c
 
 Your MonoBehaviour class must implement the following interfaces:
 
-**For Integrated Approach (v6.17.0+):**
+**For Integrated Approach (v6.17.1+):**
 ```csharp
 using AppsFlyerSDK;
 
@@ -124,7 +125,7 @@ public class AppsFlyerObjectScript : MonoBehaviour,
 
 ### Basic Setup
 
-#### Integrated Approach (v6.17.0+)
+#### Integrated Approach (v6.17.1+)
 
 ```csharp
 using UnityEngine;
@@ -167,7 +168,7 @@ public class AppsFlyerObjectScript : MonoBehaviour,
         // Set sandbox mode for testing
         AppsFlyerPurchaseConnector.setIsSandbox(true);
         
-        // Configure StoreKit version (iOS only)
+        // Configure StoreKit version (iOS only) - SK1 is the default
         AppsFlyerPurchaseConnector.setStoreKitVersion(StoreKitVersion.SK2);
         
         // Enable automatic logging for subscriptions and in-app purchases
@@ -179,8 +180,9 @@ public class AppsFlyerObjectScript : MonoBehaviour,
         // Enable purchase validation callbacks
         AppsFlyerPurchaseConnector.setPurchaseRevenueValidationListeners(true);
         
-        // Set data sources for additional parameters (iOS)
+        // Set data sources for additional parameters (iOS) - SK1
         AppsFlyerPurchaseConnector.setPurchaseRevenueDataSource(this);
+        // Set data sources for additional parameters (iOS) - SK2
         AppsFlyerPurchaseConnector.setPurchaseRevenueDataSourceStoreKit2(this);
     }
 }
@@ -404,7 +406,7 @@ AppsFlyerPurchaseConnector.setPurchaseRevenueValidationListeners(true);
 
 ## Complete Implementation Examples
 
-### Integrated Approach (v6.17.0+)
+### Integrated Approach (v6.17.1+)
 
 ```csharp
 using System.Collections.Generic;
@@ -689,7 +691,7 @@ If you're upgrading from the separate repository approach to the integrated appr
 
 1. **Backup your project** before making changes
 2. **Remove old Purchase Connector package**: Delete the old Purchase Connector files from your project
-3. **Update AppsFlyer Unity plugin**: Install AppsFlyer Unity plugin v6.17.0 or higher
+3. **Update AppsFlyer Unity plugin**: Install AppsFlyer Unity plugin v6.17.1 or higher
 4. **Update code changes**:
    ```csharp
    // OLD (Separate Repository)

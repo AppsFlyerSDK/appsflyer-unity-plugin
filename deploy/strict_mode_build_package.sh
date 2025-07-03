@@ -5,16 +5,20 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
 
  DEPLOY_PATH=outputs
  UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.16.21.unitypackage"
+ PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.17.1.unitypackage"
  mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
 echo "moving the external dependency manager to root"
-mv external-dependency-manager-1.2.177.unitypackage ..
+mv external-dependency-manager-1.2.183.unitypackage ..
 
 echo "Changing AppsFlyerFramework to Strict Mode"
 sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
 echo "Changing AppsFlyerFramework to Strict Mode. Done."
+
+echo "Changing PurchaseConnector to Strict Mode"
+sed -i '' 's/PurchaseConnector/PurchaseConnector\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+echo "Changing PurchaseConnector to Strict Mode. Done."
 
 echo "Commenting out disableAdvertisingIdentifier"
 sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
@@ -26,10 +30,10 @@ echo "Commenting out functions. Done."
 
 
  # Build the .unitypackage
- /Applications/Unity/Hub/Editor/2022.3.15f1/Unity.app/Contents/MacOS/Unity \
+/Applications/Unity/Hub/Editor/6000.0.51f1/Unity.app/Contents/MacOS/Unity \
  -gvh_disable \
  -batchmode \
- -importPackage external-dependency-manager-1.2.177.unitypackage \
+ -importPackage external-dependency-manager-1.2.183.unitypackage \
  -nographics \
  -logFile create_unity_core.log \
  -projectPath $PWD/../ \
@@ -37,13 +41,13 @@ echo "Commenting out functions. Done."
  Assets \
  $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
  -quit \
- && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.16.21.unitypackage" \
+ && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.17.1.unitypackage" \
  || echo "Failed to export package. See create_unity_core.log for more info."
 
 
  if [ $1 == "-p" ]; then
  echo "moving back the external dependency manager to deploy"
- mv ../external-dependency-manager-1.2.177.unitypackage .
+ mv ../external-dependency-manager-1.2.183.unitypackage .
  echo "removing ./Library"
  rm -rf ../Library
  echo "removing ./Logs"
@@ -71,6 +75,10 @@ echo "Commenting out functions. Done."
  echo "Changing AppsFlyerFramework back"
  sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
  echo "Changing AppsFlyerFramework back. Done."
+
+  echo "Changing PurchaseConnector back"
+ sed -i '' 's/PurchaseConnector\/Strict/PurchaseConnector/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+ echo "Changing PurchaseConnector back. Done."
 
  else
  echo "dev mode. No files removed. Run with -p flag for production build."

@@ -1,4 +1,9 @@
 # Versions
+## v6.17.1
+* Purchase Connector support.
+* Update iOS SDK version - 6.17.1
+* Update Android SDK ersion - 6.17.0
+
 ## v6.16.21
 * Bug fix - AppsflyerConsent - nonGDPR init
 
