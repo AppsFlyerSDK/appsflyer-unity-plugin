@@ -357,9 +357,7 @@ public Dictionary<string, object> PurchaseRevenueAdditionalParametersStoreKit2Fo
     // Add custom parameters specifically for StoreKit 2 purchases
     return new Dictionary<string, object>
     {
-        ["sk2_custom_param"] = "sk2_value",
-        ["storekit_version"] = "2.0",
-        ["transaction_count"] = transactions.Count
+        ["sk2_custom_param"] = "sk2_value"
     };
 }
 ```
@@ -374,7 +372,7 @@ On iOS 15 and above, consumable in-app purchases are handled via StoreKit 2.
   - If you set `SKIncludeConsumableInAppPurchaseHistory` to `YES` in your Info.plist, automatic collection will happen.
   - If the flag is not present or is set to `NO`, you must manually log consumable transactions as shown below.
 
-- **On iOS 15–118:**  
+- **On iOS 15–18:**  
   Consumable purchases must always be logged manually.
 
 ```csharp
