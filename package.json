@@ -1,5 +1,5 @@
 {
-	"name": "appsflyer-unity-plugin",
+	"name": "com.appsflyer.unity",
 	"displayName": "AppsFlyer",
 	"description": "AppsFlyer Unity plugin",
 	"version": "6.17.1",
