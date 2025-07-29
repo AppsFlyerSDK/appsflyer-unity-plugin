@@ -5,15 +5,7 @@ def isReleaseBuild() {
     return !VERSION_NAME.contains("-SNAPSHOT")
 }
 
-def getReleaseRepositoryUrl() {
-    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-}
 
-def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
-}
 
 android {
     publishing {
@@ -77,17 +69,7 @@ afterEvaluate {
             }
         }
 
-        repositories {
-            maven {
-                name = "sonatype"
-                url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
 
-                credentials {
-                    username = project.findProperty("ossrhUsername")
-                    password = project.findProperty("ossrhPassword")
-                }
-            }
-        }
     }
 
 

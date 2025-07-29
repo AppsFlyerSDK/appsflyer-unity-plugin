@@ -6,7 +6,7 @@ namespace AppsFlyerSDK
 {
     public class AppsFlyer : MonoBehaviour
     {
-        public static readonly string kAppsFlyerPluginVersion = "6.17.1";
+        public static readonly string kAppsFlyerPluginVersion = "6.17.2";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -778,12 +778,12 @@ namespace AppsFlyerSDK
         }
 
         // V2 
-        public static void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)
+        public static void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
             {
                 IAppsFlyerIOSBridge appsFlyeriOSInstance = (IAppsFlyerIOSBridge)instance;
-                appsFlyeriOSInstance.validateAndSendInAppPurchase(details, extraEventValues, gameObject);
+                appsFlyeriOSInstance.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, gameObject);
             }
         }
 
@@ -797,12 +797,12 @@ namespace AppsFlyerSDK
         }
 
         // V2
-        public static void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
+        public static void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerAndroidBridge)
             {
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
-                appsFlyerAndroidInstance.validateAndSendInAppPurchase(details, additionalParameters, gameObject);
+                appsFlyerAndroidInstance.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, gameObject);
             }
         }
 

@@ -62,7 +62,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
     private static final String VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
     private static final String ERROR_CALLBACK = "didReceivePurchaseRevenueError";
-    private static final String PLUGIN_VERSION = "6.17.0";
+    private static final String PLUGIN_VERSION = "6.17.1";
 
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
@@ -285,13 +285,13 @@ public class AppsFlyerAndroidWrapper {
         }
     }
 
-    public static void validateAndTrackInAppPurchaseV2(int purchaseType, String purchaseToken, String productId, String price, String currency, HashMap<String, String> additionalParameters, final String objectName) {
+    public static void validateAndTrackInAppPurchaseV2(int purchaseType, String purchaseToken, String productId, HashMap<String, String> purchaseAdditionalDetails, final String objectName) {
         AFPurchaseType type = purchaseType == 0 ? AFPurchaseType.SUBSCRIPTION : AFPurchaseType.ONE_TIME_PURCHASE;
-        AFPurchaseDetails details = new AFPurchaseDetails(type, purchaseToken, productId, price, currency);
+        AFPurchaseDetails details = new AFPurchaseDetails(type, purchaseToken, productId);
 
         if (objectName != null){
             AppsFlyerInAppPurchaseValidationCallback listener = initInAppPurchaseValidatorV2Listener(objectName);
-            AppsFlyerLib.getInstance().validateAndLogInAppPurchase(details, additionalParameters, listener);
+            AppsFlyerLib.getInstance().validateAndLogInAppPurchase(details, purchaseAdditionalDetails, listener);
         }
     }
 
