@@ -72,6 +72,7 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 - [Integration](/docs/BasicIntegration.md)
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
+- [Send Consent for DMA Compliance](/docs/DMAConsent.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
 ## <a id="plugin-build-for"> 💰 Purchase Connector
 - [Purchase Connector (ROI360)](/docs/purchase-connector.md)
