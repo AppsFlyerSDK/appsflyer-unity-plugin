@@ -20,10 +20,6 @@
 - Android Purchase Connector 2.1.0
 - iOS AppsFlyer SDK v6.17.1
 - iOS Purchase Connector 6.17.1
----
-### <a id="init-sdk-deeplink"> AD_ID permission for Android
-
-In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
 
 ---  
 ## <a id="new-in-6171">     🎉 New in 6.17.1 - Purchase Connector Integration 
@@ -58,24 +54,17 @@ After 6.6.0:
 ```
 ---
 
-## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.3.0 ❗❗
-
-- 6.3.0 supports Universal Windows Platform. As part of this update, the AppsFlyerObjectScript changes to include the app_id for your UWP app. If you made changes to this file, please merge them with the new AppsFlyerObjectScript.
-Please also note that you can leave the uwp app id field empty. 
-
-- From version `6.3.0`, we use `xcframework` for iOS platform, then you need to use cocoapods version >= 1.10
-
-## <a id="migration"> ⏩ Migration 
-  
-Migrating from the old plugin? (version V4) <br/>
-View the migration docs [here](/docs/MigrationGuide.md).
-
-⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
-
 ## <a id="strict-mode"> Strict Mode
 The plugin supports a Strict Mode which completely removes the IDFA collection functionality and AdSupport framework dependencies.
 Use the Strict Mode when developing apps for kids, for example.
 More information about how to install the Strict Mode is available [here](/docs/Installation.md).
+
+
+### <a id="init-sdk-deeplink"> AD_ID permission for Android
+
+In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
+
+
 
  ---
 ## <a id="plugin-build-for"> 🚀 Getting Started
@@ -83,6 +72,7 @@ More information about how to install the Strict Mode is available [here](/docs/
 - [Integration](/docs/BasicIntegration.md)
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
+- [Send Consent for DMA Compliance](/docs/DMAConsent.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
 ## <a id="plugin-build-for"> 💰 Purchase Connector
 - [Purchase Connector (ROI360)](/docs/purchase-connector.md)
