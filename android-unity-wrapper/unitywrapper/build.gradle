@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    compileOnly 'com.appsflyer:af-android-sdk:6.17.1'
+    compileOnly 'com.appsflyer:af-android-sdk:6.17.2'
     compileOnly 'com.appsflyer:purchase-connector:2.1.0'
     compileOnly 'com.android.billingclient:billing:5.2.0'
 }

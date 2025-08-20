@@ -62,7 +62,7 @@ public class AppsFlyerAndroidWrapper {
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
     private static final String VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
     private static final String ERROR_CALLBACK = "didReceivePurchaseRevenueError";
-    private static final String PLUGIN_VERSION = "6.17.1";
+    private static final String PLUGIN_VERSION = "6.17.2";
 
     private static final long DDL_TIMEOUT_DEFAULT = 3000;
     private static AppsFlyerConversionListener conversionListener;
