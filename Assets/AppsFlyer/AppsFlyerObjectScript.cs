@@ -24,18 +24,43 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
         // These fields are set from the editor so do not modify!
         //******************************//
         AppsFlyer.setIsDebug(isDebug);
+        
+#if UNITY_IOS && !UNITY_EDITOR
+        // HOTFIX: Delay initialization on problematic iOS versions
+        if (UnityEngine.iOS.Device.systemVersion.StartsWith("14.5") || 
+            UnityEngine.iOS.Device.systemVersion.StartsWith("14.6") || 
+            UnityEngine.iOS.Device.systemVersion.StartsWith("14.7") || 
+            UnityEngine.iOS.Device.systemVersion.StartsWith("14.8") || 
+            UnityEngine.iOS.Device.systemVersion.StartsWith("15.0"))
+        {
+            StartCoroutine(DelayedStart());
+            return;
+        }
+#endif
+
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
         AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
 #elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
-    AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
+        AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
 #else
         AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
 #endif
-        //******************************/
- 
         AppsFlyer.startSDK();
+        //******************************/
     }
 
+    private IEnumerator DelayedStart()
+    {
+        yield return new WaitForSeconds(1.0f);
+#if UNITY_WSA_10_0 && !UNITY_EDITOR
+        AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
+#elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
+        AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
+#else
+        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+#endif
+        AppsFlyer.startSDK();
+    }
 
     void Update()
     {
