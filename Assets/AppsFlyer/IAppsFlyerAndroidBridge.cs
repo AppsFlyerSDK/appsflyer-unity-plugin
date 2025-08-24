@@ -22,7 +22,7 @@ namespace AppsFlyerSDK
         string getAttributionId();
         void handlePushNotifications();
         void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject);
-        void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject);
+        void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject);
         void setCollectOaid(bool isCollect);
         void setDisableAdvertisingIdentifiers(bool disable);
         void setDisableNetworkData(bool disable);

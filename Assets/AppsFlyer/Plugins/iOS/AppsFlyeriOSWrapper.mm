@@ -33,7 +33,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.17.1"
+                                pluginVersion:@"6.17.3"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -288,21 +288,38 @@ extern "C" {
          }];
     }
 
-    const void _validateAndSendInAppPurchaseV2 (const char* product, const char* price, const char* currency, const char* transactionId, const char* extraEventValues, const char* objectName) {
+    const void _validateAndSendInAppPurchaseV2 (const char* product, const char* transactionId, int purchaseType, const char* purchaseAdditionalDetails, const char* objectName) {
 
         validateAndLogObjectName = stringFromChar(objectName);
-        AFSDKPurchaseDetails *details = [[AFSDKPurchaseDetails alloc] initWithProductId:stringFromChar(product) price:stringFromChar(price) currency:stringFromChar(currency) transactionId:stringFromChar(transactionId)];
+        AFSDKPurchaseDetails *details = [[AFSDKPurchaseDetails alloc] initWithProductId:stringFromChar(product) transactionId:stringFromChar(transactionId) purchaseType:(AFSDKPurchaseType)purchaseType];
 
         [[AppsFlyerLib shared]
          validateAndLogInAppPurchase:details
-         extraEventValues:dictionaryFromJson(extraEventValues)
-         completionHandler:^(AFSDKValidateAndLogResult * _Nullable result) {
-            if (result.status == AFSDKValidateAndLogStatusSuccess) {
-                unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_CALLBACK, stringFromdictionary(result.result));
-            } else if (result.status == AFSDKValidateAndLogStatusFailure) {
-                 unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_CALLBACK, stringFromdictionary(result.errorData));
+         purchaseAdditionalDetails:dictionaryFromJson(purchaseAdditionalDetails)
+         completion:^(NSDictionary * _Nullable response, NSError * _Nullable error) {
+            if (error) {
+                unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_ERROR_CALLBACK, stringFromdictionary(dictionaryFromNSError(error)));
             } else {
-                unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_ERROR_CALLBACK, stringFromdictionary(dictionaryFromNSError(result.error)));
+                // Check if the response indicates validation failure
+                BOOL isValidationFailure = NO;
+                if (response && [response isKindOfClass:[NSDictionary class]]) {
+                    NSDictionary *resultDict = response[@"result"];
+                    if (resultDict && [resultDict isKindOfClass:[NSDictionary class]]) {
+                        NSDictionary *responseForProduct = resultDict.allValues.firstObject;
+                        if (responseForProduct && [responseForProduct isKindOfClass:[NSDictionary class]]) {
+                            BOOL validationResult = [responseForProduct[@"result"] boolValue];
+                            if (!validationResult) {
+                                isValidationFailure = YES;
+                            }
+                        }
+                    }
+                }
+                
+                if (isValidationFailure) {
+                    unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_ERROR_CALLBACK, stringFromdictionary(response));
+                } else {
+                    unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_CALLBACK, stringFromdictionary(response));
+                }
             }
         }];
          
