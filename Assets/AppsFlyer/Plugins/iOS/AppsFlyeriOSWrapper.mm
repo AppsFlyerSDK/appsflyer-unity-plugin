@@ -33,7 +33,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.17.2"
+                                pluginVersion:@"6.17.3"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
