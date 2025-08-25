@@ -354,11 +354,11 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         ///  To send and validate in app purchases you can call this method from the processPurchase method.
         /// </summary>
         /// <param name="details">The AFSDKPurchaseDetailsIOS instance.</param>
-        /// <param name="extraEventValues">The extra params, which you want to receive it in the raw reports.</param>
-        public void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)
+        /// <param name="purchaseAdditionalDetails">The additional params, which you want to receive it in the raw reports.</param>
+        public void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
-            _validateAndSendInAppPurchaseV2(details.productId, details.price, details.currency, details.transactionId, AFMiniJSON.Json.Serialize(extraEventValues), gameObject ? gameObject.name : null);
+            _validateAndSendInAppPurchaseV2(details.productId, details.transactionId, (int)details.purchaseType, AFMiniJSON.Json.Serialize(purchaseAdditionalDetails), gameObject ? gameObject.name : null);
 #endif
         }
 
@@ -843,7 +843,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
 #elif UNITY_STANDALONE_OSX
         [DllImport("AppsFlyerBundle")]
 #endif
-        private static extern void _validateAndSendInAppPurchaseV2(string product, string price, string currency, string transactionId, string extraEventValues, string objectName);
+        private static extern void _validateAndSendInAppPurchaseV2(string product, string transactionId, int purchaseType, string purchaseAdditionalDetails, string objectName);
 
 #if UNITY_IOS
     [DllImport("__Internal")]

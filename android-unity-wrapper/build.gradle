@@ -16,19 +16,34 @@ buildscript {
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$agp_version4"
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.2"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
-apply plugin: 'io.codearte.nexus-staging'
-nexusStaging {
+
+plugins {
+    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+}
+
+def getSonatypeRepositoryToken() { return hasProperty('ossrhToken') ? ossrhToken : "" }
+
+def getSonatypeRepositoryTokenPassword() { return hasProperty('ossrhTokenPassword') ? ossrhTokenPassword : "" }
+
+nexusPublishing {
     packageGroup = GROUP // optional if packageGroup == project.getGroup()
-    username = hasProperty('ossrhUsername') ? ossrhUsername : ""
-    password = hasProperty('ossrhPassword') ? ossrhPassword : ""
-    delayBetweenRetriesInMillis = 30000
-    numberOfRetries = 120
+    repositories {
+        sonatype {
+            nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            snapshotRepositoryUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            username = getSonatypeRepositoryToken()
+            password = getSonatypeRepositoryTokenPassword()
+        }
+    }
+    transitionCheckOptions {
+        maxRetries.set(120)
+        delayBetween.set(java.time.Duration.ofMillis(30000))
+    }
 }
 allprojects {
     repositories {

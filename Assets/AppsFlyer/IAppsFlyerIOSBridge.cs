@@ -14,7 +14,7 @@ namespace AppsFlyerSDK
 		void setUseReceiptValidationSandbox(bool useReceiptValidationSandbox);
 		void setUseUninstallSandbox(bool useUninstallSandbox);
 		void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject);
-		void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject);
+		void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject);
 		void registerUninstall(byte[] deviceToken);
 		void handleOpenUrl(string url, string sourceApplication, string annotation);
 		void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval);
