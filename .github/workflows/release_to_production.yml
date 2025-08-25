@@ -54,8 +54,8 @@ jobs:
           chmod +x .github/workflows/Scripts/checkJira.sh
           .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
           
-          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
-          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
+          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
+          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
           
           # Create a simple release message without the text file
           release_message="🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}"
