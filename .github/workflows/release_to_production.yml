@@ -53,7 +53,45 @@ jobs:
           jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
           chmod +x .github/workflows/Scripts/checkJira.sh
           .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
+          
           ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
           android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
-          version_changes=$(cat "$jira_fixed_version-releasenotes".txt)
-          curl -X POST -H 'Content-type: application/json' --data '{"plugin_version": "'"$jira_fixed_version"'", "ios_sdk_dependency": "'"$ios_af_sdk_version"'", "android_sdk_dependency": "'"$android_af_sdk_version"'", "version_changes": "'"$version_changes"'", "deploy_type": "Production", "git_branch": "'"${{inputs.branch_name}}"'"}' "$SLACK_TOKEN"
+          
+          # Create a simple release message without the text file
+          release_message="🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}"
+          
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "'"$release_message"'",
+            "attachments": [
+              {
+                "color": "danger",
+                "fields": [
+                  {
+                    "title": "Plugin Version",
+                    "value": "'"$jira_fixed_version"'",
+                    "short": true
+                  },
+                  {
+                    "title": "iOS SDK",
+                    "value": "'"$ios_af_sdk_version"'",
+                    "short": true
+                  },
+                  {
+                    "title": "Android SDK", 
+                    "value": "'"$android_af_sdk_version"'",
+                    "short": true
+                  },
+                  {
+                    "title": "Deploy Type",
+                    "value": "PRODUCTION",
+                    "short": true
+                  },
+                  {
+                    "title": "Git Branch",
+                    "value": "'"${{inputs.branch_name}}"'",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }' "$SLACK_TOKEN"
