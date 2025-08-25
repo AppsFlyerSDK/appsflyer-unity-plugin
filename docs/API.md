@@ -56,8 +56,8 @@ The list of available methods for this plugin is described below.
   - [isPreInstalledApp](#ispreinstalledapp)
   - [handlePushNotifications](#handlepushnotifications)
   - [getAttributionId](#getattributionid)
-  - [validateAndSendInAppPurchase-beta](#validateandsendinapppurchase-beta)
-  - [validateAndSendInAppPurchase](#validateandsendinapppurchase)
+  - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended)
+  - [validateAndSendInAppPurchase (Legacy)](#validateandsendinapppurchase-legacy)
   - [setCollectOaid](#setcollectoaid)
   - [setDisableAdvertisingIdentifiers](#setdisableadvertisingidentifiers)
   - [setDisableNetworkData](#setdisablenetworkdata)
@@ -68,8 +68,8 @@ The list of available methods for this plugin is described below.
   - [setDisableCollectIAd](#setdisablecollectiad)
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)
   - [setUseUninstallSandbox](#setuseuninstallsandbox)
-  - [validateAndSendInAppPurchase-beta-iOS](#validateandsendinapppurchase-beta-ios)
-  - [validateAndSendInAppPurchase](#validateandsendinapppurchase-1)
+  - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended-1)
+  - [validateAndSendInAppPurchase (Legacy)](#validateandsendinapppurchase-legacy-1)
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
   - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
@@ -1031,18 +1031,25 @@ Get the Facebook attribution ID, if one exists.
 
 ---
 
-### validateAndSendInAppPurchase-beta
-**`void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, string> additionalParameters, MonoBehaviour gameObject)`**
+## In-App Purchase Validation
+
+AppsFlyer provides two versions of the `validateAndSendInAppPurchase` method:
+
+- **V2 (Recommended)**: Uses structured data classes (`AFPurchaseDetailsAndroid`/`AFSDKPurchaseDetailsIOS`) for better type safety and cleaner code
+- **Legacy**: Uses individual string parameters (deprecated, maintained for backward compatibility)
+
+### validateAndSendInAppPurchase (V2 - Recommended)
+**`void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)`**
  
-API for server verification of in-app purchases.
+API for server verification of in-app purchases (V2).
 An af_purchase event with the relevant values will be automatically sent if the validation is successful.
 
 
-| parameter              | type                         | description                                        |
-| -----------            |------------------------------|----------------------------------------------------|
-| `details`              | `AFPurchaseDetailsAndroid`   | Instance of AFPurchaseDetailsAndroid class |
-|`additionalParameters`  | `Dictionary<string, string>` | parameters to be sent with the purchase.           |
-| `gameObject`           | `MonoBehaviour`              | Game object for the callbacks to be sent           |
+| parameter                    | type                         | description                                        |
+| -----------                  |------------------------------|----------------------------------------------------|
+| `details`                    | `AFPurchaseDetailsAndroid`   | Instance of AFPurchaseDetailsAndroid class |
+| `purchaseAdditionalDetails`  | `Dictionary<string, string>` | Additional parameters to be sent with the purchase |
+| `gameObject`                 | `MonoBehaviour`              | Game object for the callbacks to be sent           |
 
 *Example:*
 
@@ -1060,9 +1067,10 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ---
 
-### validateAndSendInAppPurchase 
+### validateAndSendInAppPurchase (Legacy)
 **`void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
  
+**⚠️ Deprecated:** Use the V2 version with `AFPurchaseDetailsAndroid` instead.
 API for server verification of in-app purchases.
 An af_purchase event with the relevant values will be automatically sent if the validation is successful.
 
@@ -1073,8 +1081,8 @@ An af_purchase event with the relevant values will be automatically sent if the 
 | `signature`            | `string` | data.INAPP_DATA_SIGNATURE.                         |
 | `purchaseData`         | `string` | data.INAPP_PURCHASE_DATA                           |
 | `price`                | `string` | Purchase price                                     |
-| `currency`             | `string` | Site ID for preinstall attribution.                |
-|`additionalParameters`  | `Dictionary<string, string>` | parameters to be sent with the purchase.|
+| `currency`             | `string` | Purchase currency                                   |
+|`additionalParameters`  | `Dictionary<string, string>` | Parameters to be sent with the purchase |
 | `gameObject`           | `MonoBehaviour` | Game object for the callbacks to be sent   |
 
 *Example:*
@@ -1278,16 +1286,23 @@ Set this flag to test uninstall on Apple environment(production or sandbox). The
 
 ---
 
-### validateAndSendInAppPurchase-beta-iOS
-**`void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)`**
- 
-To send and validate in app purchases you can call this method from the processPurchase method.
+## In-App Purchase Validation (iOS)
 
-| parameter              | type                           | description  |
-| -----------            |-------------------             | ------------------------------------------|
-| `details`              | `AFSDKPurchaseDetailsIOS`      | Instance of AFSDKPurchaseDetailsIOS class.     |
-| `extraEventValues`     | `Dictionary<string, string>`   | The additional param, which you want to receive it in the raw reports.          |
-| `gameObject`           | `MonoBehaviour`                |      the game object for the              |
+AppsFlyer provides two versions of the `validateAndSendInAppPurchase` method for iOS:
+
+- **V2 (Recommended)**: Uses structured data classes (`AFSDKPurchaseDetailsIOS`) for better type safety and cleaner code
+- **Legacy**: Uses individual string parameters (deprecated, maintained for backward compatibility)
+
+### validateAndSendInAppPurchase (V2 - Recommended) {#validateandsendinapppurchase-v2---recommended-1}
+**`void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)`**
+ 
+To send and validate in app purchases you can call this method from the processPurchase method (V2).
+
+| parameter                    | type                           | description  |
+| -----------                  |-------------------             | ------------------------------------------|
+| `details`                    | `AFSDKPurchaseDetailsIOS`      | Instance of AFSDKPurchaseDetailsIOS class |
+| `purchaseAdditionalDetails`  | `Dictionary<string, string>`   | Additional parameters to be sent with the purchase |
+| `gameObject`                 | `MonoBehaviour`                | Game object for the callbacks to be sent |
 
 *Example:*
 
@@ -1304,19 +1319,20 @@ To send and validate in app purchases you can call this method from the processP
 
 ---
 
-### validateAndSendInAppPurchase 
-**`void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string tranactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
+### validateAndSendInAppPurchase (Legacy) {#validateandsendinapppurchase-legacy-1}
+**`void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
  
+**⚠️ Deprecated:** Use the V2 version with `AFSDKPurchaseDetailsIOS` instead.
 To send and validate in app purchases you can call this method from the processPurchase method.
 
 | parameter              | type                           | description  |
 | -----------            |-------------------             | --------------|
-| `productIdentifier`    | `string`                       |         The product identifier.     |
-| `price`                | `string`                       |   The product price.           |
-| `currency`             | `string`                       |    The product currency.          |
-| `tranactionId`         | `string`                       |     The purchase transaction Id.         |
-| `additionalParameters` | `Dictionary<string, string>`   |    The additional param, which you want to receive it in the raw reports.          |
-| `gameObject` | `MonoBehaviour`   |      the game object for the callbacks        |
+| `productIdentifier`    | `string`                       | The product identifier |
+| `price`                | `string`                       | The product price |
+| `currency`             | `string`                       | The product currency |
+| `transactionId`        | `string`                       | The purchase transaction ID |
+| `additionalParameters` | `Dictionary<string, string>`   | Additional parameters to be sent with the purchase |
+| `gameObject`           | `MonoBehaviour`                | Game object for the callbacks |
 
 *Example:*
 
@@ -1326,7 +1342,7 @@ To send and validate in app purchases you can call this method from the processP
         "productIdentifier", 
         "price", 
         "currency", 
-        "tranactionId", 
+        "transactionId", 
         null, 
         this);
 #endif

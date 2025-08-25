@@ -16,10 +16,10 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.0
+- Android AppsFlyer SDK v6.17.3
 - Android Purchase Connector 2.1.0
-- iOS AppsFlyer SDK v6.17.1
-- iOS Purchase Connector 6.17.1
+- iOS AppsFlyer SDK v6.17.3
+- iOS Purchase Connector 6.17.3
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
@@ -31,6 +31,15 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
+
+---
+## <a id="breaking-changes-6173">     ❗❗ Breaking changes when updating to 6.17.3 ❗❗
+- **In-App Purchase Validation API Changes**: The `validateAndSendInAppPurchase` method signatures have been updated for better type safety and cleaner code.
+- **V2 Methods (Recommended)**: New overloads using structured data classes (`AFPurchaseDetailsAndroid`/`AFSDKPurchaseDetailsIOS`) are now the recommended approach.
+- **Legacy Methods (Deprecated)**: The old string-based parameter methods are now deprecated but maintained for backward compatibility.
+- **Migration Required**: If you're using the old `validateAndSendInAppPurchase` methods, consider migrating to the V2 versions for better maintainability.
+- For detailed API documentation and migration examples, see our [API reference](/docs/API.md).
+
 ---  
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.12.20 ❗❗
 - Starting from version 6.12.20, we have changed the way we distribute the plugin via UPM. The UPM branches will no longer hold a dependency for `com.google.external-dependency-manager` as it was proved to cause issues in different versions of Unity - to be clear, this dependency is still required to utilize our plugin, we just can't distribute the plugin with it in UPM form as the EDM4U dependency is [not available via UPM for quite a while already](https://github.com/googlesamples/unity-jar-resolver/issues/434#issuecomment-827028132) but is still available via `.unitypackage` or `.tgz` files, if you use UPM to fetch our plugin - [please download a suitable version of EDM4U](https://github.com/googlesamples/unity-jar-resolver) so you will be able to resolve the dependencies, or opt for [an installation without EDM4U](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Installation.md#installation-without-unity-jar-resolver).
