@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Test Unity activation
-        uses: game-ci/unity-activate@v2
+        uses: game-ci/unity-activate@v4
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
