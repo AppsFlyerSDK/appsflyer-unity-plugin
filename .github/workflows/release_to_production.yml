@@ -47,13 +47,25 @@ jobs:
             }
       - name: Send slack report
         env:
-          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
+          SLACK_WEBHOOK_URL: https://hooks.slack.com/triggers/E06FWEWEAKX/
           JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
         run: |
           jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
           chmod +x .github/workflows/Scripts/checkJira.sh
           .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
-          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
-          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK \*\*v[0-9]+.[0-9]+.[0-9]+\*\*')
-          version_changes=$(cat "$jira_fixed_version-releasenotes".txt)
-          curl -X POST -H 'Content-type: application/json' --data '{"plugin_version": "'"$jira_fixed_version"'", "ios_sdk_dependency": "'"$ios_af_sdk_version"'", "android_sdk_dependency": "'"$android_af_sdk_version"'", "version_changes": "'"$version_changes"'", "deploy_type": "Production", "git_branch": "'"${{inputs.branch_name}}"'"}' "$SLACK_TOKEN"
+          
+          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
+          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
+          
+          # Create a simple release message without the text file
+          release_message="🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}"
+          
+          # Send webhook to Slack with all required parameters
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "plugin_version": "'"${{inputs.plugin_version}}"'",
+            "git_branch": "'"${{inputs.branch_name}}"'",
+            "ios_sdk_dependency": "'"$ios_af_sdk_version"'",
+            "android_sdk_dependency": "'"$android_af_sdk_version"'",
+            "version_changes": "🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}",
+            "deploy_type": "PRODUCTION"
+          }' "$SLACK_WEBHOOK_URL"

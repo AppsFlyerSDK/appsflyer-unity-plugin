@@ -16,10 +16,10 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.0
+- Android AppsFlyer SDK v6.17.3
 - Android Purchase Connector 2.1.0
-- iOS AppsFlyer SDK v6.17.1
-- iOS Purchase Connector 6.17.1
+- iOS AppsFlyer SDK v6.17.3
+- iOS Purchase Connector 6.17.3
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
@@ -31,6 +31,15 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
+
+---
+## <a id="breaking-changes-6173">     ❗❗ Breaking changes when updating to 6.17.3 ❗❗
+- **In-App Purchase Validation API Changes**: The `validateAndSendInAppPurchase` method signatures have been updated for better type safety and cleaner code.
+- **V2 Methods (Recommended)**: New overloads using structured data classes (`AFPurchaseDetailsAndroid`/`AFSDKPurchaseDetailsIOS`) are now the recommended approach.
+- **Legacy Methods (Deprecated)**: The old string-based parameter methods are now deprecated but maintained for backward compatibility.
+- **Migration Required**: If you're using the old `validateAndSendInAppPurchase` methods, consider migrating to the V2 versions for better maintainability.
+- For detailed API documentation and migration examples, see our [API reference](/docs/API.md).
+
 ---  
 ## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.12.20 ❗❗
 - Starting from version 6.12.20, we have changed the way we distribute the plugin via UPM. The UPM branches will no longer hold a dependency for `com.google.external-dependency-manager` as it was proved to cause issues in different versions of Unity - to be clear, this dependency is still required to utilize our plugin, we just can't distribute the plugin with it in UPM form as the EDM4U dependency is [not available via UPM for quite a while already](https://github.com/googlesamples/unity-jar-resolver/issues/434#issuecomment-827028132) but is still available via `.unitypackage` or `.tgz` files, if you use UPM to fetch our plugin - [please download a suitable version of EDM4U](https://github.com/googlesamples/unity-jar-resolver) so you will be able to resolve the dependencies, or opt for [an installation without EDM4U](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/blob/master/docs/Installation.md#installation-without-unity-jar-resolver).
@@ -58,24 +67,17 @@ After 6.6.0:
 ```
 ---
 
-## <a id="breaking-changes">     ❗❗ Breaking changes when updating to 6.3.0 ❗❗
-
-- 6.3.0 supports Universal Windows Platform. As part of this update, the AppsFlyerObjectScript changes to include the app_id for your UWP app. If you made changes to this file, please merge them with the new AppsFlyerObjectScript.
-Please also note that you can leave the uwp app id field empty. 
-
-- From version `6.3.0`, we use `xcframework` for iOS platform, then you need to use cocoapods version >= 1.10
-
-## <a id="migration"> ⏩ Migration 
-  
-Migrating from the old plugin? (version V4) <br/>
-View the migration docs [here](/docs/MigrationGuide.md).
-
-⚠️ There are **breaking** changes when migrating to `Unity v5`. This includes new API, different class/package names, and the removal of `com.appsflyer.GetDeepLinkingActivity`.
-
 ## <a id="strict-mode"> Strict Mode
 The plugin supports a Strict Mode which completely removes the IDFA collection functionality and AdSupport framework dependencies.
 Use the Strict Mode when developing apps for kids, for example.
 More information about how to install the Strict Mode is available [here](/docs/Installation.md).
+
+
+### <a id="init-sdk-deeplink"> AD_ID permission for Android
+
+In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
+
+
 
  ---
 ## <a id="plugin-build-for"> 🚀 Getting Started
@@ -83,6 +85,7 @@ More information about how to install the Strict Mode is available [here](/docs/
 - [Integration](/docs/BasicIntegration.md)
 - [Test integration](/docs/Testing.md)
 - [In-app events](/docs/InAppEvents.md)
+- [Send Consent for DMA Compliance](/docs/DMAConsent.md)
 - [Uninstall measurement](/docs/UninstallMeasurement.md)
 ## <a id="plugin-build-for"> 💰 Purchase Connector
 - [Purchase Connector (ROI360)](/docs/purchase-connector.md)
