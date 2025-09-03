@@ -49,7 +49,7 @@ jobs:
 
       - name: Send slack report
         env:
-          SLACK_WEBHOOK_URL: https://hooks.slack.com/triggers/E06FWEWEAKX/
+          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
         run: |
           ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
           android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
