@@ -65,5 +65,5 @@ jobs:
             "android_sdk_dependency": "'"$android_af_sdk_version"'",
             "version_changes": "New Unity Plugin Release: Unity SDK v'"$plugin_version"'",
             "deploy_type": "QA"
-          }' "$SLACK_WEBHOOK_URL"
+          }' "$SLACK_TOKEN"
 

@@ -68,4 +68,4 @@ jobs:
             "android_sdk_dependency": "'"$android_af_sdk_version"'",
             "version_changes": "🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}",
             "deploy_type": "PRODUCTION"
-          }' "$SLACK_WEBHOOK_URL"
+          }' "$SLACK_TOKEN"
