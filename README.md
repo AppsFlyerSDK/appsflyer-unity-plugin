@@ -18,8 +18,8 @@
 
 - Android AppsFlyer SDK v6.17.3
 - Android Purchase Connector 2.1.0
-- iOS AppsFlyer SDK v6.17.3
-- iOS Purchase Connector 6.17.3
+- iOS AppsFlyer SDK v6.17.5
+- iOS Purchase Connector 6.17.5
 ---
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
@@ -33,7 +33,7 @@ In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.androi
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
 
 ---
-## <a id="breaking-changes-6173">     ❗❗ Breaking changes when updating to 6.17.3 ❗❗
+## <a id="breaking-changes-6175">     ❗❗ Breaking changes when updating to 6.17.5 ❗❗
 - **In-App Purchase Validation API Changes**: The `validateAndSendInAppPurchase` method signatures have been updated for better type safety and cleaner code.
 - **V2 Methods (Recommended)**: New overloads using structured data classes (`AFPurchaseDetailsAndroid`/`AFSDKPurchaseDetailsIOS`) are now the recommended approach.
 - **Legacy Methods (Deprecated)**: The old string-based parameter methods are now deprecated but maintained for backward compatibility.

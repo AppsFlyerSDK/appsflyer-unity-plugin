@@ -54,42 +54,16 @@ jobs:
           ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
           android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
           
-          # Create a simple release message without the text file
-          release_message="New Unity Plugin Release: ${{env.JIRA_FIXED_VERSION}}"
+          # Extract plugin version from branch name
+          plugin_version=$(echo "${{github.ref_name}}" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
           
+          # Send webhook to Slack with all required parameters
           curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "'"$release_message"'",
-            "attachments": [
-              {
-                "color": "good",
-                "fields": [
-                  {
-                    "title": "Plugin Version",
-                    "value": "'"${{env.JIRA_FIXED_VERSION}}"'",
-                    "short": true
-                  },
-                  {
-                    "title": "iOS SDK",
-                    "value": "'"$ios_af_sdk_version"'",
-                    "short": true
-                  },
-                  {
-                    "title": "Android SDK", 
-                    "value": "'"$android_af_sdk_version"'",
-                    "short": true
-                  },
-                  {
-                    "title": "Deploy Type",
-                    "value": "QA",
-                    "short": true
-                  },
-                  {
-                    "title": "Git Branch",
-                    "value": "'"${{github.ref_name}}"'",
-                    "short": true
-                  }
-                ]
-              }
-            ]
+            "plugin_version": "'"$plugin_version"'",
+            "git_branch": "'"${{github.ref_name}}"'",
+            "ios_sdk_dependency": "'"$ios_af_sdk_version"'",
+            "android_sdk_dependency": "'"$android_af_sdk_version"'",
+            "version_changes": "New Unity Plugin Release: Unity SDK v'"$plugin_version"'",
+            "deploy_type": "QA"
           }' "$SLACK_TOKEN"
 
