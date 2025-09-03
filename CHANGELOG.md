@@ -1,7 +1,7 @@
 # Versions
-## v6.17.3
-* Purchase Connector support.
-* Update iOS SDK version - 6.17.3
+## v6.17.5
+* Update iOS SDK version - 6.17.5
+* Update iOS Purchase Connector version - 6.17.5
 * Update Android SDK ersion - 6.17.3
 * Validate and log API changes.
 
