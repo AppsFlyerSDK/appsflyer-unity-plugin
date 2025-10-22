@@ -1,5 +1,4 @@
 from importlib.resources import path
-from nis import match
 import re
 import hashlib
 import os

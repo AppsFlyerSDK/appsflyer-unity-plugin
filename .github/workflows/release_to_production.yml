@@ -47,7 +47,7 @@ jobs:
             }
       - name: Send slack report
         env:
-          SLACK_WEBHOOK_URL: https://hooks.slack.com/triggers/E06FWEWEAKX/
+          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
           JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
         run: |
           jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
@@ -68,4 +68,4 @@ jobs:
             "android_sdk_dependency": "'"$android_af_sdk_version"'",
             "version_changes": "🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}",
             "deploy_type": "PRODUCTION"
-          }' "$SLACK_WEBHOOK_URL"
+          }' "$SLACK_TOKEN"
