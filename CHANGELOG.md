@@ -1,4 +1,7 @@
 # Versions
+## v6.17.71
+* Use Android Purchase Connector version - 2.1.0
+  
 ## v6.17.7
 * Update iOS SDK version - 6.17.7
 * Update iOS Purchase Connector version - 6.17.7
