@@ -17,10 +17,27 @@
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK v6.17.3
-- Android Purchase Connector 2.2.0
+- Android Purchase Connector 2.1.0
 - iOS AppsFlyer SDK v6.17.7
 - iOS Purchase Connector 6.17.7
 ---
+## 📌 Important: Two Plugin Versions of iOS v6.17.7
+
+We have released **two** versions of the AppsFlyer Unity plugin to support teams at different stages of migrating to **Google Play Billing Library v8.0.0**.
+
+### Option A — `v6.17.7` (adds Billing v8 support)
+- **What’s included:** Support for **Google Play Billing Library 8.0.0** on Android (Android Purchase Connector version - 2.2.0).
+- **Impact:** This version may introduce **breaking changes** for apps that have **not yet migrated** to the Billing v8 APIs.
+- **Unity IAP requirement:** If you choose this option, update **Unity IAP (`com.unity.purchasing`) to version 5.0.0 or newer** (we recommend the latest 5.x). Unity IAP 4.x does **not** include Billing v8.
+
+### Option B — `v6.17.71` (no Billing v8 migration required)
+- **Purpose:** For developers **not ready** to adopt Billing v8.
+- **Bundled SDKs:** **iOS SDK 6.17.7** and **Android SDK 6.17.3**.
+- **Impact:** Lets you update the AppsFlyer SDKs without changing your existing (pre‑v8) billing integration.
+
+> **Note:** Google Play Billing changes are **Android‑only**; iOS is unaffected.
+---
+
 ### <a id="init-sdk-deeplink"> AD_ID permission for Android
 
 In v6.8.0 of the AppsFlyer SDK, we added the normal permission com.google.android.gms.permission.AD_ID to the SDK's AndroidManifest, to allow the SDK to collect the Android Advertising ID on apps targeting API 33. If your app is targeting children, you need to revoke this permission to comply with Google's Data policy. You can read more about it [here](https://dev.appsflyer.com/hc/docs/install-android-sdk#the-ad_id-permission).
