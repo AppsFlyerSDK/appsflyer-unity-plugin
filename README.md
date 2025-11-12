@@ -17,7 +17,7 @@
 ### <a id="plugin-build-for"> This plugin is built for
 
 - Android AppsFlyer SDK v6.17.3
-- Android Purchase Connector 2.1.0
+- Android Purchase Connector 2.1.1
 - iOS AppsFlyer SDK v6.17.7
 - iOS Purchase Connector 6.17.7
 ---
@@ -30,7 +30,7 @@ We have released **two** versions of the AppsFlyer Unity plugin to support teams
 - **Impact:** This version may introduce **breaking changes** for apps that have **not yet migrated** to the Billing v8 APIs.
 - **Unity IAP requirement:** If you choose this option, update **Unity IAP (`com.unity.purchasing`) to version 5.0.0 or newer** (we recommend the latest 5.x). Unity IAP 4.x does **not** include Billing v8.
 
-### Option B — `v6.17.71` (no Billing v8 migration required)
+### Option B — `v6.17.72` (no Billing v8 migration required)
 - **Purpose:** For developers **not ready** to adopt Billing v8.
 - **Bundled SDKs:** **iOS SDK 6.17.7** and **Android SDK 6.17.3**.
 - **Impact:** Lets you update the AppsFlyer SDKs without changing your existing (pre‑v8) billing integration.
