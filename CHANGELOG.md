@@ -1,4 +1,7 @@
 # Versions
+## v6.17.72
+* Use Android Purchase Connector version - 2.1.1
+
 ## v6.17.71
 * Use Android Purchase Connector version - 2.1.0
   
