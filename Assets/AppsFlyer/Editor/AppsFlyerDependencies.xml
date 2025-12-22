@@ -9,8 +9,8 @@
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework" version="6.17.7" minTargetSdk="12.0"></iosPod>
-    <iosPod name="PurchaseConnector" version="6.17.7" minTargetSdk="12.0"></iosPod>
+    <iosPod name="AppsFlyerFramework" version="6.17.8" minTargetSdk="12.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="6.17.8" minTargetSdk="12.0"></iosPod>
   </iosPods>
 
 </dependencies>

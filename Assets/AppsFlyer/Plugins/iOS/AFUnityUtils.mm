@@ -34,14 +34,22 @@ static const char* stringFromdictionary(NSDictionary* dictionary) {
 
 static NSDictionary* dictionaryFromNSError(NSError* error) {
     if(error){
-            NSInteger code = [error code];
-            NSString *localizedDescription = [error localizedDescription];
-            
-            NSDictionary *errorDictionary = @{
-                @"code" : @(code) ?: @(-1),
-                @"localizedDescription" : localizedDescription,
-            };
-        return  errorDictionary;
+        NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+        errorDictionary[@"code"] = @(error.code);
+        errorDictionary[@"localizedDescription"] = error.localizedDescription ?: @"";
+        
+        // Include userInfo fields for enhanced error reporting (iOS SDK 6.17.8+)
+        if (error.userInfo[@"error_code"]) {
+            errorDictionary[@"error_code"] = error.userInfo[@"error_code"];
+        }
+        if (error.userInfo[@"error_message"]) {
+            errorDictionary[@"error_message"] = error.userInfo[@"error_message"];
+        }
+        if (error.userInfo[@"invalid_fields"]) {
+            errorDictionary[@"invalid_fields"] = error.userInfo[@"invalid_fields"];
+        }
+        
+        return errorDictionary;
     }
 
     return nil;

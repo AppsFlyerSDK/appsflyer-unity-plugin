@@ -335,13 +335,14 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         }
 
         /// <summary>
-        ///  To send and validate in app purchases you can call this method from the processPurchase method - please use v2.
+        /// [Deprecated] To send and validate in app purchases - please use V2 with AFSDKPurchaseDetailsIOS instead.
         /// </summary>
         /// <param name="productIdentifier">The product identifier.</param>
         /// <param name="price">The product price.</param>
         /// <param name="currency">The product currency.</param>
         /// <param name="transactionId">The purchase transaction Id.</param>
         /// <param name="additionalParameters">The additional param, which you want to receive it in the raw reports.</param>
+        [System.Obsolete("This method is deprecated. Use validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject) instead.")]
         public void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
@@ -350,8 +351,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         }
 
         /// <summary>
-        ///  V2
-        ///  To send and validate in app purchases you can call this method from the processPurchase method.
+        /// V2 - To send and validate in app purchases you can call this method from the processPurchase method.
         /// </summary>
         /// <param name="details">The AFSDKPurchaseDetailsIOS instance.</param>
         /// <param name="purchaseAdditionalDetails">The additional params, which you want to receive it in the raw reports.</param>

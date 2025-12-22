@@ -768,6 +768,11 @@ namespace AppsFlyerSDK
             }
         }
 
+        /// <summary>
+        /// [Deprecated] Validates an in-app purchase on iOS.
+        /// Use the V2 overload with AFSDKPurchaseDetailsIOS instead.
+        /// </summary>
+        [System.Obsolete("This method is deprecated. Use validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject) instead.")]
         public static void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
@@ -777,7 +782,9 @@ namespace AppsFlyerSDK
             }
         }
 
-        // V2 
+        /// <summary>
+        /// Validates an in-app purchase on iOS using the V2 API.
+        /// </summary>
         public static void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerIOSBridge)
@@ -787,6 +794,11 @@ namespace AppsFlyerSDK
             }
         }
 
+        /// <summary>
+        /// [Deprecated] Validates an in-app purchase on Android.
+        /// Use the V2 overload with AFPurchaseDetailsAndroid instead.
+        /// </summary>
+        [System.Obsolete("This method is deprecated. Use validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject) instead.")]
         public static void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerAndroidBridge)
@@ -796,7 +808,9 @@ namespace AppsFlyerSDK
             }
         }
 
-        // V2
+        /// <summary>
+        /// Validates an in-app purchase on Android using the V2 API.
+        /// </summary>
         public static void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject)
         {
             if (instance != null && instance is IAppsFlyerAndroidBridge)
