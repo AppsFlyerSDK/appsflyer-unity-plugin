@@ -8,7 +8,7 @@ hidden: false
 
 - [Overview](#overview)
 - [Send Event](#send-event)
-- [In-app purchase validation (beta)](#in-app-purchase-validation-beta)
+- [In-app purchase validation (V2)](#in-app-purchase-validation-v2)
 - [In-app purchase validation (legacy)](#in-app-purchase-validation)
 
 ## Overview
@@ -97,14 +97,14 @@ purchaseEvent.Add(AFInAppEvents.CONTENT_TYPE, "category_a");
 AppsFlyer.sendEvent ("cancel_purchase", purchaseEvent);
 ```
 
-## In-app purchase validation Beta 
-This API is currently in closed beta. Please contact AppsFlyer before using it.
+## In-app purchase validation (V2)
 
 For In-App Purchase Receipt Validation, follow the instructions according to your operating system.
 
 **Notes**
-Calling validateReceipt automatically generates an `af_purchase` in-app event, so you don't need to send this event yourself.
-The validate purchase response is triggered in the `AppsFlyerTrackerCallbacks.cs` class.
+- Calling validateReceipt automatically generates an `af_purchase` in-app event, so you don't need to send this event yourself.
+- The validate purchase response is triggered in the `AppsFlyerTrackerCallbacks.cs` class.
+- **iOS Error Handling:** On iOS, the `onValidateAndLogFailure` callback is only triggered for actual errors (network errors, invalid parameters, etc.). Validation failures (e.g., invalid receipt) are returned through the `onValidateAndLogComplete` callback in the response dictionary. Check the response to determine if validation was successful.
 
 ```c#
 // for Android 
@@ -170,12 +170,16 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
     {
         AppsFlyer.AFLog("onValidateAndLogComplete", result);
         Dictionary<string, object> validateAndLogDataDictionary = AppsFlyer.CallbackStringToDictionary(result);
+        // On iOS: Check the response dictionary to determine if validation was successful
+        // Validation failures are returned here, not in onValidateAndLogFailure
     }
 
     public void onValidateAndLogFailure(string error)
     {
         AppsFlyer.AFLog("onValidateAndLogFailure", error);
         Dictionary<string, object> validateAndLogErrorDictionary = AppsFlyer.CallbackStringToDictionary(error);
+        // On iOS: This is only called for actual errors (network errors, invalid parameters, etc.)
+        // Validation failures come through onValidateAndLogComplete instead
     }
 
 }
@@ -183,6 +187,8 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
 ```
 
 ## In-app purchase validation
+
+> ⚠️ **Deprecated:** This legacy API is deprecated. Use the [V2 version](#in-app-purchase-validation-v2) with structured data classes (`AFPurchaseDetailsAndroid`/`AFSDKPurchaseDetailsIOS`) instead. The legacy methods are maintained for backward compatibility only.
 
 For In-App Purchase Receipt Validation, follow the instructions according to your operating system.
 

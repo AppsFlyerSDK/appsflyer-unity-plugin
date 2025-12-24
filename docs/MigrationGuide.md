@@ -300,7 +300,7 @@ AppsFlyer.validate-receipt(string publicKey, string purchaseData, string signatu
 AppsFlyer.validate-receipt(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParametes);
 AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, string callbackFailedMethod);  
 
-// android new
+// ⚠️ Deprecated: Use V2 version with AFPurchaseDetailsAndroid instead
 #if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyer.validateAndSendInAppPurchase(
         "publicKey", 
@@ -312,7 +312,7 @@ AppsFlyer.createValidateInAppListener(string aObject, string callbackMethod, str
         this);
 #endif
 
-// ios new 
+// ⚠️ Deprecated: Use V2 version with AFSDKPurchaseDetailsIOS instead
 #if UNITY_IOS && !UNITY_EDITOR
         AppsFlyer.validateAndSendInAppPurchase(
         "productIdentifier", 
