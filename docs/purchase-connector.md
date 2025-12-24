@@ -5,7 +5,7 @@ category: 5f9705393c689a065c409b23
 parentDoc: 694bc4503a665449be928691
 excerpt: "Used to validate and report in-app purchase and subscription revenue events"
 hidden: false
-order: 13
+order: 2
 ---
 
 ## Overview
