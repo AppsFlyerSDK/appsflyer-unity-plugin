@@ -30,8 +30,8 @@ dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly 'com.appsflyer:af-android-sdk:6.17.5'
-    compileOnly 'com.appsflyer:purchase-connector:2.1.2'
-    compileOnly 'com.android.billingclient:billing:5.2.0'
+    compileOnly 'com.appsflyer:purchase-connector:2.2.0'
+    compileOnly 'com.android.billingclient:billing:8.0.0'
 }
 
 apply from: file('publish.gradle')
