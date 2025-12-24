@@ -2,15 +2,15 @@
 <dependencies>
 
   <androidPackages>
-    <androidPackage spec="com.appsflyer:af-android-sdk:6.17.3"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:6.17.72"></androidPackage>
+    <androidPackage spec="com.appsflyer:af-android-sdk:6.17.5"></androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:6.17.80"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
-    <androidPackage spec="com.appsflyer:purchase-connector:2.1.1"></androidPackage>
+    <androidPackage spec="com.appsflyer:purchase-connector:2.1.2"></androidPackage>
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework" version="6.17.7" minTargetSdk="12.0"></iosPod>
-    <iosPod name="PurchaseConnector" version="6.17.7" minTargetSdk="12.0"></iosPod>
+    <iosPod name="AppsFlyerFramework" version="6.17.8" minTargetSdk="12.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="6.17.8" minTargetSdk="12.0"></iosPod>
   </iosPods>
 
 </dependencies>

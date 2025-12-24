@@ -4,15 +4,21 @@ echo "Start Build for appsflyer-unity-plugin.unitypackage"
 
 DEPLOY_PATH=outputs
 UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-PACKAGE_NAME="appsflyer-unity-plugin-6.17.72.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.17.80.unitypackage"
 mkdir -p $DEPLOY_PATH
 
 #move external dependency manager
 echo "moving the external dependency manager to root"
 mv external-dependency-manager-1.2.183.unitypackage ..
 
+# Temporarily move Tests folder to avoid NUnit compilation errors in batch mode
+echo "Temporarily moving Tests folder..."
+rm -rf ../Tests_temp ../Tests_temp.meta
+mv ../Assets/AppsFlyer/Tests ../Tests_temp
+mv ../Assets/AppsFlyer/Tests.meta ../Tests_temp.meta 2>/dev/null || true
+
 # Build the .unitypackage
-/Applications/Unity/Hub/Editor/6000.0.51f1/Unity.app/Contents/MacOS/Unity \
+/Applications/Unity/Hub/Editor/6000.3.1f1/Unity.app/Contents/MacOS/Unity \
 -gvh_disable \
 -batchmode \
 -importPackage external-dependency-manager-1.2.183.unitypackage \
@@ -20,14 +26,18 @@ mv external-dependency-manager-1.2.183.unitypackage ..
 -logFile create_unity_core.log \
 -projectPath $PWD/../ \
 -exportPackage \
-Assets \
+Assets/AppsFlyer \
 $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
 -quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.17.72.unitypackage" \
+&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.17.80.unitypackage" \
 || echo "Failed to export package. See create_unity_core.log for more info."
 
+# Move Tests folder back
+echo "Moving Tests folder back..."
+mv ../Tests_temp ../Assets/AppsFlyer/Tests
+mv ../Tests_temp.meta ../Assets/AppsFlyer/Tests.meta 2>/dev/null || true
 
-if [ $1 == "-p" ]; then
+if [ "$1" == "-p" ]; then
 echo "moving back the external dependency manager to deploy"
 mv ../external-dependency-manager-1.2.183.unitypackage .
 echo "removing ./Library"
