@@ -3,7 +3,7 @@ title: "Purchase and subscription validation"
 slug: "purchase-subscription-validation-unity"
 category: 5f9705393c689a065c409b23
 parentDoc: 6370c9e2441a4504d6bca3bd
-hidden: true
+hidden: false
 order: 13
 ---
 Purchase validation ensures that only real, store-confirmed in-app purchases and subscriptions are measured in AppsFlyer. It improves revenue accuracy, helps prevent reporting errors, and supports better campaign decisions.
@@ -27,7 +27,7 @@ Call Validate and Log (`validateAndSendInAppPurchase`) every time a transaction 
 - Suitable for apps that need to capture events not included in the Purchase Connector’s default coverage. With the Validate and log method, developers can explicitly target and send these additional events.
 
 To get started see: [`Validate and Log`](https://dev.appsflyer.com/hc/docs/validate-and-log-unity)
----
+
 
 ### 2. Automated Integration method – Purchase Connector
 

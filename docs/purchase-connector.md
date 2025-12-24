@@ -2,7 +2,7 @@
 title: "Purchase connector"
 slug: "purchase-connector-unity"
 category: 5f9705393c689a065c409b23
-parentDoc: 6370c9e2441a4504d6bca3bd
+parentDoc: 694bc4503a665449be928691
 excerpt: "Used to validate and report in-app purchase and subscription revenue events"
 hidden: false
 order: 13
