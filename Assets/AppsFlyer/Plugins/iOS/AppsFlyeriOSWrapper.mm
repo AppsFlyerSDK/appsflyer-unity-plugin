@@ -33,7 +33,7 @@ extern "C" {
  
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.17.72"
+                                pluginVersion:@"6.17.81"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
@@ -300,26 +300,7 @@ extern "C" {
             if (error) {
                 unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_ERROR_CALLBACK, stringFromdictionary(dictionaryFromNSError(error)));
             } else {
-                // Check if the response indicates validation failure
-                BOOL isValidationFailure = NO;
-                if (response && [response isKindOfClass:[NSDictionary class]]) {
-                    NSDictionary *resultDict = response[@"result"];
-                    if (resultDict && [resultDict isKindOfClass:[NSDictionary class]]) {
-                        NSDictionary *responseForProduct = resultDict.allValues.firstObject;
-                        if (responseForProduct && [responseForProduct isKindOfClass:[NSDictionary class]]) {
-                            BOOL validationResult = [responseForProduct[@"result"] boolValue];
-                            if (!validationResult) {
-                                isValidationFailure = YES;
-                            }
-                        }
-                    }
-                }
-                
-                if (isValidationFailure) {
-                    unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_ERROR_CALLBACK, stringFromdictionary(response));
-                } else {
-                    unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_CALLBACK, stringFromdictionary(response));
-                }
+                unityCallBack(validateAndLogObjectName, VALIDATE_AND_LOG_V2_CALLBACK, stringFromdictionary(response));
             }
         }];
          

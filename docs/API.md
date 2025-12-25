@@ -57,7 +57,7 @@ The list of available methods for this plugin is described below.
   - [handlePushNotifications](#handlepushnotifications)
   - [getAttributionId](#getattributionid)
   - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended)
-  - [validateAndSendInAppPurchase (Legacy)](#validateandsendinapppurchase-legacy)
+  - [validateAndSendInAppPurchase (Legacy - Deprecated)](#validateandsendinapppurchase-legacy)
   - [setCollectOaid](#setcollectoaid)
   - [setDisableAdvertisingIdentifiers](#setdisableadvertisingidentifiers)
   - [setDisableNetworkData](#setdisablenetworkdata)
@@ -69,7 +69,7 @@ The list of available methods for this plugin is described below.
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)
   - [setUseUninstallSandbox](#setuseuninstallsandbox)
   - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended-1)
-  - [validateAndSendInAppPurchase (Legacy)](#validateandsendinapppurchase-legacy-1)
+  - [validateAndSendInAppPurchase (Legacy - Deprecated)](#validateandsendinapppurchase-legacy-1)
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
   - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
@@ -1067,10 +1067,10 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ---
 
-### validateAndSendInAppPurchase (Legacy)
+### validateAndSendInAppPurchase (Legacy - Deprecated)
 **`void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
  
-**⚠️ Deprecated:** Use the V2 version with `AFPurchaseDetailsAndroid` instead.
+**⚠️ Deprecated:** This legacy API is deprecated. Use the V2 version with `AFPurchaseDetailsAndroid` instead. This method is maintained for backward compatibility only.
 API for server verification of in-app purchases.
 An af_purchase event with the relevant values will be automatically sent if the validation is successful.
 
@@ -1298,6 +1298,8 @@ AppsFlyer provides two versions of the `validateAndSendInAppPurchase` method for
  
 To send and validate in app purchases you can call this method from the processPurchase method (V2).
 
+> **Note on iOS Error Handling:** The `onValidateAndLogFailure` callback is only triggered for actual errors (network errors, invalid parameters, etc.). Validation failures (e.g., invalid receipt) are returned through the `onValidateAndLogComplete` callback in the response dictionary. Always check the response to determine if validation was successful.
+
 | parameter                    | type                           | description  |
 | -----------                  |-------------------             | ------------------------------------------|
 | `details`                    | `AFSDKPurchaseDetailsIOS`      | Instance of AFSDKPurchaseDetailsIOS class |
@@ -1319,10 +1321,10 @@ To send and validate in app purchases you can call this method from the processP
 
 ---
 
-### validateAndSendInAppPurchase (Legacy) {#validateandsendinapppurchase-legacy-1}
+### validateAndSendInAppPurchase (Legacy - Deprecated) {#validateandsendinapppurchase-legacy-1}
 **`void validateAndSendInAppPurchase(string productIdentifier, string price, string currency, string transactionId, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`**
  
-**⚠️ Deprecated:** Use the V2 version with `AFSDKPurchaseDetailsIOS` instead.
+**⚠️ Deprecated:** This legacy API is deprecated. Use the V2 version with `AFSDKPurchaseDetailsIOS` instead. This method is maintained for backward compatibility only.
 To send and validate in app purchases you can call this method from the processPurchase method.
 
 | parameter              | type                           | description  |
@@ -1667,10 +1669,11 @@ For iOS : the callback will return a JSON string from apples verifyReceipt API. 
 ##  IAppsFlyerValidateAndLog
   
 ### onValidateAndLogComplete 
-**`public void didFinishValidateReceipt(string result)`**
+**`public void onValidateAndLogComplete(string result)`**
  
 The success callback for validateAndSendInAppPurchase API.<br>
 The callback will return a JSON string which can be converted to dictionary. <br>
+> **Note for iOS:** On iOS, this callback is invoked for all successful API calls, including cases where validation fails (e.g., invalid receipt). Always check the response dictionary to determine the actual validation result. Only network errors and invalid parameters trigger `onValidateAndLogFailure`.
 
 | parameter   | type      | description        |
 | ----------  |---------- |--------------------|
@@ -1694,6 +1697,7 @@ The callback will return a JSON string which can be converted to dictionary. <br
  
  The error callback for validating receipts.<br>
  The callback will return a JSON string which can be converted to dictionary. <br>
+> **Note for iOS:** On iOS, this callback is only triggered for actual errors (network errors, invalid parameters, etc.). Validation failures (e.g., invalid receipt) are returned through `onValidateAndLogComplete` in the response dictionary.
 
 | parameter   | type      | description                   |
 | ----------  |---------- |----------------------------   |

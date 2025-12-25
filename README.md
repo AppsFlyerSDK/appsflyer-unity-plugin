@@ -16,23 +16,24 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.3
-- Android Purchase Connector 2.1.1
-- iOS AppsFlyer SDK v6.17.7
-- iOS Purchase Connector 6.17.7
+- Android AppsFlyer SDK v6.17.5
+- Android Purchase Connector 2.2.0
+- iOS AppsFlyer SDK v6.17.8
+- iOS Purchase Connector 6.17.8
 ---
 ## 📌 Important: Two Versions of Unity Plugin v6.17.7
 
 We have released **two** versions of the AppsFlyer Unity plugin to support teams at different stages of migrating to **Google Play Billing Library v8.0.0**.
 
-### Option A — `v6.17.7` (Billing Library v8)
-- **What’s included:** Support for **Google Play Billing Library 8.0.0** on Android (Android Purchase Connector version - 2.2.0).
+### Option A — `v6.17.81` (Billing Library v8)
+- **What's included:** Support for **Google Play Billing Library 8.0.0** on Android (Android Purchase Connector version - 2.2.0).
 - **Impact:** This version may introduce **breaking changes** for apps that have **not yet migrated** to the Billing v8 APIs.
 - **Unity IAP requirement:** If you choose this option, update **Unity IAP (`com.unity.purchasing`) to version 5.0.0 or newer** (we recommend the latest 5.x). Unity IAP 4.x does **not** include Billing v8.
 
-### Option B — `v6.17.72` (Billing Library v7)
+### Option B — `v6.17.80` (Billing Library v7)
 - **Purpose:** For developers **not ready** to adopt Billing v8.
-- **Bundled SDKs:** **iOS SDK 6.17.7** and **Android SDK 6.17.3**.
+- **Bundled SDKs:** **iOS SDK 6.17.8** and **Android SDK 6.17.5**.
+- **Android Purchase Connector:** Version 2.1.2
 - **Impact:** Lets you update the AppsFlyer SDKs without changing your existing (pre‑v8) billing integration.
 
 ---  

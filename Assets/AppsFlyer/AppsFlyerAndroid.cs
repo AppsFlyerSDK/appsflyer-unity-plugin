@@ -484,7 +484,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// API for server verification of in-app purchases.
+        /// [Deprecated] API for server verification of in-app purchases - please use V2 with AFPurchaseDetailsAndroid instead.
         /// An af_purchase event with the relevant values will be automatically sent if the validation is successful.
         /// </summary>
         /// <param name="publicKey">License Key obtained from the Google Play Console.</param>
@@ -493,6 +493,7 @@ namespace AppsFlyerSDK
         /// <param name="price">Purchase price, should be derived from <code>skuDetails.getStringArrayList("DETAILS_LIST")</code></param>
         /// <param name="currency">Purchase currency, should be derived from <code>skuDetails.getStringArrayList("DETAILS_LIST")</code></param>
         /// <param name="additionalParameters">additionalParameters Freehand parameters to be sent with the purchase (if validated).</param>
+        [System.Obsolete("This method is deprecated. Use validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> purchaseAdditionalDetails, MonoBehaviour gameObject) instead.")]
         public void validateAndSendInAppPurchase(string publicKey, string signature, string purchaseData, string price, string currency, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
@@ -501,7 +502,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// API for server verification of in-app purchases.
+        /// V2 - API for server verification of in-app purchases.
         /// An af_purchase event with the relevant values will be automatically sent if the validation is successful.
         /// </summary>
         /// <param name="details">AFPurchaseDetailsAndroid instance.</param>
