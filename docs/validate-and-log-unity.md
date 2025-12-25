@@ -6,7 +6,7 @@ parentDoc: 694bc4503a665449be928691
 excerpt: "Used to validate and report in-app purchase and subscription revenue events"
 hidden: false
 order: 1
-
+---
 
 ## Validate and log purchase
 
