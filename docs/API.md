@@ -30,8 +30,8 @@ The list of available methods for this plugin is described below.
   - [getAppsFlyerId](#getappsflyerid)
   - [setMinTimeBetweenSessions](#setmintimebetweensessions)
   - [setHost](#sethost)
-  - [setUserEmails](#setuseremails)
-  - [setPhoneNumber](#setphonenumber)
+  - [setUserEmails *Soon to be deprecated*](#setuseremails-soon-to-be-deprecated)
+  - [setPhoneNumber *Soon to be deprecated*](#setphonenumber-soon-to-be-deprecated)
   - [getConversionData](#getconversiondata)
   - [attributeAndOpenStore](#attributeandopenstore)
   - [logAdRevenue](#logadrevenue)
@@ -56,8 +56,9 @@ The list of available methods for this plugin is described below.
   - [isPreInstalledApp](#ispreinstalledapp)
   - [handlePushNotifications](#handlepushnotifications)
   - [getAttributionId](#getattributionid)
+- [In-App Purchase Validation](#in-app-purchase-validation)
   - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended)
-  - [validateAndSendInAppPurchase (Legacy - Deprecated)](#validateandsendinapppurchase-legacy)
+  - [validateAndSendInAppPurchase (Legacy - Deprecated)](#validateandsendinapppurchase-legacy---deprecated)
   - [setCollectOaid](#setcollectoaid)
   - [setDisableAdvertisingIdentifiers](#setdisableadvertisingidentifiers)
   - [setDisableNetworkData](#setdisablenetworkdata)
@@ -68,8 +69,9 @@ The list of available methods for this plugin is described below.
   - [setDisableCollectIAd](#setdisablecollectiad)
   - [setUseReceiptValidationSandbox](#setusereceiptvalidationsandbox)
   - [setUseUninstallSandbox](#setuseuninstallsandbox)
-  - [validateAndSendInAppPurchase (V2 - Recommended)](#validateandsendinapppurchase-v2---recommended-1)
-  - [validateAndSendInAppPurchase (Legacy - Deprecated)](#validateandsendinapppurchase-legacy-1)
+- [In-App Purchase Validation (iOS)](#in-app-purchase-validation-ios)
+  - [validateAndSendInAppPurchase (V2 - Recommended) {#validateandsendinapppurchase-v2---recommended-1}](#validateandsendinapppurchase-v2---recommended-validateandsendinapppurchase-v2---recommended-1)
+  - [validateAndSendInAppPurchase (Legacy - Deprecated) {#validateandsendinapppurchase-legacy-1}](#validateandsendinapppurchase-legacy---deprecated-validateandsendinapppurchase-legacy-1)
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
   - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
@@ -522,7 +524,8 @@ AppsFlyer.setHost("hostPrefixName","hostName");
 
 ---
 
-### setUserEmails 
+### setUserEmails *Soon to be deprecated*
+
 **`void setUserEmails(EmailCryptType cryptMethod, params string[] emails)`**
 
 Set the user emails and encrypt them.
@@ -546,7 +549,7 @@ AppsFlyer.setUserEmails(EmailCryptType.EmailCryptTypeSHA256, "test1@test1.com", 
 
 ---
 
-### setPhoneNumber
+### setPhoneNumber *Soon to be deprecated*
 **`void setPhoneNumber(string phoneNumber)`**
 
 Set the user phone number.
