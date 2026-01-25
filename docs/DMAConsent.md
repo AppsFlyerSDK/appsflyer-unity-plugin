@@ -10,7 +10,7 @@ hidden: false
 
 For a general introduction to DMA consent data, see the [DMA consent overview](https://dev.appsflyer.com/hc/docs/send-consent-for-dma-compliance) in the AppsFlyer docs. The SDK offers two alternative methods for gathering consent data:
 
-- **Through a Consent Management Platform (CMP):** If your app uses a CMP that complies with the IAB **Transparency and Consent Framework (TCF) v2.2**, the SDK can automatically retrieve consent details.
+- **Through a Consent Management Platform (CMP):** If your app uses a CMP that complies with the IAB **Transparency and Consent Framework (TCF) v2.2/2.3**, the SDK can automatically retrieve consent details.
 
 **OR**
 
@@ -23,7 +23,7 @@ For a general introduction to DMA consent data, see the [DMA consent overview](h
 
 ## Use CMP to collect consent data
 
-A CMP compatible with **TCF v2.2** persists the consent strings on-device (NSUserDefaults on iOS / SharedPreferences on Android). To enable the Unity SDK to access this data and include it with every event, follow these steps:
+A CMP compatible with **TCF v2.2/2.3** persists the consent strings on-device (NSUserDefaults on iOS / SharedPreferences on Android). To enable the Unity SDK to access this data and include it with every event, follow these steps:
 
 1. **Initialize** the SDK (in your Unity scene startup code).  
 2. **Before** starting the SDK, call `AppsFlyer.enableTCFDataCollection(true)` to instruct the SDK to collect TCF data from the device.  
@@ -69,7 +69,7 @@ public class DMAConsentCmpFlow : MonoBehaviour
 
 ## Manually collect consent data
 
-If your app **does not** use a TCF v2.2-compatible CMP, provide the consent data directly to the SDK via `AppsFlyer.setConsentData(AppsFlyerConsent)`.
+If your app **does not** use a TCF v2.2/2.3-compatible CMP, provide the consent data directly to the SDK via `AppsFlyer.setConsentData(AppsFlyerConsent)`.
 
 1. **Initialize** the SDK in your startup flow.  
 2. Determine whether **GDPR applies** to the user.  
