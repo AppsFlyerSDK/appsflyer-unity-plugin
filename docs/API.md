@@ -1059,7 +1059,7 @@ An af_purchase event with the relevant values will be automatically sent if the 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
         AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, 
-        "token", "productId", "price", "currency");
+        "token", "productId");
         
         AppsFlyer.validateAndSendInAppPurchase(
         details, 
