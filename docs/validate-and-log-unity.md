@@ -92,6 +92,8 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
 ```
 
 ## Receipt validation [Legacy]
+<span class="annotation-deprecated">Deprecated since V6.17.8</span>  
+
 
 For Receipt Validation, follow the instructions according to your operating system.
 
