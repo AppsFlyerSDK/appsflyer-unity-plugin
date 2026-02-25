@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+
+  <androidPackages>
+    <androidPackage spec="com.appsflyer:af-android-sdk:7.99.512"></androidPackage>
+    <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
+    <androidPackage spec="com.appsflyer:purchase-connector:2.2.0"></androidPackage>
+    <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.99.518">
+      <repositories>
+        <repository>https://gitlab.appsflyer.com/api/v4/projects/126/packages/maven</repository>
+      </repositories>
+    </androidPackage>
+  </androidPackages>
+
+  <iosPods>
+    <iosPod name="AppsFlyerFramework" version="6.17.8" minTargetSdk="12.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="6.17.8" minTargetSdk="12.0"></iosPod>
+    <iosPod name="AppsFlyerRPC" version="1.0.3" minTargetSdk="13.0"></iosPod>
+  </iosPods>
+
+</dependencies>

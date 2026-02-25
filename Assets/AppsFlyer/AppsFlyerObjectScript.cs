@@ -10,12 +10,15 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 
     // These fields are set from the editor so do not modify!
     //******************************//
-    public string devKey;
-    public string appID;
+    public string iOSDevKey;
+    public string iOSAppID;
+    public string androidDevKey;
+    public string androidAppID;
     public string UWPAppID;
     public string macOSAppID;
     public bool isDebug;
     public bool getConversionData;
+    public bool enableRPC;
     //******************************//
 
 
@@ -25,11 +28,13 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
         //******************************//
         AppsFlyer.setIsDebug(isDebug);
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
-        AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
+        AppsFlyer.initSDK(iOSDevKey, UWPAppID, getConversionData ? this : null);
 #elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
-    AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
+        AppsFlyer.initSDK(iOSDevKey, macOSAppID, getConversionData ? this : null);
+#elif UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyer.initSDK(androidDevKey, androidAppID, getConversionData ? this : null);
 #else
-        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        AppsFlyer.initSDK(iOSDevKey, iOSAppID, getConversionData ? this : null);
 #endif
         //******************************/
  

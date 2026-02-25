@@ -57,7 +57,13 @@ namespace AppsFlyerSDK
 #endif
             }
 
-#if UNITY_IOS || UNITY_STANDALONE_OSX
+#if APPSFLYER_RPC && (UNITY_IOS || UNITY_ANDROID)
+            if (instance == null || !instance.isInit)
+            {
+                instance = new AppsFlyerRPCWrapper(devKey, appID, gameObject);
+                instance.isInit = true;
+            }
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
             if (instance == null || !instance.isInit)
             {
                 instance = new AppsFlyeriOS(devKey, appID, gameObject);
@@ -177,7 +183,9 @@ namespace AppsFlyerSDK
             {
                 instance.setIsDebug(shouldEnable);
             } else {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
+#if APPSFLYER_RPC && (UNITY_IOS || UNITY_ANDROID)
+                AppsFlyerRPCWrapper.pendingDebug = shouldEnable;
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
                 instance = new AppsFlyeriOS();
                 instance.setIsDebug(shouldEnable);
 #elif UNITY_ANDROID
@@ -283,16 +291,15 @@ namespace AppsFlyerSDK
             }
             else
             {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
+#if APPSFLYER_RPC && (UNITY_IOS || UNITY_ANDROID)
+                AppsFlyerRPCWrapper.pendingOneLinkCustomDomains = domains;
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
                 instance = new AppsFlyeriOS();
 #elif UNITY_ANDROID
                 instance = new AppsFlyerAndroid();
 #else
 
 #endif
-
-                
-
             }
         }
 
@@ -309,7 +316,9 @@ namespace AppsFlyerSDK
             {
                 instance.setCurrencyCode(currencyCode);
             } else {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
+#if APPSFLYER_RPC && (UNITY_IOS || UNITY_ANDROID)
+                AppsFlyerRPCWrapper.pendingCurrencyCode = currencyCode;
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
                 instance = new AppsFlyeriOS();
                 instance.setCurrencyCode(currencyCode);
 #elif UNITY_ANDROID
@@ -437,7 +446,9 @@ namespace AppsFlyerSDK
             {
                 instance.setHost(hostPrefixName, hostName);
             } else {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
+#if APPSFLYER_RPC && (UNITY_IOS || UNITY_ANDROID)
+                AppsFlyerRPCWrapper.pendingHost = (hostPrefixName, hostName);
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
                 instance = new AppsFlyeriOS();
                 instance.setHost(hostPrefixName, hostName);
 #elif UNITY_ANDROID
