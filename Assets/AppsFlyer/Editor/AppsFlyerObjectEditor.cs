@@ -31,7 +31,7 @@ public class AppsFlyerObjectEditor : Editor
     {
         serializedObject.Update();
 
-        GUILayout.Box((Texture)AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("appsflyer_logo")[0]), typeof(Texture)), new GUILayoutOption[] { GUILayout.Width(600) });
+        DrawLogo();
 
         EditorGUILayout.Separator();
         EditorGUILayout.HelpBox("Set your devKey and appID to init the AppsFlyer SDK and start tracking. You must modify these fields and provide:\ndevKey - Your application devKey provided by AppsFlyer.\nappId - For iOS only. Your iTunes Application ID.\nUWP app id - For UWP only. Your application app id \nMac OS app id - For MacOS app only.", MessageType.Info);
@@ -80,5 +80,25 @@ public class AppsFlyerObjectEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
+    private void DrawLogo()
+    {
+        var guids = AssetDatabase.FindAssets("appsflyer_logo");
+        if (guids.Length == 0) return;
+
+        Texture logo = (Texture)AssetDatabase.LoadAssetAtPath(
+            AssetDatabase.GUIDToAssetPath(guids[0]),
+            typeof(Texture));
+
+        if (logo == null) return;
+
+        float maxWidth = Mathf.Min(200, EditorGUIUtility.currentViewWidth - 40);
+        float aspect = (float)logo.height / logo.width;
+        float height = maxWidth * aspect;
+
+        Rect rect = GUILayoutUtility.GetRect(maxWidth, height, GUILayout.ExpandWidth(false));
+        rect.x = (EditorGUIUtility.currentViewWidth - maxWidth) * 0.5f;
+        rect.width = maxWidth;
+        GUI.DrawTexture(rect, logo, ScaleMode.ScaleToFit);
+    }
 
 }
