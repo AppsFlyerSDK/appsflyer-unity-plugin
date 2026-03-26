@@ -1,5 +1,14 @@
 # Versions
 
+## v6.17.90
+* Update Android SDK version - 6.17.6
+* Update iOS SDK version - 6.17.9
+* Update iOS Purchase Connector version - 6.17.9
+* Two unity-wrapper variants published:
+  * v6.17.90 — Billing Library 7 (billing:5.2.0)
+  * v6.17.91 — Billing Library 8 (billing:8.0.0)
+* Update appsflyer_logo
+
 ## v6.17.81
 * Update Android Purchase Connector version - 2.2.0
 
