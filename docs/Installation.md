@@ -56,7 +56,7 @@ Add this line for the latest version of the regular mode
 
   2. Download and add the required Android dependencies to the Assets/Plugins/Android folder:
       1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.17.6/af-android-sdk-6.17.6.aar)
-      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.17.90/unity-wrapper-6.17.90.aar) — Billing Library 7, or [unity-wrapper-6.17.91](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.17.91/unity-wrapper-6.17.91.aar) for Billing Library 8
+      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.17.90/unity-wrapper-6.17.90.aar) — Billing Library 7, or [unity-wrapper-6.17.90](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.17.90/unity-wrapper-6.17.90.aar) for Billing Library 8
       3. [Google Installreferrer library](https://mvnrepository.com/artifact/com.android.installreferrer/installreferrer/2.1)
   3. Download and add the required iOS dependencies to the Assets/Plugins/iOS/AppsFlyer folder:
       1. [Download](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/tag/6.17.9) the iOS SDK as a static library `AppsFlyerLib.xcframework.zip`
