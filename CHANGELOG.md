@@ -1,5 +1,8 @@
 # Versions
 
+## v6.17.91
+* Update Android unity-wrapper to Billing Library 8 (billing:8.0.0)
+
 ## v6.17.90
 * Update Android SDK version - 6.17.6
 * Update iOS SDK version - 6.17.9
