@@ -1,0 +1,262 @@
+name: RC Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: "RC plugin version — must match ^\\d+\\.\\d+\\.\\d+-rc\\d+$ (e.g. 6.18.0-rc1)"
+        required: true
+        type: string
+      android_sdk_version:
+        description: "Android SDK version to pin (e.g. 6.18.0)"
+        required: true
+        type: string
+      ios_sdk_version:
+        description: "iOS SDK version to pin (e.g. 6.18.0)"
+        required: true
+        type: string
+      base_branch:
+        description: "Branch to cut the release from"
+        required: false
+        default: development
+        type: string
+      skip_tests:
+        description: "Skip unit test job (emergency / hotfix use only)"
+        required: false
+        default: "false"
+        type: string
+      skip_e2e:
+        description: "Skip E2E jobs (emergency / hotfix use only)"
+        required: false
+        default: "false"
+        type: string
+      dry_run:
+        description: "Dry run — validate inputs and print plan without pushing or opening a PR"
+        required: false
+        default: "true"
+        type: string
+
+jobs:
+  # ── 1. Validate inputs ──────────────────────────────────────────────────────
+  validate-release:
+    name: Validate inputs
+    runs-on: ubuntu-latest
+    outputs:
+      base_version: ${{ steps.parse.outputs.base_version }}
+    steps:
+      - name: Check plugin_version format
+        run: |
+          if ! echo "${{ github.event.inputs.plugin_version }}" | grep -qE '^\d+\.\d+\.\d+-rc\d+$'; then
+            echo "::error::plugin_version '${{ github.event.inputs.plugin_version }}' does not match ^\d+\.\d+\.\d+-rc\d+$"
+            exit 1
+          fi
+          echo "plugin_version OK: ${{ github.event.inputs.plugin_version }}"
+
+      - name: Parse base_version (strip -rcN suffix)
+        id: parse
+        run: |
+          BASE=$(echo "${{ github.event.inputs.plugin_version }}" | sed 's/-rc[0-9]*$//')
+          echo "base_version=$BASE" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE"
+
+  # ── 2. Prepare release branch ───────────────────────────────────────────────
+  prepare-branch:
+    name: Prepare release branch
+    needs: validate-release
+    runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.branch.outputs.release_branch }}
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref:        ${{ github.event.inputs.base_branch }}
+          fetch-depth: 0
+          token:      ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name  "${{ secrets.CI_USERNAME }}"
+          git config user.email "${{ secrets.CI_EMAIL }}"
+
+      - name: Derive release branch name
+        id: branch
+        run: |
+          VERSION="${{ github.event.inputs.plugin_version }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          BRANCH="releases/${MAJOR}.x.x/${MINOR}.x/${VERSION}"
+          echo "release_branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "release_branch=$BRANCH"
+
+      - name: Create or reset release branch
+        run: |
+          BRANCH="${{ steps.branch.outputs.release_branch }}"
+          if git ls-remote --heads origin "$BRANCH" | grep -q "$BRANCH"; then
+            echo "Branch exists — resetting to ${{ github.event.inputs.base_branch }}"
+            git checkout -B "$BRANCH" "origin/${{ github.event.inputs.base_branch }}"
+          else
+            echo "Creating new branch: $BRANCH"
+            git checkout -b "$BRANCH"
+          fi
+
+      - name: Bump versions
+        run: |
+          chmod +x scripts/bump-version.sh
+          scripts/bump-version.sh \
+            --plugin-version        "${{ github.event.inputs.plugin_version }}" \
+            --android-sdk-version   "${{ github.event.inputs.android_sdk_version }}" \
+            --ios-sdk-version       "${{ github.event.inputs.ios_sdk_version }}"
+
+      - name: Commit version bump
+        run: |
+          git add \
+            Assets/AppsFlyer/package.json \
+            Assets/AppsFlyer/AppsFlyer.cs \
+            Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+            deploy/build_unity_package.sh \
+            deploy/strict_mode_build_package.sh \
+            CHANGELOG.md \
+            README.md
+          git commit -m "chore: bump to ${{ github.event.inputs.plugin_version }}" || echo "Nothing to commit"
+
+      - name: Push release branch
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          git push origin "${{ steps.branch.outputs.release_branch }}" --force
+
+      - name: Write PR body to file
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          VERSION="${{ github.event.inputs.plugin_version }}"
+          BASE_VERSION="${{ needs.validate-release.outputs.base_version }}"
+          {
+            printf '## Release %s\n\n' "$VERSION"
+            printf 'Field | Value\n'
+            printf '--- | ---\n'
+            printf 'Plugin version | `%s`\n' "$VERSION"
+            printf 'Base version | `%s`\n' "$BASE_VERSION"
+            printf 'Android SDK | `%s`\n' "${{ github.event.inputs.android_sdk_version }}"
+            printf 'iOS SDK | `%s`\n' "${{ github.event.inputs.ios_sdk_version }}"
+            printf 'Base branch | `%s`\n\n' "${{ github.event.inputs.base_branch }}"
+            printf '### RC Pipeline status\n'
+            printf -- '- [x] RC-PREP (this PR)\n'
+            printf -- '- [ ] RC-E2E (triggered automatically)\n'
+          } > /tmp/pr_body.md
+
+      - name: Open / update PR to master
+        if: github.event.inputs.dry_run == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ steps.branch.outputs.release_branch }}"
+          VERSION="${{ github.event.inputs.plugin_version }}"
+
+          PR_URL=$(gh pr list \
+            --head "$BRANCH" \
+            --base master \
+            --state open \
+            --json url \
+            --jq '.[0].url' 2>/dev/null || true)
+
+          if [[ -n "$PR_URL" ]]; then
+            echo "PR already exists: $PR_URL"
+            gh pr edit "$PR_URL" \
+              --title "Release $VERSION" \
+              --body-file /tmp/pr_body.md
+          else
+            gh pr create \
+              --head      "$BRANCH" \
+              --base      master \
+              --title     "Release $VERSION" \
+              --body-file /tmp/pr_body.md
+          fi
+
+      - name: Dry run summary
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "=== DRY RUN — nothing was pushed ==="
+          echo "release_branch : ${{ steps.branch.outputs.release_branch }}"
+          echo "plugin_version : ${{ github.event.inputs.plugin_version }}"
+          echo "android_sdk    : ${{ github.event.inputs.android_sdk_version }}"
+          echo "ios_sdk        : ${{ github.event.inputs.ios_sdk_version }}"
+          git diff HEAD~1 HEAD --stat || git status
+
+  # ── 3. Unit tests (parallel with prepare-branch) ────────────────────────────
+  # Runs the existing PlayMode test suite (iOS, Android, Shared matrix) against
+  # the plugin source on the dispatched-from branch. Branch prep uses no Unity
+  # seat, so these two jobs run concurrently without license contention.
+  # E2E waits for BOTH prepare-branch and run-tests before starting, ensuring
+  # the seat is free when E2E kicks off.
+  run-tests:
+    name: Unit tests
+    needs: validate-release
+    if: github.event.inputs.skip_tests == 'false'
+    uses: ./.github/workflows/main.yml
+    secrets: inherit
+
+  # ── 4. E2E — iOS ────────────────────────────────────────────────────────────
+  run-e2e-ios:
+    name: E2E — iOS
+    needs: [prepare-branch, run-tests]
+    if: github.event.inputs.skip_e2e == 'false' && github.event.inputs.dry_run == 'false'
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
+
+  # ── 5. E2E — Android (after iOS to avoid Unity license contention) ──────────
+  run-e2e-android:
+    name: E2E — Android
+    needs: [prepare-branch, run-e2e-ios]
+    if: github.event.inputs.skip_e2e == 'false' && github.event.inputs.dry_run == 'false'
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
+
+  # ── 6. Pre-publish gate ──────────────────────────────────────────────────────
+  pre-publish-gate:
+    name: Pre-publish gate
+    needs: [prepare-branch, run-tests, run-e2e-ios, run-e2e-android]
+    if: always() && github.event.inputs.dry_run == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check unit test and E2E results
+        run: |
+          TEST_RESULT="${{ needs.run-tests.result }}"
+          IOS_RESULT="${{ needs.run-e2e-ios.result }}"
+          AND_RESULT="${{ needs.run-e2e-android.result }}"
+          SKIP_TESTS="${{ github.event.inputs.skip_tests }}"
+          SKIP_E2E="${{ github.event.inputs.skip_e2e }}"
+
+          if [[ "$SKIP_TESTS" != "true" && "$TEST_RESULT" != "success" ]]; then
+            echo "::error::Unit tests result: $TEST_RESULT"
+            exit 1
+          fi
+
+          if [[ "$SKIP_E2E" == "true" ]]; then
+            echo "E2E skipped by operator — gate passes automatically"
+            exit 0
+          fi
+
+          if [[ "$IOS_RESULT" != "success" ]]; then
+            echo "::error::iOS E2E result: $IOS_RESULT"
+            exit 1
+          fi
+          if [[ "$AND_RESULT" != "success" ]]; then
+            echo "::error::Android E2E result: $AND_RESULT"
+            exit 1
+          fi
+
+          echo "All checks passed. RC ${{ github.event.inputs.plugin_version }} is ready for manual publish."

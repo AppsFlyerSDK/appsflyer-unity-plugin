@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.appsflyer.engagement">
+
+    <application>
+        <activity
+            android:name="com.appsflyer.engagement.AppsFlyerUnityActivity"
+            android:label="@string/app_name"
+            android:exported="true"
+            android:launchMode="singleTask">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- afqa-unity:// deep link intent filter for E2E-002 and E2E-003 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="afqa-unity" />
+            </intent-filter>
+
+        </activity>
+    </application>
+
+</manifest>

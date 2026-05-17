@@ -1,0 +1,133 @@
+name: RC E2E — iOS (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      plugin_version:
+        description: RC plugin version (e.g. 6.18.0-rc1)
+        required: true
+        type: string
+      release_branch:
+        description: Release branch to check out
+        required: true
+        type: string
+    secrets:
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+      UNITY_SERIAL:
+        required: true
+      ENV_FILE:
+        required: true
+
+jobs:
+  e2e-ios:
+    name: E2E iOS — ${{ inputs.plugin_version }}
+    runs-on: macos-14
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Write .env from secret
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
+
+      - name: Install jq
+        run: brew install jq 2>/dev/null || true
+
+      - name: Activate Unity license
+        uses: game-ci/unity-activate@v2
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+
+      - name: Build iOS Xcode project (via Unity)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath:    test-app
+          unityVersion:   6000.3.14f1
+          targetPlatform: iOS
+          buildName:      UnityQATest
+          buildsPath:     test-app/Build
+          buildMethod:    BuildScript.BuildIOSSimulator
+
+      - name: Locate Xcode project and install iOS pods
+        run: |
+          XCODE_PROJ=$(find test-app/Build -name "*.xcodeproj" -not -path "*/DerivedData/*" | head -1)
+          if [[ -z "$XCODE_PROJ" ]]; then
+            echo "::error::No .xcodeproj found under test-app/Build"
+            exit 1
+          fi
+          IOS_BUILD_DIR=$(dirname "$XCODE_PROJ")
+          echo "IOS_BUILD_DIR=$IOS_BUILD_DIR" >> "$GITHUB_ENV"
+          echo "Found Xcode project in: $IOS_BUILD_DIR"
+
+          chmod +x scripts/ios-pod-install.sh
+          scripts/ios-pod-install.sh "$IOS_BUILD_DIR"
+
+      - name: Compile simulator .app from Xcode workspace
+        run: |
+          XCODE_WS=$(find "$IOS_BUILD_DIR" -name "Unity-iPhone.xcworkspace" -not -path "*/DerivedData/*" | head -1)
+          if [[ -z "$XCODE_WS" ]]; then
+            echo "::error::Unity-iPhone.xcworkspace not found after pod install in $IOS_BUILD_DIR"
+            exit 1
+          fi
+          xcodebuild \
+            -workspace "$XCODE_WS" \
+            -scheme    Unity-iPhone \
+            -sdk       iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath "$IOS_BUILD_DIR/DerivedData" \
+            build | xcpretty || true
+
+          APP=$(find "$IOS_BUILD_DIR/DerivedData" -name "UnityQATest.app" -maxdepth 6 | head -1)
+          if [[ -z "$APP" ]]; then
+            echo "::error::UnityQATest.app not found after xcodebuild"
+            exit 1
+          fi
+          mkdir -p test-app/Build/iOS-Simulator
+          cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
+          echo "APP_PATH=test-app/Build/iOS-Simulator/UnityQATest.app" >> "$GITHUB_ENV"
+
+      - name: Boot iOS simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | \
+            jq -r '.devices | to_entries[] | select(.key | contains("iOS-17")) | .value[] | select(.isAvailable == true) | .udid' | head -1)
+          if [[ -z "$UDID" ]]; then
+            UDID=$(xcrun simctl list devices available -j | \
+              jq -r '.devices[][] | select(.isAvailable == true) | .udid' | head -1)
+          fi
+          echo "Booting simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Run E2E scenario runner — iOS
+        run: |
+          chmod +x scripts/af-scenario-runner.sh
+          scripts/af-scenario-runner.sh \
+            --platform ios \
+            --plan     .af-e2e/test-plan.json \
+            --verbose
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-report-${{ inputs.plugin_version }}
+          path: .af-e2e/reports/
+          retention-days: 30
+
+      - name: Return Unity license
+        if: always()
+        uses: game-ci/unity-return-license@v2
