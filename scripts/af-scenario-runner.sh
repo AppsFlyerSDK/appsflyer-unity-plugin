@@ -203,6 +203,10 @@ android_install() {
 
 android_launch() {
   log_info "Launching $PACKAGE_NAME..."
+  # Increase ring buffer so 240s of Unity output (~100-200 lines/sec) does not
+  # overflow it before log collection runs. The emulator runner sets it to 2M
+  # which holds only ~10-20s at typical Unity rates.
+  adb logcat -G 32m 2>/dev/null || true
   adb logcat -c
   adb shell am start -n "${PACKAGE_NAME}/${ACTIVITY}" 2>/dev/null || \
     adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 2>/dev/null
@@ -450,6 +454,10 @@ platform_peek_qa_log() {
       content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null) || true
       if [[ -n "$content" ]]; then echo "$content"; return 0; fi
     done
+    # Last resort: scan the current logcat ring buffer. With the buffer set to
+    # 32M in android_launch this is reliable as long as a poll runs within the
+    # first ~5 minutes of app output.
+    adb logcat -d 2>/dev/null | grep -E "AF_QA" 2>/dev/null || true
     return 0
   fi
   ios_ensure_udid
