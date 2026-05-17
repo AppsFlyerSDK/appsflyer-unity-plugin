@@ -54,7 +54,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
         __weak typeof(self) weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)),
                        dispatch_get_main_queue(), ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
+            UnityAppController *strongSelf = weakSelf;
             if (!strongSelf) return;
             // Route through the standard iOS URL-open delegate pipeline,
             // matching Flutter's AppDelegate approach.

@@ -52,7 +52,7 @@ jobs:
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath:      test-app
-          unityVersion:     2020.3.41f1
+          unityVersion:     6000.3.5f1
           targetPlatform:   Android
           buildName:        com.appsflyer.engagement
           buildsPath:       test-app/Build
