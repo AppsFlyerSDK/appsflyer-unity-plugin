@@ -113,6 +113,8 @@ jobs:
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
             ARCHS=x86_64 \
             VALID_ARCHS=x86_64 \
+            CURRENT_PROJECT_VERSION=1 \
+            MARKETING_VERSION=1.0 \
             build | xcpretty
 
           APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
