@@ -37,14 +37,23 @@ target 'UnityFramework' do
 end
 
 post_install do |installer|
-  # PurchaseConnector 6.17.9 ships a privacy bundle target that references a
-  # file 'PurchaseConnector_Privacy' which does not exist on disk, causing
-  # simulator builds to fail with "Build input file cannot be found".
-  # Strip all build phases from the broken target so it becomes a no-op.
-  installer.pods_project.targets.each do |target|
-    next unless target.name == 'PurchaseConnector-PurchaseConnector_Privacy'
-    target.build_phases.to_a.each(&:remove_from_project)
+  # PurchaseConnector 6.17.9: the privacy bundle target references a compiled
+  # file 'PurchaseConnector_Privacy' that never gets created, breaking simulator
+  # builds with "Build input file cannot be found".  Removing only the build
+  # phases is not enough — Xcode's implicit bundle machinery still runs.
+  # Fully remove the target and all dependency edges that point to it.
+  pods_project = installer.pods_project
+  privacy_target = pods_project.native_targets.find { |t| t.name == 'PurchaseConnector-PurchaseConnector_Privacy' }
+  next unless privacy_target
+
+  pods_project.targets.each do |t|
+    t.dependencies.select { |d|
+      d.target_proxy.remote_global_id_string == privacy_target.uuid rescue false
+    }.each(&:remove_from_project)
   end
+
+  pods_project.root_object.targets.delete(privacy_target)
+  privacy_target.remove_from_project
 end
 PODFILE
 
