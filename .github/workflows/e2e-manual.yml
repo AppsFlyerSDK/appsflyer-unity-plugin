@@ -1,0 +1,35 @@
+name: E2E — Manual trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: Version label for the report (e.g. 6.18.0-rc1)
+        required: false
+        default: manual-test
+      platform:
+        description: Platform to test
+        required: true
+        type: choice
+        options:
+          - both
+          - android
+          - ios
+        default: both
+
+jobs:
+  e2e-android:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ inputs.plugin_version }}
+      release_branch: ${{ github.ref_name }}
+    secrets: inherit
+
+  e2e-ios:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ inputs.plugin_version }}
+      release_branch: ${{ github.ref_name }}
+    secrets: inherit
