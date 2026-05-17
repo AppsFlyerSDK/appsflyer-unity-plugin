@@ -74,7 +74,7 @@ jobs:
   # Job 2: Pod install, compile .app, and run E2E on macOS
   e2e-ios:
     name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-14
+    runs-on: macos-13
     needs: build-ios-xcode
     timeout-minutes: 60
 

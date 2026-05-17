@@ -214,37 +214,47 @@ android_get_pid() {
 
 android_collect_logs() {
   local log_file="$1"
-  local tail_lines="${ANDROID_LOGCAT_TAIL_LINES:-2000}"
 
   # Always start from an empty file so each phase capture is self-contained.
   : > "$log_file"
 
-  # Strategy 1: Read the app's af_qa_logs.txt from internal storage via
-  # `run-as`. Required because Flutter debug APKs launched standalone (no
-  # `flutter run` host) do not forward Dart `debugPrint` to logcat, so the
-  # file is the only reliable source of [AF_QA] markers. The Documents dir
-  # path on Android is `app_flutter/` for path_provider, but newer versions
-  # may write directly under `files/`, so try both. `run-as` works because
-  # `flutter build apk --debug` produces a debuggable APK.
+  # Strategy 1: Read the app's af_qa_logs.txt from internal storage.
+  # Try run-as first (works on non-rooted shells with debuggable APK), then
+  # fall back to a direct cat (works when adb shell runs as root, which
+  # Android 10+ CI emulators sometimes do, disabling run-as).
   local found=0
   for path in app_flutter/af_qa_logs.txt files/af_qa_logs.txt; do
     if adb shell "run-as $PACKAGE_NAME cat $path 2>/dev/null" >> "$log_file" 2>/dev/null; then
       if [[ -s "$log_file" ]]; then
-        log_debug "Pulled Android QA log from $path"
+        log_debug "Pulled Android QA log via run-as from $path"
         found=1
         break
       fi
     fi
   done
   if [[ "$found" -eq 0 ]]; then
-    log_debug "No af_qa_logs.txt found via run-as; relying on logcat only"
+    for abs_path in "/data/data/$PACKAGE_NAME/files/af_qa_logs.txt" "/data/user/0/$PACKAGE_NAME/files/af_qa_logs.txt"; do
+      local file_content
+      file_content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null)
+      if [[ -n "$file_content" ]]; then
+        printf '%s\n' "$file_content" >> "$log_file"
+        log_debug "Pulled Android QA log via root cat from $abs_path"
+        found=1
+        break
+      fi
+    done
+  fi
+  if [[ "$found" -eq 0 ]]; then
+    log_debug "No af_qa_logs.txt found via run-as or root cat; relying on logcat only"
   fi
 
   # Strategy 2: Always also append logcat output. AppsFlyer SDK native logs
-  # (HTTP response codes, etc.) reach logcat regardless of the Dart-print
-  # routing, and the count_matches checks need them. Limit to the recent tail
-  # so CI does not spend a minute dumping the whole emulator buffer every phase.
-  adb logcat -d -t "$tail_lines" 2>&1 | grep -E "${LOG_TAG}|AppsFlyer|response code:|preparing data:" >> "$log_file" || true
+  # (HTTP response codes, etc.) reach logcat regardless of Debug.Log routing,
+  # and the count_matches checks need them. No line-count limit: Unity generates
+  # hundreds of lines/sec so -t 2000 only covers a few seconds of output, and
+  # the [AF_QA] lines (written in the first ~4s) would be outside the window
+  # after a 240s wait. The grep filter keeps the output file small.
+  adb logcat -d 2>&1 | grep -E "${LOG_TAG}|AppsFlyer|response code:|preparing data:" >> "$log_file" || true
 }
 
 android_background_app() {
@@ -430,7 +440,15 @@ platform_trigger_deeplink() {
 platform_peek_qa_log() {
   if [[ "$PLATFORM" == "android" ]]; then
     for path in app_flutter/af_qa_logs.txt files/af_qa_logs.txt; do
-      adb shell "run-as $PACKAGE_NAME cat $path 2>/dev/null" 2>/dev/null && return 0
+      local content
+      content=$(adb shell "run-as $PACKAGE_NAME cat $path 2>/dev/null" 2>/dev/null)
+      if [[ -n "$content" ]]; then echo "$content"; return 0; fi
+    done
+    # Fallback: direct cat works when adb runs as root (Android 10+ CI emulators)
+    for abs_path in "/data/data/$PACKAGE_NAME/files/af_qa_logs.txt" "/data/user/0/$PACKAGE_NAME/files/af_qa_logs.txt"; do
+      local content
+      content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null)
+      if [[ -n "$content" ]]; then echo "$content"; return 0; fi
     done
     return 0
   fi
