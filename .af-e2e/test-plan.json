@@ -12,7 +12,7 @@
   "config": {
     "android": {
       "package_name": "com.appsflyer.engagement",
-      "activity": "com.unity3d.player.UnityPlayerActivity",
+      "activity": "com.appsflyer.engagement.AppsFlyerUnityActivity",
       "apk_path": "test-app/Build/Android/com.appsflyer.engagement.apk",
       "build_cmd": "echo 'Build handled by game-ci/unity-builder in CI'"
     },

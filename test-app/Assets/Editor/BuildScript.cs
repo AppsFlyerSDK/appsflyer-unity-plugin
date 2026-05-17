@@ -20,7 +20,7 @@ public static class BuildScript
         PlayerSettings.productName = "UnityQATest";
         PlayerSettings.Android.bundleVersionCode = 1;
         PlayerSettings.bundleVersion = "1.0";
-        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86_64;
+        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86_64 | AndroidArchitecture.ARM64;
 
         var options = new BuildPlayerOptions
         {
