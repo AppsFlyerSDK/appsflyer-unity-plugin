@@ -235,7 +235,7 @@ android_collect_logs() {
   if [[ "$found" -eq 0 ]]; then
     for abs_path in "/data/data/$PACKAGE_NAME/files/af_qa_logs.txt" "/data/user/0/$PACKAGE_NAME/files/af_qa_logs.txt"; do
       local file_content
-      file_content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null)
+      file_content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null) || true
       if [[ -n "$file_content" ]]; then
         printf '%s\n' "$file_content" >> "$log_file"
         log_debug "Pulled Android QA log via root cat from $abs_path"
@@ -441,13 +441,13 @@ platform_peek_qa_log() {
   if [[ "$PLATFORM" == "android" ]]; then
     for path in app_flutter/af_qa_logs.txt files/af_qa_logs.txt; do
       local content
-      content=$(adb shell "run-as $PACKAGE_NAME cat $path 2>/dev/null" 2>/dev/null)
+      content=$(adb shell "run-as $PACKAGE_NAME cat $path 2>/dev/null" 2>/dev/null) || true
       if [[ -n "$content" ]]; then echo "$content"; return 0; fi
     done
     # Fallback: direct cat works when adb runs as root (Android 10+ CI emulators)
     for abs_path in "/data/data/$PACKAGE_NAME/files/af_qa_logs.txt" "/data/user/0/$PACKAGE_NAME/files/af_qa_logs.txt"; do
       local content
-      content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null)
+      content=$(adb shell "cat $abs_path 2>/dev/null" 2>/dev/null) || true
       if [[ -n "$content" ]]; then echo "$content"; return 0; fi
     done
     return 0
