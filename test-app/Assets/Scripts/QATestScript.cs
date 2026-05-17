@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 using AppsFlyerSDK;
 
 public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
@@ -22,8 +23,24 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void Start()
     {
-        if (!LoadConfig())
-            return;
+        StartCoroutine(InitAsync());
+    }
+
+    void OnDestroy()
+    {
+        AppsFlyer.OnDeepLinkReceived -= OnDeepLinkReceived;
+        AppsFlyer.OnRequestResponse -= OnRequestResponse;
+        AppsFlyer.OnInAppResponse -= OnInAppResponse;
+    }
+
+    // ── Initialisation ────────────────────────────────────────────────────────
+
+    IEnumerator InitAsync()
+    {
+        yield return StartCoroutine(LoadConfig());
+
+        if (string.IsNullOrEmpty(_devKey))
+            yield break;
 
         AppsFlyer.OnRequestResponse += OnRequestResponse;
         AppsFlyer.OnInAppResponse += OnInAppResponse;
@@ -40,72 +57,57 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         StartCoroutine(RunPostStartApis());
     }
 
-    void OnDestroy()
-    {
-        AppsFlyer.OnDeepLinkReceived -= OnDeepLinkReceived;
-        AppsFlyer.OnRequestResponse -= OnRequestResponse;
-        AppsFlyer.OnInAppResponse -= OnInAppResponse;
-    }
-
     // ── Config loading ────────────────────────────────────────────────────────
 
-    bool LoadConfig()
+    IEnumerator LoadConfig()
     {
-        // Primary path: StreamingAssets (embedded in build, works on all platforms).
-        // In CI the workflow writes secrets to test-app/Assets/StreamingAssets/.env
-        // before calling game-ci/unity-builder so they get baked into the binary.
-        string envPath = Path.Combine(Application.streamingAssetsPath, ".env");
-
         string content = null;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        // On Android, StreamingAssets lives inside the APK; use the persistent
-        // copy written by the workflow via `adb shell run-as` (fallback path).
-        string persistentEnv = Path.Combine(Application.persistentDataPath, ".env");
-        if (File.Exists(persistentEnv))
-        {
-            content = File.ReadAllText(persistentEnv);
-        }
+        // On Android, StreamingAssets are inside the APK — use UnityWebRequest.
+        // The CI workflow bakes .env into StreamingAssets before calling unity-builder.
+        string url = Path.Combine(Application.streamingAssetsPath, ".env");
+        using var req = UnityWebRequest.Get(url);
+        yield return req.SendWebRequest();
+        if (req.result == UnityWebRequest.Result.Success)
+            content = req.downloadHandler.text;
         else
-        {
-            AFQALogger.Log("[AF_QA][CONFIG] .env not found at persistentDataPath; " +
-                           "push it with: adb shell run-as com.appsflyer.engagement " +
-                           "sh -c 'cat > /data/data/com.appsflyer.engagement/files/.env'");
-        }
+            AFQALogger.Log("[AF_QA][CONFIG] .env read failed: " + req.error);
 #else
+        // iOS / Editor: StreamingAssets are on the regular filesystem.
+        string envPath = Path.Combine(Application.streamingAssetsPath, ".env");
         if (File.Exists(envPath))
             content = File.ReadAllText(envPath);
         else
         {
-            // Editor fallback: project root .env
             string editorEnv = Path.Combine(Application.dataPath, "../.env");
             if (File.Exists(editorEnv))
                 content = File.ReadAllText(editorEnv);
         }
+        yield return null;
 #endif
 
         if (string.IsNullOrEmpty(content))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            return false;
+            yield break;
         }
 
         foreach (var line in content.Split('\n'))
         {
             string trimmed = line.Trim();
-            if (trimmed.StartsWith("DEV_KEY="))        _devKey     = trimmed.Substring("DEV_KEY=".Length);
-            else if (trimmed.StartsWith("IOS_APP_ID=")) _iosAppId   = trimmed.Substring("IOS_APP_ID=".Length);
+            if (trimmed.StartsWith("DEV_KEY="))             _devKey       = trimmed.Substring("DEV_KEY=".Length);
+            else if (trimmed.StartsWith("IOS_APP_ID="))     _iosAppId     = trimmed.Substring("IOS_APP_ID=".Length);
             else if (trimmed.StartsWith("ANDROID_APP_ID=")) _androidAppId = trimmed.Substring("ANDROID_APP_ID=".Length);
         }
 
         if (string.IsNullOrEmpty(_devKey))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            return false;
+            yield break;
         }
 
         AFQALogger.Log("[AF_QA][CONFIG] loaded");
-        return true;
     }
 
     // ── Pre-start APIs ────────────────────────────────────────────────────────

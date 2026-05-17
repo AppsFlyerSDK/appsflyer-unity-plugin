@@ -7,7 +7,7 @@ public static class AFQALogger
 
     static AFQALogger()
     {
-#if UNITY_IOS && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
         _logFilePath = Path.Combine(Application.persistentDataPath, "af_qa_logs.txt");
         // Truncate on each fresh app launch so phase captures are self-contained.
         File.WriteAllText(_logFilePath, string.Empty);
@@ -18,7 +18,7 @@ public static class AFQALogger
     {
         Debug.Log(message);
 
-#if UNITY_IOS && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
         if (!string.IsNullOrEmpty(_logFilePath))
         {
             File.AppendAllText(_logFilePath, message + "\n");
