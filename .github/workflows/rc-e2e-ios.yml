@@ -111,8 +111,8 @@ jobs:
             -sdk       iphonesimulator \
             -configuration Debug \
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
-            ARCHS=arm64 \
-            VALID_ARCHS=arm64 \
+            ARCHS=x86_64 \
+            VALID_ARCHS=x86_64 \
             build | xcpretty
 
           APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
