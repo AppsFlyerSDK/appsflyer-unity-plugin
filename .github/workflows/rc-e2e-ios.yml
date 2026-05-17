@@ -53,7 +53,7 @@ jobs:
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath:     test-app
-          unityVersion:    6000.3.14f1
+          unityVersion:    2020.3.41f1
           targetPlatform:  iOS
           buildName:       UnityQATest
           buildsPath:      test-app/Build

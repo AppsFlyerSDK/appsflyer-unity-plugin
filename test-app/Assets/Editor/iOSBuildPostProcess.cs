@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_IOS
 using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
