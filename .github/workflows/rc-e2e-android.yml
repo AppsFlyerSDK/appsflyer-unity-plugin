@@ -88,19 +88,13 @@ jobs:
           emulator-options: -no-snapshot -no-window -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
           script: |
-            # Push .env to external storage (Unity persistentDataPath on Android)
             adb wait-for-device
             adb install -r "${{ env.APK_PATH }}"
             adb shell mkdir -p /storage/emulated/0/Android/data/com.appsflyer.engagement/files/
-            adb push test-app/Assets/StreamingAssets/.env \
-              /storage/emulated/0/Android/data/com.appsflyer.engagement/files/.env
-            # Cold-launch the app and run scenarios
+            adb push test-app/Assets/StreamingAssets/.env /storage/emulated/0/Android/data/com.appsflyer.engagement/files/.env
             adb shell am force-stop com.appsflyer.engagement
             chmod +x scripts/af-scenario-runner.sh
-            scripts/af-scenario-runner.sh \
-              --platform android \
-              --plan     .af-e2e/test-plan.json \
-              --verbose
+            scripts/af-scenario-runner.sh --platform android --plan .af-e2e/test-plan.json --verbose
 
       - name: Upload E2E report
         if: always()

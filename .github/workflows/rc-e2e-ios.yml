@@ -104,7 +104,6 @@ jobs:
 
       - name: Compile simulator .app from Xcode workspace
         run: |
-          set -o pipefail
           XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
           xcodebuild \
             -workspace "$XCODE_WS" \
@@ -114,10 +113,19 @@ jobs:
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
             ARCHS=x86_64 \
             VALID_ARCHS=x86_64 \
+            ONLY_ACTIVE_ARCH=NO \
             CURRENT_PROJECT_VERSION=1 \
             MARKETING_VERSION=1.0 \
-            OTHER_LDFLAGS="-allow_missing_module_imported_lib" \
-            build | xcpretty
+            ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
+          # Detect failure from raw log (xcpretty masks exit code)
+          if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
+            echo "::group::xcodebuild linker / compiler errors"
+            grep -A 30 "Undefined symbols" /tmp/xcode-build.log || true
+            grep -E "^(ld: |clang: error: |error: )" /tmp/xcode-build.log | head -40 || true
+            echo "::endgroup::"
+            exit 1
+          fi
 
           APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
           if [[ -z "$APP" ]]; then
