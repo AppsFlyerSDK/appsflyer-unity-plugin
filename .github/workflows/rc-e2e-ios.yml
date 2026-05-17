@@ -22,10 +22,11 @@ on:
         required: true
 
 jobs:
-  e2e-ios:
-    name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-14
-    timeout-minutes: 90
+  # Job 1: Build Unity iOS Xcode project on Linux (game-ci Docker requires Linux)
+  build-ios-xcode:
+    name: Build iOS Xcode project — ${{ inputs.plugin_version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout release branch
@@ -36,9 +37,6 @@ jobs:
       - name: Write .env from secret
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
-
-      - name: Install jq
-        run: brew install jq 2>/dev/null || true
 
       - name: Activate Unity license
         uses: game-ci/unity-activate@v2
@@ -54,50 +52,74 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath:    test-app
-          unityVersion:   6000.3.14f1
-          targetPlatform: iOS
-          buildName:      UnityQATest
-          buildsPath:     test-app/Build
-          buildMethod:    BuildScript.BuildIOSSimulator
+          projectPath:     test-app
+          unityVersion:    6000.3.14f1
+          targetPlatform:  iOS
+          buildName:       UnityQATest
+          buildsPath:      test-app/Build
+          buildMethod:     BuildScript.BuildIOSSimulator
+          allowDirtyBuild: true
 
-      - name: Locate Xcode project and install iOS pods
+      - name: Upload Xcode project as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcode-project-${{ inputs.plugin_version }}
+          path: test-app/Build/iOS-Simulator/
+          retention-days: 1
+
+      - name: Return Unity license
+        if: always()
+        uses: game-ci/unity-return-license@v2
+
+  # Job 2: Pod install, compile .app, and run E2E on macOS
+  e2e-ios:
+    name: E2E iOS — ${{ inputs.plugin_version }}
+    runs-on: macos-14
+    needs: build-ios-xcode
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Write .env from secret
         run: |
-          XCODE_PROJ=$(find test-app/Build -name "*.xcodeproj" -not -path "*/DerivedData/*" | head -1)
-          if [[ -z "$XCODE_PROJ" ]]; then
-            echo "::error::No .xcodeproj found under test-app/Build"
-            exit 1
-          fi
-          IOS_BUILD_DIR=$(dirname "$XCODE_PROJ")
-          echo "IOS_BUILD_DIR=$IOS_BUILD_DIR" >> "$GITHUB_ENV"
-          echo "Found Xcode project in: $IOS_BUILD_DIR"
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
+      - name: Install jq
+        run: brew install jq 2>/dev/null || true
+
+      - name: Download Xcode project artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-xcode-project-${{ inputs.plugin_version }}
+          path: test-app/Build/iOS-Simulator/
+
+      - name: Install iOS pods
+        run: |
           chmod +x scripts/ios-pod-install.sh
-          scripts/ios-pod-install.sh "$IOS_BUILD_DIR"
+          scripts/ios-pod-install.sh test-app/Build/iOS-Simulator
 
       - name: Compile simulator .app from Xcode workspace
         run: |
-          XCODE_WS=$(find "$IOS_BUILD_DIR" -name "Unity-iPhone.xcworkspace" -not -path "*/DerivedData/*" | head -1)
-          if [[ -z "$XCODE_WS" ]]; then
-            echo "::error::Unity-iPhone.xcworkspace not found after pod install in $IOS_BUILD_DIR"
-            exit 1
-          fi
+          XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
           xcodebuild \
             -workspace "$XCODE_WS" \
             -scheme    Unity-iPhone \
             -sdk       iphonesimulator \
             -configuration Debug \
-            -derivedDataPath "$IOS_BUILD_DIR/DerivedData" \
+            -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
             build | xcpretty || true
 
-          APP=$(find "$IOS_BUILD_DIR/DerivedData" -name "UnityQATest.app" -maxdepth 6 | head -1)
+          APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
           if [[ -z "$APP" ]]; then
             echo "::error::UnityQATest.app not found after xcodebuild"
             exit 1
           fi
-          mkdir -p test-app/Build/iOS-Simulator
+          rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
           cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
-          echo "APP_PATH=test-app/Build/iOS-Simulator/UnityQATest.app" >> "$GITHUB_ENV"
 
       - name: Boot iOS simulator
         run: |
@@ -127,7 +149,3 @@ jobs:
           name: e2e-ios-report-${{ inputs.plugin_version }}
           path: .af-e2e/reports/
           retention-days: 30
-
-      - name: Return Unity license
-        if: always()
-        uses: game-ci/unity-return-license@v2

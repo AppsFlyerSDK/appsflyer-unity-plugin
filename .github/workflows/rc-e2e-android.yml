@@ -51,13 +51,14 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath:    test-app
-          unityVersion:   6000.3.14f1
-          targetPlatform: Android
-          buildName:      com.appsflyer.engagement
-          buildsPath:     test-app/Build
-          buildMethod:    BuildScript.BuildAndroid
+          projectPath:      test-app
+          unityVersion:     6000.3.14f1
+          targetPlatform:   Android
+          buildName:        com.appsflyer.engagement
+          buildsPath:       test-app/Build
+          buildMethod:      BuildScript.BuildAndroid
           androidExportType: androidPackage
+          allowDirtyBuild:  true
 
       - name: Locate APK
         run: |
