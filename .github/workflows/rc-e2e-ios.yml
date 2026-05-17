@@ -111,7 +111,9 @@ jobs:
             -sdk       iphonesimulator \
             -configuration Debug \
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
-            build | xcpretty || true
+            ARCHS=arm64 \
+            VALID_ARCHS=arm64 \
+            build | xcpretty
 
           APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
           if [[ -z "$APP" ]]; then

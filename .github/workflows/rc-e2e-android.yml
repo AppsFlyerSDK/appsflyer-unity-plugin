@@ -67,9 +67,7 @@ jobs:
             echo "::error::APK not found after Unity build"
             exit 1
           fi
-          mkdir -p test-app/Build/Android
-          cp "$APK" test-app/Build/Android/com.appsflyer.engagement.apk
-          echo "APK_PATH=test-app/Build/Android/com.appsflyer.engagement.apk" >> "$GITHUB_ENV"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Install jq
         run: sudo apt-get install -y jq
