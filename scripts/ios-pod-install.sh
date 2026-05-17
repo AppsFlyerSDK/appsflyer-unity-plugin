@@ -35,6 +35,17 @@ target 'UnityFramework' do
   pod 'AppsFlyerFramework', '6.17.9'
   pod 'PurchaseConnector', '6.17.9'
 end
+
+post_install do |installer|
+  # PurchaseConnector 6.17.9 ships a privacy bundle target that references a
+  # file 'PurchaseConnector_Privacy' which does not exist on disk, causing
+  # simulator builds to fail with "Build input file cannot be found".
+  # Strip all build phases from the broken target so it becomes a no-op.
+  installer.pods_project.targets.each do |target|
+    next unless target.name == 'PurchaseConnector-PurchaseConnector_Privacy'
+    target.build_phases.to_a.each(&:remove_from_project)
+  end
+end
 PODFILE
 
 echo "[ios-pod-install] Running pod install in $IOS_BUILD_DIR"
