@@ -717,6 +717,15 @@ run_phase() {
     # sleeping the full ceiling. Use a slower interval here because each ADB
     # `run-as cat` is costly on GitHub's emulator.
     wait_for_qa_marker "[AF_QA][AUTO_APIS] --- Auto run complete ---" "$wait_sec" 10
+
+    # Allow async network callbacks (e.g. onInstallConversionData) to arrive
+    # before collecting logs. Phases that need this set post_marker_wait_sec.
+    local post_wait
+    post_wait=$(echo "$phase_json" | jq -r '.post_marker_wait_sec // 0')
+    if [[ "$post_wait" -gt 0 ]]; then
+      log_info "Waiting ${post_wait}s for async callbacks..."
+      sleep "$post_wait"
+    fi
   fi
 
   # Pre-actions (deep link phases: background the app, etc.)

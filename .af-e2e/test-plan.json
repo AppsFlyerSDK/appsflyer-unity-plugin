@@ -31,6 +31,7 @@
       "description": "Fresh install. Validate SDK startup, pre/post-start APIs, three auto-launched events with HTTP 200, and all standard callbacks.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
+      "post_marker_wait_sec": 30,
       "checks": [
         {
           "id": "sdk_started",
@@ -169,6 +170,7 @@
       "description": "Fresh install. App is in foreground after SDK start. On Android a brief HOME switch triggers onPause and the VIEW intent brings the app back. On iOS the app is terminated and re-launched with -deepLinkURL (same launch-arg path as phase_2); the foreground-vs-killed distinction is Android-only. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
+      "post_marker_wait_sec": 30,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
@@ -279,6 +281,7 @@
       "description": "Fresh install. Sets customer user id (e2e_user_42), currency code (EUR), and additional data (tenant: qa_eu) before start. Verifies readback and propagation. Covers E2E-005.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
+      "post_marker_wait_sec": 30,
       "wait_after_trigger_sec": 5,
       "checks": [
         {
