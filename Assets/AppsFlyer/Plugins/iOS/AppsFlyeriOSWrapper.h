@@ -15,9 +15,9 @@
 #endif
 #if __has_include(<PurchaseConnector/PurchaseConnector.h>)
 #import <PurchaseConnector/PurchaseConnector.h>
-#endif
-#if __has_include(<PurchaseConnector/PurchaseConnector-Swift.h>)
 #import <PurchaseConnector/PurchaseConnector-Swift.h>
+#elif __has_include("PurchaseConnector.h")
+#import "PurchaseConnector.h"
 #endif
 
 // Add StoreKit 2 support
@@ -25,7 +25,7 @@
 #import <StoreKit/StoreKit.h>
 #endif
 
-#if __has_include(<PurchaseConnector/PurchaseConnector.h>)
+#if __has_include(<PurchaseConnector/PurchaseConnector.h>) || __has_include("PurchaseConnector.h")
 @interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate, AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource, AppsFlyerPurchaseRevenueDataSourceStoreKit2>
 #else
 @interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate>
@@ -34,8 +34,7 @@
 + (BOOL) didCallStart;
 + (void) setDidCallStart:(BOOL)val;
 
-#if __has_include(<PurchaseConnector/PurchaseConnector.h>)
-// StoreKit 2 methods
+#if __has_include(<PurchaseConnector/PurchaseConnector.h>) || __has_include("PurchaseConnector.h")
 - (void)setStoreKitVersion:(int)storeKitVersion;
 - (void)logConsumableTransaction:(id)transaction;
 #endif

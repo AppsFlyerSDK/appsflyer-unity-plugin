@@ -143,7 +143,7 @@ jobs:
       - name: Boot iOS simulator
         run: |
           UDID=$(xcrun simctl list devices available -j | \
-            jq -r '.devices | to_entries[] | select(.key | contains("iOS-19")) | .value[] | select(.isAvailable == true) | .udid' | head -1)
+            jq -r '.devices | to_entries[] | select(.key | contains("iOS-18")) | .value[] | select(.isAvailable == true) | .udid' | head -1)
           if [[ -z "$UDID" ]]; then
             UDID=$(xcrun simctl list devices available -j | \
               jq -r '.devices[][] | select(.isAvailable == true) | .udid' | head -1)
