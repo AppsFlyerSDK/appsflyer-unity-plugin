@@ -1063,7 +1063,12 @@ An af_purchase event with the relevant values will be automatically sent if the 
             "purchaseToken",
             "productId");
 
-        AppsFlyer.validateAndSendInAppPurchase(details, null, this);
+        var purchaseAdditionalDetails = new Dictionary<string, string>
+        {
+            { "paywall", "123" }
+        };
+
+        AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #endif
 ```
 
@@ -1317,7 +1322,12 @@ To send and validate in app purchases you can call this method from the processP
             "transactionId",
             AFSDKPurchaseType.OneTimePurchase);
 
-        AppsFlyer.validateAndSendInAppPurchase(details, null, this);
+        var purchaseAdditionalDetails = new Dictionary<string, string>
+        {
+            { "paywall", "123" }
+        };
+
+        AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #endif
 ```
 

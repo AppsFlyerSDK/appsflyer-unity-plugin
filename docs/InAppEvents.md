@@ -144,6 +144,11 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
 
         if (String.Equals(prodID, kProductIDConsumable, StringComparison.Ordinal))
         {
+            var purchaseAdditionalDetails = new Dictionary<string, string>
+            {
+                { "paywall", "123" }
+            };
+
 #if UNITY_IOS
 
             if (isSandbox)
@@ -156,7 +161,7 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
                 transactionID,
                 AFSDKPurchaseType.OneTimePurchase);
 
-            AppsFlyer.validateAndSendInAppPurchase(details, null, this);
+            AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #elif UNITY_ANDROID
 
             var purchaseData = (string)receiptPayload["json"];
@@ -168,7 +173,7 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
                 purchaseToken,
                 prodID);
 
-            AppsFlyer.validateAndSendInAppPurchase(details, null, this);
+            AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #endif
         }
 
