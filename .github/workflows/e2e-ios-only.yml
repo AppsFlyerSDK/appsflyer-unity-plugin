@@ -1,0 +1,15 @@
+name: E2E — iOS only
+
+on:
+  push:
+    branches:
+      - plugins-effort-reduction-workflow1
+  workflow_dispatch:
+
+jobs:
+  e2e-ios:
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version || 'push-trigger' }}
+      release_branch: ${{ github.ref_name }}
+    secrets: inherit

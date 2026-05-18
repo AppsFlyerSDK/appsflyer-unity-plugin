@@ -1,9 +1,6 @@
 name: E2E — Manual trigger
 
 on:
-  push:
-    branches:
-      - plugins-effort-reduction-workflow1
   workflow_dispatch:
     inputs:
       plugin_version:
@@ -31,7 +28,7 @@ jobs:
 
   e2e-ios:
     if: ${{ (inputs.platform || 'both') == 'both' || (inputs.platform || 'both') == 'ios' }}
-    uses: ./.github/workflows/rc-e2e-ios-macos.yml
+    uses: ./.github/workflows/rc-e2e-ios.yml
     with:
       plugin_version: ${{ inputs.plugin_version || 'push-trigger' }}
       release_branch: ${{ github.ref_name }}
