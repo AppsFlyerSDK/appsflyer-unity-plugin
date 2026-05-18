@@ -84,8 +84,13 @@ jobs:
 
       - name: Patch Unity libs to arm64 simulator
         run: |
-          UNITY_APP="${UNITY_PATH%/Contents/MacOS/Unity}"
-          TRAMPOLINE="$UNITY_APP/Contents/PlaybackEngines/iOSSupport/Trampoline"
+          TRAMPOLINE=$(find /Applications/Unity -name "baselib-sim-arm64.a" 2>/dev/null | head -1 | sed 's|/Libraries/baselib-sim-arm64.a||')
+          if [[ -z "$TRAMPOLINE" ]]; then
+            echo "::error::baselib-sim-arm64.a not found under /Applications/Unity"
+            find /Applications/Unity -name "PlaybackEngines" -type d 2>/dev/null | head -5
+            exit 1
+          fi
+          echo "Trampoline: $TRAMPOLINE"
           cp "$TRAMPOLINE/Libraries/baselib-sim-arm64.a" \
              test-app/Build/iOS-Simulator/Libraries/baselib.a
           cp "$TRAMPOLINE/Frameworks/libiPhone-lib-sim-arm64/UnityRuntime.framework/UnityRuntime" \
