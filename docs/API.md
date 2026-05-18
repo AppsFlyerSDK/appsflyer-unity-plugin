@@ -1058,13 +1058,12 @@ An af_purchase event with the relevant values will be automatically sent if the 
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, 
-        "token", "productId");
-        
-        AppsFlyer.validateAndSendInAppPurchase(
-        details, 
-        null, 
-        this);
+        AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(
+            AFPurchaseType.OneTimePurchase,
+            "purchaseToken",
+            "productId");
+
+        AppsFlyer.validateAndSendInAppPurchase(details, null, this);
 #endif
 ```
 
@@ -1313,12 +1312,12 @@ To send and validate in app purchases you can call this method from the processP
 
 ```c#
 #if UNITY_IOS && !UNITY_EDITOR
-        AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init("productId", "price", "currency",
-        "transactionId");
-        AppsFlyer.validateAndSendInAppPurchase(
-        details, 
-        null, 
-        this);
+        AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init(
+            "productId",
+            "transactionId",
+            AFSDKPurchaseType.OneTimePurchase);
+
+        AppsFlyer.validateAndSendInAppPurchase(details, null, this);
 #endif
 ```
 
