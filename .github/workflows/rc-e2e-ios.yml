@@ -41,25 +41,23 @@ jobs:
         id: cache-unity
         uses: actions/cache@v4
         with:
-          path: /Applications/Unity/Hub/Editor/6000.3.5f1
+          path: /Applications/Unity/Unity.app
           key: unity-6000.3.5f1-ios-macos14
-
-      - name: Install Unity Hub
-        run: brew install --cask unity-hub 2>/dev/null || true
 
       - name: Install Unity Editor + iOS module
         if: steps.cache-unity.outputs.cache-hit != 'true'
         run: |
-          echo "" | "/Applications/Unity Hub.app/Contents/MacOS/Unity Hub" -- \
-            --headless install \
-            --version 6000.3.5f1 \
-            --changeset a1ec4b2f2d19 \
-            --module ios
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstaller/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.3.5f1.pkg" \
+            -o /tmp/Unity-iOS.pkg
+          sudo installer -pkg /tmp/Unity-iOS.pkg -target /
         timeout-minutes: 60
 
       - name: Activate Unity license
         run: |
-          UNITY="/Applications/Unity/Hub/Editor/6000.3.5f1/Unity.app/Contents/MacOS/Unity"
+          UNITY="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
           "$UNITY" -quit -batchmode \
             -serial "${{ secrets.UNITY_SERIAL }}" \
             -username "${{ secrets.UNITY_EMAIL }}" \
@@ -69,7 +67,7 @@ jobs:
 
       - name: Build iOS Simulator Xcode project
         run: |
-          UNITY="/Applications/Unity/Hub/Editor/6000.3.5f1/Unity.app/Contents/MacOS/Unity"
+          UNITY="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
           mkdir -p test-app/Build/iOS-Simulator
           "$UNITY" -quit -batchmode \
             -logFile /tmp/unity-build.log \
@@ -84,7 +82,7 @@ jobs:
       - name: Return Unity license
         if: always()
         run: |
-          UNITY="/Applications/Unity/Hub/Editor/6000.3.5f1/Unity.app/Contents/MacOS/Unity"
+          UNITY="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
           "$UNITY" -quit -batchmode -returnlicense \
             -logFile /tmp/unity-return.log 2>&1 || true
 
