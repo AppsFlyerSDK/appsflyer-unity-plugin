@@ -1,9 +1,6 @@
 name: E2E — iOS only
 
 on:
-  push:
-    branches:
-      - plugins-effort-reduction-workflow1
   workflow_dispatch:
 
 jobs:
