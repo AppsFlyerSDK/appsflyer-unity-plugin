@@ -11,12 +11,6 @@
 #import <StoreKit/StoreKit.h>
 #import "UnityFramework/UnityFramework-Swift.h"
 
-#if __has_include(<AppsFlyerLib/AppsFlyerLib-Swift.h>)
-#import <AppsFlyerLib/AppsFlyerLib-Swift.h>
-#elif __has_include("AppsFlyerLib-Swift.h")
-#import "AppsFlyerLib-Swift.h"
-#endif
-
 #if __has_include(<PurchaseConnector/PurchaseConnector-Swift.h>)
 #import <PurchaseConnector/PurchaseConnector-Swift.h>
 #elif __has_include("PurchaseConnector-Swift.h")
@@ -357,7 +351,6 @@ extern "C" {
     }
 
     // Purchase connector
-#if __has_include(<PurchaseConnector/PurchaseConnector-Swift.h>) || __has_include("PurchaseConnector-Swift.h")
     const void _startObservingTransactions() {
         [[PurchaseConnector shared] startObservingTransactions];
     }
@@ -424,17 +417,6 @@ extern "C" {
             }];
         }
     }
-#else
-    const void _startObservingTransactions() {}
-    const void _stopObservingTransactions() {}
-    const void _setIsSandbox(bool isSandBox) {}
-    const void _setPurchaseRevenueDelegate() {}
-    const void _setAutoLogPurchaseRevenue(int option) {}
-    const void _initPurchaseConnector(const char* objectName) {}
-    const void _setPurchaseRevenueDataSource(const char* objectName) {}
-    const void _setStoreKitVersion(int storeKitVersion) {}
-    const void _logConsumableTransaction(const char* transactionId) {}
-#endif
 
     #ifdef __cplusplus
     extern "C" {
@@ -501,7 +483,6 @@ static BOOL didCallStart;
 }
 
 // Purchase Connector
-#if __has_include(<PurchaseConnector/PurchaseConnector-Swift.h>) || __has_include("PurchaseConnector-Swift.h")
 - (void)didReceivePurchaseRevenueValidationInfo:(NSDictionary *)validationInfo error:(NSError *)error {
     if (error != nil) {
         unityCallBack(onPurchaseValidationObjectName, PURCHASE_REVENUE_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
@@ -614,7 +595,6 @@ static BOOL didCallStart;
     }
     return @{};
 }
-#endif // PurchaseConnector
 
 @end
 
