@@ -102,7 +102,12 @@ jobs:
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
           "$UNITY" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -serial   "${{ secrets.UNITY_SERIAL }}" \
             -logFile /tmp/unity-return.log 2>&1 || true
+          echo "=== unity-return.log ==="
+          cat /tmp/unity-return.log || true
 
       - name: Install iOS pods
         run: |
