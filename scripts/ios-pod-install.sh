@@ -62,6 +62,9 @@ echo "[ios-pod-install] Running pod install in $IOS_BUILD_DIR"
 cd "$IOS_BUILD_DIR"
 pod install
 
+echo "[ios-pod-install] Stubbing out _Privacy.bundle install_resource calls (simulator builds only)"
+find . -name "*-resources.sh" -exec sed -i '' 's/install_resource.*_Privacy\.bundle.*/:/' {} \;
+
 echo "[ios-pod-install] Patching project.pbxproj — removing hardcoded SDKROOT so -sdk flag wins"
 # Unity hardcodes SDKROOT = iphoneos at the target level which overrides xcodebuild's -sdk flag.
 # Must run after pod install since pod install rewrites parts of the project.
