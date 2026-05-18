@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: Validate plugin_version format
         run: |
-          if ! echo "${{ github.event.inputs.plugin_version }}" | grep -qE '^\d+\.\d+\.\d+-rc\d+$'; then
+          if ! echo "${{ github.event.inputs.plugin_version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$'; then
             echo "::error::plugin_version must match X.Y.Z-rcN (e.g. 6.18.0-rc1)"
             exit 1
           fi
