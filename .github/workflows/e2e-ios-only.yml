@@ -1,0 +1,17 @@
+name: E2E — iOS only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e-ios:
+    strategy:
+      matrix:
+        run: [1, 2, 3]
+      fail-fast: false
+      max-parallel: 1
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: stability-run-${{ matrix.run }}
+      release_branch: ${{ github.ref_name }}
+    secrets: inherit
