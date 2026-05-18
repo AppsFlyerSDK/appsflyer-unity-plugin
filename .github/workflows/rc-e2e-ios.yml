@@ -50,7 +50,7 @@ jobs:
       - name: Install Unity Editor + iOS module
         if: steps.cache-unity.outputs.cache-hit != 'true'
         run: |
-          "/Applications/Unity Hub.app/Contents/MacOS/Unity Hub" -- \
+          echo "" | "/Applications/Unity Hub.app/Contents/MacOS/Unity Hub" -- \
             --headless install \
             --version 6000.3.5f1 \
             --changeset a1ec4b2f2d19 \
