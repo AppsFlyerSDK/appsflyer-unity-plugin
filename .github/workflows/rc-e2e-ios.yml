@@ -53,6 +53,7 @@ jobs:
           "/Applications/Unity Hub.app/Contents/MacOS/Unity Hub" -- \
             --headless install \
             --version 6000.3.5f1 \
+            --changeset a1ec4b2f2d19 \
             --module ios
         timeout-minutes: 60
 
