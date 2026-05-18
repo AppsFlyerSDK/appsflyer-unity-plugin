@@ -1,0 +1,107 @@
+name: RC E2E — Android (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      plugin_version:
+        description: RC plugin version (e.g. 6.18.0-rc1)
+        required: true
+        type: string
+      release_branch:
+        description: Release branch to check out
+        required: true
+        type: string
+    secrets:
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+      UNITY_SERIAL:
+        required: true
+      ENV_FILE:
+        required: true
+
+jobs:
+  e2e-android:
+    name: E2E Android — ${{ inputs.plugin_version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Write .env from secret
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
+
+      - name: Activate Unity license
+        uses: game-ci/unity-activate@v2
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+
+      - name: Build Android APK (via Unity)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath:      test-app
+          unityVersion:     6000.3.5f1
+          targetPlatform:   Android
+          buildName:        com.appsflyer.engagement
+          buildsPath:       test-app/Build
+          buildMethod:      BuildScript.BuildAndroid
+          androidExportType: androidPackage
+          allowDirtyBuild:  true
+
+      - name: Locate APK
+        run: |
+          APK=$(find test-app/Build/Android -name "*.apk" | head -1)
+          if [[ -z "$APK" ]]; then
+            echo "::error::APK not found after Unity build"
+            exit 1
+          fi
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Enable KVM for hardware-accelerated emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run E2E scenario runner inside Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level:   31
+          arch:        x86_64
+          profile:     Nexus 6
+          avd-name:    e2e_avd
+          emulator-options: -no-snapshot -no-window -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: |
+            adb wait-for-device
+            adb install -r "${{ env.APK_PATH }}"
+            adb shell am force-stop com.appsflyer.engagement
+            chmod +x scripts/af-scenario-runner.sh
+            scripts/af-scenario-runner.sh --platform android --plan .af-e2e/test-plan.json --verbose
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-report-${{ inputs.plugin_version }}
+          path: .af-e2e/reports/
+          retention-days: 30
+
+      - name: Return Unity license
+        if: always()
+        uses: game-ci/unity-return-license@v2

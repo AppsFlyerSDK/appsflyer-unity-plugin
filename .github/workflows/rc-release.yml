@@ -1,0 +1,120 @@
+name: RC Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: "Plugin version — e.g. 6.18.0-rc1"
+        required: true
+        type: string
+      android_sdk_version:
+        description: "Android SDK version — e.g. 6.18.0"
+        required: true
+        type: string
+      ios_sdk_version:
+        description: "iOS SDK version — e.g. 6.18.0"
+        required: true
+        type: string
+      base_branch:
+        description: "Branch to cut the release from (default: development)"
+        required: false
+        default: development
+        type: string
+
+jobs:
+  # ── 1. Prepare release branch ───────────────────────────────────────────────
+  prepare-branch:
+    name: Prepare release branch
+    runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.branch.outputs.release_branch }}
+
+    steps:
+      - name: Validate plugin_version format
+        run: |
+          if ! echo "${{ github.event.inputs.plugin_version }}" | grep -qE '^\d+\.\d+\.\d+-rc\d+$'; then
+            echo "::error::plugin_version must match X.Y.Z-rcN (e.g. 6.18.0-rc1)"
+            exit 1
+          fi
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref:         ${{ github.event.inputs.base_branch }}
+          fetch-depth: 0
+          token:       ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name  "${{ secrets.CI_USERNAME }}"
+          git config user.email "${{ secrets.CI_EMAIL }}"
+
+      - name: Derive release branch name
+        id: branch
+        run: |
+          VERSION="${{ github.event.inputs.plugin_version }}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          BRANCH="releases/${MAJOR}.x.x/${MINOR}.x/${VERSION}"
+          echo "release_branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "release_branch=$BRANCH"
+
+      - name: Create or reset release branch
+        run: |
+          BRANCH="${{ steps.branch.outputs.release_branch }}"
+          if git ls-remote --heads origin "$BRANCH" | grep -q "$BRANCH"; then
+            echo "Branch exists — resetting to ${{ github.event.inputs.base_branch }}"
+            git checkout -B "$BRANCH" "origin/${{ github.event.inputs.base_branch }}"
+          else
+            echo "Creating branch: $BRANCH"
+            git checkout -b "$BRANCH"
+          fi
+
+      - name: Bump versions
+        run: |
+          chmod +x scripts/bump-version.sh
+          scripts/bump-version.sh \
+            --plugin-version        "${{ github.event.inputs.plugin_version }}" \
+            --android-sdk-version   "${{ github.event.inputs.android_sdk_version }}" \
+            --ios-sdk-version       "${{ github.event.inputs.ios_sdk_version }}"
+
+      - name: Commit and push
+        run: |
+          git add \
+            Assets/AppsFlyer/package.json \
+            Assets/AppsFlyer/AppsFlyer.cs \
+            Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+            deploy/build_unity_package.sh \
+            deploy/strict_mode_build_package.sh \
+            CHANGELOG.md \
+            README.md
+          git commit -m "chore: bump to ${{ github.event.inputs.plugin_version }}" || echo "Nothing to commit"
+          git push origin "${{ steps.branch.outputs.release_branch }}" --force
+
+  # ── 2. E2E — iOS ────────────────────────────────────────────────────────────
+  run-e2e-ios:
+    name: E2E — iOS
+    needs: prepare-branch
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
+
+  # ── 3. E2E — Android (after iOS to avoid Unity license contention) ──────────
+  run-e2e-android:
+    name: E2E — Android
+    needs: [prepare-branch, run-e2e-ios]
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
