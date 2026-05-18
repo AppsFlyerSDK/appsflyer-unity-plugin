@@ -24,7 +24,7 @@ on:
 jobs:
   e2e-ios:
     name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-15
+    runs-on: macos-14
     timeout-minutes: 120
 
     steps:
@@ -32,9 +32,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release_branch }}
-
-      - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.3.app
 
       - name: Write .env from secret
         run: |
@@ -45,7 +42,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /Applications/Unity/Unity.app
-          key: unity-6000.3.5f1-ios-macos15-arm64
+          key: unity-6000.3.5f1-ios-macos14-arm64
 
       - name: Install Unity Editor + iOS module
         if: steps.cache-unity.outputs.cache-hit != 'true'

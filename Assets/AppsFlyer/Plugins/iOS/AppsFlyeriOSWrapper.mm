@@ -23,6 +23,12 @@
 #import "UnityFramework-Swift.h"
 #endif
 
+#if __has_include(<AppsFlyerLib/AppsFlyerLib-Swift.h>)
+#import <AppsFlyerLib/AppsFlyerLib-Swift.h>
+#elif __has_include("AppsFlyerLib-Swift.h")
+#import "AppsFlyerLib-Swift.h"
+#endif
+
 static void unityCallBack(NSString* objectName, const char* method, const char* msg) {
     if(objectName){
         UnitySendMessage([objectName UTF8String], method, msg);
@@ -350,6 +356,7 @@ extern "C" {
         [AppsFlyerLib shared].disableIDFVCollection = isDisabled;
     }
 
+#if __has_include(<PurchaseConnector/PurchaseConnector.h>)
     // Purchase connector
     const void _startObservingTransactions() {
         [[PurchaseConnector shared] startObservingTransactions];
@@ -441,6 +448,7 @@ extern "C" {
     #ifdef __cplusplus
     }
     #endif
+#endif // __has_include PurchaseConnector
 }
 
 @implementation AppsFlyeriOSWarpper
@@ -482,6 +490,7 @@ static BOOL didCallStart;
     unityCallBack(onDeeplinkingObjectName, ON_DEEPLINKING, stringFromdictionary(dict));
 }
 
+#if __has_include(<PurchaseConnector/PurchaseConnector.h>)
 // Purchase Connector
 - (void)didReceivePurchaseRevenueValidationInfo:(NSDictionary *)validationInfo error:(NSError *)error {
     if (error != nil) {
@@ -595,6 +604,7 @@ static BOOL didCallStart;
     }
     return @{};
 }
+#endif // __has_include PurchaseConnector
 
 @end
 
