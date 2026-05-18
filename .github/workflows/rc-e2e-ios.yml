@@ -61,11 +61,31 @@ jobs:
       - name: Activate Unity license
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
-          "$UNITY" -quit -batchmode \
-            -serial "${{ secrets.UNITY_SERIAL }}" \
-            -username "${{ secrets.UNITY_EMAIL }}" \
-            -password "${{ secrets.UNITY_PASSWORD }}" \
-            -logFile /tmp/unity-activate.log 2>&1 || true
+
+          activate() {
+            rm -f /tmp/unity-activate.log
+            "$UNITY" -quit -batchmode \
+              -serial   "${{ secrets.UNITY_SERIAL }}" \
+              -username "${{ secrets.UNITY_EMAIL }}" \
+              -password "${{ secrets.UNITY_PASSWORD }}" \
+              -logFile  /tmp/unity-activate.log 2>&1 || true
+          }
+
+          activate
+
+          if grep -q "serial has reached the maximum number of activations" /tmp/unity-activate.log 2>/dev/null; then
+            echo "::warning::Serial at max activations — returning existing license and retrying in 60s..."
+            "$UNITY" -quit -batchmode -returnlicense \
+              -username "${{ secrets.UNITY_EMAIL }}" \
+              -password "${{ secrets.UNITY_PASSWORD }}" \
+              -serial   "${{ secrets.UNITY_SERIAL }}" \
+              -logFile  /tmp/unity-return-preflight.log 2>&1 || true
+            echo "=== preflight return log ==="
+            cat /tmp/unity-return-preflight.log || true
+            sleep 60
+            activate
+          fi
+
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
       - name: Build iOS Simulator Xcode project
@@ -102,7 +122,12 @@ jobs:
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
           "$UNITY" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -serial   "${{ secrets.UNITY_SERIAL }}" \
             -logFile /tmp/unity-return.log 2>&1 || true
+          echo "=== unity-return.log ==="
+          cat /tmp/unity-return.log || true
 
       - name: Install iOS pods
         run: |
