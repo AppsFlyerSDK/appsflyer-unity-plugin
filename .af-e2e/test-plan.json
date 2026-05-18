@@ -131,7 +131,7 @@
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 2"],
+        "android": ["adb shell am force-stop com.appsflyer.engagement", "sleep 1"],
         "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
@@ -174,7 +174,7 @@
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME", "sleep 1"],
+        "android": ["adb shell am force-stop com.appsflyer.engagement", "sleep 1"],
         "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
