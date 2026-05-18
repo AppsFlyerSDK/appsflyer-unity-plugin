@@ -51,9 +51,6 @@ jobs:
             -o /tmp/Unity.tar.xz
           sudo mkdir -p /opt/unity
           sudo tar -xf /tmp/Unity.tar.xz -C /opt/unity
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-6000.3.5f1.tar.xz" \
-            -o /tmp/Unity-Android.tar.xz
-          sudo tar -xf /tmp/Unity-Android.tar.xz -C /opt/unity
           UNITY=$(find /opt/unity -name "Unity" -type f -path "*/Editor/Unity" 2>/dev/null | head -1)
           echo "Unity installed at: $UNITY"
           echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
