@@ -1,0 +1,170 @@
+name: RC E2E — iOS (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      plugin_version:
+        description: RC plugin version (e.g. 6.18.0-rc1)
+        required: true
+        type: string
+      release_branch:
+        description: Release branch to check out
+        required: true
+        type: string
+    secrets:
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+      UNITY_SERIAL:
+        required: true
+      ENV_FILE:
+        required: true
+
+jobs:
+  e2e-ios:
+    name: E2E iOS — ${{ inputs.plugin_version }}
+    runs-on: macos-14
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Write .env from secret
+        run: |
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
+
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Unity.app
+          key: unity-6000.3.5f1-ios-macos14-arm64
+
+      - name: Install Unity Editor + iOS module
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.3.5f1.pkg" \
+            -o /tmp/Unity-iOS.pkg
+          sudo installer -pkg /tmp/Unity-iOS.pkg -target /
+          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
+          echo "Unity installed at: $UNITY"
+          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
+        timeout-minutes: 60
+
+      - name: Activate Unity license
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode \
+            -serial "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build iOS Simulator Xcode project
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          mkdir -p test-app/Build/iOS-Simulator
+          "$UNITY" -quit -batchmode \
+            -logFile /tmp/unity-build.log \
+            -projectPath "$(pwd)/test-app" \
+            -buildTarget iOS \
+            -executeMethod BuildScript.BuildIOSSimulator
+          BUILD_EXIT=$?
+          tail -50 /tmp/unity-build.log
+          exit $BUILD_EXIT
+        timeout-minutes: 30
+
+      - name: Patch Unity libs to arm64 simulator
+        run: |
+          TRAMPOLINE=$(find /Applications/Unity -name "baselib-sim-arm64.a" 2>/dev/null | head -1 | sed 's|/Libraries/baselib-sim-arm64.a||')
+          if [[ -z "$TRAMPOLINE" ]]; then
+            echo "::error::baselib-sim-arm64.a not found under /Applications/Unity"
+            find /Applications/Unity -name "PlaybackEngines" -type d 2>/dev/null | head -5
+            exit 1
+          fi
+          echo "Trampoline: $TRAMPOLINE"
+          cp "$TRAMPOLINE/Libraries/baselib-sim-arm64.a" \
+             test-app/Build/iOS-Simulator/Libraries/baselib.a
+          cp "$TRAMPOLINE/Frameworks/libiPhone-lib-sim-arm64/UnityRuntime.framework/UnityRuntime" \
+             test-app/Build/iOS-Simulator/Frameworks/UnityRuntime.framework/UnityRuntime
+          echo "Patched to arm64 simulator"
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode -returnlicense \
+            -logFile /tmp/unity-return.log 2>&1 || true
+
+      - name: Install iOS pods
+        run: |
+          chmod +x scripts/ios-pod-install.sh
+          scripts/ios-pod-install.sh test-app/Build/iOS-Simulator
+
+      - name: Compile simulator .app from Xcode workspace
+        run: |
+          XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
+          xcodebuild \
+            -workspace "$XCODE_WS" \
+            -scheme    Unity-iPhone \
+            -sdk       iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
+            ARCHS=arm64 \
+            VALID_ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            CURRENT_PROJECT_VERSION=1 \
+            MARKETING_VERSION=1.0 \
+            ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
+          if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
+            echo "::group::xcodebuild errors"
+            grep -A 30 "Undefined symbols" /tmp/xcode-build.log || true
+            grep -E "^(ld: |clang: error: |error: )" /tmp/xcode-build.log | head -40 || true
+            echo "::endgroup::"
+            exit 1
+          fi
+          APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
+          if [[ -z "$APP" ]]; then
+            echo "::error::UnityQATest.app not found after xcodebuild"
+            exit 1
+          fi
+          rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
+          cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
+
+      - name: Boot iOS simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | \
+            jq -r '.devices | to_entries[] | select(.key | contains("iOS-18")) | .value[] | select(.isAvailable == true) | .udid' | head -1)
+          if [[ -z "$UDID" ]]; then
+            UDID=$(xcrun simctl list devices available -j | \
+              jq -r '.devices[][] | select(.isAvailable == true) | .udid' | head -1)
+          fi
+          echo "Booting simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Run E2E scenario runner — iOS
+        run: |
+          chmod +x scripts/af-scenario-runner.sh
+          scripts/af-scenario-runner.sh \
+            --platform ios \
+            --plan     .af-e2e/test-plan.json \
+            --verbose
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-report-${{ inputs.plugin_version }}
+          path: .af-e2e/reports/
+          retention-days: 30
