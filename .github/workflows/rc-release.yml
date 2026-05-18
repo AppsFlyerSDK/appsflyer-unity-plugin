@@ -260,3 +260,50 @@ jobs:
           fi
 
           echo "All checks passed. RC ${{ github.event.inputs.plugin_version }} is ready for manual publish."
+
+  # ── 7. RC-PUBLISH — GitHub pre-release + Jira/Slack notify ─────────────────
+  rc-publish:
+    name: RC-PUBLISH
+    needs: [prepare-branch, pre-publish-gate]
+    if: needs.pre-publish-gate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Check Jira fixed version
+        env:
+          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+        run: |
+          BASE=$(echo "${{ github.event.inputs.plugin_version }}" | sed 's/-rc[0-9]*$//')
+          chmod +x .github/workflows/Scripts/checkJira.sh
+          .github/workflows/Scripts/checkJira.sh "$JIRA_TOKEN" "Unity SDK v$BASE" || true
+
+      - name: Create GitHub pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.inputs.plugin_version }}"
+          BRANCH="${{ needs.prepare-branch.outputs.release_branch }}"
+          gh release create "$VERSION" \
+            --prerelease \
+            --target "$BRANCH" \
+            --title "v$VERSION (RC)" \
+            --notes "$(printf '## RC %s\n\n| Field | Value |\n|---|---|\n| Plugin | `%s` |\n| iOS SDK | `%s` |\n| Android SDK | `%s` |\n| Branch | `%s` |\n\n### Pipeline\n- [x] RC-PREP\n- [x] RC-E2E (iOS + Android)\n- [x] RC-PUBLISH\n- [ ] RC-PROMOTE — apply `pass QA ready for deploy` label to the PR\n' \
+              "$VERSION" "$VERSION" \
+              "${{ github.event.inputs.ios_sdk_version }}" \
+              "${{ github.event.inputs.android_sdk_version }}" \
+              "$BRANCH")"
+
+      - name: Notify Slack — RC published
+        env:
+          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
+        run: |
+          VERSION="${{ github.event.inputs.plugin_version }}"
+          IOS_SDK="${{ github.event.inputs.ios_sdk_version }}"
+          AND_SDK="${{ github.event.inputs.android_sdk_version }}"
+          curl -X POST -H 'Content-type: application/json' --data \
+            '{"plugin_version":"'"$VERSION"'","git_branch":"'"${{ needs.prepare-branch.outputs.release_branch }}"'","ios_sdk_dependency":"iOS AppsFlyer SDK v'"$IOS_SDK"'","android_sdk_dependency":"Android AppsFlyer SDK v'"$AND_SDK"'","version_changes":"RC PUBLISHED: Unity Plugin '"$VERSION"'","deploy_type":"RC"}' \
+            "$SLACK_TOKEN"

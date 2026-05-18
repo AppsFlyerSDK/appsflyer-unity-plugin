@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "plugin": "unity",
+    "version": "1.0.0",
+    "description": "RC release configuration for the AppsFlyer Unity plugin. Maps the RC-* stages to GitHub Actions workflows.",
+    "tooling_contract_ref": "RC-PREP, RC-E2E, RC-PUBLISH, RC-PROMOTE, RC-RELEASE",
+    "schema_version": "1.0.0"
+  },
+
+  "branch_pattern": "^releases/\\d+\\.x\\.x/\\d+\\.\\d+\\.x/\\d+\\.\\d+\\.\\d+-rc\\d+$",
+  "version_regex": "^\\d+\\.\\d+\\.\\d+-rc\\d+$",
+  "rc_suffix": "-rc",
+
+  "registry": {
+    "kind": "github-release",
+    "repo": "AppsFlyerSDK/appsflyer-unity-plugin"
+  },
+
+  "workflows": {
+    "RC-PREP":    { "path": ".github/workflows/rc-release.yml",              "job": "prepare-branch" },
+    "RC-E2E":     { "path": ".github/workflows/rc-release.yml",              "job": "run-e2e-ios" },
+    "RC-PUBLISH": { "path": ".github/workflows/rc-release.yml",              "job": "rc-publish" },
+    "RC-PROMOTE": { "path": ".github/workflows/promote-release.yml",         "job": "promote" },
+    "RC-RELEASE": { "path": ".github/workflows/release_production_workflow.yml" }
+  },
+
+  "gates": {
+    "RC-E2E": {
+      "check_run_name": "E2E — iOS",
+      "required_conclusion": "success"
+    },
+    "RC-E2E-ANDROID": {
+      "check_run_name": "E2E — Android",
+      "required_conclusion": "success"
+    }
+  },
+
+  "plans": {
+    "e2e_plan": ".af-e2e/test-plan.json"
+  },
+
+  "promote_label": "pass QA ready for deploy",
+  "dry_run_default": true
+}
