@@ -84,9 +84,18 @@ jobs:
             -buildTarget Android \
             -executeMethod BuildScript.BuildAndroid
           BUILD_EXIT=$?
-          tail -50 /tmp/unity-build.log
+          echo "=== unity-build.log (last 80 lines) ==="
+          tail -80 /tmp/unity-build.log || echo "(log file missing)"
           exit $BUILD_EXIT
         timeout-minutes: 30
+
+      - name: Upload Unity build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-build-log-${{ inputs.plugin_version }}
+          path: /tmp/unity-build.log
+          retention-days: 3
 
       - name: Return Unity license
         if: always()
