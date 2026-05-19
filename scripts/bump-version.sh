@@ -78,6 +78,22 @@ echo "[8/8] $STRICT_SH"
 sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage\"|" "$STRICT_SH"
 rm -f "${STRICT_SH}.bak"
 
+# ── 9. test-app/Assets/Plugins/Android/mainTemplate.gradle ───────────────────
+MAIN_GRADLE="test-app/Assets/Plugins/Android/mainTemplate.gradle"
+if [[ -f "$MAIN_GRADLE" ]]; then
+  echo "[9/10] $MAIN_GRADLE — af-android-sdk"
+  sed -i.bak "s|com.appsflyer:af-android-sdk:[^']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|" "$MAIN_GRADLE"
+  rm -f "${MAIN_GRADLE}.bak"
+fi
+
+# ── 10. scripts/ios-pod-install.sh ───────────────────────────────────────────
+IOS_POD_SH="scripts/ios-pod-install.sh"
+if [[ -f "$IOS_POD_SH" ]]; then
+  echo "[10/10] $IOS_POD_SH — AppsFlyerFramework"
+  sed -i.bak "s|pod 'AppsFlyerFramework', '[^']*'|pod 'AppsFlyerFramework', '$IOS_SDK_VERSION'|g" "$IOS_POD_SH"
+  rm -f "${IOS_POD_SH}.bak"
+fi
+
 # ── CHANGELOG.md — prepend new version header if not already present ──────────
 CHANGELOG="CHANGELOG.md"
 if [[ -f "$CHANGELOG" ]]; then
