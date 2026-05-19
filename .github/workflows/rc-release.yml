@@ -110,38 +110,10 @@ jobs:
           git commit -m "chore: bump to ${{ github.event.inputs.plugin_version }}" || echo "Nothing to commit"
           git push origin "${{ steps.branch.outputs.release_branch }}" --force
 
-  # ── 2. E2E — iOS ────────────────────────────────────────────────────────────
-  run-e2e-ios:
-    name: E2E — iOS
-    needs: prepare-branch
-    uses: ./.github/workflows/rc-e2e-ios.yml
-    with:
-      plugin_version: ${{ github.event.inputs.plugin_version }}
-      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
-    secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
-      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
-      ENV_FILE:       ${{ secrets.ENV_FILE }}
-
-  # ── 3. E2E — Android (after iOS to avoid Unity license contention) ──────────
-  run-e2e-android:
-    name: E2E — Android
-    needs: [prepare-branch, run-e2e-ios]
-    uses: ./.github/workflows/rc-e2e-android.yml
-    with:
-      plugin_version: ${{ github.event.inputs.plugin_version }}
-      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
-    secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
-      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
-      ENV_FILE:       ${{ secrets.ENV_FILE }}
-
-  # ── 4. Build .unitypackage artifacts ────────────────────────────────────────
+  # ── 2. Build .unitypackage artifacts ────────────────────────────────────────
   build-package:
     name: Build .unitypackage artifacts
-    needs: [prepare-branch, run-e2e-ios, run-e2e-android]
+    needs: prepare-branch
     runs-on: macos-latest
     timeout-minutes: 60
 
@@ -271,3 +243,31 @@ jobs:
           git add deploy/appsflyer-unity-plugin-*.unitypackage
           git commit -m "build: .unitypackage artifacts for ${{ github.event.inputs.plugin_version }}"
           git push origin "${{ needs.prepare-branch.outputs.release_branch }}"
+
+  # ── 3. E2E — iOS ────────────────────────────────────────────────────────────
+  run-e2e-ios:
+    name: E2E — iOS
+    needs: [prepare-branch, build-package]
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
+
+  # ── 4. E2E — Android (after iOS to avoid Unity license contention) ──────────
+  run-e2e-android:
+    name: E2E — Android
+    needs: [prepare-branch, run-e2e-ios]
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ github.event.inputs.plugin_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE:       ${{ secrets.ENV_FILE }}
