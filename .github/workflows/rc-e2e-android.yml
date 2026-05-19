@@ -37,43 +37,54 @@ jobs:
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
-      - name: Build Android APK (via Unity)
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
         with:
-          projectPath:      test-app
-          unityVersion:     6000.3.5f1
-          targetPlatform:   Android
-          buildName:        com.appsflyer.engagement
-          buildsPath:       test-app/Build
-          buildMethod:      BuildScript.BuildAndroid
-          androidExportType: androidPackage
-          allowDirtyBuild:  true
+          path: /opt/unity
+          key: unity-6000.3.5f1-android-linux
+
+      - name: Install Unity Editor (Linux)
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/LinuxEditorInstaller/Unity-6000.3.5f1.tar.xz" \
+            -o /tmp/Unity-Linux.tar.xz
+          sudo mkdir -p /opt/unity
+          sudo tar -xf /tmp/Unity-Linux.tar.xz -C /opt/unity --strip-components=1
+          echo "Unity installed at: /opt/unity/Editor/Unity"
+        timeout-minutes: 30
+
+      - name: Activate Unity license
+        run: |
+          /opt/unity/Editor/Unity -quit -batchmode \
+            -serial   "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile  /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build Android APK
+        run: |
+          mkdir -p test-app/Build/Android
+          /opt/unity/Editor/Unity -quit -batchmode \
+            -logFile     /tmp/unity-build.log \
+            -projectPath "$(pwd)/test-app" \
+            -buildTarget Android \
+            -executeMethod BuildScript.BuildAndroid
+          BUILD_EXIT=$?
+          tail -50 /tmp/unity-build.log
+          exit $BUILD_EXIT
+        timeout-minutes: 30
 
       - name: Return Unity license
         if: always()
         run: |
-          docker run --rm \
-            --env UNITY_EMAIL \
-            --env UNITY_PASSWORD \
-            --env UNITY_SERIAL \
-            --env HOME=/root \
-            unityci/editor:ubuntu-6000.3.5f1-android-3 \
-            bash -c "
-              unity-editor -quit -batchmode -returnlicense \
-                -username \"\$UNITY_EMAIL\" \
-                -password \"\$UNITY_PASSWORD\" \
-                -logFile /tmp/unity-return.log 2>&1 || true
-              echo '=== unity-return.log ==='
-              cat /tmp/unity-return.log || true
-            " || true
-        env:
-          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+          /opt/unity/Editor/Unity -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile  /tmp/unity-return.log 2>&1 || true
+          echo "=== unity-return.log ==="
+          cat /tmp/unity-return.log || true
 
       - name: Locate APK
         run: |
