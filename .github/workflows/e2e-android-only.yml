@@ -32,11 +32,13 @@ jobs:
 
       - name: Tag for GHCR
         run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker tag \
             unityci/editor:${{ github.event.inputs.unity_version }} \
-            ghcr.io/${{ github.repository_owner }}/unity-android:${{ github.event.inputs.unity_version }}
+            ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
 
       - name: Push to GHCR
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/unity-android:${{ github.event.inputs.unity_version }}
-          echo "Image available at: ghcr.io/${{ github.repository_owner }}/unity-android:${{ github.event.inputs.unity_version }}"
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
+          echo "Image available at: ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}"
