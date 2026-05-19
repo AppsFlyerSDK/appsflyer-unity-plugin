@@ -106,15 +106,20 @@ For In-App Purchase Receipt Validation, follow the instructions according to you
 - The validate purchase response is triggered in the `AppsFlyerTrackerCallbacks.cs` class.
 - **iOS Error Handling:** On iOS, the `onValidateAndLogFailure` callback is only triggered for actual errors (network errors, invalid parameters, etc.). Validation failures (e.g., invalid receipt) are returned through the `onValidateAndLogComplete` callback in the response dictionary. Check the response to determine if validation was successful.
 
-```c#
-// for Android 
+**Android**
+
 `void validateAndSendInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters, MonoBehaviour gameObject)`
-// for iOS 
+
+**iOS**
+
 `void validateAndSendInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> extraEventValues, MonoBehaviour gameObject)`
 
-```
+> In the C# SDK, the dictionary parameter is named `purchaseAdditionalDetails` on both platforms.
 
 ```c#
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Purchasing;
 using AppsFlyerSDK;
 
@@ -125,41 +130,50 @@ public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
 
     void Start()
     {
-        AppsFlyer.initSDK("devKey", "devKey");
+        AppsFlyer.initSDK("devKey", "appId");
         AppsFlyer.startSDK();
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
         string prodID = args.purchasedProduct.definition.id;
-        string price = args.purchasedProduct.metadata.localizedPrice.ToString();
-        string currency = args.purchasedProduct.metadata.isoCurrencyCode;
+        string transactionID = args.purchasedProduct.transactionID;
 
-        string receipt = args.purchasedProduct.receipt;
-        var recptToJSON = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(product.receipt);
+        var recptToJSON = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(args.purchasedProduct.receipt);
         var receiptPayload = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize((string)recptToJSON["Payload"]);
-        var transactionID = product.transactionID;
 
-        if (String.Equals(args.purchasedProduct.definition.id, kProductIDConsumable, StringComparison.Ordinal))
+        if (String.Equals(prodID, kProductIDConsumable, StringComparison.Ordinal))
         {
+            var purchaseAdditionalDetails = new Dictionary<string, string>
+            {
+                { "paywall", "123" }
+            };
+
 #if UNITY_IOS
 
-            if(isSandbox)
+            if (isSandbox)
             {
                 AppsFlyeriOS.setUseReceiptValidationSandbox(true);
             }
 
-            AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init(prodID, price, currency, transactionID);
+            AFSDKPurchaseDetailsIOS details = AFSDKPurchaseDetailsIOS.Init(
+                prodID,
+                transactionID,
+                AFSDKPurchaseType.OneTimePurchase);
 
-            AppsFlyeriOS.validateAndSendInAppPurchase(details, null, this);
+            AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #elif UNITY_ANDROID
 
-        AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, "token", prodID, price, currency);
+            var purchaseData = (string)receiptPayload["json"];
+            var purchaseDataJson = (Dictionary<string, object>)AFMiniJSON.Json.Deserialize(purchaseData);
+            string purchaseToken = (string)purchaseDataJson["purchaseToken"];
 
-        AppsFlyerAndroid.validateAndSendInAppPurchase(
-        details,
-        null, 
-        this);
+            AFPurchaseDetailsAndroid details = new AFPurchaseDetailsAndroid(
+                AFPurchaseType.OneTimePurchase,
+                purchaseToken,
+                prodID);
+
+            AppsFlyer.validateAndSendInAppPurchase(details, purchaseAdditionalDetails, this);
 #endif
         }
 
