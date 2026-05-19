@@ -51,18 +51,18 @@ jobs:
             -o /tmp/Unity-Linux.tar.xz
           sudo mkdir -p /opt/unity
           sudo tar -xf /tmp/Unity-Linux.tar.xz -C /opt/unity
-          UNITY=$(find /opt/unity -name "Unity" -type f 2>/dev/null | head -1)
+          UNITY=$(find /opt/unity -type f \( -name "Unity" -o -name "unity-editor" \) 2>/dev/null | head -1)
           echo "Unity installed at: $UNITY"
           if [[ -z "$UNITY" ]]; then
             echo "::error::Unity binary not found after extraction — listing /opt/unity:"
-            find /opt/unity -maxdepth 4 | head -30
+            find /opt/unity -maxdepth 4 | head -40
             exit 1
           fi
         timeout-minutes: 30
 
       - name: Set Unity path
         run: |
-          UNITY=$(find /opt/unity -name "Unity" -type f 2>/dev/null | head -1)
+          UNITY=$(find /opt/unity -type f \( -name "Unity" -o -name "unity-editor" \) 2>/dev/null | head -1)
           echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
           echo "Unity path: $UNITY"
 
