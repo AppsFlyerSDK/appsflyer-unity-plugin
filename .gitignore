@@ -3,8 +3,25 @@
 Logs/
 Packages/
 Temp/
+test-app/Assets/StreamingAssets/.env
 Library/
 /*/outputs/
+
+# test run reports (regenerated on every run)
+.af-e2e/reports/
+
+# planning / status docs (internal working documents)
+RC_PIPELINE_PLAN.md
+RELEASE_PROCESS.md
+UNITY_RC_STATUS.md
+
+# unity temp / per-developer settings
+test-app/.utmp/
+UserSettings/
+test-app/UserSettings/
+
+# build artifacts
+test-app/Build/
 
 
 #android studio
