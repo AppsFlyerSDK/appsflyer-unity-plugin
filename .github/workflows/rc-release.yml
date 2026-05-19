@@ -78,6 +78,23 @@ jobs:
             --android-sdk-version   "${{ github.event.inputs.android_sdk_version }}" \
             --ios-sdk-version       "${{ github.event.inputs.ios_sdk_version }}"
 
+      - name: Verify version bump
+        run: |
+          ANDROID_SDK="${{ github.event.inputs.android_sdk_version }}"
+          IOS_SDK="${{ github.event.inputs.ios_sdk_version }}"
+          PLUGIN="${{ github.event.inputs.plugin_version }}"
+
+          grep -q "af-android-sdk:$ANDROID_SDK" test-app/Assets/Plugins/Android/mainTemplate.gradle \
+            || { echo "::error::mainTemplate.gradle does not contain af-android-sdk:$ANDROID_SDK"; exit 1; }
+
+          grep -q "AppsFlyerFramework', '$IOS_SDK'" scripts/ios-pod-install.sh \
+            || { echo "::error::ios-pod-install.sh does not contain AppsFlyerFramework $IOS_SDK"; exit 1; }
+
+          grep -q "kAppsFlyerPluginVersion = \"$PLUGIN\"" Assets/AppsFlyer/AppsFlyer.cs \
+            || { echo "::error::AppsFlyer.cs does not contain plugin version $PLUGIN"; exit 1; }
+
+          echo "Version bump verified: plugin=$PLUGIN android-sdk=$ANDROID_SDK ios-sdk=$IOS_SDK"
+
       - name: Commit and push
         run: |
           git add \
@@ -86,6 +103,8 @@ jobs:
             Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
             deploy/build_unity_package.sh \
             deploy/strict_mode_build_package.sh \
+            test-app/Assets/Plugins/Android/mainTemplate.gradle \
+            scripts/ios-pod-install.sh \
             CHANGELOG.md \
             README.md
           git commit -m "chore: bump to ${{ github.event.inputs.plugin_version }}" || echo "Nothing to commit"
