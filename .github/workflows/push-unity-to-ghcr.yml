@@ -1,0 +1,44 @@
+name: Push Unity Android image to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      unity_version:
+        description: Unity version tag (e.g. ubuntu-6000.3.5f1-android-3)
+        required: true
+        default: ubuntu-6000.3.5f1-android-3
+        type: string
+
+jobs:
+  push-to-ghcr:
+    name: Pull from Docker Hub → Push to GHCR
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull from Docker Hub
+        run: docker pull unityci/editor:${{ github.event.inputs.unity_version }}
+
+      - name: Tag for GHCR
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker tag \
+            unityci/editor:${{ github.event.inputs.unity_version }} \
+            ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
+
+      - name: Push to GHCR
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
+          echo "Image available at: ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}"

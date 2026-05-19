@@ -37,47 +37,35 @@ jobs:
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
-      - name: Build Android APK (via Unity)
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath:      test-app
-          unityVersion:     6000.3.5f1
-          targetPlatform:   Android
-          buildName:        com.appsflyer.engagement
-          buildsPath:       test-app/Build
-          buildMethod:      BuildScript.BuildAndroid
-          androidExportType: androidPackage
-          allowDirtyBuild:  true
+          unityVersion:   6000.3.5f1
+          targetPlatform: Android
+          customImage:    ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3
+          projectPath:    test-app
+          buildMethod:    BuildScript.BuildAndroid
+          buildsPath:     test-app/Build
+        timeout-minutes: 30
 
-      - name: Return Unity license
+      - name: Upload Unity build log
         if: always()
-        run: |
-          docker run --rm \
-            --env UNITY_EMAIL \
-            --env UNITY_PASSWORD \
-            --env UNITY_SERIAL \
-            --env HOME=/root \
-            unityci/editor:ubuntu-6000.3.5f1-android-3 \
-            bash -c "
-              unity-editor -quit -batchmode -returnlicense \
-                -username \"\$UNITY_EMAIL\" \
-                -password \"\$UNITY_PASSWORD\" \
-                -logFile /tmp/unity-return.log 2>&1 || true
-              echo '=== unity-return.log ==='
-              cat /tmp/unity-return.log || true
-            " || true
-        env:
-          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-build-log-${{ inputs.plugin_version }}
+          path: /tmp/unity-build.log
+          retention-days: 3
 
       - name: Locate APK
         run: |
-          APK=$(find test-app/Build/Android -name "*.apk" | head -1)
+          APK=$(find test-app/Build -name "*.apk" | head -1)
           if [[ -z "$APK" ]]; then
             echo "::error::APK not found after Unity build"
             exit 1
@@ -104,7 +92,7 @@ jobs:
           disable-animations: true
           script: |
             adb wait-for-device
-            adb install -r "${{ env.APK_PATH }}"
+            adb install -r "$APK_PATH"
             adb shell am force-stop com.appsflyer.engagement
             chmod +x scripts/af-scenario-runner.sh
             scripts/af-scenario-runner.sh --platform android --plan .af-e2e/test-plan.json --verbose
