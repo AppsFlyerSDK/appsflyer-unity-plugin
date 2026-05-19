@@ -137,3 +137,137 @@ jobs:
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
       UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
       ENV_FILE:       ${{ secrets.ENV_FILE }}
+
+  # ── 4. Build .unitypackage artifacts ────────────────────────────────────────
+  build-package:
+    name: Build .unitypackage artifacts
+    needs: [prepare-branch, run-e2e-ios, run-e2e-android]
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref:         ${{ needs.prepare-branch.outputs.release_branch }}
+          fetch-depth: 0
+          token:       ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name  "${{ secrets.CI_USERNAME }}"
+          git config user.email "${{ secrets.CI_EMAIL }}"
+
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Unity.app
+          key: unity-6000.3.5f1-ios-macos14-arm64
+
+      - name: Install Unity Editor
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+        timeout-minutes: 60
+
+      - name: Set Unity path
+        run: |
+          UNITY=$(find /Applications/Unity -name "Unity" -type f -path "*/MacOS/Unity" | head -1)
+          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
+
+      - name: Activate Unity license
+        run: |
+          "$UNITY_PATH" -quit -batchmode \
+            -serial   "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile  /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Remove old .unitypackage files
+        run: find deploy -name "*.unitypackage" -not -name "external-dependency-manager*" -delete
+
+      - name: Build regular .unitypackage
+        run: |
+          PLUGIN_VERSION="${{ github.event.inputs.plugin_version }}"
+          PACKAGE_NAME="appsflyer-unity-plugin-${PLUGIN_VERSION}.unitypackage"
+
+          mv deploy/external-dependency-manager-1.2.183.unitypackage .
+          mv Assets/AppsFlyer/Tests /tmp/Tests_temp 2>/dev/null || true
+          mv Assets/AppsFlyer/Tests.meta /tmp/Tests_temp.meta 2>/dev/null || true
+
+          "$UNITY_PATH" \
+            -gvh_disable \
+            -batchmode \
+            -importPackage "$(pwd)/external-dependency-manager-1.2.183.unitypackage" \
+            -nographics \
+            -logFile /tmp/unity-export.log \
+            -projectPath "$(pwd)" \
+            -exportPackage Assets/AppsFlyer \
+            "$(pwd)/deploy/${PACKAGE_NAME}" \
+            -quit
+          BUILD_EXIT=$?
+
+          mv /tmp/Tests_temp Assets/AppsFlyer/Tests 2>/dev/null || true
+          mv /tmp/Tests_temp.meta Assets/AppsFlyer/Tests.meta 2>/dev/null || true
+          mv external-dependency-manager-1.2.183.unitypackage deploy/
+
+          echo "=== unity-export.log (last 30 lines) ===" && tail -30 /tmp/unity-export.log || true
+          exit $BUILD_EXIT
+        timeout-minutes: 20
+
+      - name: Build strict .unitypackage
+        run: |
+          PLUGIN_VERSION="${{ github.event.inputs.plugin_version }}"
+          PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage"
+
+          sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          sed -i '' 's/PurchaseConnector/PurchaseConnector\/Strict/g' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          sed -i '' 's/\[AppsFlyerLib shared\]\.disableAdvertisingIdentifier/\/\/[AppsFlyerLib shared].disableAdvertisingIdentifier/g' Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '' 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/[[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];/g' Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+
+          mv deploy/external-dependency-manager-1.2.183.unitypackage .
+          mv Assets/AppsFlyer/Tests /tmp/Tests_temp 2>/dev/null || true
+          mv Assets/AppsFlyer/Tests.meta /tmp/Tests_temp.meta 2>/dev/null || true
+
+          "$UNITY_PATH" \
+            -gvh_disable \
+            -batchmode \
+            -importPackage "$(pwd)/external-dependency-manager-1.2.183.unitypackage" \
+            -nographics \
+            -logFile /tmp/unity-strict-export.log \
+            -projectPath "$(pwd)" \
+            -exportPackage Assets/AppsFlyer \
+            "$(pwd)/deploy/${PACKAGE_NAME}" \
+            -quit
+          BUILD_EXIT=$?
+
+          mv /tmp/Tests_temp Assets/AppsFlyer/Tests 2>/dev/null || true
+          mv /tmp/Tests_temp.meta Assets/AppsFlyer/Tests.meta 2>/dev/null || true
+          mv external-dependency-manager-1.2.183.unitypackage deploy/
+
+          sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          sed -i '' 's/PurchaseConnector\/Strict/PurchaseConnector/g' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          sed -i '' 's/\/\/\[AppsFlyerLib shared\]/[AppsFlyerLib shared]/g' Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          sed -i '' 's/\/\/\[\[AppsFlyerLib shared\]/[[AppsFlyerLib shared]/g' Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+
+          echo "=== unity-strict-export.log (last 30 lines) ===" && tail -30 /tmp/unity-strict-export.log || true
+          exit $BUILD_EXIT
+        timeout-minutes: 20
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          "$UNITY_PATH" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile  /tmp/unity-return.log 2>&1 || true
+
+      - name: Commit and push packages
+        run: |
+          git add deploy/appsflyer-unity-plugin-*.unitypackage
+          git commit -m "build: .unitypackage artifacts for ${{ github.event.inputs.plugin_version }}"
+          git push origin "${{ needs.prepare-branch.outputs.release_branch }}"
