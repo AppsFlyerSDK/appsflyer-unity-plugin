@@ -37,56 +37,22 @@ jobs:
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
-      - name: Cache Unity Editor installation
-        id: cache-unity
-        uses: actions/cache@v4
-        with:
-          path: /opt/unity
-          key: unity-6000.3.5f1-android-linux
-
-      - name: Install Unity Editor (Linux)
-        if: steps.cache-unity.outputs.cache-hit != 'true'
-        run: |
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/LinuxEditorInstaller/Unity-6000.3.5f1.tar.xz" \
-            -o /tmp/Unity-Linux.tar.xz
-          sudo mkdir -p /opt/unity
-          sudo tar -xf /tmp/Unity-Linux.tar.xz -C /opt/unity
-          UNITY=$(find /opt/unity -type f \( -name "Unity" -o -name "unity-editor" \) 2>/dev/null | head -1)
-          echo "Unity installed at: $UNITY"
-          if [[ -z "$UNITY" ]]; then
-            echo "::error::Unity binary not found after extraction — listing /opt/unity:"
-            find /opt/unity -maxdepth 4 | head -40
-            exit 1
-          fi
-        timeout-minutes: 30
-
-      - name: Set Unity path
-        run: |
-          UNITY=$(find /opt/unity -type f \( -name "Unity" -o -name "unity-editor" \) 2>/dev/null | head -1)
-          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
-          echo "Unity path: $UNITY"
-
-      - name: Activate Unity license
-        run: |
-          "$UNITY_PATH" -quit -batchmode \
-            -serial   "${{ secrets.UNITY_SERIAL }}" \
-            -username "${{ secrets.UNITY_EMAIL }}" \
-            -password "${{ secrets.UNITY_PASSWORD }}" \
-            -logFile  /tmp/unity-activate.log 2>&1 || true
-          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Build Android APK
-        run: |
-          mkdir -p test-app/Build/Android
-          "$UNITY_PATH" -quit -batchmode \
-            -logFile     /tmp/unity-build.log \
-            -projectPath "$(pwd)/test-app" \
-            -buildTarget Android \
-            -executeMethod BuildScript.BuildAndroid
-          BUILD_EXIT=$?
-          echo "=== unity-build.log (last 80 lines) ==="
-          tail -80 /tmp/unity-build.log || echo "(log file missing)"
-          exit $BUILD_EXIT
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+        with:
+          unityVersion:   6000.3.5f1
+          targetPlatform: Android
+          customImage:    ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3
+          projectPath:    test-app
+          buildMethod:    BuildScript.BuildAndroid
+          buildsPath:     test-app/Build
         timeout-minutes: 30
 
       - name: Upload Unity build log
@@ -97,19 +63,9 @@ jobs:
           path: /tmp/unity-build.log
           retention-days: 3
 
-      - name: Return Unity license
-        if: always()
-        run: |
-          "$UNITY_PATH" -quit -batchmode -returnlicense \
-            -username "${{ secrets.UNITY_EMAIL }}" \
-            -password "${{ secrets.UNITY_PASSWORD }}" \
-            -logFile  /tmp/unity-return.log 2>&1 || true
-          echo "=== unity-return.log ==="
-          cat /tmp/unity-return.log || true
-
       - name: Locate APK
         run: |
-          APK=$(find test-app/Build/Android -name "*.apk" | head -1)
+          APK=$(find test-app/Build -name "*.apk" | head -1)
           if [[ -z "$APK" ]]; then
             echo "::error::APK not found after Unity build"
             exit 1
@@ -136,7 +92,7 @@ jobs:
           disable-animations: true
           script: |
             adb wait-for-device
-            adb install -r "${{ env.APK_PATH }}"
+            adb install -r "$APK_PATH"
             adb shell am force-stop com.appsflyer.engagement
             chmod +x scripts/af-scenario-runner.sh
             scripts/af-scenario-runner.sh --platform android --plan .af-e2e/test-plan.json --verbose
