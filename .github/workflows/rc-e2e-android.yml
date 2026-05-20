@@ -66,12 +66,13 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
         with:
-          unityVersion:   6000.3.5f1
-          targetPlatform: Android
-          customImage:    ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3
-          projectPath:    test-app
-          buildMethod:    BuildScript.BuildAndroid
-          buildsPath:     test-app/Build
+          unityVersion:    6000.3.5f1
+          targetPlatform:  Android
+          customImage:     ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3
+          projectPath:     test-app
+          buildMethod:     BuildScript.BuildAndroid
+          buildsPath:      test-app/Build
+          allowDirtyBuild: true
         timeout-minutes: 30
 
       - name: Upload Unity build log
