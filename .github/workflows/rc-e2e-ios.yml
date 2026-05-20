@@ -87,6 +87,25 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
+      - name: Import .unitypackage into test app
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          PACKAGE=$(find deploy -name "appsflyer-unity-plugin-${{ inputs.plugin_version }}.unitypackage" | head -1)
+          if [[ -z "$PACKAGE" ]]; then
+            echo "::error::Package not found: appsflyer-unity-plugin-${{ inputs.plugin_version }}.unitypackage"
+            exit 1
+          fi
+          echo "Importing: $PACKAGE"
+          rm -rf test-app/Assets/AppsFlyer test-app/Assets/AppsFlyer.meta
+          "$UNITY" -quit -batchmode -nographics \
+            -logFile /tmp/unity-import.log \
+            -projectPath "$(pwd)/test-app" \
+            -importPackage "$(pwd)/$PACKAGE"
+          IMPORT_EXIT=$?
+          echo "=== unity-import.log (last 30 lines) ===" && tail -30 /tmp/unity-import.log || true
+          exit $IMPORT_EXIT
+        timeout-minutes: 10
+
       - name: Build iOS Simulator Xcode project
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
