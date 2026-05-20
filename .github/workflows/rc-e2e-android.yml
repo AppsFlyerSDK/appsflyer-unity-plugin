@@ -59,6 +59,9 @@ jobs:
           echo "Extracted: $(find Assets/AppsFlyer -type f | wc -l) files"
         timeout-minutes: 5
 
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
@@ -73,6 +76,9 @@ jobs:
           buildMethod:     BuildScript.BuildAndroid
           buildsPath:      test-app/Build
           allowDirtyBuild: true
+          registryUrl:      ghcr.io
+          registryUsername: ${{ github.actor }}
+          registryPassword: ${{ secrets.GITHUB_TOKEN }}
         timeout-minutes: 30
 
       - name: Upload Unity build log
