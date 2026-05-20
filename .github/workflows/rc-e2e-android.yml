@@ -37,9 +37,6 @@ jobs:
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
       - name: Import .unitypackage into repo root
         run: |
           PACKAGE=$(find deploy -name "appsflyer-unity-plugin-${{ inputs.plugin_version }}.unitypackage" | head -1)
@@ -49,15 +46,18 @@ jobs:
           fi
           echo "Importing: $PACKAGE"
           rm -rf Assets/AppsFlyer Assets/AppsFlyer.meta
-          docker run --rm \
-            -v "$(pwd):/workspace" \
-            ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3 \
-            bash -c "unity-editor -quit -batchmode -nographics \
-              -logFile /workspace/import.log \
-              -projectPath /workspace \
-              -importPackage /workspace/$PACKAGE; \
-              EXIT=\$?; tail -30 /workspace/import.log; exit \$EXIT"
-        timeout-minutes: 10
+          TMPDIR=$(mktemp -d)
+          tar -xzf "$PACKAGE" -C "$TMPDIR"
+          for guid_dir in "$TMPDIR"/*/; do
+            [[ -f "$guid_dir/pathname" ]] || continue
+            pathname=$(cat "$guid_dir/pathname")
+            mkdir -p "$(dirname "$pathname")"
+            [[ -f "$guid_dir/asset" ]]      && cp "$guid_dir/asset"      "$pathname"
+            [[ -f "$guid_dir/asset.meta" ]] && cp "$guid_dir/asset.meta" "${pathname}.meta"
+          done
+          rm -rf "$TMPDIR"
+          echo "Extracted: $(find Assets/AppsFlyer -type f | wc -l) files"
+        timeout-minutes: 5
 
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
