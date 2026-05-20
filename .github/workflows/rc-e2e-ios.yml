@@ -87,7 +87,7 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
-      - name: Import .unitypackage into test app
+      - name: Import .unitypackage into repo root
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
           PACKAGE=$(find deploy -name "appsflyer-unity-plugin-${{ inputs.plugin_version }}.unitypackage" | head -1)
@@ -96,10 +96,10 @@ jobs:
             exit 1
           fi
           echo "Importing: $PACKAGE"
-          rm -rf test-app/Assets/AppsFlyer test-app/Assets/AppsFlyer.meta
+          rm -rf Assets/AppsFlyer Assets/AppsFlyer.meta
           "$UNITY" -quit -batchmode -nographics \
             -logFile /tmp/unity-import.log \
-            -projectPath "$(pwd)/test-app" \
+            -projectPath "$(pwd)" \
             -importPackage "$(pwd)/$PACKAGE"
           IMPORT_EXIT=$?
           echo "=== unity-import.log (last 30 lines) ===" && tail -30 /tmp/unity-import.log || true

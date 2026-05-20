@@ -40,7 +40,7 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Import .unitypackage into test app
+      - name: Import .unitypackage into repo root
         run: |
           PACKAGE=$(find deploy -name "appsflyer-unity-plugin-${{ inputs.plugin_version }}.unitypackage" | head -1)
           if [[ -z "$PACKAGE" ]]; then
@@ -48,13 +48,13 @@ jobs:
             exit 1
           fi
           echo "Importing: $PACKAGE"
-          rm -rf test-app/Assets/AppsFlyer test-app/Assets/AppsFlyer.meta
+          rm -rf Assets/AppsFlyer Assets/AppsFlyer.meta
           docker run --rm \
             -v "$(pwd):/workspace" \
             ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3 \
             bash -c "unity-editor -quit -batchmode -nographics \
               -logFile /workspace/import.log \
-              -projectPath /workspace/test-app \
+              -projectPath /workspace \
               -importPackage /workspace/$PACKAGE; \
               EXIT=\$?; tail -30 /workspace/import.log; exit \$EXIT"
         timeout-minutes: 10
