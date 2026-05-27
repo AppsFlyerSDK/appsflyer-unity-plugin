@@ -8,14 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: Staging
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to Github
         env:
           COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
           COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
 
       - name: Check fixed version and compare issues on Jira
         env:
@@ -24,9 +24,9 @@ jobs:
         run: |
           plugin_version=$(echo "$BRANCH_NAME" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
           jira_fixed_version="Unity SDK v$plugin_version"
-          echo "JIRA_FIXED_VERSION=$jira_fixed_version" >> $GITHUB_ENV
+          echo "JIRA_FIXED_VERSION=$jira_fixed_version" >> "$GITHUB_ENV"
           chmod +x .github/workflows/Scripts/checkJira.sh
-          .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
+          .github/workflows/Scripts/checkJira.sh "$JIRA_TOKEN" "$jira_fixed_version"
 
       - name: Update package.json
         env:
@@ -42,7 +42,7 @@ jobs:
             echo "Commit and push"
             git add Assets/AppsFlyer/package.json
             git commit -m "update package.json"
-            git push origin $BRANCH_NAME
+            git push origin "$BRANCH_NAME"
           else
             echo "package.json version is already up to date"
           fi
@@ -66,4 +66,3 @@ jobs:
             "version_changes": "New Unity Plugin Release: Unity SDK v'"$plugin_version"'",
             "deploy_type": "QA"
           }' "$SLACK_TOKEN"
-

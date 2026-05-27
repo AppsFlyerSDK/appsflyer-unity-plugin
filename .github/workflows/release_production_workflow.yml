@@ -13,20 +13,20 @@ on:
 
 jobs:
   Prepare-Release:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'releases/')
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.tag-step.outputs.PLUGIN_VERSION}}
       output2: ${{ steps.tag-step.outputs.RELEASE_BRANCH_NAME}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to GitHub
         env:
           COMMIT_AUTHOR: ${{ secrets.CI_USERNAME}}
           COMMIT_EMAIL: ${{ secrets.CI_EMAIL}}
         run: |
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
 
       - uses: mdecoleman/pr-branch-name@1.2.0
         id: vars
@@ -36,10 +36,10 @@ jobs:
         id: tag-step
         run: |
           TAG=$(echo "${{ steps.vars.outputs.branch }}" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
-          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_ENV
-          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_OUTPUT
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_OUTPUT
+          echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_ENV"
+          echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_ENV"
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_OUTPUT"
 
   Check-Packages:
     needs: [Prepare-Release]
@@ -51,22 +51,24 @@ jobs:
   Update-Links:
     needs: [Prepare-Release, Check-Packages]
     uses: ./.github/workflows/update_links.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
     secrets: inherit
 
   Generate-Tag:
     needs: [Prepare-Release, Check-Packages, Update-Links]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Create a version tag and push it
         run: |
           echo "Pushing release tag: ${{ needs.Prepare-Release.outputs.output1 }}!"
           git checkout master
           echo "Checked out to master"
           git pull origin master
-          git tag ${{ needs.Prepare-Release.outputs.output1 }}
+          git tag "${{ needs.Prepare-Release.outputs.output1 }}"
           echo "Created release tag"
-          git push origin ${{needs.Prepare-Release.outputs.output1}}
+          git push origin "${{needs.Prepare-Release.outputs.output1}}"
           echo "Pushed release tag ${{ needs.Prepare-Release.outputs.output1 }}"
 
   Release-To-Production:
