@@ -9,6 +9,12 @@ if [[ -z "${JIRA_FIX_VERSION:-}" ]]; then
   exit 1
 fi
 
+# Jira fix versions are always stripped semver (e.g. "Unity SDK v6.18.0"), never -rcN.
+if [[ "$JIRA_FIX_VERSION" =~ ^(Unity SDK v[0-9]+\.[0-9]+\.[0-9]+)-rc[0-9]+$ ]]; then
+  JIRA_FIX_VERSION="${BASH_REMATCH[1]}"
+  echo "Normalized Jira fixVersion (stripped -rc suffix): $JIRA_FIX_VERSION"
+fi
+
 if [[ -z "${JIRA_EMAIL:-}" || -z "${JIRA_TOKEN:-}" ]]; then
   echo "Jira credentials not configured; skipping ticket fetch"
   echo "tickets=No assigned fix version found" >> "${GITHUB_OUTPUT:?GITHUB_OUTPUT not set}"

@@ -544,6 +544,7 @@ jobs:
           JIRA_EMAIL: ${{ secrets.CI_JIRA_EMAIL }}
           JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
           JIRA_DOMAIN: ${{ secrets.CI_JIRA_DOMAIN }}
+          # Jira fixVersion is always stripped (Unity SDK v6.18.0), never -rcN.
           JIRA_FIX_VERSION: Unity SDK v${{ needs.prepare-branch.outputs.base_version }}
         run: |
           chmod +x .github/workflows/Scripts/fetch-jira-tickets.sh
