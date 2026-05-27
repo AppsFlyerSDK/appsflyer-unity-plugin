@@ -46,6 +46,7 @@ jobs:
     uses: ./.github/workflows/check_packages.yml
     with:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
+      release_branch: ${{ needs.Prepare-Release.outputs.output2 }}
     secrets: inherit
 
   Update-Links:

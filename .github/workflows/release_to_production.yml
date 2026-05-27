@@ -10,12 +10,17 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   Release-To-Production:
     runs-on: ubuntu-latest
     environment: Production
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
 
       - name: Configure git
         env:
@@ -25,24 +30,55 @@ jobs:
           git config --global user.name "$COMMIT_AUTHOR"
           git config --global user.email "$COMMIT_EMAIL"
 
-      - name: Create GitHub Release
+      - name: Materialize production packages
         env:
-          VTAG: v${{ inputs.plugin_version }}
-          TAG: ${{ inputs.plugin_version }}
-        uses: actions/github-script@v7
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          script: |
-            try {
-              await github.rest.repos.createRelease({
-                draft: false,
-                generate_release_notes: false,
-                name: process.env.VTAG,
-                owner: context.repo.owner,
-                prerelease: false,
-                repo: context.repo.repo,
-                tag_name: process.env.TAG
-              });
-            } catch (error) {
-              core.setFailed(error.message);
-            }
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          RELEASE_BRANCH: ${{ inputs.branch_name }}
+        run: |
+          chmod +x scripts/materialize-production-packages.sh
+          scripts/materialize-production-packages.sh \
+            --version "$PLUGIN_VERSION" \
+            --release-branch "$RELEASE_BRANCH"
+
+      - name: Create production GitHub release with assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.plugin_version }}
+          TAG: v${{ inputs.plugin_version }}
+        run: |
+          set -euo pipefail
+          REGULAR="appsflyer-unity-plugin-${VERSION}.unitypackage"
+          STRICT="strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${VERSION}.unitypackage"
+          test -f "$REGULAR"
+          test -f "$STRICT"
+
+          NOTES_FILE="$(mktemp)"
+          if [[ -f CHANGELOG.md ]]; then
+            awk -v ver="v${VERSION}" '
+              $0 == "## " ver { found=1; next }
+              found && /^## / { exit }
+              found && /^\* / { sub(/^\* /, ""); print "- " $0 }
+              found && /^- / { print }
+            ' CHANGELOG.md > "$NOTES_FILE" || true
+          fi
+          if [[ ! -s "$NOTES_FILE" ]]; then
+            printf 'Unity plugin %s\n' "$VERSION" > "$NOTES_FILE"
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE" \
+              --prerelease=false
+          else
+            gh release create "$TAG" \
+              --target master \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE"
+          fi
+
+          gh release upload "$TAG" "$REGULAR" "$STRICT" --clobber
+          rm -f "$NOTES_FILE"
+
+          echo "Published $TAG with .unitypackage assets."

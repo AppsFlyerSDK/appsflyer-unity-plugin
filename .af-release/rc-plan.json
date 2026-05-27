@@ -3,7 +3,7 @@
     "plugin": "unity",
     "version": "1.1.0",
     "description": "RC release configuration for the AppsFlyer Unity plugin. Unity publishes GitHub prerelease .unitypackage assets first, then validates those assets with post-publish smoke.",
-    "tooling_contract_ref": "RC-PREP, RC-WRAPPER-PUBLISH, RC-WRAPPER-VALIDATE, RC-E2E, RC-PUBLISH, RC-SMOKE, RC-PROMOTE, RC-RELEASE",
+    "tooling_contract_ref": "RC-PREP, RC-WRAPPER-PUBLISH, RC-WRAPPER-VALIDATE, RC-UNIT-TESTS, RC-E2E, RC-PUBLISH, RC-SMOKE, RC-PROMOTE, RC-RELEASE",
     "schema_version": "1.0.0",
     "e2e_jobs": {
       "android": "run-e2e-android",
@@ -37,6 +37,12 @@
       "job": "validate-wrapper",
       "script": "scripts/validate-unity-wrapper.sh",
       "description": "Confirm unity-wrapper exists on Maven Central (with --wait after publish) before build-package."
+    },
+    "RC-UNIT-TESTS": {
+      "path": ".github/workflows/rc-release.yml",
+      "reusable_workflow": ".github/workflows/unity-playmode-tests.yml",
+      "job": "run-unit-tests",
+      "description": "Playmode tests on release branch (iOS, Android, Shared matrix). Runs in parallel with wrapper publish, package build, and E2E."
     },
     "RC-E2E": {
       "path": ".github/workflows/rc-release.yml",
@@ -79,6 +85,11 @@
       "required_conclusion": "success",
       "allow_skipped_on_dry_run": true,
       "check_description": "Maven com.appsflyer:unity-wrapper:<base_version> must resolve before Unity package build and Android E2E."
+    },
+    "RC-UNIT-TESTS": {
+      "check_run_name": "iOS Test Results / Android Test Results / Shared Test Results",
+      "required_conclusion": "success",
+      "blocks": "rc-publish"
     },
     "RC-E2E": {
       "check_run_name": "E2E - iOS / E2E - Android",

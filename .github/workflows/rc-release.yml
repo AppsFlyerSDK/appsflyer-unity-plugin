@@ -311,6 +311,17 @@ jobs:
             /tmp/unity-return.log
           retention-days: 7
 
+  run-unit-tests:
+    name: Unit tests (playmode)
+    needs: [prepare-branch]
+    uses: ./.github/workflows/unity-playmode-tests.yml
+    with:
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
   run-e2e-ios:
     name: E2E - iOS
     needs: [prepare-branch, build-package]
@@ -328,7 +339,7 @@ jobs:
 
   run-e2e-android:
     name: E2E - Android
-    needs: [prepare-branch, build-package, run-e2e-ios]
+    needs: [prepare-branch, build-package]
     uses: ./.github/workflows/rc-e2e-android.yml
     with:
       plugin_version: ${{ needs.prepare-branch.outputs.version }}
@@ -343,7 +354,12 @@ jobs:
 
   rc-publish:
     name: RC-PUBLISH
-    needs: [prepare-branch, build-package, run-e2e-ios, run-e2e-android]
+    needs:
+      - prepare-branch
+      - build-package
+      - run-unit-tests
+      - run-e2e-ios
+      - run-e2e-android
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -458,6 +474,7 @@ jobs:
       - publish-wrapper
       - validate-wrapper
       - build-package
+      - run-unit-tests
       - run-e2e-ios
       - run-e2e-android
       - rc-publish
@@ -471,6 +488,7 @@ jobs:
           WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
           VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
           PACKAGE_RESULT: ${{ needs.build-package.result }}
+          UNIT_TESTS_RESULT: ${{ needs.run-unit-tests.result }}
           E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
           E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
           PUBLISH_RESULT: ${{ needs.rc-publish.result }}
@@ -492,6 +510,7 @@ jobs:
           elif [[ "$WRAPPER_RESULT" != "success" ]]; then echo "failed_stage=publish-wrapper" >> "$GITHUB_OUTPUT"
           elif [[ "$VALIDATE_RESULT" != "success" ]]; then echo "failed_stage=validate-wrapper" >> "$GITHUB_OUTPUT"
           elif [[ "$PACKAGE_RESULT" != "success" ]]; then echo "failed_stage=build-package" >> "$GITHUB_OUTPUT"
+          elif [[ "$UNIT_TESTS_RESULT" != "success" ]]; then echo "failed_stage=run-unit-tests" >> "$GITHUB_OUTPUT"
           elif [[ "$E2E_IOS_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-ios" >> "$GITHUB_OUTPUT"
           elif [[ "$E2E_ANDROID_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-android" >> "$GITHUB_OUTPUT"
           else echo "failed_stage=rc-publish" >> "$GITHUB_OUTPUT"
@@ -503,6 +522,7 @@ jobs:
           WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
           VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
           PACKAGE_RESULT: ${{ needs.build-package.result }}
+          UNIT_TESTS_RESULT: ${{ needs.run-unit-tests.result }}
           E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
           E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
         run: |
@@ -520,11 +540,13 @@ jobs:
             echo "wrapper_icon=$(icon_for "$WRAPPER_RESULT")"
             echo "validate_icon=$(icon_for "$VALIDATE_RESULT")"
             echo "package_icon=$(icon_for "$PACKAGE_RESULT")"
+            echo "unit_tests_icon=$(icon_for "$UNIT_TESTS_RESULT")"
             echo "ios_icon=$(icon_for "$E2E_IOS_RESULT")"
             echo "android_icon=$(icon_for "$E2E_ANDROID_RESULT")"
             echo "wrapper_result=$WRAPPER_RESULT"
             echo "validate_result=$VALIDATE_RESULT"
             echo "package_result=$PACKAGE_RESULT"
+            echo "unit_tests_result=$UNIT_TESTS_RESULT"
             echo "e2e_ios_result=$E2E_IOS_RESULT"
             echo "e2e_android_result=$E2E_ANDROID_RESULT"
           } >> "$GITHUB_OUTPUT"
@@ -569,11 +591,13 @@ jobs:
           WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
           VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
           PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          UNIT_TESTS_ICON: ${{ steps.legs.outputs.unit_tests_icon }}
           IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
           ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
           WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
           VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
           PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          UNIT_TESTS_RESULT: ${{ steps.legs.outputs.unit_tests_result }}
           E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
           E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
           REPOSITORY: ${{ github.repository }}
@@ -598,6 +622,7 @@ jobs:
             `${env.WRAPPER_ICON} Maven unity-wrapper (${env.BASE_VERSION}): ${env.WRAPPER_RESULT}`,
             `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
             `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.UNIT_TESTS_ICON} Playmode unit tests (iOS/Android/Shared): ${env.UNIT_TESTS_RESULT}`,
             `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
             `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
             '',
@@ -646,11 +671,13 @@ jobs:
           WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
           VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
           PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          UNIT_TESTS_ICON: ${{ steps.legs.outputs.unit_tests_icon }}
           IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
           ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
           WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
           VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
           PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          UNIT_TESTS_RESULT: ${{ steps.legs.outputs.unit_tests_result }}
           E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
           E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
           PUBLISH_RESULT: ${{ needs.rc-publish.result }}
@@ -670,6 +697,7 @@ jobs:
             `${env.WRAPPER_ICON} Maven unity-wrapper: ${env.WRAPPER_RESULT}`,
             `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
             `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.UNIT_TESTS_ICON} Playmode unit tests (iOS/Android/Shared): ${env.UNIT_TESTS_RESULT}`,
             `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
             `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
             '',

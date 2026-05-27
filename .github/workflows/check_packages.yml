@@ -6,12 +6,32 @@ on:
       plugin_version:
         required: true
         type: string
+      release_branch:
+        description: "Release branch ref used to locate RC prerelease assets when packages are not on master"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   check-packages:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Materialize production packages
+        if: inputs.release_branch != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          RELEASE_BRANCH: ${{ inputs.release_branch }}
+        run: |
+          chmod +x scripts/materialize-production-packages.sh
+          scripts/materialize-production-packages.sh \
+            --version "$PLUGIN_VERSION" \
+            --release-branch "$RELEASE_BRANCH"
+
       - name: get version
         run: | 
           echo "PLUGIN_VERSION=${{ inputs.plugin_version }}" >> "$GITHUB_ENV"

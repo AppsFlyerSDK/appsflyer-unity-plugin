@@ -1,13 +1,28 @@
-name: Test runner unity-appsflyer-plugin
+name: Unity playmode unit tests (reusable)
 
 on:
   workflow_call:
+    inputs:
+      release_branch:
+        description: Release branch to test
+        required: true
+        type: string
+    secrets:
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+      UNITY_SERIAL:
+        required: true
+
+permissions:
+  checks: write
+  contents: read
 
 jobs:
   run-unity-tests:
-    name: Run ${{ matrix.testMode }} tests for ${{ matrix.targetPlatform }}
+    name: Playmode — ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -17,6 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.release_branch }}
           lfs: true
 
       - name: Free up disk space
