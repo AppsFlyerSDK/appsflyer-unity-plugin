@@ -16,7 +16,8 @@ jobs:
     environment: Production
     steps:
       - uses: actions/checkout@v4
-      - name: Login to Github
+
+      - name: Configure git
         env:
           COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
           COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
@@ -45,24 +46,3 @@ jobs:
             } catch (error) {
               core.setFailed(error.message);
             }
-      - name: Send slack report
-        env:
-          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
-          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
-        run: |
-          jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
-          chmod +x .github/workflows/Scripts/checkJira.sh
-          .github/workflows/Scripts/checkJira.sh "$JIRA_TOKEN" "$jira_fixed_version"
-          
-          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
-          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
-          
-          # Send webhook to Slack with all required parameters
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "plugin_version": "'"${{inputs.plugin_version}}"'",
-            "git_branch": "'"${{inputs.branch_name}}"'",
-            "ios_sdk_dependency": "'"$ios_af_sdk_version"'",
-            "android_sdk_dependency": "'"$android_af_sdk_version"'",
-            "version_changes": "🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}",
-            "deploy_type": "PRODUCTION"
-          }' "$SLACK_TOKEN"
