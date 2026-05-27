@@ -135,15 +135,23 @@ jobs:
           chmod +x .github/workflows/Scripts/extract-changelog-snippet.sh
           .github/workflows/Scripts/extract-changelog-snippet.sh
 
-      - name: Read native SDK versions from README
+      - name: Read native SDK and Purchase Connector versions from README
         id: sdk-versions
         if: steps.status.outputs.success == 'true'
         continue-on-error: true
         run: |
           IOS=$(grep -Eo 'iOS AppsFlyer SDK v[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/iOS AppsFlyer SDK v//')
           ANDROID=$(grep -Eo 'Android AppsFlyer SDK v[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android AppsFlyer SDK v//')
+          ANDROID_PC=$(grep -Eo 'Android Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android Purchase Connector //')
+          IOS_PC=$(grep -Eo 'iOS Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/iOS Purchase Connector //')
+          if [[ -n "$IOS" && -n "$IOS_PC" && "$IOS" != "$IOS_PC" ]]; then
+            echo "::error::README iOS Purchase Connector ($IOS_PC) must match iOS AppsFlyer SDK ($IOS)"
+            exit 1
+          fi
           echo "ios_sdk=${IOS:-unknown}" >> "$GITHUB_OUTPUT"
           echo "android_sdk=${ANDROID:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "android_pc=${ANDROID_PC:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "ios_pc=${IOS:-unknown}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch Jira tickets
         id: jira-tickets
@@ -171,11 +179,14 @@ jobs:
           JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
           ANDROID_SDK_VERSION: ${{ steps.sdk-versions.outputs.android_sdk }}
           IOS_SDK_VERSION: ${{ steps.sdk-versions.outputs.ios_sdk }}
+          ANDROID_PC_VERSION: ${{ steps.sdk-versions.outputs.android_pc }}
+          IOS_PC_VERSION: ${{ steps.sdk-versions.outputs.ios_pc }}
         run: |
           node <<'NODE'
           const fs = require('fs');
           const env = process.env;
-          const text = [
+          const unityWrap = ':unity:'.repeat(10);
+          const body = [
             '<!here>',
             '',
             `*Unity Plugin ${env.PLUGIN_VERSION}* is published to Production.`,
@@ -196,11 +207,16 @@ jobs:
             '*Linked tickets and issues:*',
             env.JIRA_TICKETS || 'No assigned fix version found',
             '',
-            "*Native SDK's:*",
-            `:android: ${env.ANDROID_SDK_VERSION}`,
-            `:apple_company: ${env.IOS_SDK_VERSION}`,
+            '*Native SDK versions:*',
+            `:android: AppsFlyer SDK ${env.ANDROID_SDK_VERSION}`,
+            `:apple_company: AppsFlyer SDK ${env.IOS_SDK_VERSION}`,
+            '',
+            '*Purchase Connector versions:*',
+            `:android: ${env.ANDROID_PC_VERSION}`,
+            `:apple_company: ${env.IOS_PC_VERSION}`,
             '',
           ].join('\n');
+          const text = `${unityWrap}\n${body}\n${unityWrap}`;
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
           NODE
 

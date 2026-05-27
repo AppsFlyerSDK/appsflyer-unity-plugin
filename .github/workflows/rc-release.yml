@@ -154,6 +154,9 @@ jobs:
           grep -q "af-android-sdk:$ANDROID_SDK_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "unity-wrapper:$WRAPPER_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "PurchaseConnector\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -qE "^- iOS AppsFlyer SDK v${IOS_SDK_VERSION}$" README.md
+          grep -qE "^- iOS Purchase Connector ${IOS_SDK_VERSION}$" README.md
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "pluginVersion:@\"$PLUGIN_VERSION\"" Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
           grep -q "PLUGIN_VERSION = \"$WRAPPER_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
@@ -177,7 +180,8 @@ jobs:
             test-app/Assets/Plugins/Android/mainTemplate.gradle \
             scripts/ios-pod-install.sh \
             CHANGELOG.md \
-            README.md
+            README.md \
+            docs/Introduction.md
           git commit -m "chore: bump to $PLUGIN_VERSION" || echo "Nothing to commit"
           git push origin "$RELEASE_BRANCH" --force-with-lease
 
@@ -582,6 +586,14 @@ jobs:
           chmod +x .github/workflows/Scripts/fetch-jira-tickets.sh
           .github/workflows/Scripts/fetch-jira-tickets.sh
 
+      - name: Read Android Purchase Connector version from README
+        id: purchase-connector-versions
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        run: |
+          ANDROID_PC=$(grep -Eo 'Android Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android Purchase Connector //')
+          echo "android_pc=${ANDROID_PC:-unknown}" >> "$GITHUB_OUTPUT"
+
       - name: Build Slack success payload
         id: slack-success-payload
         if: steps.status.outputs.success == 'true' && needs.prepare-branch.outputs.dry_run != 'true'
@@ -608,11 +620,14 @@ jobs:
           JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          ANDROID_PC_VERSION: ${{ steps.purchase-connector-versions.outputs.android_pc }}
+          IOS_PC_VERSION: ${{ inputs.ios_sdk_version }}
         run: |
           node <<'NODE'
           const fs = require('fs');
           const env = process.env;
-          const text = [
+          const unityWrap = ':unity:'.repeat(10);
+          const body = [
             '<!here>',
             '',
             '*Unity Plugin Release Candidate:*',
@@ -642,11 +657,16 @@ jobs:
             '*Linked tickets and issues:*',
             env.JIRA_TICKETS || 'No assigned fix version found',
             '',
-            "*Native SDK's:*",
-            `:android: ${env.ANDROID_SDK_VERSION}`,
-            `:apple_company: ${env.IOS_SDK_VERSION}`,
+            '*Native SDK versions:*',
+            `:android: AppsFlyer SDK ${env.ANDROID_SDK_VERSION}`,
+            `:apple_company: AppsFlyer SDK ${env.IOS_SDK_VERSION}`,
+            '',
+            '*Purchase Connector versions:*',
+            `:android: ${env.ANDROID_PC_VERSION}`,
+            `:apple_company: ${env.IOS_PC_VERSION}`,
             '',
           ].join('\n');
+          const text = `${unityWrap}\n${body}\n${unityWrap}`;
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
           NODE
 

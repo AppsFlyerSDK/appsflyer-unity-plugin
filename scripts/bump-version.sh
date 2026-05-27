@@ -10,6 +10,7 @@
 #
 # The unity-wrapper version defaults to the plugin base version (RC suffix
 # stripped, e.g. 6.18.0-rc1 -> 6.18.0). Override with --unity-wrapper-version.
+# iOS Purchase Connector version is always set to --ios-sdk-version (same as AppsFlyerFramework).
 # Run from the repo root.
 
 set -euo pipefail
@@ -147,17 +148,31 @@ if [[ -f "$CHANGELOG" ]]; then
   fi
 fi
 
-# ── README.md — update inline native SDK version references ──────────────────
+# ── README.md / docs — native SDK and Purchase Connector version surfaces ─────
+update_doc_native_versions() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+  sed -i.bak "s|- Android AppsFlyer SDK v[0-9][0-9.]*|- Android AppsFlyer SDK v$ANDROID_SDK_VERSION|" "$file"
+  sed -i.bak "s|- iOS AppsFlyer SDK v[0-9][0-9.]*|- iOS AppsFlyer SDK v$IOS_SDK_VERSION|" "$file"
+  # iOS Purchase Connector always matches iOS AppsFlyer SDK version.
+  sed -i.bak "s|- iOS Purchase Connector [0-9][0-9.]*|- iOS Purchase Connector $IOS_SDK_VERSION|" "$file"
+  rm -f "${file}.bak"
+}
+
 README="README.md"
 if [[ -f "$README" ]]; then
-  # Replace versioned maven artifact refs and CocoaPods pod versions
-  # Pattern: af-android-sdk:<old_version> → af-android-sdk:<new_version>
+  update_doc_native_versions "$README"
   sed -i.bak "s|af-android-sdk:[0-9][0-9.]*|af-android-sdk:$ANDROID_SDK_VERSION|g" "$README"
-  # Pattern: AppsFlyerFramework/<old_version> or AppsFlyerFramework ~> <old_version>
   sed -i.bak "s|AppsFlyerFramework/[0-9][0-9.]*|AppsFlyerFramework/$IOS_SDK_VERSION|g" "$README"
   sed -i.bak "s|AppsFlyerFramework', '[0-9][0-9.]*|AppsFlyerFramework', '$IOS_SDK_VERSION|g" "$README"
   rm -f "${README}.bak"
-  echo "[+] README.md — updated native SDK version references"
+  echo "[+] README.md — updated native SDK and Purchase Connector references"
+fi
+
+INTRO="docs/Introduction.md"
+if [[ -f "$INTRO" ]]; then
+  update_doc_native_versions "$INTRO"
+  echo "[+] docs/Introduction.md — updated native SDK and Purchase Connector references"
 fi
 
 echo ""
