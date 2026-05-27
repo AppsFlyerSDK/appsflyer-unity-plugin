@@ -536,6 +536,16 @@ jobs:
           fetch-depth: 0
           ref: ${{ needs.prepare-branch.outputs.release_branch }}
 
+      - name: Extract changelog snippet
+        id: changelog
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.base_version }}
+        run: |
+          chmod +x .github/workflows/Scripts/extract-changelog-snippet.sh
+          .github/workflows/Scripts/extract-changelog-snippet.sh
+
       - name: Fetch Jira tickets
         id: jira-tickets
         if: steps.status.outputs.success == 'true'
@@ -570,6 +580,7 @@ jobs:
           RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
           TAG_NAME: v${{ needs.prepare-branch.outputs.version }}
           RUN_ID: ${{ github.run_id }}
+          CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
           JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
@@ -599,6 +610,9 @@ jobs:
             `:github: Branch: https://github.com/${env.REPOSITORY}/tree/${env.RELEASE_BRANCH}`,
             `:github: Prerelease: https://github.com/${env.REPOSITORY}/releases/tag/${env.TAG_NAME}`,
             `:github: Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Changes and fixes:*',
+            env.CHANGELOG_BODY || '• Check CHANGELOG.md for details',
             '',
             '*Linked tickets and issues:*',
             env.JIRA_TICKETS || 'No assigned fix version found',
