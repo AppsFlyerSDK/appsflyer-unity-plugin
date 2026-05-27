@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub tag](https://img.shields.io/github/v/release/AppsFlyerSDK/appsflyer-unity-plugin)](https://img.shields.io/github/v/release/AppsFlyerSDK/appsflyer-unity-plugin)
-[![Unit tests](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/main.yml/badge.svg)](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/main.yml)
+[![RC Release Pipeline](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/rc-release.yml/badge.svg)](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/rc-release.yml)
 [![check packages](https://github.com/af-margot/appsflyer-unity-plugin-beta/actions/workflows/checksums_files.yml/badge.svg)](https://github.com/af-margot/appsflyer-unity-plugin-beta/actions/workflows/checksums_files.yml)
 
 
@@ -21,20 +21,16 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 - iOS AppsFlyer SDK v6.17.9
 - iOS Purchase Connector 6.17.9
 ---
-## 📌 Important: Two Versions of Unity Plugin v6.17.9
+## 📌 Google Play Billing Library 8 (6.18.0+)
 
-We have released **two** versions of the AppsFlyer Unity plugin to support teams at different stages of migrating to **Google Play Billing Library v8.0.0**.
+From **v6.18.0** onward, the Unity plugin ships as a **single release line** with **Google Play Billing Library 8.0.0** on Android (Purchase Connector included in the main package). There is no separate v7 plugin variant for new 6.18.x releases.
 
-### Option A — `v6.17.91` (Billing Library v8) ← Latest
-- **What's included:** Support for **Google Play Billing Library 8.0.0** on Android (Android Purchase Connector version - 2.2.0).
-- **Impact:** This version may introduce **breaking changes** for apps that have **not yet migrated** to the Billing v8 APIs.
-- **Unity IAP requirement:** If you choose this option, update **Unity IAP (`com.unity.purchasing`) to version 5.0.0 or newer** (we recommend the latest 5.x). Unity IAP 4.x does **not** include Billing v8.
+- **Unity IAP:** Use **Unity IAP (`com.unity.purchasing`) 5.0.0 or newer** (recommended: latest 5.x). Unity IAP 4.x does **not** include Billing v8.
+- **Migration:** Apps still on Billing v7 must migrate to Billing v8 APIs before upgrading to 6.18.0+.
 
-### Option B — `v6.17.90` (Billing Library v7)
-- **Purpose:** For developers **not ready** to adopt Billing v8.
-- **Bundled SDKs:** **iOS SDK 6.17.9** and **Android SDK 6.17.6**.
-- **Android Purchase Connector:** Version 2.2.0
-- **Impact:** Lets you update the AppsFlyer SDKs without changing your existing (pre‑v8) billing integration.
+### Still on Billing Library v7?
+
+Use the last **6.17.x** dual-line release: **`v6.17.90`** (Billing v7) or **`v6.17.91`** (Billing v8). See [Installation](/docs/Installation.md) for Maven wrapper coordinates on 6.17.x.
 
 ---  
 ## <a id="new-in-6171">     🎉 New in 6.17.1 - Purchase Connector Integration 

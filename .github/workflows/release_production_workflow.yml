@@ -13,20 +13,20 @@ on:
 
 jobs:
   Prepare-Release:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'releases/')
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.tag-step.outputs.PLUGIN_VERSION}}
       output2: ${{ steps.tag-step.outputs.RELEASE_BRANCH_NAME}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to GitHub
         env:
           COMMIT_AUTHOR: ${{ secrets.CI_USERNAME}}
           COMMIT_EMAIL: ${{ secrets.CI_EMAIL}}
         run: |
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
 
       - uses: mdecoleman/pr-branch-name@1.2.0
         id: vars
@@ -36,37 +36,40 @@ jobs:
         id: tag-step
         run: |
           TAG=$(echo "${{ steps.vars.outputs.branch }}" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
-          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_ENV
-          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_OUTPUT
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> $GITHUB_OUTPUT
+          echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_ENV"
+          echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_ENV"
+          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_OUTPUT"
 
   Check-Packages:
     needs: [Prepare-Release]
     uses: ./.github/workflows/check_packages.yml
     with:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
+      release_branch: ${{ needs.Prepare-Release.outputs.output2 }}
     secrets: inherit
 
   Update-Links:
     needs: [Prepare-Release, Check-Packages]
     uses: ./.github/workflows/update_links.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
     secrets: inherit
 
   Generate-Tag:
     needs: [Prepare-Release, Check-Packages, Update-Links]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Create a version tag and push it
         run: |
           echo "Pushing release tag: ${{ needs.Prepare-Release.outputs.output1 }}!"
           git checkout master
           echo "Checked out to master"
           git pull origin master
-          git tag ${{ needs.Prepare-Release.outputs.output1 }}
+          git tag "${{ needs.Prepare-Release.outputs.output1 }}"
           echo "Created release tag"
-          git push origin ${{needs.Prepare-Release.outputs.output1}}
+          git push origin "${{needs.Prepare-Release.outputs.output1}}"
           echo "Pushed release tag ${{ needs.Prepare-Release.outputs.output1 }}"
 
   Release-To-Production:
@@ -76,3 +79,195 @@ jobs:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
       branch_name: ${{ needs.Prepare-Release.outputs.output2 }}
     secrets: inherit
+
+  notify-team:
+    name: Notify Slack
+    needs:
+      - Prepare-Release
+      - Check-Packages
+      - Update-Links
+      - Generate-Tag
+      - Release-To-Production
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine status and failed stage
+        id: status
+        env:
+          PREPARE_RESULT: ${{ needs.Prepare-Release.result }}
+          PACKAGES_RESULT: ${{ needs.Check-Packages.result }}
+          LINKS_RESULT: ${{ needs.Update-Links.result }}
+          TAG_RESULT: ${{ needs.Generate-Tag.result }}
+          RELEASE_RESULT: ${{ needs.Release-To-Production.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$PREPARE_RESULT" == "success" \
+             && "$PACKAGES_RESULT" == "success" \
+             && "$LINKS_RESULT" == "success" \
+             && "$TAG_RESULT" == "success" \
+             && "$RELEASE_RESULT" == "success" ]]; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "failed_stage=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "success=false" >> "$GITHUB_OUTPUT"
+          if   [[ "$PREPARE_RESULT" != "success" ]]; then echo "failed_stage=Prepare-Release" >> "$GITHUB_OUTPUT"
+          elif [[ "$PACKAGES_RESULT" != "success" ]]; then echo "failed_stage=Check-Packages" >> "$GITHUB_OUTPUT"
+          elif [[ "$LINKS_RESULT" != "success" ]]; then echo "failed_stage=Update-Links" >> "$GITHUB_OUTPUT"
+          elif [[ "$TAG_RESULT" != "success" ]]; then echo "failed_stage=Generate-Tag" >> "$GITHUB_OUTPUT"
+          else echo "failed_stage=Release-To-Production" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout master
+        if: steps.status.outputs.success == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Extract changelog snippet
+        id: changelog
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          PLUGIN_VERSION: ${{ needs.Prepare-Release.outputs.output1 }}
+        run: |
+          chmod +x .github/workflows/Scripts/extract-changelog-snippet.sh
+          .github/workflows/Scripts/extract-changelog-snippet.sh
+
+      - name: Read native SDK and Purchase Connector versions from README
+        id: sdk-versions
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        run: |
+          IOS=$(grep -Eo 'iOS AppsFlyer SDK v[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/iOS AppsFlyer SDK v//')
+          ANDROID=$(grep -Eo 'Android AppsFlyer SDK v[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android AppsFlyer SDK v//')
+          ANDROID_PC=$(grep -Eo 'Android Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android Purchase Connector //')
+          IOS_PC=$(grep -Eo 'iOS Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/iOS Purchase Connector //')
+          if [[ -n "$IOS" && -n "$IOS_PC" && "$IOS" != "$IOS_PC" ]]; then
+            echo "::error::README iOS Purchase Connector ($IOS_PC) must match iOS AppsFlyer SDK ($IOS)"
+            exit 1
+          fi
+          echo "ios_sdk=${IOS:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "android_sdk=${ANDROID:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "android_pc=${ANDROID_PC:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "ios_pc=${IOS:-unknown}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch Jira tickets
+        id: jira-tickets
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          JIRA_EMAIL: ${{ secrets.CI_JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+          JIRA_DOMAIN: ${{ secrets.CI_JIRA_DOMAIN }}
+          # Promoted releases use stripped semver in Jira (Unity SDK v6.18.0).
+          JIRA_FIX_VERSION: Unity SDK v${{ needs.Prepare-Release.outputs.output1 }}
+        run: |
+          chmod +x .github/workflows/Scripts/fetch-jira-tickets.sh
+          .github/workflows/Scripts/fetch-jira-tickets.sh
+
+      - name: Build Slack success payload
+        id: slack-success-payload
+        if: steps.status.outputs.success == 'true'
+        env:
+          PLUGIN_VERSION: ${{ needs.Prepare-Release.outputs.output1 }}
+          REPOSITORY: ${{ github.repository }}
+          TAG: ${{ needs.Prepare-Release.outputs.output1 }}
+          RUN_ID: ${{ github.run_id }}
+          CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
+          JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
+          ANDROID_SDK_VERSION: ${{ steps.sdk-versions.outputs.android_sdk }}
+          IOS_SDK_VERSION: ${{ steps.sdk-versions.outputs.ios_sdk }}
+          ANDROID_PC_VERSION: ${{ steps.sdk-versions.outputs.android_pc }}
+          IOS_PC_VERSION: ${{ steps.sdk-versions.outputs.ios_pc }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const unityWrap = ':unity:'.repeat(10);
+          const body = [
+            '<!here>',
+            '',
+            `*Unity Plugin ${env.PLUGIN_VERSION}* is published to Production.`,
+            '',
+            ':white_check_mark: rc-smoke/github-release passed before promotion.',
+            '',
+            '*Installation:*',
+            'Download `.unitypackage` assets from the GitHub release, or use UPM branches `upm` / `Strict-upm`.',
+            '',
+            '*Sources:*',
+            `:github: Tree: https://github.com/${env.REPOSITORY}/tree/master`,
+            `:github: Release: https://github.com/${env.REPOSITORY}/releases/tag/${env.TAG}`,
+            `:github: Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Changes and fixes:*',
+            env.CHANGELOG_BODY || '• Check CHANGELOG.md for details',
+            '',
+            '*Linked tickets and issues:*',
+            env.JIRA_TICKETS || 'No assigned fix version found',
+            '',
+            '*Native SDK versions:*',
+            `:android: AppsFlyer SDK ${env.ANDROID_SDK_VERSION}`,
+            `:apple_company: AppsFlyer SDK ${env.IOS_SDK_VERSION}`,
+            '',
+            '*Purchase Connector versions:*',
+            `:android: ${env.ANDROID_PC_VERSION}`,
+            `:apple_company: ${env.IOS_PC_VERSION}`,
+            '',
+          ].join('\n');
+          const text = `${unityWrap}\n${body}\n${unityWrap}`;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Success)
+        if: steps.status.outputs.success == 'true'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-success-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        if: steps.status.outputs.success == 'false'
+        env:
+          FAILED_STAGE: ${{ steps.status.outputs.failed_stage }}
+          PLUGIN_VERSION: ${{ needs.Prepare-Release.outputs.output1 || 'unknown' }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          PREPARE_RESULT: ${{ needs.Prepare-Release.result }}
+          PACKAGES_RESULT: ${{ needs.Check-Packages.result }}
+          LINKS_RESULT: ${{ needs.Update-Links.result }}
+          TAG_RESULT: ${{ needs.Generate-Tag.result }}
+          RELEASE_RESULT: ${{ needs.Release-To-Production.result }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            `:warning: *Unity production release failed at \`${env.FAILED_STAGE}\`*`,
+            '',
+            `Version: ${env.PLUGIN_VERSION}`,
+            `Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Stage results:*',
+            `• Prepare-Release: ${env.PREPARE_RESULT}`,
+            `• Check-Packages: ${env.PACKAGES_RESULT}`,
+            `• Update-Links: ${env.LINKS_RESULT}`,
+            `• Generate-Tag: ${env.TAG_RESULT}`,
+            `• Release-To-Production: ${env.RELEASE_RESULT}`,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Failure)
+        if: steps.status.outputs.success == 'false'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}

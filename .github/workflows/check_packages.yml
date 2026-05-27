@@ -6,18 +6,38 @@ on:
       plugin_version:
         required: true
         type: string
+      release_branch:
+        description: "Release branch ref used to locate RC prerelease assets when packages are not on master"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   check-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Materialize production packages
+        if: inputs.release_branch != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          RELEASE_BRANCH: ${{ inputs.release_branch }}
+        run: |
+          chmod +x scripts/materialize-production-packages.sh
+          scripts/materialize-production-packages.sh \
+            --version "$PLUGIN_VERSION" \
+            --release-branch "$RELEASE_BRANCH"
+
       - name: get version
         run: | 
-          echo "PLUGIN_VERSION=${{ inputs.plugin_version }}" >> $GITHUB_ENV
+          echo "PLUGIN_VERSION=${{ inputs.plugin_version }}" >> "$GITHUB_ENV"
         
       - name: setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
       - name: install python packages
@@ -42,16 +62,16 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b upm
           git checkout upm
           echo "Checked out to upm branch"
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
           git rm -r Tests
           git commit -m "Remove Tests folder from upm branch"
           echo "Removed Tests folder"
           git push -f -u origin upm
       - name: create tag
         run: |
-          git tag v${{inputs.plugin_version}}
-          git push origin v${{inputs.plugin_version}}
+          git tag "v${{inputs.plugin_version}}"
+          git push origin "v${{inputs.plugin_version}}"
           echo "Release v${{inputs.plugin_version}} to upm :bookmark:"
 
 
@@ -69,8 +89,8 @@ jobs:
           git subtree split -P Assets/AppsFlyer -b Strict-upm
           git checkout Strict-upm
           echo "Checked out to Strict-upm branch"
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
           git rm -r Tests
           git commit -m "Remove Tests folder from Strict-upm branch"
           echo "Removed Tests folder"
@@ -94,15 +114,15 @@ jobs:
             COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
             COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git config user.name $COMMIT_AUTHOR
-          git config user.email $COMMIT_EMAIL
+          git config user.name "$COMMIT_AUTHOR"
+          git config user.email "$COMMIT_EMAIL"
           git add -A
           git commit -m "update package.json"
           git push -f -u origin Strict-upm
       - name: create tag
         run: |
-          git tag Strict-v${{inputs.plugin_version}}
-          git push origin Strict-v${{inputs.plugin_version}}
+          git tag "Strict-v${{inputs.plugin_version}}"
+          git push origin "Strict-v${{inputs.plugin_version}}"
           echo "Release Strict mode v${{inputs.plugin_version}} to upm :bookmark:"
       
      

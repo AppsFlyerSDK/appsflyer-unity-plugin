@@ -10,62 +10,75 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   Release-To-Production:
     runs-on: ubuntu-latest
     environment: Production
     steps:
-      - uses: actions/checkout@v3
-      - name: Login to Github
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Configure git
         env:
           COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
           COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git config --global user.name $COMMIT_AUTHOR
-          git config --global user.email $COMMIT_EMAIL
+          git config --global user.name "$COMMIT_AUTHOR"
+          git config --global user.email "$COMMIT_EMAIL"
 
-      - name: Create GitHub Release
+      - name: Materialize production packages
         env:
-          VTAG: v${{ inputs.plugin_version }}
-          TAG: ${{ inputs.plugin_version }}
-        uses: "actions/github-script@v5"
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          script: |
-            try {
-              await github.rest.repos.createRelease({
-                draft: false,
-                generate_release_notes: false,
-                name: process.env.VTAG,
-                owner: context.repo.owner,
-                prerelease: false,
-                repo: context.repo.repo,
-                tag_name: process.env.TAG
-              });
-            } catch (error) {
-              core.setFailed(error.message);
-            }
-      - name: Send slack report
-        env:
-          SLACK_TOKEN: ${{ secrets.CI_SLACK_TOKEN }}
-          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          RELEASE_BRANCH: ${{ inputs.branch_name }}
         run: |
-          jira_fixed_version="Unity SDK v${{inputs.plugin_version}}"
-          chmod +x .github/workflows/Scripts/checkJira.sh
-          .github/workflows/Scripts/checkJira.sh $JIRA_TOKEN "$jira_fixed_version"
-          
-          ios_af_sdk_version=$(cat README.md | grep -Eo 'iOS AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
-          android_af_sdk_version=$(cat README.md | grep -Eo 'Android AppsFlyer SDK v[0-9]+.[0-9]+.[0-9]+')
-          
-          # Create a simple release message without the text file
-          release_message="🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}"
-          
-          # Send webhook to Slack with all required parameters
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "plugin_version": "'"${{inputs.plugin_version}}"'",
-            "git_branch": "'"${{inputs.branch_name}}"'",
-            "ios_sdk_dependency": "'"$ios_af_sdk_version"'",
-            "android_sdk_dependency": "'"$android_af_sdk_version"'",
-            "version_changes": "🚀 PRODUCTION RELEASE: Unity Plugin ${{inputs.plugin_version}}",
-            "deploy_type": "PRODUCTION"
-          }' "$SLACK_TOKEN"
+          chmod +x scripts/materialize-production-packages.sh
+          scripts/materialize-production-packages.sh \
+            --version "$PLUGIN_VERSION" \
+            --release-branch "$RELEASE_BRANCH"
+
+      - name: Create production GitHub release with assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.plugin_version }}
+          TAG: v${{ inputs.plugin_version }}
+        run: |
+          set -euo pipefail
+          REGULAR="appsflyer-unity-plugin-${VERSION}.unitypackage"
+          STRICT="strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${VERSION}.unitypackage"
+          test -f "$REGULAR"
+          test -f "$STRICT"
+
+          NOTES_FILE="$(mktemp)"
+          if [[ -f CHANGELOG.md ]]; then
+            awk -v ver="v${VERSION}" '
+              $0 == "## " ver { found=1; next }
+              found && /^## / { exit }
+              found && /^\* / { sub(/^\* /, ""); print "- " $0 }
+              found && /^- / { print }
+            ' CHANGELOG.md > "$NOTES_FILE" || true
+          fi
+          if [[ ! -s "$NOTES_FILE" ]]; then
+            printf 'Unity plugin %s\n' "$VERSION" > "$NOTES_FILE"
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE" \
+              --prerelease=false
+          else
+            gh release create "$TAG" \
+              --target master \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE"
+          fi
+
+          gh release upload "$TAG" "$REGULAR" "$STRICT" --clobber
+          rm -f "$NOTES_FILE"
+
+          echo "Published $TAG with .unitypackage assets."

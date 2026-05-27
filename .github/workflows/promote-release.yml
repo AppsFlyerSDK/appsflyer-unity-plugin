@@ -1,69 +1,155 @@
-name: RC-PROMOTE — Strip -rcN and prepare for merge
+name: RC-PROMOTE - Strip RC suffix
 
-# Triggered when a maintainer applies the "pass QA ready for deploy" label
-# to the release PR targeting master.
 on:
   pull_request:
     types: [labeled]
     branches: [master]
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
 
 jobs:
   promote:
     name: RC-PROMOTE
     if: |
       github.event.label.name == 'pass QA ready for deploy' &&
+      github.event.pull_request.base.ref == 'master' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
       startsWith(github.event.pull_request.head.ref, 'releases/')
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verify rc-smoke check-run
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const checkName = 'rc-smoke/github-release';
+            const { data } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.HEAD_SHA,
+              check_name: checkName
+            });
+            const latest = (data.check_runs || [])
+              .filter((run) => run.status === 'completed')
+              .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at))[0];
+            if (!latest || latest.conclusion !== 'success') {
+              const state = latest ? latest.conclusion : 'missing';
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number(process.env.PR_NUMBER),
+                body: `RC-PROMOTE blocked: expected ${checkName} to be success on ${process.env.HEAD_SHA}, found ${state}.`
+              });
+              core.setFailed(`${checkName} is ${state}`);
+            }
+
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
-          ref:        ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
-          token:      ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git
+        env:
+          COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+          COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git config user.name  "${{ secrets.CI_USERNAME }}"
-          git config user.email "${{ secrets.CI_EMAIL }}"
+          git config user.name "$COMMIT_AUTHOR"
+          git config user.email "$COMMIT_EMAIL"
 
-      - name: Extract base version (strip -rcN)
+      - name: Strip RC suffix from version surfaces
         id: version
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
-          # Branch pattern: releases/6.x.x/18.x/6.18.0-rc1
-          BASE=$(echo "$BRANCH" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?' | tail -1 | sed 's/-rc[0-9]*$//')
-          echo "base_version=$BASE" >> "$GITHUB_OUTPUT"
-          echo "Promoting to: $BASE"
+          RC_VERSION=$(printf '%s\n' "$HEAD_REF" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+' | tail -1)
+          if [[ -z "$RC_VERSION" ]]; then
+            echo "::error::Could not extract RC version from $HEAD_REF"
+            exit 1
+          fi
+          BASE_VERSION="${RC_VERSION%-rc*}"
+          scripts/strip-rc-version.sh --rc-version "$RC_VERSION" --base-version "$BASE_VERSION"
+          echo "rc_version=$RC_VERSION" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Strip -rcN from all version surfaces
+      - name: Validate unity-wrapper on Maven Central
+        env:
+          BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
-          BASE="${{ steps.version.outputs.base_version }}"
-          for f in \
-            Assets/AppsFlyer/package.json \
-            Assets/AppsFlyer/AppsFlyer.cs \
-            deploy/build_unity_package.sh \
-            deploy/strict_mode_build_package.sh; do
-            [[ -f "$f" ]] && sed -i "s/-rc[0-9]*//g" "$f" && echo "Stripped: $f"
-          done
+          scripts/validate-unity-wrapper.sh --version "$BASE_VERSION"
 
-      - name: Commit and push
+      - name: Commit and push promoted branch
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
-          BASE="${{ steps.version.outputs.base_version }}"
           git add \
             Assets/AppsFlyer/package.json \
             Assets/AppsFlyer/AppsFlyer.cs \
+            Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+            Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm \
+            android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java \
+            android-unity-wrapper/gradle.properties \
             deploy/build_unity_package.sh \
-            deploy/strict_mode_build_package.sh || true
+            deploy/strict_mode_build_package.sh \
+            CHANGELOG.md \
+            README.md
           git diff --cached --quiet && echo "Nothing to commit" && exit 0
-          git commit -m "chore: promote to $BASE — strip -rcN"
-          git push origin "${{ github.event.pull_request.head.ref }}"
+          git commit -m "chore: promote to $BASE_VERSION"
+          git push origin "HEAD:$HEAD_REF"
 
       - name: Comment on PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
-          BASE="${{ steps.version.outputs.base_version }}"
-          gh pr comment "${{ github.event.pull_request.number }}" --body \
-            "✅ **RC-PROMOTE complete** — version surfaces updated to \`$BASE\`. Branch is ready to merge."
+          gh pr comment "$PR_NUMBER" --body "RC-PROMOTE complete. Version surfaces now point at $BASE_VERSION and the branch is ready to merge."
+
+  notify-failure:
+    name: Notify Slack (promote failure)
+    needs: promote
+    if: always() && needs.promote.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          RELEASE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            ':warning: *Unity promote-release blocked*',
+            '',
+            `PR: ${env.PR_URL}`,
+            `Branch: ${env.RELEASE_BRANCH}`,
+            '',
+            'The promote workflow could not prepare the release branch for production. Common causes:',
+            '• `rc-smoke/github-release` is missing or red on the PR head SHA — bump to `rcN+1` and rerun RC Release.',
+            '• The version-strip push was rejected (branch protection or stale ref).',
+            '',
+            `Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack failure notification
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}

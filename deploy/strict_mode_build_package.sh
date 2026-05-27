@@ -1,94 +1,147 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "Start Build for appsflyer-unity-plugin.unitypackage. Strict Mode."
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
- DEPLOY_PATH=outputs
- UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
- PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.17.91.unitypackage"
- mkdir -p $DEPLOY_PATH
+DEPLOY_PATH="$SCRIPT_DIR/outputs"
+PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.17.91.unitypackage"
+UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
+OUTPUT_DIR="$DEPLOY_PATH"
+PRODUCTION=false
 
-#move external dependency manager
-echo "moving the external dependency manager to root"
-mv external-dependency-manager-1.2.183.unitypackage ..
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
 
-echo "Changing AppsFlyerFramework to Strict Mode"
-sed -i '' 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-echo "Changing AppsFlyerFramework to Strict Mode. Done."
+Options:
+  --version <version>       Plugin version for the package name.
+  --output-dir <path>       Directory for the generated package.
+  -p, --production          Preserve the legacy strict-mode output location.
+  -h, --help                Show this help.
 
-echo "Changing PurchaseConnector to Strict Mode"
-sed -i '' 's/PurchaseConnector/PurchaseConnector\/Strict/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-echo "Changing PurchaseConnector to Strict Mode. Done."
+UNITY_PATH can override the Unity executable path.
+EOF
+}
 
-echo "Commenting out disableAdvertisingIdentifier"
-sed -i '' 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --version)
+      PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-$2.unitypackage"
+      shift 2
+      ;;
+    --output-dir)
+      OUTPUT_DIR="$2"
+      shift 2
+      ;;
+    -p|--production)
+      PRODUCTION=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
 
+if [[ ! -f "$EDM_PACKAGE" ]]; then
+  echo "External Dependency Manager package not found: $EDM_PACKAGE" >&2
+  exit 1
+fi
 
-echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
-sed -i '' 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
-echo "Commenting out functions. Done."
+if [[ ! -x "$UNITY_BIN" ]]; then
+  echo "Unity executable not found or not executable: $UNITY_BIN" >&2
+  exit 1
+fi
 
-# Temporarily move Tests folder to avoid NUnit compilation errors in batch mode
-echo "Temporarily moving Tests folder..."
-rm -rf ../Tests_temp ../Tests_temp.meta
-mv ../Assets/AppsFlyer/Tests ../Tests_temp
-mv ../Assets/AppsFlyer/Tests.meta ../Tests_temp.meta 2>/dev/null || true
+mkdir -p "$OUTPUT_DIR"
 
- # Build the .unitypackage
-/Applications/Unity/Hub/Editor/6000.3.1f1/Unity.app/Contents/MacOS/Unity \
- -gvh_disable \
- -batchmode \
- -importPackage external-dependency-manager-1.2.183.unitypackage \
- -nographics \
- -logFile create_unity_core.log \
- -projectPath $PWD/../ \
- -exportPackage \
- Assets/AppsFlyer \
- $PWD/$DEPLOY_PATH/$PACKAGE_NAME \
- -quit \
- && echo "package exported successfully to outputs/appsflyer-unity-plugin-strict-mode-6.17.91.unitypackage" \
- || echo "Failed to export package. See create_unity_core.log for more info."
+TEMP_DIR="$(mktemp -d)"
+DEPS_XML="$REPO_ROOT/Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
+IOS_WRAPPER="$REPO_ROOT/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm"
+TESTS_DIR="$REPO_ROOT/Assets/AppsFlyer/Tests"
+TESTS_META="$REPO_ROOT/Assets/AppsFlyer/Tests.meta"
+TESTS_BACKUP="$TEMP_DIR/Tests"
+TESTS_META_BACKUP="$TEMP_DIR/Tests.meta"
+TESTS_MOVED=false
+TESTS_META_MOVED=false
 
-# Move Tests folder back
-echo "Moving Tests folder back..."
-mv ../Tests_temp ../Assets/AppsFlyer/Tests
-mv ../Tests_temp.meta ../Assets/AppsFlyer/Tests.meta 2>/dev/null || true
+cleanup() {
+  if [[ -f "$TEMP_DIR/AppsFlyerDependencies.xml" ]]; then
+    cp "$TEMP_DIR/AppsFlyerDependencies.xml" "$DEPS_XML"
+  fi
+  if [[ -f "$TEMP_DIR/AppsFlyeriOSWrapper.mm" ]]; then
+    cp "$TEMP_DIR/AppsFlyeriOSWrapper.mm" "$IOS_WRAPPER"
+  fi
+  if [[ "$TESTS_MOVED" == "true" && -d "$TESTS_BACKUP" ]]; then
+    rm -rf "$TESTS_DIR"
+    mv "$TESTS_BACKUP" "$TESTS_DIR"
+  fi
+  if [[ "$TESTS_META_MOVED" == "true" && -f "$TESTS_META_BACKUP" ]]; then
+    rm -f "$TESTS_META"
+    mv "$TESTS_META_BACKUP" "$TESTS_META"
+  fi
 
- if [ "$1" == "-p" ]; then
- echo "moving back the external dependency manager to deploy"
- mv ../external-dependency-manager-1.2.183.unitypackage .
- echo "removing ./Library"
- rm -rf ../Library
- echo "removing ./Logs"
- rm -rf ../Logs
- echo "removing ./Packages"
- rm -rf ../Packages
- echo "removing ./deploy/create_unity_core.log"
- rm ./create_unity_core.log
- echo "Moving $DEPLOY_PATH/$PACKAGE_NAME to strict-mode-sdk folder"
- mv ./outputs/$PACKAGE_NAME ../strict-mode-sdk
- echo "removing ./deploy/outputs"
- rm -rf ./outputs
- echo "removing ./Assets extra files"
- rm -rf ../Assets/ExternalDependencyManager
- rm -rf ../Assets/PlayServicesResolver
- rm ../Assets/ExternalDependencyManager.meta
- rm ../Assets/PlayServicesResolver.meta
- echo "Uncomment disableAdvertisingIdentifier"
- sed -i '' 's/\/\/\[AppsFlyerLib/\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+  rm -rf "$REPO_ROOT/Assets/ExternalDependencyManager"
+  rm -rf "$REPO_ROOT/Assets/PlayServicesResolver"
+  rm -f "$REPO_ROOT/Assets/ExternalDependencyManager.meta"
+  rm -f "$REPO_ROOT/Assets/PlayServicesResolver.meta"
+  rm -rf "$REPO_ROOT/Library" "$REPO_ROOT/Logs" "$REPO_ROOT/Packages"
+  rm -rf "$TEMP_DIR"
+}
+trap cleanup EXIT
 
- echo "Uncomment waitForATTUserAuthorizationWithTimeoutInterval"
- sed -i '' 's/\/\/\[\[AppsFlyerLib/\[\[AppsFlyerLib/g' ../Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
- echo "Uncomment functions. Done."
+echo "Start build for $PACKAGE_NAME"
 
- echo "Changing AppsFlyerFramework back"
- sed -i '' 's/AppsFlyerFramework\/Strict/AppsFlyerFramework/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
- echo "Changing AppsFlyerFramework back. Done."
+cp "$DEPS_XML" "$TEMP_DIR/AppsFlyerDependencies.xml"
+cp "$IOS_WRAPPER" "$TEMP_DIR/AppsFlyeriOSWrapper.mm"
 
-  echo "Changing PurchaseConnector back"
- sed -i '' 's/PurchaseConnector\/Strict/PurchaseConnector/g' ../Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
- echo "Changing PurchaseConnector back. Done."
+echo "Changing iOS pods to strict-mode variants."
+sed -i.bak 's|name="AppsFlyerFramework"|name="AppsFlyerFramework/Strict"|g' "$DEPS_XML"
+sed -i.bak 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
+rm -f "$DEPS_XML.bak"
 
- else
- echo "dev mode. No files removed. Run with -p flag for production build."
- fi
+echo "Disabling IDFA/ATT calls for strict mode."
+sed -i.bak 's|^\([[:space:]]*\)\(\[AppsFlyerLib shared\]\.disableAdvertisingIdentifier\)|\1//\2|g' "$IOS_WRAPPER"
+sed -i.bak 's|^\([[:space:]]*\)\(\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];\)|\1//\2|g' "$IOS_WRAPPER"
+rm -f "$IOS_WRAPPER.bak"
+
+if [[ -d "$TESTS_DIR" ]]; then
+  echo "Temporarily moving Tests folder to avoid NUnit compilation errors in batch mode."
+  mv "$TESTS_DIR" "$TESTS_BACKUP"
+  TESTS_MOVED=true
+fi
+
+if [[ -f "$TESTS_META" ]]; then
+  mv "$TESTS_META" "$TESTS_META_BACKUP"
+  TESTS_META_MOVED=true
+fi
+
+"$UNITY_BIN" \
+  -gvh_disable \
+  -batchmode \
+  -importPackage "$EDM_PACKAGE" \
+  -nographics \
+  -logFile "$SCRIPT_DIR/create_unity_strict.log" \
+  -projectPath "$REPO_ROOT" \
+  -exportPackage \
+  Assets/AppsFlyer \
+  "$OUTPUT_DIR/$PACKAGE_NAME" \
+  -quit
+
+echo "Package exported successfully to $OUTPUT_DIR/$PACKAGE_NAME"
+
+if [[ "$PRODUCTION" == "true" && "$OUTPUT_DIR" == "$DEPLOY_PATH" ]]; then
+  mkdir -p "$REPO_ROOT/strict-mode-sdk"
+  mv "$OUTPUT_DIR/$PACKAGE_NAME" "$REPO_ROOT/strict-mode-sdk/$PACKAGE_NAME"
+  rmdir "$OUTPUT_DIR" 2>/dev/null || true
+  echo "Moved strict package to $REPO_ROOT/strict-mode-sdk/$PACKAGE_NAME"
+fi

@@ -11,6 +11,24 @@ on:
         description: Release branch to check out
         required: true
         type: string
+      package_artifact_name:
+        description: Workflow artifact containing generated Unity packages
+        required: true
+        type: string
+      package_file_name:
+        description: Regular .unitypackage file name inside the artifact
+        required: true
+        type: string
+      plan_path:
+        description: Scenario plan to run
+        required: false
+        default: .af-e2e/test-plan.json
+        type: string
+      report_artifact_prefix:
+        description: Prefix for uploaded report artifacts
+        required: false
+        default: e2e
+        type: string
     secrets:
       UNITY_EMAIL:
         required: true
@@ -26,12 +44,28 @@ jobs:
     name: E2E iOS — ${{ inputs.plugin_version }}
     runs-on: macos-14
     timeout-minutes: 120
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release_branch }}
+
+      - name: Download generated Unity package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.package_artifact_name }}
+          path: .af-artifacts
+
+      - name: Import generated package into test app
+        run: |
+          python3 scripts/import-unity-package.py \
+            --package ".af-artifacts/${{ inputs.package_file_name }}" \
+            --project test-app \
+            --remove-manifest-dependency appsflyer-unity-plugin \
+            --clean Assets/AppsFlyer
 
       - name: Write .env from secret
         run: |
@@ -177,17 +211,21 @@ jobs:
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
       - name: Run E2E scenario runner — iOS
+        env:
+          AF_QA_POST_MARKER_WAIT_SEC: "30"
         run: |
           chmod +x scripts/af-scenario-runner.sh
           scripts/af-scenario-runner.sh \
             --platform ios \
-            --plan     .af-e2e/test-plan.json \
+            --plan     "${{ inputs.plan_path }}" \
             --verbose
 
       - name: Upload E2E report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-ios-report-${{ inputs.plugin_version }}
-          path: .af-e2e/reports/
+          name: ${{ inputs.report_artifact_prefix }}-ios-report-${{ inputs.plugin_version }}
+          path: |
+            .af-e2e/reports/
+            .af-smoke/reports/
           retention-days: 30

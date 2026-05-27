@@ -4,136 +4,734 @@ on:
   workflow_dispatch:
     inputs:
       plugin_version:
-        description: "Plugin version — e.g. 6.18.0-rc1"
+        description: "Plugin version, e.g. 6.18.0-rc1"
         required: true
         type: string
       android_sdk_version:
-        description: "Android SDK version — e.g. 6.18.0"
+        description: "Android SDK version, e.g. 6.18.0"
         required: true
         type: string
       ios_sdk_version:
-        description: "iOS SDK version — e.g. 6.18.0"
+        description: "iOS SDK version, e.g. 6.18.0"
         required: true
         type: string
       base_branch:
-        description: "Branch to cut the release from (default: development)"
+        description: "Branch to cut the release from"
         required: false
         default: development
         type: string
+      dry_run:
+        description: "Build and test without publishing the RC GitHub prerelease"
+        required: false
+        default: true
+        type: boolean
+      unity_wrapper_version:
+        description: "Maven unity-wrapper version (defaults to plugin base version). Use for dry runs or when wrapper patch differs from plugin RC."
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
-  # ── 1. Prepare release branch ───────────────────────────────────────────────
   prepare-branch:
-    name: Prepare release branch
+    name: RC-PREP
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       release_branch: ${{ steps.branch.outputs.release_branch }}
+      version: ${{ steps.branch.outputs.version }}
+      base_version: ${{ steps.branch.outputs.base_version }}
+      wrapper_version: ${{ steps.wrapper.outputs.wrapper_version }}
+      dry_run: ${{ steps.branch.outputs.dry_run }}
 
     steps:
-      - name: Validate plugin_version format
+      - name: Validate inputs
+        env:
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
+          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
         run: |
-          if ! echo "${{ github.event.inputs.plugin_version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$'; then
-            echo "::error::plugin_version must match X.Y.Z-rcN (e.g. 6.18.0-rc1)"
+          if ! [[ "$PLUGIN_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
+            echo "::error::plugin_version must match X.Y.Z-rcN, for example 6.18.0-rc1"
+            exit 1
+          fi
+          if ! [[ "$ANDROID_SDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::android_sdk_version must match X.Y.Z"
+            exit 1
+          fi
+          if ! [[ "$IOS_SDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::ios_sdk_version must match X.Y.Z"
             exit 1
           fi
 
       - name: Checkout base branch
         uses: actions/checkout@v4
         with:
-          ref:         ${{ github.event.inputs.base_branch }}
+          ref: ${{ inputs.base_branch }}
           fetch-depth: 0
-          token:       ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git
+        env:
+          COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
+          COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git config user.name  "${{ secrets.CI_USERNAME }}"
-          git config user.email "${{ secrets.CI_EMAIL }}"
+          git config user.name "$COMMIT_AUTHOR"
+          git config user.email "$COMMIT_EMAIL"
 
-      - name: Derive release branch name
+      - name: Derive release metadata
         id: branch
+        env:
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          VERSION="${{ github.event.inputs.plugin_version }}"
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          MINOR=$(echo "$VERSION" | cut -d. -f2)
-          BRANCH="releases/${MAJOR}.x.x/${MINOR}.x/${VERSION}"
-          echo "release_branch=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "release_branch=$BRANCH"
+          MAJOR=$(printf '%s\n' "$PLUGIN_VERSION" | cut -d. -f1)
+          MINOR=$(printf '%s\n' "$PLUGIN_VERSION" | cut -d. -f2)
+          BASE_VERSION="${PLUGIN_VERSION%-rc*}"
+          RELEASE_BRANCH="releases/${MAJOR}.x.x/${MAJOR}.${MINOR}.x/${PLUGIN_VERSION}"
+
+          {
+            echo "release_branch=$RELEASE_BRANCH"
+            echo "version=$PLUGIN_VERSION"
+            echo "base_version=$BASE_VERSION"
+            echo "dry_run=$DRY_RUN"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "release_branch=$RELEASE_BRANCH"
+          echo "version=$PLUGIN_VERSION"
+          echo "base_version=$BASE_VERSION"
+          echo "dry_run=$DRY_RUN"
+
+      - name: Resolve unity-wrapper version
+        id: wrapper
+        env:
+          UNITY_WRAPPER_INPUT: ${{ inputs.unity_wrapper_version }}
+          BASE_VERSION: ${{ steps.branch.outputs.base_version }}
+        run: |
+          if [[ -n "$UNITY_WRAPPER_INPUT" ]]; then
+            WRAPPER_VERSION="$UNITY_WRAPPER_INPUT"
+          else
+            WRAPPER_VERSION="$BASE_VERSION"
+          fi
+          if ! [[ "$WRAPPER_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::unity_wrapper_version must match X.Y.Z"
+            exit 1
+          fi
+          echo "wrapper_version=$WRAPPER_VERSION" >> "$GITHUB_OUTPUT"
+          echo "wrapper_version=$WRAPPER_VERSION"
 
       - name: Create or reset release branch
+        env:
+          RELEASE_BRANCH: ${{ steps.branch.outputs.release_branch }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
         run: |
-          BRANCH="${{ steps.branch.outputs.release_branch }}"
-          if git ls-remote --heads origin "$BRANCH" | grep -q "$BRANCH"; then
-            echo "Branch exists — resetting to ${{ github.event.inputs.base_branch }}"
-            git checkout -B "$BRANCH" "origin/${{ github.event.inputs.base_branch }}"
+          if git ls-remote --heads origin "$RELEASE_BRANCH" | grep -q "$RELEASE_BRANCH"; then
+            echo "Branch exists. Resetting $RELEASE_BRANCH to origin/$BASE_BRANCH."
+            git checkout -B "$RELEASE_BRANCH" "origin/$BASE_BRANCH"
           else
-            echo "Creating branch: $BRANCH"
-            git checkout -b "$BRANCH"
+            echo "Creating branch: $RELEASE_BRANCH"
+            git checkout -b "$RELEASE_BRANCH"
           fi
 
       - name: Bump versions
         run: |
-          chmod +x scripts/bump-version.sh
           scripts/bump-version.sh \
-            --plugin-version        "${{ github.event.inputs.plugin_version }}" \
-            --android-sdk-version   "${{ github.event.inputs.android_sdk_version }}" \
-            --ios-sdk-version       "${{ github.event.inputs.ios_sdk_version }}"
+            --plugin-version "${{ steps.branch.outputs.version }}" \
+            --android-sdk-version "${{ inputs.android_sdk_version }}" \
+            --ios-sdk-version "${{ inputs.ios_sdk_version }}" \
+            --unity-wrapper-version "${{ steps.wrapper.outputs.wrapper_version }}"
 
       - name: Verify version bump
+        env:
+          PLUGIN_VERSION: ${{ steps.branch.outputs.version }}
+          WRAPPER_VERSION: ${{ steps.wrapper.outputs.wrapper_version }}
+          ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
+          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
         run: |
-          ANDROID_SDK="${{ github.event.inputs.android_sdk_version }}"
-          IOS_SDK="${{ github.event.inputs.ios_sdk_version }}"
-          PLUGIN="${{ github.event.inputs.plugin_version }}"
-
-          grep -q "af-android-sdk:$ANDROID_SDK" test-app/Assets/Plugins/Android/mainTemplate.gradle \
-            || { echo "::error::mainTemplate.gradle does not contain af-android-sdk:$ANDROID_SDK"; exit 1; }
-
-          grep -q "AppsFlyerFramework', '$IOS_SDK'" scripts/ios-pod-install.sh \
-            || { echo "::error::ios-pod-install.sh does not contain AppsFlyerFramework $IOS_SDK"; exit 1; }
-
-          grep -q "kAppsFlyerPluginVersion = \"$PLUGIN\"" Assets/AppsFlyer/AppsFlyer.cs \
-            || { echo "::error::AppsFlyer.cs does not contain plugin version $PLUGIN"; exit 1; }
-
-          echo "Version bump verified: plugin=$PLUGIN android-sdk=$ANDROID_SDK ios-sdk=$IOS_SDK"
+          grep -q "af-android-sdk:$ANDROID_SDK_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "unity-wrapper:$WRAPPER_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "PurchaseConnector\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -qE "^- iOS AppsFlyer SDK v${IOS_SDK_VERSION}$" README.md
+          grep -qE "^- iOS Purchase Connector ${IOS_SDK_VERSION}$" README.md
+          grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
+          grep -q "pluginVersion:@\"$PLUGIN_VERSION\"" Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
+          grep -q "PLUGIN_VERSION = \"$WRAPPER_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
+          grep -q "^VERSION_NAME=$WRAPPER_VERSION" android-unity-wrapper/gradle.properties
 
       - name: Commit and push
+        env:
+          RELEASE_BRANCH: ${{ steps.branch.outputs.release_branch }}
+          PLUGIN_VERSION: ${{ steps.branch.outputs.version }}
         run: |
           git add \
             Assets/AppsFlyer/package.json \
             Assets/AppsFlyer/AppsFlyer.cs \
             Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+            Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm \
+            android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java \
+            android-unity-wrapper/gradle.properties \
+            android-unity-wrapper/build.gradle \
             deploy/build_unity_package.sh \
             deploy/strict_mode_build_package.sh \
             test-app/Assets/Plugins/Android/mainTemplate.gradle \
             scripts/ios-pod-install.sh \
             CHANGELOG.md \
-            README.md
-          git commit -m "chore: bump to ${{ github.event.inputs.plugin_version }}" || echo "Nothing to commit"
-          git push origin "${{ steps.branch.outputs.release_branch }}" --force
+            README.md \
+            docs/Introduction.md
+          git commit -m "chore: bump to $PLUGIN_VERSION" || echo "Nothing to commit"
+          git push origin "$RELEASE_BRANCH" --force-with-lease
 
-  # ── 2. E2E — iOS ────────────────────────────────────────────────────────────
-  run-e2e-ios:
-    name: E2E — iOS
+  publish-wrapper:
+    name: RC-WRAPPER-PUBLISH
     needs: prepare-branch
+    uses: ./.github/workflows/publish-android-wrapper.yml
+    with:
+      wrapper_version: ${{ needs.prepare-branch.outputs.wrapper_version }}
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+      skip_if_exists: true
+      dry_run: ${{ needs.prepare-branch.outputs.dry_run == 'true' }}
+    secrets:
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MAVEN_SIGNING_KEY_ID: ${{ secrets.MAVEN_SIGNING_KEY_ID }}
+      MAVEN_SIGNING_KEY: ${{ secrets.MAVEN_SIGNING_KEY }}
+      MAVEN_SIGNING_PASSWORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
+
+  validate-wrapper:
+    name: Validate Android Unity wrapper
+    needs: [prepare-branch, publish-wrapper]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Skip Maven validation (dry run)
+        if: needs.prepare-branch.outputs.dry_run == 'true' && inputs.unity_wrapper_version == ''
+        run: |
+          echo "Dry run without unity_wrapper_version: skipping Maven Central validation."
+          echo "Set unity_wrapper_version to an existing coord when Android E2E must resolve the wrapper."
+
+      - name: Validate unity-wrapper on Maven Central
+        if: needs.prepare-branch.outputs.dry_run != 'true' || inputs.unity_wrapper_version != ''
+        env:
+          WRAPPER_VERSION: ${{ needs.prepare-branch.outputs.wrapper_version }}
+          DRY_RUN: ${{ needs.prepare-branch.outputs.dry_run }}
+        run: |
+          set -euo pipefail
+          ARGS=(--version "$WRAPPER_VERSION")
+          if [[ "$DRY_RUN" != "true" ]]; then
+            ARGS+=(--wait)
+          fi
+          scripts/validate-unity-wrapper.sh "${ARGS[@]}"
+
+  build-package:
+    name: Build Unity packages
+    needs: [prepare-branch, validate-wrapper]
+    runs-on: macos-14
+    permissions:
+      contents: read
+    outputs:
+      artifact_name: unity-packages-${{ needs.prepare-branch.outputs.version }}
+      regular_package: appsflyer-unity-plugin-${{ needs.prepare-branch.outputs.version }}.unitypackage
+      strict_package: strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{ needs.prepare-branch.outputs.version }}.unitypackage
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Unity.app
+          key: unity-6000.3.5f1-core-macos14-arm64
+
+      - name: Install Unity Editor
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
+          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
+        timeout-minutes: 45
+
+      - name: Activate Unity license
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode \
+            -serial "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build regular and strict packages
+        env:
+          AF_QA_POST_MARKER_WAIT_SEC: "30"
+        run: |
+          scripts/build-release-packages.sh \
+            --version "${{ needs.prepare-branch.outputs.version }}" \
+            --output-dir dist/unitypackages
+        timeout-minutes: 45
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-return.log 2>&1 || true
+          cat /tmp/unity-return.log || true
+
+      - name: Upload Unity package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-packages-${{ needs.prepare-branch.outputs.version }}
+          path: dist/unitypackages/
+          retention-days: 30
+
+      - name: Upload package build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-package-build-logs-${{ needs.prepare-branch.outputs.version }}
+          path: |
+            deploy/create_unity_core.log
+            deploy/create_unity_strict.log
+            /tmp/unity-activate.log
+            /tmp/unity-return.log
+          retention-days: 7
+
+  run-unit-tests:
+    name: Unit tests (playmode)
+    needs: [prepare-branch]
+    uses: ./.github/workflows/unity-playmode-tests.yml
+    with:
+      release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+
+  run-e2e-ios:
+    name: E2E - iOS
+    needs: [prepare-branch, build-package]
     uses: ./.github/workflows/rc-e2e-ios.yml
     with:
-      plugin_version: ${{ github.event.inputs.plugin_version }}
+      plugin_version: ${{ needs.prepare-branch.outputs.version }}
       release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+      package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
-      ENV_FILE:       ${{ secrets.ENV_FILE }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE: ${{ secrets.ENV_FILE }}
 
-  # ── 3. E2E — Android (after iOS to avoid Unity license contention) ──────────
   run-e2e-android:
-    name: E2E — Android
-    needs: [prepare-branch, run-e2e-ios]
+    name: E2E - Android
+    needs: [prepare-branch, build-package]
     uses: ./.github/workflows/rc-e2e-android.yml
     with:
-      plugin_version: ${{ github.event.inputs.plugin_version }}
+      plugin_version: ${{ needs.prepare-branch.outputs.version }}
       release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
+      package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets:
-      UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
-      ENV_FILE:       ${{ secrets.ENV_FILE }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE: ${{ secrets.ENV_FILE }}
+
+  rc-publish:
+    name: RC-PUBLISH
+    needs:
+      - prepare-branch
+      - build-package
+      - run-unit-tests
+      - run-e2e-ios
+      - run-e2e-android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      published: ${{ steps.signal.outputs.published }}
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Download Unity packages
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-package.outputs.artifact_name }}
+          path: dist/unitypackages
+
+      - name: Publish RC prerelease
+        id: publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare-branch.outputs.version }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          DRY_RUN: ${{ needs.prepare-branch.outputs.dry_run }}
+        run: |
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Dry run enabled. Skipping GitHub prerelease and PR creation."
+            exit 0
+          fi
+
+          TAG="v$VERSION"
+          REGULAR_PACKAGE="dist/unitypackages/appsflyer-unity-plugin-$VERSION.unitypackage"
+          STRICT_PACKAGE="dist/unitypackages/strict-mode-sdk/appsflyer-unity-plugin-strict-mode-$VERSION.unitypackage"
+
+          test -f "$REGULAR_PACKAGE"
+          test -f "$STRICT_PACKAGE"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --target "$RELEASE_BRANCH" \
+              --title "$TAG" \
+              --notes "Release candidate $VERSION" \
+              --prerelease
+          else
+            gh release create "$TAG" \
+              --target "$RELEASE_BRANCH" \
+              --title "$TAG" \
+              --notes "Release candidate $VERSION" \
+              --prerelease
+          fi
+
+          gh release upload "$TAG" "$REGULAR_PACKAGE" "$STRICT_PACKAGE" --clobber
+
+          PR_NUMBER=$(gh pr list \
+            --head "$RELEASE_BRANCH" \
+            --base master \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [[ -z "$PR_NUMBER" ]]; then
+            gh pr create \
+              --head "$RELEASE_BRANCH" \
+              --base master \
+              --title "Release $VERSION" \
+              --body "RC release branch for $VERSION. Promotion is gated by rc-smoke/github-release."
+          else
+            gh pr edit "$PR_NUMBER" \
+              --title "Release $VERSION" \
+              --body "RC release branch for $VERSION. Promotion is gated by rc-smoke/github-release."
+          fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Write publish signal
+        id: signal
+        env:
+          VERSION: ${{ needs.prepare-branch.outputs.version }}
+          BASE_VERSION: ${{ needs.prepare-branch.outputs.base_version }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          DRY_RUN: ${{ needs.prepare-branch.outputs.dry_run }}
+          PUBLISHED: ${{ steps.publish.outputs.published || 'false' }}
+        run: |
+          cat > rc-publish-signal.json <<EOF
+          {
+            "version": "$VERSION",
+            "base_version": "$BASE_VERSION",
+            "release_branch": "$RELEASE_BRANCH",
+            "dry_run": $DRY_RUN,
+            "published": $PUBLISHED,
+            "registry": "github-release",
+            "check_run_name": "rc-smoke/github-release"
+          }
+          EOF
+          echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
+          cat rc-publish-signal.json
+
+      - name: Upload publish signal
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-publish-signal
+          path: rc-publish-signal.json
+          retention-days: 30
+
+  notify-team:
+    name: Notify Slack
+    needs:
+      - prepare-branch
+      - publish-wrapper
+      - validate-wrapper
+      - build-package
+      - run-unit-tests
+      - run-e2e-ios
+      - run-e2e-android
+      - rc-publish
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine status and failed stage
+        id: status
+        env:
+          PREPARE_RESULT: ${{ needs.prepare-branch.result }}
+          WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
+          VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
+          PACKAGE_RESULT: ${{ needs.build-package.result }}
+          UNIT_TESTS_RESULT: ${{ needs.run-unit-tests.result }}
+          E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
+          E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
+          PUBLISH_RESULT: ${{ needs.rc-publish.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$PREPARE_RESULT" == "success" \
+             && "$WRAPPER_RESULT" == "success" \
+             && "$VALIDATE_RESULT" == "success" \
+             && "$PACKAGE_RESULT" == "success" \
+             && "$E2E_IOS_RESULT" == "success" \
+             && "$E2E_ANDROID_RESULT" == "success" \
+             && "$PUBLISH_RESULT" == "success" ]]; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "failed_stage=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "success=false" >> "$GITHUB_OUTPUT"
+          if   [[ "$PREPARE_RESULT" != "success" ]]; then echo "failed_stage=prepare-branch" >> "$GITHUB_OUTPUT"
+          elif [[ "$WRAPPER_RESULT" != "success" ]]; then echo "failed_stage=publish-wrapper" >> "$GITHUB_OUTPUT"
+          elif [[ "$VALIDATE_RESULT" != "success" ]]; then echo "failed_stage=validate-wrapper" >> "$GITHUB_OUTPUT"
+          elif [[ "$PACKAGE_RESULT" != "success" ]]; then echo "failed_stage=build-package" >> "$GITHUB_OUTPUT"
+          elif [[ "$UNIT_TESTS_RESULT" != "success" ]]; then echo "failed_stage=run-unit-tests" >> "$GITHUB_OUTPUT"
+          elif [[ "$E2E_IOS_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-ios" >> "$GITHUB_OUTPUT"
+          elif [[ "$E2E_ANDROID_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-android" >> "$GITHUB_OUTPUT"
+          else echo "failed_stage=rc-publish" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Format pipeline leg results
+        id: legs
+        env:
+          WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
+          VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
+          PACKAGE_RESULT: ${{ needs.build-package.result }}
+          UNIT_TESTS_RESULT: ${{ needs.run-unit-tests.result }}
+          E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
+          E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
+        run: |
+          set -euo pipefail
+          icon_for() {
+            case "$1" in
+              success)   echo ":white_check_mark:" ;;
+              skipped)   echo ":fast_forward:" ;;
+              failure)   echo ":x:" ;;
+              cancelled) echo ":no_entry_sign:" ;;
+              *)         echo ":grey_question:" ;;
+            esac
+          }
+          {
+            echo "wrapper_icon=$(icon_for "$WRAPPER_RESULT")"
+            echo "validate_icon=$(icon_for "$VALIDATE_RESULT")"
+            echo "package_icon=$(icon_for "$PACKAGE_RESULT")"
+            echo "unit_tests_icon=$(icon_for "$UNIT_TESTS_RESULT")"
+            echo "ios_icon=$(icon_for "$E2E_IOS_RESULT")"
+            echo "android_icon=$(icon_for "$E2E_ANDROID_RESULT")"
+            echo "wrapper_result=$WRAPPER_RESULT"
+            echo "validate_result=$VALIDATE_RESULT"
+            echo "package_result=$PACKAGE_RESULT"
+            echo "unit_tests_result=$UNIT_TESTS_RESULT"
+            echo "e2e_ios_result=$E2E_IOS_RESULT"
+            echo "e2e_android_result=$E2E_ANDROID_RESULT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release branch
+        if: steps.status.outputs.success == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Extract changelog snippet
+        id: changelog
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.base_version }}
+        run: |
+          chmod +x .github/workflows/Scripts/extract-changelog-snippet.sh
+          .github/workflows/Scripts/extract-changelog-snippet.sh
+
+      - name: Fetch Jira tickets
+        id: jira-tickets
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          JIRA_EMAIL: ${{ secrets.CI_JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+          JIRA_DOMAIN: ${{ secrets.CI_JIRA_DOMAIN }}
+          # Jira fixVersion is always stripped (Unity SDK v6.18.0), never -rcN.
+          JIRA_FIX_VERSION: Unity SDK v${{ needs.prepare-branch.outputs.base_version }}
+        run: |
+          chmod +x .github/workflows/Scripts/fetch-jira-tickets.sh
+          .github/workflows/Scripts/fetch-jira-tickets.sh
+
+      - name: Read Android Purchase Connector version from README
+        id: purchase-connector-versions
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        run: |
+          ANDROID_PC=$(grep -Eo 'Android Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android Purchase Connector //')
+          echo "android_pc=${ANDROID_PC:-unknown}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Slack success payload
+        id: slack-success-payload
+        if: steps.status.outputs.success == 'true' && needs.prepare-branch.outputs.dry_run != 'true'
+        env:
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.version }}
+          BASE_VERSION: ${{ needs.prepare-branch.outputs.base_version }}
+          WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
+          VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
+          PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          UNIT_TESTS_ICON: ${{ steps.legs.outputs.unit_tests_icon }}
+          IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
+          ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
+          WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
+          VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
+          PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          UNIT_TESTS_RESULT: ${{ steps.legs.outputs.unit_tests_result }}
+          E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
+          E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          TAG_NAME: v${{ needs.prepare-branch.outputs.version }}
+          RUN_ID: ${{ github.run_id }}
+          CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
+          JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
+          ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
+          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          ANDROID_PC_VERSION: ${{ steps.purchase-connector-versions.outputs.android_pc }}
+          IOS_PC_VERSION: ${{ inputs.ios_sdk_version }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const unityWrap = ':unity:'.repeat(10);
+          const body = [
+            '<!here>',
+            '',
+            '*Unity Plugin Release Candidate:*',
+            `appsflyer-unity-plugin: ${env.PLUGIN_VERSION} is ready for QA testing.`,
+            '',
+            '*Pre-publish checks:*',
+            `${env.WRAPPER_ICON} Maven unity-wrapper (${env.BASE_VERSION}): ${env.WRAPPER_RESULT}`,
+            `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
+            `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.UNIT_TESTS_ICON} Playmode unit tests (iOS/Android/Shared): ${env.UNIT_TESTS_RESULT}`,
+            `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
+            `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
+            '',
+            ':hourglass_flowing_sand: Smoke (`rc-smoke/github-release`) runs after the GitHub prerelease is published.',
+            '',
+            '*Installation:*',
+            'Download the regular and strict `.unitypackage` files from the GitHub prerelease, or import via UPM after production.',
+            '',
+            '*Sources:*',
+            `:github: Branch: https://github.com/${env.REPOSITORY}/tree/${env.RELEASE_BRANCH}`,
+            `:github: Prerelease: https://github.com/${env.REPOSITORY}/releases/tag/${env.TAG_NAME}`,
+            `:github: Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Changes and fixes:*',
+            env.CHANGELOG_BODY || '• Check CHANGELOG.md for details',
+            '',
+            '*Linked tickets and issues:*',
+            env.JIRA_TICKETS || 'No assigned fix version found',
+            '',
+            '*Native SDK versions:*',
+            `:android: AppsFlyer SDK ${env.ANDROID_SDK_VERSION}`,
+            `:apple_company: AppsFlyer SDK ${env.IOS_SDK_VERSION}`,
+            '',
+            '*Purchase Connector versions:*',
+            `:android: ${env.ANDROID_PC_VERSION}`,
+            `:apple_company: ${env.IOS_PC_VERSION}`,
+            '',
+          ].join('\n');
+          const text = `${unityWrap}\n${body}\n${unityWrap}`;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Success)
+        if: steps.status.outputs.success == 'true' && needs.prepare-branch.outputs.dry_run != 'true'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-success-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        if: steps.status.outputs.success == 'false' && needs.prepare-branch.outputs.dry_run != 'true'
+        env:
+          FAILED_STAGE: ${{ steps.status.outputs.failed_stage }}
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.version }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
+          VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
+          PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          UNIT_TESTS_ICON: ${{ steps.legs.outputs.unit_tests_icon }}
+          IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
+          ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
+          WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
+          VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
+          PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          UNIT_TESTS_RESULT: ${{ steps.legs.outputs.unit_tests_result }}
+          E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
+          E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
+          PUBLISH_RESULT: ${{ needs.rc-publish.result }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            `:warning: *Unity RC failed at \`${env.FAILED_STAGE}\`*`,
+            '',
+            `Version: ${env.PLUGIN_VERSION}`,
+            `Branch: ${env.RELEASE_BRANCH}`,
+            `Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Pre-publish checks:*',
+            `${env.WRAPPER_ICON} Maven unity-wrapper: ${env.WRAPPER_RESULT}`,
+            `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
+            `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.UNIT_TESTS_ICON} Playmode unit tests (iOS/Android/Shared): ${env.UNIT_TESTS_RESULT}`,
+            `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
+            `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
+            '',
+            '*Downstream:*',
+            `• rc-publish: ${env.PUBLISH_RESULT}`,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Failure)
+        if: steps.status.outputs.success == 'false' && needs.prepare-branch.outputs.dry_run != 'true'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}

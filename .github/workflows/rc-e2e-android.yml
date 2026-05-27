@@ -11,6 +11,24 @@ on:
         description: Release branch to check out
         required: true
         type: string
+      package_artifact_name:
+        description: Workflow artifact containing generated Unity packages
+        required: true
+        type: string
+      package_file_name:
+        description: Regular .unitypackage file name inside the artifact
+        required: true
+        type: string
+      plan_path:
+        description: Scenario plan to run
+        required: false
+        default: .af-e2e/test-plan.json
+        type: string
+      report_artifact_prefix:
+        description: Prefix for uploaded report artifacts
+        required: false
+        default: e2e
+        type: string
     secrets:
       UNITY_EMAIL:
         required: true
@@ -26,6 +44,9 @@ jobs:
     name: E2E Android — ${{ inputs.plugin_version }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout release branch
@@ -33,12 +54,28 @@ jobs:
         with:
           ref: ${{ inputs.release_branch }}
 
+      - name: Download generated Unity package
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.package_artifact_name }}
+          path: .af-artifacts
+
+      - name: Import generated package into test app
+        run: |
+          python3 scripts/import-unity-package.py \
+            --package ".af-artifacts/${{ inputs.package_file_name }}" \
+            --project test-app \
+            --remove-manifest-dependency appsflyer-unity-plugin \
+            --clean Assets/AppsFlyer
+
       - name: Write .env from secret
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
       - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
@@ -83,6 +120,8 @@ jobs:
 
       - name: Run E2E scenario runner inside Android emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
           api-level:   31
           arch:        x86_64
@@ -95,12 +134,14 @@ jobs:
             adb install -r "$APK_PATH"
             adb shell am force-stop com.appsflyer.engagement
             chmod +x scripts/af-scenario-runner.sh
-            scripts/af-scenario-runner.sh --platform android --plan .af-e2e/test-plan.json --verbose
+            scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose
 
       - name: Upload E2E report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-android-report-${{ inputs.plugin_version }}
-          path: .af-e2e/reports/
+          name: ${{ inputs.report_artifact_prefix }}-android-report-${{ inputs.plugin_version }}
+          path: |
+            .af-e2e/reports/
+            .af-smoke/reports/
           retention-days: 30

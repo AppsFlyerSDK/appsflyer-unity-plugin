@@ -69,4 +69,4 @@ When bumping SDK or plugin versions, these files must stay in sync:
 Two Gradle build variants exist for Google Play Billing migration (v7 → v8). Both must remain buildable and consistent after any Android wrapper change.
 
 ### CI
-GitHub Actions (`.github/workflows/main.yml`) runs playmode tests for iOS, Android, and Shared platforms on every PR.
+RC and production release gates run through `.github/workflows/rc-release.yml`, `rc-smoke.yml`, and `release_production_workflow.yml`. Pre-publish gates include Unity playmode unit tests (`.github/workflows/unity-playmode-tests.yml`, iOS/Android/Shared) in parallel with E2E, plus the tooling scenario runner (`.af-e2e/test-plan.json`). Post-publish smoke uses `.af-smoke/rc-test-plan.json`.

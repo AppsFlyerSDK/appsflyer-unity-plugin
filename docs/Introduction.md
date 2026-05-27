@@ -13,7 +13,7 @@ hidden: false
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub tag](https://img.shields.io/github/v/release/AppsFlyerSDK/appsflyer-unity-plugin)](https://img.shields.io/github/v/release/AppsFlyerSDK/appsflyer-unity-plugin)
-[![Unit tests](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/main.yml/badge.svg)](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/main.yml)
+[![RC Release Pipeline](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/rc-release.yml/badge.svg)](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin/actions/workflows/rc-release.yml)
 [![check packages](https://github.com/af-margot/appsflyer-unity-plugin-beta/actions/workflows/checksums_files.yml/badge.svg)](https://github.com/af-margot/appsflyer-unity-plugin-beta/actions/workflows/checksums_files.yml)
 
 
@@ -36,10 +36,10 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.5
+- Android AppsFlyer SDK v6.17.6
 - Android Purchase Connector 2.2.0
-- iOS AppsFlyer SDK v6.17.8
-- iOS Purchase Connector 6.17.8
+- iOS AppsFlyer SDK v6.17.9
+- iOS Purchase Connector 6.17.9
 ---
 
 ## 📌 Important: Two Versions of Unity Plugin v6.17.7

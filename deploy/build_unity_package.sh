@@ -1,62 +1,125 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "Start Build for appsflyer-unity-plugin.unitypackage"
+set -euo pipefail
 
-DEPLOY_PATH=outputs
-UNITY_PATH="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+DEPLOY_PATH="$SCRIPT_DIR/outputs"
 PACKAGE_NAME="appsflyer-unity-plugin-6.17.91.unitypackage"
-mkdir -p $DEPLOY_PATH
+UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
+OUTPUT_DIR="$DEPLOY_PATH"
+PRODUCTION=false
 
-#move external dependency manager
-echo "moving the external dependency manager to root"
-mv external-dependency-manager-1.2.183.unitypackage ..
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
 
-# Temporarily move Tests folder to avoid NUnit compilation errors in batch mode
-echo "Temporarily moving Tests folder..."
-rm -rf ../Tests_temp ../Tests_temp.meta
-mv ../Assets/AppsFlyer/Tests ../Tests_temp
-mv ../Assets/AppsFlyer/Tests.meta ../Tests_temp.meta 2>/dev/null || true
+Options:
+  --version <version>       Plugin version for the package name.
+  --output-dir <path>       Directory for the generated package.
+  -p, --production          Preserve the legacy release output location.
+  -h, --help                Show this help.
 
-# Build the .unitypackage
-/Applications/Unity/Hub/Editor/6000.3.1f1/Unity.app/Contents/MacOS/Unity \
--gvh_disable \
--batchmode \
--importPackage external-dependency-manager-1.2.183.unitypackage \
--nographics \
--logFile create_unity_core.log \
--projectPath $PWD/../ \
--exportPackage \
-Assets/AppsFlyer \
-$PWD/$DEPLOY_PATH/$PACKAGE_NAME \
--quit \
-&& echo "package exported successfully to outputs/appsflyer-unity-plugin-6.17.91.unitypackage" \
-|| echo "Failed to export package. See create_unity_core.log for more info."
+UNITY_PATH can override the Unity executable path.
+EOF
+}
 
-# Move Tests folder back
-echo "Moving Tests folder back..."
-mv ../Tests_temp ../Assets/AppsFlyer/Tests
-mv ../Tests_temp.meta ../Assets/AppsFlyer/Tests.meta 2>/dev/null || true
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --version)
+      PACKAGE_NAME="appsflyer-unity-plugin-$2.unitypackage"
+      shift 2
+      ;;
+    --output-dir)
+      OUTPUT_DIR="$2"
+      shift 2
+      ;;
+    -p|--production)
+      PRODUCTION=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
 
-if [ "$1" == "-p" ]; then
-echo "moving back the external dependency manager to deploy"
-mv ../external-dependency-manager-1.2.183.unitypackage .
-echo "removing ./Library"
-rm -rf ../Library
-echo "removing ./Logs"
-rm -rf ../Logs
-echo "removing ./Packages"
-rm -rf ../Packages
-echo "removing ./deploy/create_unity_core.log"
-rm ./create_unity_core.log
-echo "Moving  $DEPLOY_PATH/$PACKAGE_NAME to root"
-mv ./outputs/$PACKAGE_NAME ..
-echo "removing ./deploy/outputs"
-rm -rf ./outputs
-echo "removing ./Assets extra files"
-rm -rf ../Assets/ExternalDependencyManager
-rm -rf ../Assets/PlayServicesResolver
-rm ../Assets/ExternalDependencyManager.meta
-rm ../Assets/PlayServicesResolver.meta
-else
-echo "dev mode. No files removed. Run with -p flag for production build."
+if [[ ! -f "$EDM_PACKAGE" ]]; then
+  echo "External Dependency Manager package not found: $EDM_PACKAGE" >&2
+  exit 1
+fi
+
+if [[ ! -x "$UNITY_BIN" ]]; then
+  echo "Unity executable not found or not executable: $UNITY_BIN" >&2
+  exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+TEMP_DIR="$(mktemp -d)"
+TESTS_DIR="$REPO_ROOT/Assets/AppsFlyer/Tests"
+TESTS_META="$REPO_ROOT/Assets/AppsFlyer/Tests.meta"
+TESTS_BACKUP="$TEMP_DIR/Tests"
+TESTS_META_BACKUP="$TEMP_DIR/Tests.meta"
+TESTS_MOVED=false
+TESTS_META_MOVED=false
+
+cleanup() {
+  if [[ "$TESTS_MOVED" == "true" && -d "$TESTS_BACKUP" ]]; then
+    rm -rf "$TESTS_DIR"
+    mv "$TESTS_BACKUP" "$TESTS_DIR"
+  fi
+  if [[ "$TESTS_META_MOVED" == "true" && -f "$TESTS_META_BACKUP" ]]; then
+    rm -f "$TESTS_META"
+    mv "$TESTS_META_BACKUP" "$TESTS_META"
+  fi
+
+  rm -rf "$REPO_ROOT/Assets/ExternalDependencyManager"
+  rm -rf "$REPO_ROOT/Assets/PlayServicesResolver"
+  rm -f "$REPO_ROOT/Assets/ExternalDependencyManager.meta"
+  rm -f "$REPO_ROOT/Assets/PlayServicesResolver.meta"
+  rm -rf "$REPO_ROOT/Library" "$REPO_ROOT/Logs" "$REPO_ROOT/Packages"
+  rm -rf "$TEMP_DIR"
+}
+trap cleanup EXIT
+
+echo "Start build for $PACKAGE_NAME"
+
+if [[ -d "$TESTS_DIR" ]]; then
+  echo "Temporarily moving Tests folder to avoid NUnit compilation errors in batch mode."
+  mv "$TESTS_DIR" "$TESTS_BACKUP"
+  TESTS_MOVED=true
+fi
+
+if [[ -f "$TESTS_META" ]]; then
+  mv "$TESTS_META" "$TESTS_META_BACKUP"
+  TESTS_META_MOVED=true
+fi
+
+"$UNITY_BIN" \
+  -gvh_disable \
+  -batchmode \
+  -importPackage "$EDM_PACKAGE" \
+  -nographics \
+  -logFile "$SCRIPT_DIR/create_unity_core.log" \
+  -projectPath "$REPO_ROOT" \
+  -exportPackage \
+  Assets/AppsFlyer \
+  "$OUTPUT_DIR/$PACKAGE_NAME" \
+  -quit
+
+echo "Package exported successfully to $OUTPUT_DIR/$PACKAGE_NAME"
+
+if [[ "$PRODUCTION" == "true" && "$OUTPUT_DIR" == "$DEPLOY_PATH" ]]; then
+  mv "$OUTPUT_DIR/$PACKAGE_NAME" "$REPO_ROOT/$PACKAGE_NAME"
+  rmdir "$OUTPUT_DIR" 2>/dev/null || true
+  echo "Moved package to $REPO_ROOT/$PACKAGE_NAME"
 fi

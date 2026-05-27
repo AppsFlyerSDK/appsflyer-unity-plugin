@@ -2,6 +2,11 @@ name: update sdk links
 
 on:
     workflow_call:
+      inputs:
+        plugin_version:
+          required: false
+          type: string
+          default: latest
 
 jobs:
   update-links:
@@ -38,22 +43,22 @@ jobs:
 
             if [[ -n $(git status -s) ]]; then
                 echo "Links need updating, will create PR"
-                git config --global user.name $COMMIT_AUTHOR
-                git config --global user.email $COMMIT_EMAIL
+                git config --global user.name "$COMMIT_AUTHOR"
+                git config --global user.email "$COMMIT_EMAIL"
                 git add docs/Installation.md
                 git commit -m "generate links"
-                echo "changes_made=true" >> $GITHUB_OUTPUT
+                echo "changes_made=true" >> "$GITHUB_OUTPUT"
             else
                 echo "Links are already up to date"
-                echo "changes_made=false" >> $GITHUB_OUTPUT
+                echo "changes_made=false" >> "$GITHUB_OUTPUT"
             fi
         - name: Create Pull Request
           if: steps.update-links.outputs.changes_made == 'true'
-          uses: peter-evans/create-pull-request@v5
+          uses: peter-evans/create-pull-request@v7
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
             commit-message: "generate links"
-            title: "Update SDK links for version ${{ inputs.plugin_version || 'latest' }}"
+            title: "Update SDK links for version ${{ inputs.plugin_version }}"
             body: |
               This PR automatically updates the SDK links in the Installation.md file.
               
