@@ -1,0 +1,213 @@
+name: RC Smoke
+
+on:
+  workflow_run:
+    workflows: ["RC Release Pipeline"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      rc_version:
+        description: "RC version to smoke, e.g. 6.18.0-rc1"
+        required: true
+        type: string
+      release_branch:
+        description: "Release branch to associate the smoke check with"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  checks: write
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve RC smoke context
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.context.outputs.version }}
+      release_branch: ${{ steps.context.outputs.release_branch }}
+      head_sha: ${{ steps.context.outputs.head_sha }}
+      should_run: ${{ steps.context.outputs.should_run }}
+
+    steps:
+      - name: Download publish signal
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: rc-publish-signal
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .af-signal
+
+      - name: Resolve context
+        id: context
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_VERSION: ${{ inputs.rc_version }}
+          MANUAL_BRANCH: ${{ inputs.release_branch }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            SIGNAL=".af-signal/rc-publish-signal.json"
+            test -f "$SIGNAL"
+            VERSION=$(jq -r '.version' "$SIGNAL")
+            RELEASE_BRANCH=$(jq -r '.release_branch' "$SIGNAL")
+            DRY_RUN=$(jq -r '.dry_run' "$SIGNAL")
+            PUBLISHED=$(jq -r '.published' "$SIGNAL")
+          else
+            VERSION="$MANUAL_VERSION"
+            RELEASE_BRANCH="$MANUAL_BRANCH"
+            DRY_RUN=false
+            PUBLISHED=true
+          fi
+
+          HEAD_SHA=$(git ls-remote origin "$RELEASE_BRANCH" | awk '{print $1}')
+          if [[ -z "$HEAD_SHA" ]]; then
+            echo "::error::Could not resolve release branch head SHA: $RELEASE_BRANCH"
+            exit 1
+          fi
+
+          SHOULD_RUN=true
+          if [[ "$DRY_RUN" == "true" || "$PUBLISHED" != "true" ]]; then
+            SHOULD_RUN=false
+          fi
+
+          {
+            echo "version=$VERSION"
+            echo "release_branch=$RELEASE_BRANCH"
+            echo "head_sha=$HEAD_SHA"
+            echo "should_run=$SHOULD_RUN"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "version=$VERSION"
+          echo "release_branch=$RELEASE_BRANCH"
+          echo "head_sha=$HEAD_SHA"
+          echo "should_run=$SHOULD_RUN"
+
+  post-skipped-check:
+    name: Post skipped smoke check
+    needs: resolve
+    if: ${{ needs.resolve.outputs.should_run == 'false' }}
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - name: Create skipped check-run
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        with:
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'rc-smoke/github-release',
+              head_sha: process.env.HEAD_SHA,
+              status: 'completed',
+              conclusion: 'skipped',
+              output: {
+                title: 'RC smoke skipped',
+                summary: `RC smoke skipped for ${process.env.VERSION} because RC publish did not create a GitHub prerelease.`
+              }
+            });
+
+  download-published-package:
+    name: Download published RC package
+    needs: resolve
+    if: ${{ needs.resolve.outputs.should_run == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download regular package from GitHub prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          mkdir -p .af-artifacts
+          gh release download "v$VERSION" \
+            --pattern "appsflyer-unity-plugin-$VERSION.unitypackage" \
+            --dir .af-artifacts
+          test -f ".af-artifacts/appsflyer-unity-plugin-$VERSION.unitypackage"
+
+      - name: Upload package for smoke jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-smoke-package-${{ needs.resolve.outputs.version }}
+          path: .af-artifacts/
+          retention-days: 7
+
+  smoke-ios:
+    name: Smoke - iOS
+    needs: [resolve, download-published-package]
+    if: ${{ needs.resolve.outputs.should_run == 'true' }}
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ needs.resolve.outputs.version }}
+      release_branch: ${{ needs.resolve.outputs.release_branch }}
+      package_artifact_name: rc-smoke-package-${{ needs.resolve.outputs.version }}
+      package_file_name: appsflyer-unity-plugin-${{ needs.resolve.outputs.version }}.unitypackage
+      plan_path: .af-smoke/rc-test-plan.json
+      report_artifact_prefix: smoke
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE: ${{ secrets.ENV_FILE }}
+
+  smoke-android:
+    name: Smoke - Android
+    needs: [resolve, download-published-package, smoke-ios]
+    if: ${{ needs.resolve.outputs.should_run == 'true' }}
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ needs.resolve.outputs.version }}
+      release_branch: ${{ needs.resolve.outputs.release_branch }}
+      package_artifact_name: rc-smoke-package-${{ needs.resolve.outputs.version }}
+      package_file_name: appsflyer-unity-plugin-${{ needs.resolve.outputs.version }}.unitypackage
+      plan_path: .af-smoke/rc-test-plan.json
+      report_artifact_prefix: smoke
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+      ENV_FILE: ${{ secrets.ENV_FILE }}
+
+  post-smoke-check:
+    name: Post smoke check
+    needs: [resolve, smoke-ios, smoke-android]
+    if: ${{ always() && needs.resolve.outputs.should_run == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - name: Create smoke check-run
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          IOS_RESULT: ${{ needs.smoke-ios.result }}
+          ANDROID_RESULT: ${{ needs.smoke-android.result }}
+        with:
+          script: |
+            const passed = process.env.IOS_RESULT === 'success' && process.env.ANDROID_RESULT === 'success';
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'rc-smoke/github-release',
+              head_sha: process.env.HEAD_SHA,
+              status: 'completed',
+              conclusion: passed ? 'success' : 'failure',
+              output: {
+                title: passed ? 'RC smoke passed' : 'RC smoke failed',
+                summary: `RC smoke for ${process.env.VERSION}: iOS=${process.env.IOS_RESULT}, Android=${process.env.ANDROID_RESULT}.`
+              }
+            });
+            if (!passed) {
+              core.setFailed('RC smoke failed. See smoke report artifacts for details.');
+            }
