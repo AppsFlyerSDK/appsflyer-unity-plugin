@@ -211,3 +211,52 @@ jobs:
             if (!passed) {
               core.setFailed('RC smoke failed. See smoke report artifacts for details.');
             }
+
+  notify-failure:
+    name: Notify Slack (smoke failure)
+    needs: [resolve, smoke-ios, smoke-android]
+    if: |
+      always() &&
+      needs.resolve.outputs.should_run == 'true' &&
+      (needs.smoke-android.result == 'failure' || needs.smoke-ios.result == 'failure' ||
+       needs.smoke-android.result == 'cancelled' || needs.smoke-ios.result == 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        env:
+          RC_VERSION: ${{ needs.resolve.outputs.version }}
+          IOS_RESULT: ${{ needs.smoke-ios.result }}
+          ANDROID_RESULT: ${{ needs.smoke-android.result }}
+          RELEASE_BRANCH: ${{ needs.resolve.outputs.release_branch }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            `:warning: *Unity rc-smoke failed for \`${env.RC_VERSION}\`*`,
+            '',
+            'The RC GitHub prerelease exists but smoke checks did not pass on the published artifact. Production promotion is blocked.',
+            '',
+            '*Smoke results:*',
+            `• iOS: ${env.IOS_RESULT}`,
+            `• Android: ${env.ANDROID_RESULT}`,
+            '',
+            `*Branch:* ${env.RELEASE_BRANCH}`,
+            `*Run:* https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Next step:* Bump to `rcN+1` and rerun RC Release with `dry_run=false`.',
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack failure notification
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}

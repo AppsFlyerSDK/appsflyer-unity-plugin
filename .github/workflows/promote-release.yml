@@ -112,3 +112,44 @@ jobs:
           BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
           gh pr comment "$PR_NUMBER" --body "RC-PROMOTE complete. Version surfaces now point at $BASE_VERSION and the branch is ready to merge."
+
+  notify-failure:
+    name: Notify Slack (promote failure)
+    needs: promote
+    if: always() && needs.promote.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          RELEASE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            ':warning: *Unity promote-release blocked*',
+            '',
+            `PR: ${env.PR_URL}`,
+            `Branch: ${env.RELEASE_BRANCH}`,
+            '',
+            'The promote workflow could not prepare the release branch for production. Common causes:',
+            '• `rc-smoke/github-release` is missing or red on the PR head SHA — bump to `rcN+1` and rerun RC Release.',
+            '• The version-strip push was rejected (branch protection or stale ref).',
+            '',
+            `Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack failure notification
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}

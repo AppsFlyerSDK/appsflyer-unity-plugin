@@ -450,3 +450,225 @@ jobs:
           name: rc-publish-signal
           path: rc-publish-signal.json
           retention-days: 30
+
+  notify-team:
+    name: Notify Slack
+    needs:
+      - prepare-branch
+      - publish-wrapper
+      - validate-wrapper
+      - build-package
+      - run-e2e-ios
+      - run-e2e-android
+      - rc-publish
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine status and failed stage
+        id: status
+        env:
+          PREPARE_RESULT: ${{ needs.prepare-branch.result }}
+          WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
+          VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
+          PACKAGE_RESULT: ${{ needs.build-package.result }}
+          E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
+          E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
+          PUBLISH_RESULT: ${{ needs.rc-publish.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$PREPARE_RESULT" == "success" \
+             && "$WRAPPER_RESULT" == "success" \
+             && "$VALIDATE_RESULT" == "success" \
+             && "$PACKAGE_RESULT" == "success" \
+             && "$E2E_IOS_RESULT" == "success" \
+             && "$E2E_ANDROID_RESULT" == "success" \
+             && "$PUBLISH_RESULT" == "success" ]]; then
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "failed_stage=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "success=false" >> "$GITHUB_OUTPUT"
+          if   [[ "$PREPARE_RESULT" != "success" ]]; then echo "failed_stage=prepare-branch" >> "$GITHUB_OUTPUT"
+          elif [[ "$WRAPPER_RESULT" != "success" ]]; then echo "failed_stage=publish-wrapper" >> "$GITHUB_OUTPUT"
+          elif [[ "$VALIDATE_RESULT" != "success" ]]; then echo "failed_stage=validate-wrapper" >> "$GITHUB_OUTPUT"
+          elif [[ "$PACKAGE_RESULT" != "success" ]]; then echo "failed_stage=build-package" >> "$GITHUB_OUTPUT"
+          elif [[ "$E2E_IOS_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-ios" >> "$GITHUB_OUTPUT"
+          elif [[ "$E2E_ANDROID_RESULT" != "success" ]]; then echo "failed_stage=run-e2e-android" >> "$GITHUB_OUTPUT"
+          else echo "failed_stage=rc-publish" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Format pipeline leg results
+        id: legs
+        env:
+          WRAPPER_RESULT: ${{ needs.publish-wrapper.result }}
+          VALIDATE_RESULT: ${{ needs.validate-wrapper.result }}
+          PACKAGE_RESULT: ${{ needs.build-package.result }}
+          E2E_IOS_RESULT: ${{ needs.run-e2e-ios.result }}
+          E2E_ANDROID_RESULT: ${{ needs.run-e2e-android.result }}
+        run: |
+          set -euo pipefail
+          icon_for() {
+            case "$1" in
+              success)   echo ":white_check_mark:" ;;
+              skipped)   echo ":fast_forward:" ;;
+              failure)   echo ":x:" ;;
+              cancelled) echo ":no_entry_sign:" ;;
+              *)         echo ":grey_question:" ;;
+            esac
+          }
+          {
+            echo "wrapper_icon=$(icon_for "$WRAPPER_RESULT")"
+            echo "validate_icon=$(icon_for "$VALIDATE_RESULT")"
+            echo "package_icon=$(icon_for "$PACKAGE_RESULT")"
+            echo "ios_icon=$(icon_for "$E2E_IOS_RESULT")"
+            echo "android_icon=$(icon_for "$E2E_ANDROID_RESULT")"
+            echo "wrapper_result=$WRAPPER_RESULT"
+            echo "validate_result=$VALIDATE_RESULT"
+            echo "package_result=$PACKAGE_RESULT"
+            echo "e2e_ios_result=$E2E_IOS_RESULT"
+            echo "e2e_android_result=$E2E_ANDROID_RESULT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release branch
+        if: steps.status.outputs.success == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare-branch.outputs.release_branch }}
+
+      - name: Fetch Jira tickets
+        id: jira-tickets
+        if: steps.status.outputs.success == 'true'
+        continue-on-error: true
+        env:
+          JIRA_EMAIL: ${{ secrets.CI_JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.CI_JIRA_TOKEN }}
+          JIRA_DOMAIN: ${{ secrets.CI_JIRA_DOMAIN }}
+          JIRA_FIX_VERSION: Unity SDK v${{ needs.prepare-branch.outputs.base_version }}
+        run: |
+          chmod +x .github/workflows/Scripts/fetch-jira-tickets.sh
+          .github/workflows/Scripts/fetch-jira-tickets.sh
+
+      - name: Build Slack success payload
+        id: slack-success-payload
+        if: steps.status.outputs.success == 'true' && needs.prepare-branch.outputs.dry_run != 'true'
+        env:
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.version }}
+          BASE_VERSION: ${{ needs.prepare-branch.outputs.base_version }}
+          WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
+          VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
+          PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
+          ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
+          WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
+          VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
+          PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
+          E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          TAG_NAME: v${{ needs.prepare-branch.outputs.version }}
+          RUN_ID: ${{ github.run_id }}
+          JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
+          ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
+          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            '',
+            '*Unity Plugin Release Candidate:*',
+            `appsflyer-unity-plugin: ${env.PLUGIN_VERSION} is ready for QA testing.`,
+            '',
+            '*Pre-publish checks:*',
+            `${env.WRAPPER_ICON} Maven unity-wrapper (${env.BASE_VERSION}): ${env.WRAPPER_RESULT}`,
+            `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
+            `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
+            `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
+            '',
+            ':hourglass_flowing_sand: Smoke (`rc-smoke/github-release`) runs after the GitHub prerelease is published.',
+            '',
+            '*Installation:*',
+            'Download the regular and strict `.unitypackage` files from the GitHub prerelease, or import via UPM after production.',
+            '',
+            '*Sources:*',
+            `:github: Branch: https://github.com/${env.REPOSITORY}/tree/${env.RELEASE_BRANCH}`,
+            `:github: Prerelease: https://github.com/${env.REPOSITORY}/releases/tag/${env.TAG_NAME}`,
+            `:github: Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Linked tickets and issues:*',
+            env.JIRA_TICKETS || 'No assigned fix version found',
+            '',
+            "*Native SDK's:*",
+            `:android: ${env.ANDROID_SDK_VERSION}`,
+            `:apple_company: ${env.IOS_SDK_VERSION}`,
+            '',
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Success)
+        if: steps.status.outputs.success == 'true' && needs.prepare-branch.outputs.dry_run != 'true'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-success-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
+
+      - name: Build Slack failure payload
+        id: slack-failure-payload
+        if: steps.status.outputs.success == 'false' && needs.prepare-branch.outputs.dry_run != 'true'
+        env:
+          FAILED_STAGE: ${{ steps.status.outputs.failed_stage }}
+          PLUGIN_VERSION: ${{ needs.prepare-branch.outputs.version }}
+          RELEASE_BRANCH: ${{ needs.prepare-branch.outputs.release_branch }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          WRAPPER_ICON: ${{ steps.legs.outputs.wrapper_icon }}
+          VALIDATE_ICON: ${{ steps.legs.outputs.validate_icon }}
+          PACKAGE_ICON: ${{ steps.legs.outputs.package_icon }}
+          IOS_ICON: ${{ steps.legs.outputs.ios_icon }}
+          ANDROID_ICON: ${{ steps.legs.outputs.android_icon }}
+          WRAPPER_RESULT: ${{ steps.legs.outputs.wrapper_result }}
+          VALIDATE_RESULT: ${{ steps.legs.outputs.validate_result }}
+          PACKAGE_RESULT: ${{ steps.legs.outputs.package_result }}
+          E2E_IOS_RESULT: ${{ steps.legs.outputs.e2e_ios_result }}
+          E2E_ANDROID_RESULT: ${{ steps.legs.outputs.e2e_android_result }}
+          PUBLISH_RESULT: ${{ needs.rc-publish.result }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const env = process.env;
+          const text = [
+            '<!here>',
+            `:warning: *Unity RC failed at \`${env.FAILED_STAGE}\`*`,
+            '',
+            `Version: ${env.PLUGIN_VERSION}`,
+            `Branch: ${env.RELEASE_BRANCH}`,
+            `Run: https://github.com/${env.REPOSITORY}/actions/runs/${env.RUN_ID}`,
+            '',
+            '*Pre-publish checks:*',
+            `${env.WRAPPER_ICON} Maven unity-wrapper: ${env.WRAPPER_RESULT}`,
+            `${env.VALIDATE_ICON} Wrapper validate: ${env.VALIDATE_RESULT}`,
+            `${env.PACKAGE_ICON} Build .unitypackage: ${env.PACKAGE_RESULT}`,
+            `${env.IOS_ICON} RC-E2E iOS: ${env.E2E_IOS_RESULT}`,
+            `${env.ANDROID_ICON} RC-E2E Android: ${env.E2E_ANDROID_RESULT}`,
+            '',
+            '*Downstream:*',
+            `• rc-publish: ${env.PUBLISH_RESULT}`,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `payload=${JSON.stringify({ text })}\n`);
+          NODE
+
+      - name: Send Slack notification (Failure)
+        if: steps.status.outputs.success == 'false' && needs.prepare-branch.outputs.dry_run != 'true'
+        uses: slackapi/slack-github-action@v1
+        continue-on-error: true
+        with:
+          payload: ${{ steps.slack-failure-payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
