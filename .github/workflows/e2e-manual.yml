@@ -89,6 +89,9 @@ jobs:
   e2e-android:
     if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
     needs: build-package
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/rc-e2e-android.yml
     with:
       plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
