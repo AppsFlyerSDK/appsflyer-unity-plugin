@@ -3,7 +3,7 @@
     "plan_id": "unity-e2e",
     "plugin": "unity",
     "version": "1.0.0",
-    "description": "End-to-end test plan for the AppsFlyer Unity plugin. Runs against plugin source (path: ../Assets/AppsFlyer) in test-app/. Covers six scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, and consent / SDK stop toggle. Mapped to E2E-001..E2E-006 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
+    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers six scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, and consent / SDK stop toggle. Mapped to E2E-001..E2E-006 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
     "platforms": ["android", "ios"],
     "schema_version": "1.0.0",
     "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006"
@@ -31,7 +31,6 @@
       "description": "Fresh install. Validate SDK startup, pre/post-start APIs, three auto-launched events with HTTP 200, and all standard callbacks.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
-      "post_marker_wait_sec": 30,
       "checks": [
         {
           "id": "sdk_started",
@@ -126,17 +125,17 @@
       "id": "phase_2",
       "name": "Background deep link",
       "scenario_ref": "E2E-002",
-      "description": "App is brought down after Phase 1 SDK start; the deep-link URL re-launches it. On Android the app is HOME-keyed to background and re-entered via VIEW intent. On iOS the app is terminated and re-launched with -deepLinkURL, which UnityAppControllerDeepLink replays through application:openURL:options: — same SDK pipeline as Flutter's AppDelegate. Both paths fire onDeepLinking with status=FOUND.",
+      "description": "App is backgrounded after Phase 1 SDK start, then the deep-link URL returns it through the platform URL path. Android uses HOME then VIEW intent. iOS launches Safari to background the Unity app, then uses simctl openurl so UnityAppControllerDeepLink receives the URL through the normal openURL path. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": false,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell am force-stop com.appsflyer.engagement", "sleep 1"],
-        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
+        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {
@@ -167,19 +166,18 @@
       "id": "phase_3",
       "name": "Foreground deep link",
       "scenario_ref": "E2E-003",
-      "description": "Fresh install. App is in foreground after SDK start. On Android a brief HOME switch triggers onPause and the VIEW intent brings the app back. On iOS the app is terminated and re-launched with -deepLinkURL (same launch-arg path as phase_2); the foreground-vs-killed distinction is Android-only. Both paths fire onDeepLinking with status=FOUND.",
+      "description": "Fresh install. App is in foreground after SDK start, then briefly backgrounded without force-stop before the deep link returns it. This is the closest deterministic Unity simulator equivalent to foreground/pause deep-link handling. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
-      "post_marker_wait_sec": 30,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell am force-stop com.appsflyer.engagement", "sleep 1"],
-        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
+        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {
@@ -281,7 +279,6 @@
       "description": "Fresh install. Sets customer user id (e2e_user_42), currency code (EUR), and additional data (tenant: qa_eu) before start. Verifies readback and propagation. Covers E2E-005.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
-      "post_marker_wait_sec": 30,
       "wait_after_trigger_sec": 5,
       "checks": [
         {

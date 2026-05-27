@@ -1,0 +1,224 @@
+{
+  "_meta": {
+    "plan_id": "unity-rc-smoke",
+    "plugin": "unity",
+    "version": "1.0.0",
+    "description": "Post-publish smoke plan for the AppsFlyer Unity plugin. CI downloads the RC .unitypackage from the GitHub prerelease, imports it into test-app/, and runs only the required SMOKE-001..SMOKE-003 scenarios against that published customer artifact.",
+    "platforms": ["android", "ios"],
+    "schema_version": "1.0.0",
+    "tooling_contract_ref": "SMOKE-001, SMOKE-002, SMOKE-003"
+  },
+
+  "config": {
+    "android": {
+      "package_name": "com.appsflyer.engagement",
+      "activity": "com.appsflyer.engagement.AppsFlyerUnityActivity",
+      "apk_path": "test-app/Build/Android/com.appsflyer.engagement.apk",
+      "build_cmd": "echo 'Build handled by Unity CI workflow'"
+    },
+    "ios": {
+      "bundle_id": "com.appsflyer.engagement",
+      "app_path": "test-app/Build/iOS-Simulator/UnityQATest.app",
+      "build_cmd": "echo 'Build handled by Unity CI workflow'"
+    }
+  },
+
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Cold launch",
+      "scenario_ref": "SMOKE-001",
+      "description": "Fresh install. Validate SDK startup, pre/post-start APIs, three auto-launched events with HTTP 200, and standard callbacks.",
+      "requires_fresh_install": true,
+      "wait_after_launch_sec": 240,
+      "checks": [
+        {
+          "id": "sdk_started",
+          "description": "startSDK returns SUCCESS",
+          "type": "log_contains",
+          "pattern": "[AF_QA][startSDK] result: SUCCESS",
+          "fail_action": "abort"
+        },
+        {
+          "id": "is_first_launch_true",
+          "description": "onInstallConversionData fires with is_first_launch=true",
+          "type": "log_contains",
+          "pattern": "[AF_QA][CALLBACK][onInstallConversionData]",
+          "payload_check": {"field": "is_first_launch", "expected": "true"},
+          "fail_action": "abort"
+        },
+        {
+          "id": "pre_start_apis_complete",
+          "description": "Pre-start auto APIs ran",
+          "type": "log_contains",
+          "pattern": "[AF_QA][AUTO_APIS] --- Pre-start auto APIs complete ---",
+          "fail_action": "fail"
+        },
+        {
+          "id": "post_start_apis_complete",
+          "description": "Post-start auto APIs ran",
+          "type": "log_contains",
+          "pattern": "[AF_QA][AUTO_APIS] --- Post-start auto APIs complete ---",
+          "fail_action": "fail"
+        },
+        {
+          "id": "get_sdk_version",
+          "description": "getSDKVersion returns a value",
+          "type": "log_contains",
+          "pattern": "[AF_QA][getSDKVersion] result:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "get_appsflyer_uid",
+          "description": "getAppsFlyerUID returns a value",
+          "type": "log_contains",
+          "pattern": "[AF_QA][getAppsFlyerUID] result:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "event_af_demo_launch",
+          "description": "af_demo_launch event fires",
+          "type": "log_contains",
+          "pattern": "[AF_QA][logEvent(af_demo_launch)] result:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "event_af_purchase",
+          "description": "af_purchase event fires",
+          "type": "log_contains",
+          "pattern": "[AF_QA][logEvent: af_purchase sent] result:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "event_af_content_view",
+          "description": "af_content_view event fires",
+          "type": "log_contains",
+          "pattern": "[AF_QA][logEvent: af_content_view sent] result:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "http_200_count",
+          "description": "At least 3 HTTP 200 responses from AppsFlyer servers",
+          "type": "count_matches",
+          "pattern": "response code:200 OK|response_status=200|responseCode=200",
+          "minimum": 3,
+          "fail_action": "fail"
+        },
+        {
+          "id": "on_deep_linking_callback",
+          "description": "onDeepLinking callback fires on clean launch",
+          "type": "log_contains",
+          "pattern": "[AF_QA][CALLBACK][onDeepLinking]",
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions or SDK start errors in logs",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL", "[AF_QA][startSDK] error:", "response code:4", "response code:5"],
+          "fail_action": "fail"
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Background deep link",
+      "scenario_ref": "SMOKE-002",
+      "description": "App is backgrounded after SMOKE-001, then returned through a deep-link URL. Unity uses HOME/Safari backgrounding rather than force-stop.",
+      "requires_fresh_install": false,
+      "wait_after_trigger_sec": 90,
+      "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
+      "pre_actions": {
+        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+      },
+      "trigger": {
+        "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
+        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+      },
+      "checks": [
+        {
+          "id": "deeplink_found",
+          "description": "onDeepLinking fires with status=FOUND",
+          "type": "log_contains",
+          "pattern": "status=FOUND",
+          "fail_action": "fail"
+        },
+        {
+          "id": "deeplink_value_bg",
+          "description": "deepLinkValue matches qa_deeplink_bg",
+          "type": "log_contains",
+          "pattern": "deepLinkValue=qa_deeplink_bg",
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions after deep link",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL"],
+          "fail_action": "fail"
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Foreground deep link",
+      "scenario_ref": "SMOKE-003",
+      "description": "Fresh install. App starts, briefly backgrounds without termination, and returns through a foreground deep-link URL.",
+      "requires_fresh_install": true,
+      "wait_after_launch_sec": 240,
+      "wait_after_trigger_sec": 90,
+      "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
+      "pre_actions": {
+        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+      },
+      "trigger": {
+        "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
+        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+      },
+      "checks": [
+        {
+          "id": "sdk_started",
+          "description": "startSDK returns SUCCESS on fresh install",
+          "type": "log_contains",
+          "pattern": "[AF_QA][startSDK] result: SUCCESS",
+          "fail_action": "abort"
+        },
+        {
+          "id": "install_conversion_callback",
+          "description": "onInstallConversionData callback fires before deep link",
+          "type": "log_contains",
+          "pattern": "[AF_QA][CALLBACK][onInstallConversionData]",
+          "fail_action": "abort"
+        },
+        {
+          "id": "deeplink_found_fg",
+          "description": "onDeepLinking fires with status=FOUND after foreground deep link",
+          "type": "log_contains",
+          "pattern": "status=FOUND",
+          "fail_action": "fail"
+        },
+        {
+          "id": "deeplink_value_fg",
+          "description": "deepLinkValue matches qa_deeplink_fg",
+          "type": "log_contains",
+          "pattern": "deepLinkValue=qa_deeplink_fg",
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL"],
+          "fail_action": "fail"
+        }
+      ]
+    }
+  ],
+
+  "report": {
+    "output_dir": ".af-smoke/reports/",
+    "format": "json"
+  }
+}
