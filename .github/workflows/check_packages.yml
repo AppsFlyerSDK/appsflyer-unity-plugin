@@ -6,11 +6,15 @@ on:
       plugin_version:
         required: true
         type: string
-      release_branch:
-        description: "Release branch ref used to locate RC prerelease assets when packages are not on master"
+      package_artifact_name:
+        description: "Workflow artifact containing production-built Unity packages"
         required: false
         type: string
         default: ""
+
+permissions:
+  actions: read
+  contents: write
 
 jobs:
   check-packages:
@@ -20,17 +24,12 @@ jobs:
         with:
           ref: master
 
-      - name: Materialize production packages
-        if: inputs.release_branch != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PLUGIN_VERSION: ${{ inputs.plugin_version }}
-          RELEASE_BRANCH: ${{ inputs.release_branch }}
-        run: |
-          chmod +x scripts/materialize-production-packages.sh
-          scripts/materialize-production-packages.sh \
-            --version "$PLUGIN_VERSION" \
-            --release-branch "$RELEASE_BRANCH"
+      - name: Download production packages
+        if: inputs.package_artifact_name != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.package_artifact_name }}
+          path: .
 
       - name: get version
         run: | 
@@ -47,6 +46,13 @@ jobs:
       - name: execute py script
         run:
           python .github/workflows/Scripts/extractPackage.py appsflyer-unity-plugin-${{env.PLUGIN_VERSION}}.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{env.PLUGIN_VERSION}}.unitypackage
+
+      - name: validate production metadata
+        run: |
+          python .github/workflows/Scripts/validate-production-package.py \
+            --version "${{ env.PLUGIN_VERSION }}" \
+            --regular "appsflyer-unity-plugin-${{ env.PLUGIN_VERSION }}.unitypackage" \
+            --strict "strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{ env.PLUGIN_VERSION }}.unitypackage"
           
   release-upm:
     runs-on: ubuntu-latest

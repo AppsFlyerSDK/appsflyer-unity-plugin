@@ -9,8 +9,12 @@ on:
       branch_name:
         required: true
         type: string
+      package_artifact_name:
+        required: true
+        type: string
 
 permissions:
+  actions: read
   contents: write
 
 jobs:
@@ -30,16 +34,11 @@ jobs:
           git config --global user.name "$COMMIT_AUTHOR"
           git config --global user.email "$COMMIT_EMAIL"
 
-      - name: Materialize production packages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PLUGIN_VERSION: ${{ inputs.plugin_version }}
-          RELEASE_BRANCH: ${{ inputs.branch_name }}
-        run: |
-          chmod +x scripts/materialize-production-packages.sh
-          scripts/materialize-production-packages.sh \
-            --version "$PLUGIN_VERSION" \
-            --release-branch "$RELEASE_BRANCH"
+      - name: Download production packages
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.package_artifact_name }}
+          path: .
 
       - name: Create production GitHub release with assets
         env:

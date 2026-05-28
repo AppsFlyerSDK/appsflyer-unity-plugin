@@ -80,10 +80,13 @@ jobs:
           echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Validate unity-wrapper on Maven Central
-        env:
-          BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
-          scripts/validate-unity-wrapper.sh --version "$BASE_VERSION"
+          WRAPPER_VERSION=$(grep -o 'spec="com.appsflyer:unity-wrapper:[^"]*"' Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml | sed -E 's/.*unity-wrapper:([^"]*)"/\1/' | head -1)
+          if [[ -z "$WRAPPER_VERSION" ]]; then
+            echo "::error::Could not extract unity-wrapper version from AppsFlyerDependencies.xml"
+            exit 1
+          fi
+          scripts/validate-unity-wrapper.sh --version "$WRAPPER_VERSION"
 
       - name: Commit and push promoted branch
         env:

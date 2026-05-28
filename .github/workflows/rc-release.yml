@@ -53,6 +53,8 @@ jobs:
           PLUGIN_VERSION: ${{ inputs.plugin_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          UNITY_WRAPPER_VERSION: ${{ inputs.unity_wrapper_version }}
         run: |
           if ! [[ "$PLUGIN_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
             echo "::error::plugin_version must match X.Y.Z-rcN, for example 6.18.0-rc1"
@@ -64,6 +66,10 @@ jobs:
           fi
           if ! [[ "$IOS_SDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::ios_sdk_version must match X.Y.Z"
+            exit 1
+          fi
+          if [[ "$DRY_RUN" == "true" && -z "$UNITY_WRAPPER_VERSION" ]]; then
+            echo "::error::dry_run=true requires unity_wrapper_version to point at an existing Maven Central unity-wrapper version for Android E2E."
             exit 1
           fi
 
