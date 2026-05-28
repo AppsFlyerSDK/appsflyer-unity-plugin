@@ -353,7 +353,8 @@ jobs:
 
   run-e2e-android:
     name: E2E - Android
-    needs: [prepare-branch, build-package]
+    # Run after iOS to avoid Unity serial/session contention during activation.
+    needs: [prepare-branch, build-package, run-e2e-ios]
     permissions:
       contents: read
       packages: read

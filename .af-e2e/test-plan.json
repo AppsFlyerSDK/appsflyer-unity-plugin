@@ -125,17 +125,17 @@
       "id": "phase_2",
       "name": "Background deep link",
       "scenario_ref": "E2E-002",
-      "description": "App is backgrounded after Phase 1 SDK start, then the deep-link URL returns it through the platform URL path. Android uses HOME then VIEW intent. iOS launches Safari to background the Unity app, then uses simctl openurl so UnityAppControllerDeepLink receives the URL through the normal openURL path. Both paths fire onDeepLinking with status=FOUND.",
+      "description": "App is backgrounded after Phase 1 SDK start, then the deep-link URL returns it through the platform URL path. Android uses HOME then VIEW intent. iOS terminates the app, then launches it with -deepLinkURL to avoid simulator URL confirmation prompts in CI. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": false,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
         "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
-        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {
@@ -166,18 +166,18 @@
       "id": "phase_3",
       "name": "Foreground deep link",
       "scenario_ref": "E2E-003",
-      "description": "Fresh install. App is in foreground after SDK start, then briefly backgrounded without force-stop before the deep link returns it. This is the closest deterministic Unity simulator equivalent to foreground/pause deep-link handling. Both paths fire onDeepLinking with status=FOUND.",
+      "description": "Fresh install. App starts and receives the deep-link URL through the deterministic Unity simulator launch-argument path. Android still exercises the VIEW intent path after HOME. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
         "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
-        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {

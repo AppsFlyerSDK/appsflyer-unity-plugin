@@ -90,6 +90,7 @@ jobs:
           projectPath:    test-app
           buildMethod:    BuildScript.BuildAndroid
           buildsPath:     test-app/Build
+          allowDirtyBuild: true
         timeout-minutes: 30
 
       - name: Upload Unity build log

@@ -124,17 +124,17 @@
       "id": "phase_2",
       "name": "Background deep link",
       "scenario_ref": "SMOKE-002",
-      "description": "App is backgrounded after SMOKE-001, then returned through a deep-link URL. Unity uses HOME/Safari backgrounding rather than force-stop.",
+      "description": "App is backgrounded after SMOKE-001, then returned through a deep-link URL. Android uses HOME then VIEW intent. iOS terminates the app, then launches it with -deepLinkURL to avoid simulator URL confirmation prompts in CI.",
       "requires_fresh_install": false,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
         "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
-        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {
@@ -164,18 +164,18 @@
       "id": "phase_3",
       "name": "Foreground deep link",
       "scenario_ref": "SMOKE-003",
-      "description": "Fresh install. App starts, briefly backgrounds without termination, and returns through a foreground deep-link URL.",
+      "description": "Fresh install. App starts and receives the deep-link URL through the deterministic Unity simulator launch-argument path. Android still exercises the VIEW intent path after HOME.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
         "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
-        "ios": ["xcrun simctl launch {{UDID}} com.apple.mobilesafari", "sleep 1"]
+        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
         "android": "adb shell am start -W -a android.intent.action.VIEW -d \"{{DEEP_LINK_URL}}\"",
-        "ios": "xcrun simctl openurl {{UDID}} \"{{DEEP_LINK_URL}}\""
+        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
       },
       "checks": [
         {

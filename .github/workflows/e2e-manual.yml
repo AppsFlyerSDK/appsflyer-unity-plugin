@@ -86,13 +86,10 @@ jobs:
           path: dist/unitypackages/
           retention-days: 7
 
-  e2e-android:
-    if: ${{ inputs.platform == 'both' || inputs.platform == 'android' }}
+  e2e-ios:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
     needs: build-package
-    permissions:
-      contents: read
-      packages: read
-    uses: ./.github/workflows/rc-e2e-android.yml
+    uses: ./.github/workflows/rc-e2e-ios.yml
     with:
       plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
       release_branch: ${{ github.ref_name }}
@@ -100,10 +97,14 @@ jobs:
       package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets: inherit
 
-  e2e-ios:
-    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
-    needs: build-package
-    uses: ./.github/workflows/rc-e2e-ios.yml
+  e2e-android:
+    # For platform=both, run Android after iOS to avoid Unity serial/session contention.
+    if: ${{ always() && needs.build-package.result == 'success' && (inputs.platform == 'android' || (inputs.platform == 'both' && needs.e2e-ios.result == 'success')) }}
+    needs: [build-package, e2e-ios]
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/rc-e2e-android.yml
     with:
       plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
       release_branch: ${{ github.ref_name }}
