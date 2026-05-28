@@ -119,16 +119,25 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Pin AppsFlyer-host DNS resolution
+        run: |
+          for host in oyoxfj.conversions.appsflyersdk.com t.appsflyer.com conversions.appsflyer.com; do
+            echo "--- nslookup $host ---"
+            nslookup "$host" 8.8.8.8 || true
+          done
+
       - name: Run E2E scenario runner inside Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
-          api-level:   31
-          arch:        x86_64
-          profile:     Nexus 6
-          avd-name:    e2e_avd
-          emulator-options: -no-snapshot -no-window -no-boot-anim -gpu swiftshader_indirect
+          api-level: 33
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
+          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect -accel on
           disable-animations: true
           script: |
             adb wait-for-device

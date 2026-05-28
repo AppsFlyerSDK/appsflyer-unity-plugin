@@ -130,7 +130,7 @@
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_bg&af_sub1=background_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 5"],
         "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {
@@ -166,13 +166,13 @@
       "id": "phase_3",
       "name": "Foreground deep link",
       "scenario_ref": "E2E-003",
-      "description": "Fresh install. App starts and receives the deep-link URL through the deterministic Unity simulator launch-argument path. Android still exercises the VIEW intent path after HOME. Both paths fire onDeepLinking with status=FOUND.",
+      "description": "Fresh install. App is in foreground after SDK start. Android uses an explicit HOME intent to settle Activity lifecycle before the VIEW intent brings the app back. iOS receives the deep-link URL through the deterministic Unity simulator launch-argument path. Both paths fire onDeepLinking with status=FOUND.",
       "requires_fresh_install": true,
       "wait_after_launch_sec": 240,
       "wait_after_trigger_sec": 90,
       "deep_link_url": "afqa-unity://deeplink?deep_link_value=qa_deeplink_fg&af_sub1=foreground_test&pid=testmedia&c=deeplink_test",
       "pre_actions": {
-        "android": ["adb shell input keyevent KEYCODE_HOME", "sleep 1"],
+        "android": ["adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME", "sleep 5"],
         "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
       },
       "trigger": {

@@ -515,7 +515,9 @@ run_phase_command() {
 
   log_info "${label}: ${command}"
   set +e
-  output=$(eval "$command" 2>&1)
+  # Keep commands such as `adb shell input` from consuming the pre-action
+  # loop's stdin before later actions, for example the HOME settling sleep.
+  output=$(eval "$command" </dev/null 2>&1)
   status=$?
   set -e
 
