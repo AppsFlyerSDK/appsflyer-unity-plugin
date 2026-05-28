@@ -89,6 +89,15 @@ fi
 ANDROID_WRAPPER_PROPS="android-unity-wrapper/gradle.properties"
 if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
   echo "[9/14] $ANDROID_WRAPPER_PROPS"
+  current_version_code="$(grep '^VERSION_CODE=' "$ANDROID_WRAPPER_PROPS" | cut -d= -f2)"
+  current_version_name="$(grep '^VERSION_NAME=' "$ANDROID_WRAPPER_PROPS" | cut -d= -f2)"
+  if [[ "$current_version_name" != "$UNITY_WRAPPER_VERSION" ]]; then
+    new_version_code=$((current_version_code + 1))
+    sed -i.bak "s|^VERSION_CODE=.*|VERSION_CODE=$new_version_code|" "$ANDROID_WRAPPER_PROPS"
+    echo "  VERSION_CODE=$new_version_code (was $current_version_code)"
+  else
+    echo "  VERSION_CODE=$current_version_code (unchanged; VERSION_NAME already $UNITY_WRAPPER_VERSION)"
+  fi
   sed -i.bak "s|^VERSION_NAME=.*|VERSION_NAME=$UNITY_WRAPPER_VERSION|" "$ANDROID_WRAPPER_PROPS"
   rm -f "${ANDROID_WRAPPER_PROPS}.bak"
 fi
@@ -129,23 +138,110 @@ if [[ -f "$IOS_POD_SH" ]]; then
   rm -f "${IOS_POD_SH}.bak"
 fi
 
-# ── CHANGELOG.md — prepend new version header if not already present ──────────
+# ── CHANGELOG.md — update base version section (never RC-specific headers) ───
 CHANGELOG="CHANGELOG.md"
+CHANGELOG_HEADER="## v${BASE_VERSION}"
 if [[ -f "$CHANGELOG" ]]; then
-  if ! grep -q "^## $PLUGIN_VERSION" "$CHANGELOG"; then
-    TODAY=$(date +%Y-%m-%d)
-    TMP=$(mktemp)
-    # Prepend the new section after any top-level title (# ...) or at file start
-    awk -v ver="$PLUGIN_VERSION" -v date="$TODAY" '
-      NR==1 && /^# / { print; print ""; print "## " ver " (" date ")"; print ""; next }
-      NR==1           { print "## " ver " (" date ")"; print ""; print; next }
-      { print }
+  CHANGELOG_BULLETS=(
+    "* Update Android SDK version - $ANDROID_SDK_VERSION"
+    "* Update iOS SDK version - $IOS_SDK_VERSION"
+    "* Update iOS Purchase Connector version - $IOS_SDK_VERSION"
+    "* Update Android unity-wrapper version - $UNITY_WRAPPER_VERSION"
+  )
+  if [[ "$PLUGIN_VERSION" != "$BASE_VERSION" ]]; then
+    CHANGELOG_BULLETS+=("* Unity plugin version - $PLUGIN_VERSION")
+  fi
+
+  BULLETS_FILE=$(mktemp)
+  TMP=$(mktemp)
+  printf '%s\n' "${CHANGELOG_BULLETS[@]}" > "$BULLETS_FILE"
+
+  if grep -qF "$CHANGELOG_HEADER" "$CHANGELOG"; then
+    awk -v header="$CHANGELOG_HEADER" -v bullets_file="$BULLETS_FILE" '
+      BEGIN {
+        while ((getline line < bullets_file) > 0) {
+          bullets[++bullet_count] = line
+        }
+        close(bullets_file)
+      }
+      function section_has_bullet(section_text, bullet) {
+        return index(section_text, bullet) > 0
+      }
+      function flush_section() {
+        if (!in_section) {
+          return
+        }
+        print header
+        printf "%s", section_body
+        for (i = 1; i <= bullet_count; i++) {
+          if (!section_has_bullet(section_body, bullets[i])) {
+            print bullets[i]
+          }
+        }
+        in_section = 0
+        section_body = ""
+      }
+      {
+        if ($0 == header) {
+          flush_section()
+          in_section = 1
+          next
+        }
+        if (in_section && /^## /) {
+          flush_section()
+          print $0
+          next
+        }
+        if (in_section) {
+          section_body = section_body $0 "\n"
+          next
+        }
+        print $0
+      }
+      END {
+        if (in_section) {
+          flush_section()
+        }
+      }
     ' "$CHANGELOG" > "$TMP"
     mv "$TMP" "$CHANGELOG"
-    echo "[+] CHANGELOG.md — prepended ## $PLUGIN_VERSION"
+    echo "[+] CHANGELOG.md — appended version bumps to $CHANGELOG_HEADER"
   else
-    echo "[~] CHANGELOG.md — ## $PLUGIN_VERSION already present, skipped"
+    awk -v header="$CHANGELOG_HEADER" -v bullets_file="$BULLETS_FILE" '
+      BEGIN {
+        while ((getline line < bullets_file) > 0) {
+          bullets[++bullet_count] = line
+        }
+        close(bullets_file)
+      }
+      /^# Versions/ {
+        print
+        print ""
+        print header
+        for (i = 1; i <= bullet_count; i++) {
+          print bullets[i]
+        }
+        print ""
+        inserted = 1
+        next
+      }
+      { print }
+      END {
+        if (!inserted) {
+          print ""
+          print header
+          for (i = 1; i <= bullet_count; i++) {
+            print bullets[i]
+          }
+          print ""
+        }
+      }
+    ' "$CHANGELOG" > "$TMP"
+    mv "$TMP" "$CHANGELOG"
+    echo "[+] CHANGELOG.md — created $CHANGELOG_HEADER with version bumps"
   fi
+
+  rm -f "$BULLETS_FILE"
 fi
 
 # ── README.md / docs — native SDK and Purchase Connector version surfaces ─────

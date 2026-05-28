@@ -100,14 +100,20 @@ if [[ "$SKIP_IF_EXISTS" == true ]]; then
 fi
 
 current_code="$(read_version_code)"
-new_code=$((current_code + 1))
+current_name="$(grep '^VERSION_NAME=' "$GRADLE_PROPS" | cut -d= -f2)"
 
 echo "Updating $GRADLE_PROPS:"
-echo "  VERSION_NAME=$VERSION (was $(grep '^VERSION_NAME=' "$GRADLE_PROPS" | cut -d= -f2))"
-echo "  VERSION_CODE=$new_code (was $current_code)"
+echo "  VERSION_NAME=$VERSION (was $current_name)"
 
-set_gradle_property VERSION_NAME "$VERSION"
-set_gradle_property VERSION_CODE "$new_code"
+if [[ "$current_name" != "$VERSION" ]]; then
+  new_code=$((current_code + 1))
+  echo "  VERSION_CODE=$new_code (was $current_code)"
+  set_gradle_property VERSION_NAME "$VERSION"
+  set_gradle_property VERSION_CODE "$new_code"
+else
+  new_code="$current_code"
+  echo "  VERSION_CODE=$current_code (unchanged; bump-version.sh already set VERSION_NAME)"
+fi
 
 append_gradle_credential_args
 

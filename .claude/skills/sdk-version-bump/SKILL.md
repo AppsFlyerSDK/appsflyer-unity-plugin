@@ -30,6 +30,7 @@ Perform a safe, consistent version bump across C#, Android, and iOS plugin layer
 
 ### Android
 - `android-unity-wrapper/build.gradle` — `af-android-sdk` dependency
+- `android-unity-wrapper/gradle.properties` — `VERSION_NAME` and `VERSION_CODE` (incremented by `scripts/bump-version.sh` when the wrapper version changes)
 - Billing library v7 and v8 build variants — both must be updated
 - ProGuard rules if new classes are added
 - `AppsFlyerAndroidWrapper.java` — version constants if any
