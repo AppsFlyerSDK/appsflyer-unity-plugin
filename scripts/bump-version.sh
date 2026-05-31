@@ -99,15 +99,22 @@ if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
     echo "  VERSION_CODE=$current_version_code (unchanged; VERSION_NAME already $UNITY_WRAPPER_VERSION)"
   fi
   sed -i.bak "s|^VERSION_NAME=.*|VERSION_NAME=$UNITY_WRAPPER_VERSION|" "$ANDROID_WRAPPER_PROPS"
+  if grep -q "^ANDROID_SDK_VERSION=" "$ANDROID_WRAPPER_PROPS"; then
+    sed -i.bak "s|^ANDROID_SDK_VERSION=.*|ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION|" "$ANDROID_WRAPPER_PROPS"
+  else
+    echo "ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" >> "$ANDROID_WRAPPER_PROPS"
+  fi
   rm -f "${ANDROID_WRAPPER_PROPS}.bak"
 fi
 
 # ── 10. android-unity-wrapper/unitywrapper/build.gradle ──────────────────────
 UNITYWRAPPER_BUILD="android-unity-wrapper/unitywrapper/build.gradle"
 if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
-  echo "[10/14] $UNITYWRAPPER_BUILD — af-android-sdk"
-  sed -i.bak "s|com.appsflyer:af-android-sdk:[^']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|" "$UNITYWRAPPER_BUILD"
-  rm -f "${UNITYWRAPPER_BUILD}.bak"
+  echo "[10/14] $UNITYWRAPPER_BUILD — af-android-sdk uses ANDROID_SDK_VERSION"
+  if grep -q "com.appsflyer:af-android-sdk:[^$]" "$UNITYWRAPPER_BUILD"; then
+    sed -i.bak 's|com.appsflyer:af-android-sdk:[^"'"'"']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|' "$UNITYWRAPPER_BUILD"
+    rm -f "${UNITYWRAPPER_BUILD}.bak"
+  fi
 fi
 
 # ── 11. deploy/build_unity_package.sh ────────────────────────────────────────

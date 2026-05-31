@@ -7,6 +7,10 @@ on:
         description: Maven coord version (base semver, e.g. 6.18.0)
         required: true
         type: string
+      android_sdk_version:
+        description: Expected af-android-sdk version used to compile the wrapper
+        required: true
+        type: string
       release_branch:
         description: Branch to check out before publish
         required: true
@@ -82,7 +86,10 @@ jobs:
           MAVEN_SIGNING_PASSWORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
         run: |
           set -euo pipefail
-          ARGS=(--version "${{ inputs.wrapper_version }}")
+          ARGS=(
+            --version "${{ inputs.wrapper_version }}"
+            --android-sdk-version "${{ inputs.android_sdk_version }}"
+          )
           if [[ "${{ inputs.skip_if_exists }}" == "true" ]]; then
             ARGS+=(--skip-if-exists)
           fi
