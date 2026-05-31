@@ -47,6 +47,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_VERSION: ${{ inputs.rc_version }}
           MANUAL_BRANCH: ${{ inputs.release_branch }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
             SIGNAL=".af-signal/rc-publish-signal.json"
@@ -62,7 +63,7 @@ jobs:
             PUBLISHED=true
           fi
 
-          HEAD_SHA=$(git ls-remote origin "$RELEASE_BRANCH" | awk '{print $1}')
+          HEAD_SHA=$(git ls-remote "https://github.com/$REPOSITORY.git" "refs/heads/$RELEASE_BRANCH" | awk '{print $1}')
           if [[ -z "$HEAD_SHA" ]]; then
             echo "::error::Could not resolve release branch head SHA: $RELEASE_BRANCH"
             exit 1
