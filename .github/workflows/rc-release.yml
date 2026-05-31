@@ -153,6 +153,7 @@ jobs:
       - name: Verify version bump
         env:
           PLUGIN_VERSION: ${{ steps.branch.outputs.version }}
+          BASE_VERSION: ${{ steps.branch.outputs.base_version }}
           WRAPPER_VERSION: ${{ steps.wrapper.outputs.wrapper_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
@@ -166,7 +167,7 @@ jobs:
           grep -qE "^- iOS Purchase Connector ${IOS_SDK_VERSION}$" README.md
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "pluginVersion:@\"$PLUGIN_VERSION\"" Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
-          grep -q "PLUGIN_VERSION = \"$WRAPPER_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
+          grep -q "PLUGIN_VERSION = \"$BASE_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
           grep -q "^VERSION_NAME=$WRAPPER_VERSION" android-unity-wrapper/gradle.properties
           grep -q "^ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" android-unity-wrapper/gradle.properties
           grep -q 'com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION' android-unity-wrapper/unitywrapper/build.gradle
@@ -212,6 +213,7 @@ jobs:
     uses: ./.github/workflows/publish-android-wrapper.yml
     with:
       wrapper_version: ${{ needs.prepare-branch.outputs.wrapper_version }}
+      plugin_base_version: ${{ needs.prepare-branch.outputs.base_version }}
       android_sdk_version: ${{ inputs.android_sdk_version }}
       release_branch: ${{ needs.prepare-branch.outputs.release_branch }}
       skip_if_exists: true

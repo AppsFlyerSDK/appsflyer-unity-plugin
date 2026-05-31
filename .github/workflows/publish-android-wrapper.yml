@@ -7,6 +7,10 @@ on:
         description: Maven coord version (base semver, e.g. 6.18.0)
         required: true
         type: string
+      plugin_base_version:
+        description: Expected Unity plugin base version embedded in Android PluginInfo
+        required: true
+        type: string
       android_sdk_version:
         description: Expected af-android-sdk version used to compile the wrapper
         required: true
@@ -88,6 +92,7 @@ jobs:
           set -euo pipefail
           ARGS=(
             --version "${{ inputs.wrapper_version }}"
+            --plugin-base-version "${{ inputs.plugin_base_version }}"
             --android-sdk-version "${{ inputs.android_sdk_version }}"
           )
           if [[ "${{ inputs.skip_if_exists }}" == "true" ]]; then

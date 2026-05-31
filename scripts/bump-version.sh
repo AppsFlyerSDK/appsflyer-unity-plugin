@@ -39,6 +39,7 @@ UNITY_WRAPPER_VERSION="${UNITY_WRAPPER_VERSION:-$BASE_VERSION}"
 
 echo "Bumping versions:"
 echo "  plugin:         $PLUGIN_VERSION"
+echo "  plugin-base:    $BASE_VERSION"
 echo "  android-sdk:    $ANDROID_SDK_VERSION"
 echo "  ios-sdk:        $IOS_SDK_VERSION"
 echo "  unity-wrapper:  $UNITY_WRAPPER_VERSION"
@@ -80,8 +81,8 @@ rm -f "${IOS_WRAPPER}.bak"
 # ── 8. android-unity-wrapper Java bridge ─────────────────────────────────────
 ANDROID_WRAPPER_JAVA="android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java"
 if [[ -f "$ANDROID_WRAPPER_JAVA" ]]; then
-  echo "[8/14] $ANDROID_WRAPPER_JAVA"
-  sed -i.bak "s|PLUGIN_VERSION = \"[^\"]*\"|PLUGIN_VERSION = \"$UNITY_WRAPPER_VERSION\"|" "$ANDROID_WRAPPER_JAVA"
+  echo "[8/14] $ANDROID_WRAPPER_JAVA — PluginInfo Unity plugin base version"
+  sed -i.bak "s|PLUGIN_VERSION = \"[^\"]*\"|PLUGIN_VERSION = \"$BASE_VERSION\"|" "$ANDROID_WRAPPER_JAVA"
   rm -f "${ANDROID_WRAPPER_JAVA}.bak"
 fi
 
