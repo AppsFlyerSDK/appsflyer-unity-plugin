@@ -1,12 +1,13 @@
-name: E2E — Manual trigger
+name: E2E - Manual trigger
 
 on:
   workflow_dispatch:
     inputs:
       plugin_version:
-        description: Version label for the report (e.g. 6.18.0-rc1)
+        description: Version label for the package and report
         required: false
         default: manual-test
+        type: string
       platform:
         description: Platform to test
         required: true
@@ -17,19 +18,96 @@ on:
           - ios
         default: both
 
+permissions:
+  contents: read
+
 jobs:
-  e2e-android:
-    if: ${{ (inputs.platform || 'both') == 'both' || (inputs.platform || 'both') == 'android' }}
-    uses: ./.github/workflows/rc-e2e-android.yml
-    with:
-      plugin_version: ${{ inputs.plugin_version || 'push-trigger' }}
-      release_branch: ${{ github.ref_name }}
-    secrets: inherit
+  build-package:
+    name: Build Unity package for manual E2E
+    runs-on: macos-14
+    outputs:
+      artifact_name: unity-packages-${{ inputs.plugin_version || 'manual-test' }}
+      regular_package: appsflyer-unity-plugin-${{ inputs.plugin_version || 'manual-test' }}.unitypackage
+
+    steps:
+      - name: Checkout selected ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Unity.app
+          key: unity-6000.3.5f1-core-macos14-arm64
+
+      - name: Install Unity Editor
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
+          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
+        timeout-minutes: 45
+
+      - name: Activate Unity license
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode \
+            -serial "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build regular package
+        run: |
+          deploy/build_unity_package.sh \
+            --version "${{ inputs.plugin_version || 'manual-test' }}" \
+            --output-dir dist/unitypackages
+        timeout-minutes: 30
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-return.log 2>&1 || true
+          cat /tmp/unity-return.log || true
+
+      - name: Upload Unity package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-packages-${{ inputs.plugin_version || 'manual-test' }}
+          path: dist/unitypackages/
+          retention-days: 7
 
   e2e-ios:
-    if: ${{ (inputs.platform || 'both') == 'both' || (inputs.platform || 'both') == 'ios' }}
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
+    needs: build-package
     uses: ./.github/workflows/rc-e2e-ios.yml
     with:
-      plugin_version: ${{ inputs.plugin_version || 'push-trigger' }}
+      plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
       release_branch: ${{ github.ref_name }}
+      package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.build-package.outputs.regular_package }}
+    secrets: inherit
+
+  e2e-android:
+    # For platform=both, run Android after iOS to avoid Unity serial/session contention.
+    if: ${{ always() && needs.build-package.result == 'success' && (inputs.platform == 'android' || (inputs.platform == 'both' && needs.e2e-ios.result == 'success')) }}
+    needs: [build-package, e2e-ios]
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
+      release_branch: ${{ github.ref_name }}
+      package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets: inherit

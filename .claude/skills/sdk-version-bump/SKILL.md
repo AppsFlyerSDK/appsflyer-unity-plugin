@@ -30,12 +30,15 @@ Perform a safe, consistent version bump across C#, Android, and iOS plugin layer
 
 ### Android
 - `android-unity-wrapper/build.gradle` — `af-android-sdk` dependency
+- `android-unity-wrapper/gradle.properties` — `VERSION_NAME` and `VERSION_CODE` (incremented by `scripts/bump-version.sh` when the wrapper version changes)
 - Billing library v7 and v8 build variants — both must be updated
 - ProGuard rules if new classes are added
 - `AppsFlyerAndroidWrapper.java` — version constants if any
 
 ### iOS
 - iOS podspec or pod dependency declarations
+- `AppsFlyerDependencies.xml` — `PurchaseConnector` iosPod version **must match** `AppsFlyerFramework` / `--ios-sdk-version`
+- `README.md` and `docs/Introduction.md` — `iOS Purchase Connector` line must match iOS SDK version
 - `AppsFlyeriOSWrapper.mm` — version constants if any
 
 ### Unity plugin
@@ -59,6 +62,7 @@ Return:
 
 ## Rules
 
+- **iOS Purchase Connector version = iOS AppsFlyer SDK version** (enforced by `scripts/bump-version.sh` and `rc-release.yml` verify step).
 - Both billing library variants must be updated together.
 - Do not update only one place if multiple version declarations exist.
 - `.unitypackage` files are release artifacts — flag them as needing regeneration.

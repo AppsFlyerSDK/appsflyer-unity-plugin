@@ -28,17 +28,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull from Docker Hub
-        run: docker pull unityci/editor:${{ github.event.inputs.unity_version }}
+        env:
+          UNITY_VERSION: ${{ inputs.unity_version }}
+        run: docker pull "unityci/editor:$UNITY_VERSION"
 
       - name: Tag for GHCR
+        env:
+          UNITY_VERSION: ${{ inputs.unity_version }}
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker tag \
-            unityci/editor:${{ github.event.inputs.unity_version }} \
-            ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
+            "unityci/editor:$UNITY_VERSION" \
+            "ghcr.io/${OWNER}/unity-android:$UNITY_VERSION"
 
       - name: Push to GHCR
+        env:
+          UNITY_VERSION: ${{ inputs.unity_version }}
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}
-          echo "Image available at: ghcr.io/${OWNER}/unity-android:${{ github.event.inputs.unity_version }}"
+          docker push "ghcr.io/${OWNER}/unity-android:$UNITY_VERSION"
+          echo "Image available at: ghcr.io/${OWNER}/unity-android:$UNITY_VERSION"

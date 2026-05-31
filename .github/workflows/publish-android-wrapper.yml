@@ -1,0 +1,89 @@
+name: Publish Android Unity wrapper (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      wrapper_version:
+        description: Maven coord version (base semver, e.g. 6.18.0)
+        required: true
+        type: string
+      release_branch:
+        description: Branch to check out before publish
+        required: true
+        type: string
+      skip_if_exists:
+        description: Skip Sonatype publish when the artifact is already on Maven Central
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: Log only; do not run Gradle publish
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      SONATYPE_USERNAME:
+        required: false
+      SONATYPE_PASSWORD:
+        required: false
+      MAVEN_SIGNING_KEY_ID:
+        required: false
+      MAVEN_SIGNING_KEY:
+        required: false
+      MAVEN_SIGNING_PASSWORD:
+        required: false
+
+jobs:
+  publish-wrapper:
+    name: Publish unity-wrapper — ${{ inputs.wrapper_version }}
+    runs-on: ubuntu-latest
+    environment: Staging
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Cache Gradle wrapper and project caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            android-unity-wrapper/.gradle
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-unity-wrapper-gradle-${{ hashFiles('android-unity-wrapper/**/*.gradle*', 'android-unity-wrapper/gradle.properties', 'android-unity-wrapper/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-unity-wrapper-gradle-
+
+      - name: Dry run — skip Sonatype publish
+        if: inputs.dry_run
+        run: |
+          echo "Dry run enabled. Skipping publish for com.appsflyer:unity-wrapper:${{ inputs.wrapper_version }}."
+          echo "Pass unity_wrapper_version on rc-release when Android E2E must resolve an existing Maven coord."
+
+      - name: Publish unity-wrapper to Maven Central
+        if: ${{ !inputs.dry_run }}
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MAVEN_SIGNING_KEY_ID: ${{ secrets.MAVEN_SIGNING_KEY_ID }}
+          MAVEN_SIGNING_KEY: ${{ secrets.MAVEN_SIGNING_KEY }}
+          MAVEN_SIGNING_PASSWORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
+        run: |
+          set -euo pipefail
+          ARGS=(--version "${{ inputs.wrapper_version }}")
+          if [[ "${{ inputs.skip_if_exists }}" == "true" ]]; then
+            ARGS+=(--skip-if-exists)
+          fi
+          scripts/publish-android-wrapper.sh "${ARGS[@]}"

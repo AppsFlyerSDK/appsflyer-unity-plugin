@@ -1,10 +1,14 @@
 {
   "_meta": {
     "plugin": "unity",
-    "version": "1.0.0",
-    "description": "RC release configuration for the AppsFlyer Unity plugin. Maps the RC-* stages to GitHub Actions workflows.",
-    "tooling_contract_ref": "RC-PREP, RC-E2E, RC-PUBLISH, RC-PROMOTE, RC-RELEASE",
-    "schema_version": "1.0.0"
+    "version": "1.1.0",
+    "description": "RC release configuration for the AppsFlyer Unity plugin. Unity publishes GitHub prerelease .unitypackage assets first, then validates those assets with post-publish smoke.",
+    "tooling_contract_ref": "RC-PREP, RC-WRAPPER-PUBLISH, RC-WRAPPER-VALIDATE, RC-UNIT-TESTS, RC-E2E, RC-PUBLISH, RC-SMOKE, RC-PROMOTE, RC-RELEASE",
+    "schema_version": "1.0.0",
+    "e2e_jobs": {
+      "android": "run-e2e-android",
+      "ios": "run-e2e-ios"
+    }
   },
 
   "branch_pattern": "^releases/\\d+\\.x\\.x/\\d+\\.\\d+\\.x/\\d+\\.\\d+\\.\\d+-rc\\d+$",
@@ -12,31 +16,95 @@
   "rc_suffix": "-rc",
 
   "registry": {
-    "kind": "github-release",
-    "repo": "AppsFlyerSDK/appsflyer-unity-plugin"
+    "kind": "custom",
+    "package_name": "github-release",
+    "publish_cmd": "gh release create/upload v<version> appsflyer-unity-plugin-<version>.unitypackage strict-mode-sdk/appsflyer-unity-plugin-strict-mode-<version>.unitypackage"
   },
 
   "workflows": {
-    "RC-PREP":    { "path": ".github/workflows/rc-release.yml",              "job": "prepare-branch" },
-    "RC-E2E":     { "path": ".github/workflows/rc-release.yml",              "job": "run-e2e-ios" },
-    "RC-PUBLISH": { "path": ".github/workflows/rc-release.yml",              "job": "rc-publish" },
-    "RC-PROMOTE": { "path": ".github/workflows/promote-release.yml",         "job": "promote" },
-    "RC-RELEASE": { "path": ".github/workflows/release_production_workflow.yml" }
+    "RC-PREP": {
+      "path": ".github/workflows/rc-release.yml",
+      "job": "prepare-branch"
+    },
+    "RC-WRAPPER-PUBLISH": {
+      "path": ".github/workflows/rc-release.yml",
+      "reusable_workflow": ".github/workflows/publish-android-wrapper.yml",
+      "job": "publish-wrapper",
+      "description": "Publish com.appsflyer:unity-wrapper once per base semver (no -rc suffix) to Maven Central after RC-PREP."
+    },
+    "RC-WRAPPER-VALIDATE": {
+      "path": ".github/workflows/rc-release.yml",
+      "job": "validate-wrapper",
+      "script": "scripts/validate-unity-wrapper.sh",
+      "description": "Confirm unity-wrapper exists on Maven Central (with --wait after publish) before build-package."
+    },
+    "RC-UNIT-TESTS": {
+      "path": ".github/workflows/rc-release.yml",
+      "reusable_workflow": ".github/workflows/unity-playmode-tests.yml",
+      "job": "run-unit-tests",
+      "description": "Playmode tests on release branch (iOS, Android, Shared matrix). Runs in parallel with wrapper publish, package build, and E2E."
+    },
+    "RC-E2E": {
+      "path": ".github/workflows/rc-release.yml",
+      "job": "run-e2e-ios,run-e2e-android"
+    },
+    "RC-PUBLISH": {
+      "path": ".github/workflows/rc-release.yml",
+      "job": "rc-publish"
+    },
+    "RC-SMOKE": {
+      "path": ".github/workflows/rc-smoke.yml",
+      "job": "post-smoke-check"
+    },
+    "RC-PROMOTE": {
+      "path": ".github/workflows/promote-release.yml",
+      "job": "promote"
+    },
+    "RC-RELEASE": {
+      "path": ".github/workflows/release_production_workflow.yml"
+    }
+  },
+
+  "maven_wrapper": {
+    "coordinate": "com.appsflyer:unity-wrapper",
+    "version_policy": "base_version_only",
+    "version_policy_note": "AppsFlyerDependencies.xml references base_version (e.g. 6.18.0), never plugin RC suffix (6.18.0-rc1). Publish once per wrapper coord; RC-PROMOTE does not republish.",
+    "publish_once_per_coord": true,
+    "skip_if_exists": true,
+    "dry_run": {
+      "skip_publish": true,
+      "validate": "optional unity_wrapper_version input must point at an existing Central coord for Android E2E"
+    },
+    "patch_bump_input": "unity_wrapper_version",
+    "patch_bump_note": "When Java changes in a later RC (e.g. 6.18.0-rc2) but base coord 6.18.0 is immutable on Central, bump wrapper to 6.18.1 and publish that once."
   },
 
   "gates": {
+    "RC-WRAPPER-VALIDATE": {
+      "blocks": "build-package",
+      "required_conclusion": "success",
+      "allow_skipped_on_dry_run": true,
+      "check_description": "Maven com.appsflyer:unity-wrapper:<base_version> must resolve before Unity package build and Android E2E."
+    },
+    "RC-UNIT-TESTS": {
+      "check_run_name": "iOS Test Results / Android Test Results / Shared Test Results",
+      "required_conclusion": "success",
+      "blocks": "rc-publish"
+    },
     "RC-E2E": {
-      "check_run_name": "E2E — iOS",
+      "check_run_name": "E2E - iOS / E2E - Android",
       "required_conclusion": "success"
     },
-    "RC-E2E-ANDROID": {
-      "check_run_name": "E2E — Android",
-      "required_conclusion": "success"
+    "RC-SMOKE": {
+      "check_run_name": "rc-smoke/github-release",
+      "required_conclusion": "success",
+      "allow_skipped_on_dry_run": true
     }
   },
 
   "plans": {
-    "e2e_plan": ".af-e2e/test-plan.json"
+    "e2e_plan": ".af-e2e/test-plan.json",
+    "smoke_plan": ".af-smoke/rc-test-plan.json"
   },
 
   "promote_label": "pass QA ready for deploy",

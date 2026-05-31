@@ -515,7 +515,9 @@ run_phase_command() {
 
   log_info "${label}: ${command}"
   set +e
-  output=$(eval "$command" 2>&1)
+  # Keep commands such as `adb shell input` from consuming the pre-action
+  # loop's stdin before later actions, for example the HOME settling sleep.
+  output=$(eval "$command" </dev/null 2>&1)
   status=$?
   set -e
 
@@ -718,10 +720,11 @@ run_phase() {
     # `run-as cat` is costly on GitHub's emulator.
     wait_for_qa_marker "[AF_QA][AUTO_APIS] --- Auto run complete ---" "$wait_sec" 10
 
-    # Allow async network callbacks (e.g. onInstallConversionData) to arrive
-    # before collecting logs. Phases that need this set post_marker_wait_sec.
+    # Allow async Unity/native callbacks to arrive before collecting logs.
+    # Keep this as runner configuration instead of a plan field so plans stay
+    # valid against the shared tooling schema.
     local post_wait
-    post_wait=$(echo "$phase_json" | jq -r '.post_marker_wait_sec // 0')
+    post_wait="${AF_QA_POST_MARKER_WAIT_SEC:-0}"
     if [[ "$post_wait" -gt 0 ]]; then
       log_info "Waiting ${post_wait}s for async callbacks..."
       sleep "$post_wait"
