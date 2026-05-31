@@ -127,10 +127,12 @@ jobs:
       - name: Download regular package from GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
           VERSION: ${{ needs.resolve.outputs.version }}
         run: |
           mkdir -p .af-artifacts
           gh release download "v$VERSION" \
+            --repo "$REPOSITORY" \
             --pattern "appsflyer-unity-plugin-$VERSION.unitypackage" \
             --dir .af-artifacts
           test -f ".af-artifacts/appsflyer-unity-plugin-$VERSION.unitypackage"
@@ -223,7 +225,8 @@ jobs:
       always() &&
       needs.resolve.outputs.should_run == 'true' &&
       (needs.smoke-android.result == 'failure' || needs.smoke-ios.result == 'failure' ||
-       needs.smoke-android.result == 'cancelled' || needs.smoke-ios.result == 'cancelled')
+       needs.smoke-android.result == 'cancelled' || needs.smoke-ios.result == 'cancelled' ||
+       needs.smoke-android.result == 'skipped' || needs.smoke-ios.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Build Slack failure payload
