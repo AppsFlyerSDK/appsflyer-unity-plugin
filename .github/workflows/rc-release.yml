@@ -170,7 +170,7 @@ jobs:
           grep -q "PLUGIN_VERSION = \"$BASE_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
           grep -q "^VERSION_NAME=$WRAPPER_VERSION" android-unity-wrapper/gradle.properties
           grep -q "^ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" android-unity-wrapper/gradle.properties
-          grep -q 'com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION' android-unity-wrapper/unitywrapper/build.gradle
+          grep -q "com.appsflyer:af-android-sdk:\$ANDROID_SDK_VERSION" android-unity-wrapper/unitywrapper/build.gradle
           BASE_WRAPPER_VERSION=$(git show "origin/$BASE_BRANCH:android-unity-wrapper/gradle.properties" | grep '^VERSION_NAME=' | cut -d= -f2)
           BASE_VERSION_CODE=$(git show "origin/$BASE_BRANCH:android-unity-wrapper/gradle.properties" | grep '^VERSION_CODE=' | cut -d= -f2)
           CURRENT_VERSION_CODE=$(grep '^VERSION_CODE=' android-unity-wrapper/gradle.properties | cut -d= -f2)
@@ -188,23 +188,25 @@ jobs:
           RELEASE_BRANCH: ${{ steps.branch.outputs.release_branch }}
           PLUGIN_VERSION: ${{ steps.branch.outputs.version }}
         run: |
-          git add \
-            Assets/AppsFlyer/package.json \
-            Assets/AppsFlyer/AppsFlyer.cs \
-            Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
-            Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm \
-            android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java \
-            android-unity-wrapper/gradle.properties \
-            android-unity-wrapper/build.gradle \
-            android-unity-wrapper/unitywrapper/build.gradle \
-            deploy/build_unity_package.sh \
-            deploy/strict_mode_build_package.sh \
-            test-app/Assets/Plugins/Android/mainTemplate.gradle \
-            scripts/ios-pod-install.sh \
-            CHANGELOG.md \
-            README.md \
-            docs/Introduction.md
-          git commit -m "chore: bump to $PLUGIN_VERSION" || echo "Nothing to commit"
+          echo "Version bump changes before staging:"
+          git status --short
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            echo "Committing version bump files:"
+            git diff --cached --name-only
+            git commit -m "chore: bump to $PLUGIN_VERSION"
+          fi
+
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "::error::Uncommitted changes remain after version bump commit."
+            git status --short
+            exit 1
+          fi
+
           git push origin "$RELEASE_BRANCH" --force-with-lease
 
   publish-wrapper:
