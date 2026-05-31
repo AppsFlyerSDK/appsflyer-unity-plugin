@@ -142,6 +142,8 @@ jobs:
         with:
           name: rc-smoke-package-${{ needs.resolve.outputs.version }}
           path: .af-artifacts/
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
 
   smoke-ios:

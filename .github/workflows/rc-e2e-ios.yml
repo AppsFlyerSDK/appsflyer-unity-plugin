@@ -228,4 +228,5 @@ jobs:
           path: |
             .af-e2e/reports/
             .af-smoke/reports/
+          include-hidden-files: true
           retention-days: 30
