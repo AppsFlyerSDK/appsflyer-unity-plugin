@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 DEPLOY_PATH="$SCRIPT_DIR/outputs"
-PACKAGE_NAME="appsflyer-unity-plugin-6.17.91.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-6.18.0-rc2.unitypackage"
 UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
 EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
 OUTPUT_DIR="$DEPLOY_PATH"
@@ -29,7 +29,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
-      PACKAGE_NAME="appsflyer-unity-plugin-$2.unitypackage"
+      PACKAGE_NAME="appsflyer-unity-plugin-6.18.0-rc2.unitypackage"
       shift 2
       ;;
     --output-dir)

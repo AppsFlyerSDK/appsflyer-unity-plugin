@@ -5,6 +5,11 @@
 * **Android:** `unity-wrapper` and Purchase Connector target Billing Library 8 (`billing:8.0.0`). Requires Unity IAP 5.x if you use Unity Purchasing.
 * **Breaking change for Billing v7 users:** Migrate to Billing v8 before upgrading from 6.17.x. Stay on **`v6.17.90`** (Billing v7) or **`v6.17.91`** (Billing v8) if you are not ready.
 
+* Update Android SDK version - 6.18.0
+* Update iOS SDK version - 6.18.0
+* Update iOS Purchase Connector version - 6.18.0
+* Update Android unity-wrapper version - 6.18.01
+* Unity plugin version - 6.18.0-rc2
 ## v6.17.91
 * Update Android unity-wrapper to Billing Library 8 (billing:8.0.0)
 
