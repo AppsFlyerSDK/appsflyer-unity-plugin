@@ -16,10 +16,10 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.6
+- Android AppsFlyer SDK v6.18.0
 - Android Purchase Connector 2.2.0
-- iOS AppsFlyer SDK v6.17.9
-- iOS Purchase Connector 6.17.9
+- iOS AppsFlyer SDK v6.18.0
+- iOS Purchase Connector 6.18.0
 ---
 ## 📌 Google Play Billing Library 8 (6.18.0+)
 

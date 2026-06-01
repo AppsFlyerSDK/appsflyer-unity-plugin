@@ -23,7 +23,7 @@ platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
 target 'Unity-iPhone' do
-  pod 'AppsFlyerFramework', '6.17.9'
+  pod 'AppsFlyerFramework', '6.18.0'
 
   target 'Unity-iPhone Tests' do
     inherit! :search_paths
@@ -31,7 +31,7 @@ target 'Unity-iPhone' do
 end
 
 target 'UnityFramework' do
-  pod 'AppsFlyerFramework', '6.17.9'
+  pod 'AppsFlyerFramework', '6.18.0'
 end
 
 post_install do |installer|
