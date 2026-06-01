@@ -47,6 +47,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           MANUAL_VERSION: ${{ inputs.rc_version }}
           MANUAL_BRANCH: ${{ inputs.release_branch }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
             SIGNAL=".af-signal/rc-publish-signal.json"
@@ -62,7 +63,7 @@ jobs:
             PUBLISHED=true
           fi
 
-          HEAD_SHA=$(git ls-remote origin "$RELEASE_BRANCH" | awk '{print $1}')
+          HEAD_SHA=$(git ls-remote "https://github.com/$REPOSITORY.git" "refs/heads/$RELEASE_BRANCH" | awk '{print $1}')
           if [[ -z "$HEAD_SHA" ]]; then
             echo "::error::Could not resolve release branch head SHA: $RELEASE_BRANCH"
             exit 1
@@ -126,10 +127,12 @@ jobs:
       - name: Download regular package from GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
           VERSION: ${{ needs.resolve.outputs.version }}
         run: |
           mkdir -p .af-artifacts
           gh release download "v$VERSION" \
+            --repo "$REPOSITORY" \
             --pattern "appsflyer-unity-plugin-$VERSION.unitypackage" \
             --dir .af-artifacts
           test -f ".af-artifacts/appsflyer-unity-plugin-$VERSION.unitypackage"
@@ -139,6 +142,8 @@ jobs:
         with:
           name: rc-smoke-package-${{ needs.resolve.outputs.version }}
           path: .af-artifacts/
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
 
   smoke-ios:
@@ -222,7 +227,8 @@ jobs:
       always() &&
       needs.resolve.outputs.should_run == 'true' &&
       (needs.smoke-android.result == 'failure' || needs.smoke-ios.result == 'failure' ||
-       needs.smoke-android.result == 'cancelled' || needs.smoke-ios.result == 'cancelled')
+       needs.smoke-android.result == 'cancelled' || needs.smoke-ios.result == 'cancelled' ||
+       needs.smoke-android.result == 'skipped' || needs.smoke-ios.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Build Slack failure payload

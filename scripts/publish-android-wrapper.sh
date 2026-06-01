@@ -9,15 +9,21 @@ GRADLE_PROPS="$ANDROID_WRAPPER_DIR/gradle.properties"
 VALIDATE_SCRIPT="$SCRIPT_DIR/validate-unity-wrapper.sh"
 
 VERSION=""
+PLUGIN_BASE_VERSION=""
+ANDROID_SDK_VERSION=""
 SKIP_IF_EXISTS=false
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --version <version> [options]
+Usage: $(basename "$0") --version <version> --plugin-base-version <version> --android-sdk-version <version> [options]
 
 Build and publish com.appsflyer:unity-wrapper to Maven Central via Sonatype.
 
 Options:
+  --plugin-base-version <version>
+                     Required Unity plugin base version to verify before publishing
+  --android-sdk-version <version>
+                     Required af-android-sdk compileOnly version to verify before publishing
   --skip-if-exists   Skip publish when the artifact already exists in Maven Central
 
 Gradle credentials (pass via -P or ORG_GRADLE_PROJECT_* env vars):
@@ -63,6 +69,14 @@ while [[ $# -gt 0 ]]; do
       VERSION="$2"
       shift 2
       ;;
+    --plugin-base-version)
+      PLUGIN_BASE_VERSION="$2"
+      shift 2
+      ;;
+    --android-sdk-version)
+      ANDROID_SDK_VERSION="$2"
+      shift 2
+      ;;
     --skip-if-exists)
       SKIP_IF_EXISTS=true
       shift
@@ -84,9 +98,47 @@ if [[ -z "$VERSION" ]]; then
   usage >&2
   exit 1
 fi
+if [[ -z "$PLUGIN_BASE_VERSION" ]]; then
+  echo "Error: --plugin-base-version is required" >&2
+  usage >&2
+  exit 1
+fi
+if [[ -z "$ANDROID_SDK_VERSION" ]]; then
+  echo "Error: --android-sdk-version is required" >&2
+  usage >&2
+  exit 1
+fi
 
 if [[ ! -f "$GRADLE_PROPS" ]]; then
   echo "Error: gradle.properties not found at $GRADLE_PROPS" >&2
+  exit 1
+fi
+
+UNITYWRAPPER_BUILD="$ANDROID_WRAPPER_DIR/unitywrapper/build.gradle"
+if [[ ! -f "$UNITYWRAPPER_BUILD" ]]; then
+  echo "Error: unity wrapper build.gradle not found at $UNITYWRAPPER_BUILD" >&2
+  exit 1
+fi
+UNITYWRAPPER_JAVA="$ANDROID_WRAPPER_DIR/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java"
+if [[ ! -f "$UNITYWRAPPER_JAVA" ]]; then
+  echo "Error: unity wrapper Java bridge not found at $UNITYWRAPPER_JAVA" >&2
+  exit 1
+fi
+if ! grep -q "PLUGIN_VERSION = \"$PLUGIN_BASE_VERSION\"" "$UNITYWRAPPER_JAVA"; then
+  current_plugin_version="$(grep -Eo 'PLUGIN_VERSION = "[^"]+"' "$UNITYWRAPPER_JAVA" | sed -E 's/.*"([^"]+)"/\1/' || true)"
+  echo "Error: AppsFlyerAndroidWrapper.java has PLUGIN_VERSION=${current_plugin_version:-missing}, expected $PLUGIN_BASE_VERSION." >&2
+  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Unity PluginInfo version." >&2
+  exit 1
+fi
+if ! grep -q "^ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" "$GRADLE_PROPS"; then
+  current_android_sdk="$(grep '^ANDROID_SDK_VERSION=' "$GRADLE_PROPS" | cut -d= -f2 || true)"
+  echo "Error: gradle.properties has ANDROID_SDK_VERSION=${current_android_sdk:-missing}, expected $ANDROID_SDK_VERSION." >&2
+  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Android SDK compile dependency." >&2
+  exit 1
+fi
+if ! grep -q 'com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION' "$UNITYWRAPPER_BUILD"; then
+  echo "Error: unity-wrapper build.gradle must use ANDROID_SDK_VERSION for af-android-sdk." >&2
+  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Android SDK compile dependency." >&2
   exit 1
 fi
 
@@ -133,12 +185,27 @@ set -e
 
 echo "$publish_output"
 
-staging_repo_id="$(echo "$publish_output" | grep -Eo 'stagingRepositoryId[=: ][^[:space:]]+' | tail -1 | sed 's/.*[=: ]//')"
+staging_repo_id="$(
+  echo "$publish_output" |
+    grep -Eo "staging repository '[^']+'|stagingRepositoryId[=: ][^[:space:]]+" |
+    tail -1 |
+    sed -E "s/.*'([^']+)'.*/\1/; s/.*[=: ]//" ||
+    true
+)"
 if [[ -n "$staging_repo_id" ]]; then
   echo "Sonatype staging repository id: $staging_repo_id"
 fi
 
 if [[ "$publish_status" -ne 0 ]]; then
+  echo "Gradle publish failed (exit $publish_status). Checking whether Maven Central already contains the artifact..." >&2
+  if "$VALIDATE_SCRIPT" --version "$VERSION" --wait --max-attempts 20 --interval-sec 30; then
+    echo "Sonatype reported a publish failure, but com.appsflyer:unity-wrapper:$VERSION is available on Maven Central."
+    echo "Treating publish as successful. Drop any duplicate failed deployment in Central Portal."
+    exit 0
+  fi
+  if [[ -n "$staging_repo_id" ]]; then
+    echo "If the deployment remains failed in Central Portal, drop staging repository/deployment: $staging_repo_id" >&2
+  fi
   echo "Error: Gradle publish failed (exit $publish_status)." >&2
   exit "$publish_status"
 fi
