@@ -90,14 +90,19 @@ jobs:
             --output-dir dist/unitypackages
         timeout-minutes: 45
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
       - name: Install package validation dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install unitypackage_extractor
+          python -m pip install --upgrade pip
+          python -m pip install unitypackage_extractor
 
       - name: Validate production package metadata
         run: |
-          python3 .github/workflows/Scripts/validate-production-package.py \
+          python .github/workflows/Scripts/validate-production-package.py \
             --version "${{ needs.Prepare-Release.outputs.output1 }}" \
             --regular "dist/unitypackages/appsflyer-unity-plugin-${{ needs.Prepare-Release.outputs.output1 }}.unitypackage" \
             --strict "dist/unitypackages/strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{ needs.Prepare-Release.outputs.output1 }}.unitypackage"
