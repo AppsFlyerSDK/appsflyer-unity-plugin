@@ -88,6 +88,9 @@ jobs:
           fi
           scripts/validate-unity-wrapper.sh --version "$WRAPPER_VERSION"
 
+      - name: Update installation links
+        run: scripts/update-sdk-links.sh
+
       - name: Commit and push promoted branch
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -103,7 +106,8 @@ jobs:
             deploy/build_unity_package.sh \
             deploy/strict_mode_build_package.sh \
             CHANGELOG.md \
-            README.md
+            README.md \
+            docs/Installation.md
           git diff --cached --quiet && echo "Nothing to commit" && exit 0
           git commit -m "chore: promote to $BASE_VERSION"
           git push origin "HEAD:$HEAD_REF"
@@ -114,7 +118,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_VERSION: ${{ steps.version.outputs.base_version }}
         run: |
-          gh pr comment "$PR_NUMBER" --body "RC-PROMOTE complete. Version surfaces now point at $BASE_VERSION and the branch is ready to merge."
+          gh pr comment "$PR_NUMBER" --body "RC-PROMOTE complete. Version surfaces and installation links now point at $BASE_VERSION, and the branch is ready to merge."
 
   notify-failure:
     name: Notify Slack (promote failure)
