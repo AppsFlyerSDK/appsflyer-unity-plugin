@@ -1,19 +1,32 @@
 name: plugin release to Production workflow
 
 on:
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: "Manual recovery only; normal releases infer this automatically. Production version, e.g. 6.18.0"
+        required: true
+        type: string
+      release_branch_name:
+        description: "Manual recovery only; use when the automatic production trigger was missed. Promoted branch, e.g. releases/6.x.x/6.18.x/6.18.0-rc3"
+        required: true
+        type: string
   pull_request:
     types:
       - closed
     branches:
       - 'master'
-    paths-ignore:
-      - '**.md'
-      - 'docs/**.md'
-      - '**.sh'
 
 jobs:
   Prepare-Release:
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'releases/')
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'master' &&
+      startsWith(github.event.pull_request.head.ref, 'releases/')
+      )
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.tag-step.outputs.PLUGIN_VERSION}}
@@ -28,18 +41,45 @@ jobs:
           git config --global user.name "$COMMIT_AUTHOR"
           git config --global user.email "$COMMIT_EMAIL"
 
-      - uses: mdecoleman/pr-branch-name@1.2.0
-        id: vars
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Determine release tag and release branch
         id: tag-step
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          DISPATCH_PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          DISPATCH_RELEASE_BRANCH_NAME: ${{ inputs.release_branch_name }}
         run: |
-          TAG=$(echo "${{ steps.vars.outputs.branch }}" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            TAG="$DISPATCH_PLUGIN_VERSION"
+            RELEASE_BRANCH_NAME="$DISPATCH_RELEASE_BRANCH_NAME"
+          else
+            RELEASE_BRANCH_NAME="$PR_HEAD_REF"
+            TAG=$(printf '%s\n' "$RELEASE_BRANCH_NAME" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | tail -1)
+          fi
+
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::plugin_version must match X.Y.Z, for example 6.18.0"
+            exit 1
+          fi
+
+          if ! [[ "$RELEASE_BRANCH_NAME" =~ ^releases/[0-9]+\.x\.x/[0-9]+\.[0-9]+\.x/[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
+            echo "::error::release_branch_name must look like releases/6.x.x/6.18.x/6.18.0-rc3"
+            exit 1
+          fi
+
+          BRANCH_RC_VERSION=$(printf '%s\n' "$RELEASE_BRANCH_NAME" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+' | tail -1)
+          BRANCH_BASE_VERSION="${BRANCH_RC_VERSION%-rc*}"
+          if [[ "$BRANCH_BASE_VERSION" != "$TAG" ]]; then
+            echo "::error::plugin_version $TAG does not match release branch base version $BRANCH_BASE_VERSION"
+            exit 1
+          fi
+
           echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_ENV"
           echo "PLUGIN_VERSION=$TAG" >> "$GITHUB_OUTPUT"
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_ENV"
-          echo "RELEASE_BRANCH_NAME=${{ steps.vars.outputs.branch }}" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_BRANCH_NAME=$RELEASE_BRANCH_NAME" >> "$GITHUB_ENV"
+          echo "RELEASE_BRANCH_NAME=$RELEASE_BRANCH_NAME" >> "$GITHUB_OUTPUT"
 
   Build-Production-Packages:
     needs: [Prepare-Release]
@@ -185,7 +225,7 @@ jobs:
       - Update-Links
       - Generate-Tag
       - Release-To-Production
-    if: always()
+    if: always() && needs.Prepare-Release.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
       - name: Determine status and failed stage
