@@ -184,15 +184,8 @@ jobs:
       package_artifact_name: ${{ needs.Build-Production-Packages.outputs.artifact_name }}
     secrets: inherit
 
-  Update-Links:
-    needs: [Prepare-Release, Check-Packages]
-    uses: ./.github/workflows/update_links.yml
-    with:
-      plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
-    secrets: inherit
-
   Generate-Tag:
-    needs: [Prepare-Release, Check-Packages, Update-Links]
+    needs: [Prepare-Release, Check-Packages]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -208,7 +201,7 @@ jobs:
           echo "Pushed release tag ${{ needs.Prepare-Release.outputs.output1 }}"
 
   Release-To-Production:
-    needs: [Prepare-Release, Build-Production-Packages, Check-Packages, Update-Links, Generate-Tag]
+    needs: [Prepare-Release, Build-Production-Packages, Check-Packages, Generate-Tag]
     uses: ./.github/workflows/release_to_production.yml
     with:
       plugin_version: ${{ needs.Prepare-Release.outputs.output1 }}
@@ -222,7 +215,6 @@ jobs:
       - Prepare-Release
       - Build-Production-Packages
       - Check-Packages
-      - Update-Links
       - Generate-Tag
       - Release-To-Production
     if: always() && needs.Prepare-Release.result != 'skipped'
@@ -234,7 +226,6 @@ jobs:
           PREPARE_RESULT: ${{ needs.Prepare-Release.result }}
           BUILD_RESULT: ${{ needs.Build-Production-Packages.result }}
           PACKAGES_RESULT: ${{ needs.Check-Packages.result }}
-          LINKS_RESULT: ${{ needs.Update-Links.result }}
           TAG_RESULT: ${{ needs.Generate-Tag.result }}
           RELEASE_RESULT: ${{ needs.Release-To-Production.result }}
         run: |
@@ -242,7 +233,6 @@ jobs:
           if [[ "$PREPARE_RESULT" == "success" \
              && "$BUILD_RESULT" == "success" \
              && "$PACKAGES_RESULT" == "success" \
-             && "$LINKS_RESULT" == "success" \
              && "$TAG_RESULT" == "success" \
              && "$RELEASE_RESULT" == "success" ]]; then
             echo "success=true" >> "$GITHUB_OUTPUT"
@@ -253,7 +243,6 @@ jobs:
           if   [[ "$PREPARE_RESULT" != "success" ]]; then echo "failed_stage=Prepare-Release" >> "$GITHUB_OUTPUT"
           elif [[ "$BUILD_RESULT" != "success" ]]; then echo "failed_stage=Build-Production-Packages" >> "$GITHUB_OUTPUT"
           elif [[ "$PACKAGES_RESULT" != "success" ]]; then echo "failed_stage=Check-Packages" >> "$GITHUB_OUTPUT"
-          elif [[ "$LINKS_RESULT" != "success" ]]; then echo "failed_stage=Update-Links" >> "$GITHUB_OUTPUT"
           elif [[ "$TAG_RESULT" != "success" ]]; then echo "failed_stage=Generate-Tag" >> "$GITHUB_OUTPUT"
           else echo "failed_stage=Release-To-Production" >> "$GITHUB_OUTPUT"
           fi
@@ -382,7 +371,6 @@ jobs:
           PREPARE_RESULT: ${{ needs.Prepare-Release.result }}
           BUILD_RESULT: ${{ needs.Build-Production-Packages.result }}
           PACKAGES_RESULT: ${{ needs.Check-Packages.result }}
-          LINKS_RESULT: ${{ needs.Update-Links.result }}
           TAG_RESULT: ${{ needs.Generate-Tag.result }}
           RELEASE_RESULT: ${{ needs.Release-To-Production.result }}
         run: |
@@ -400,7 +388,6 @@ jobs:
             `• Prepare-Release: ${env.PREPARE_RESULT}`,
             `• Build-Production-Packages: ${env.BUILD_RESULT}`,
             `• Check-Packages: ${env.PACKAGES_RESULT}`,
-            `• Update-Links: ${env.LINKS_RESULT}`,
             `• Generate-Tag: ${env.TAG_RESULT}`,
             `• Release-To-Production: ${env.RELEASE_RESULT}`,
           ].join('\n');
