@@ -38,7 +38,7 @@ Perform a safe, consistent version bump across C#, Android, and iOS plugin layer
 
 ### iOS
 - iOS podspec or pod dependency declarations
-- `AppsFlyerDependencies.xml` — `PurchaseConnector` iosPod version **must match** `AppsFlyerFramework` / `--ios-sdk-version`
+- `AppsFlyerDependencies.xml` — `PurchaseConnector` iosPod version (defaults to `--ios-sdk-version`, override with `--ios-pc-version`)
 - `README.md` and `docs/Introduction.md` — `iOS Purchase Connector` line must match iOS SDK version
 - `AppsFlyeriOSWrapper.mm` — version constants if any
 
@@ -63,7 +63,7 @@ Return:
 
 ## Rules
 
-- **iOS Purchase Connector version = iOS AppsFlyer SDK version** (enforced by `scripts/bump-version.sh` and `rc-release.yml` verify step).
+- **iOS Purchase Connector defaults to iOS SDK version** but can be overridden independently with `--ios-pc-version`.
 - **Android Purchase Connector version is independent** — pass `--android-pc-version` to `bump-version.sh` to update it; omit to leave it unchanged.
 - Both billing library variants must be updated together.
 - Do not update only one place if multiple version declarations exist.
