@@ -6,11 +6,13 @@
 #   ./scripts/bump-version.sh \
 #     --plugin-version 6.18.0-rc1 \
 #     --android-sdk-version 6.18.0 \
-#     --ios-sdk-version 6.18.0
+#     --ios-sdk-version 6.18.0 \
+#     [--android-pc-version 2.2.0]
 #
 # The unity-wrapper version defaults to the plugin base version (RC suffix
 # stripped, e.g. 6.18.0-rc1 -> 6.18.0). Override with --unity-wrapper-version.
 # iOS Purchase Connector version is always set to --ios-sdk-version (same as AppsFlyerFramework).
+# Android Purchase Connector version is independent; omit to leave it unchanged.
 # Run from the repo root.
 
 set -euo pipefail
@@ -19,6 +21,7 @@ PLUGIN_VERSION=""
 ANDROID_SDK_VERSION=""
 IOS_SDK_VERSION=""
 UNITY_WRAPPER_VERSION=""
+ANDROID_PC_VERSION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -26,6 +29,7 @@ while [[ $# -gt 0 ]]; do
     --android-sdk-version) ANDROID_SDK_VERSION="$2"; shift 2 ;;
     --ios-sdk-version) IOS_SDK_VERSION="$2"; shift 2 ;;
     --unity-wrapper-version) UNITY_WRAPPER_VERSION="$2"; shift 2 ;;
+    --android-pc-version) ANDROID_PC_VERSION="$2"; shift 2 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -43,6 +47,7 @@ echo "  plugin-base:    $BASE_VERSION"
 echo "  android-sdk:    $ANDROID_SDK_VERSION"
 echo "  ios-sdk:        $IOS_SDK_VERSION"
 echo "  unity-wrapper:  $UNITY_WRAPPER_VERSION"
+echo "  android-pc:     ${ANDROID_PC_VERSION:-"(unchanged)"}"
 echo ""
 
 # ── 1. Assets/AppsFlyer/package.json ─────────────────────────────────────────
@@ -68,8 +73,13 @@ sed -i.bak "s|unity-wrapper:[^\"]*|unity-wrapper:$UNITY_WRAPPER_VERSION|" "$DEPS
 echo "[5/14] $DEPS_XML — AppsFlyerFramework"
 sed -i.bak "s|name=\"AppsFlyerFramework\" version=\"[^\"]*\"|name=\"AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"|" "$DEPS_XML"
 
-echo "[6/14] $DEPS_XML — PurchaseConnector"
+echo "[6/14] $DEPS_XML — PurchaseConnector (iOS)"
 sed -i.bak "s|name=\"PurchaseConnector\" version=\"[^\"]*\"|name=\"PurchaseConnector\" version=\"$IOS_SDK_VERSION\"|" "$DEPS_XML"
+
+if [[ -n "$ANDROID_PC_VERSION" ]]; then
+  echo "[6b/14] $DEPS_XML — purchase-connector (Android)"
+  sed -i.bak "s|purchase-connector:[^\"]*|purchase-connector:$ANDROID_PC_VERSION|" "$DEPS_XML"
+fi
 rm -f "${DEPS_XML}.bak"
 
 # ── 7. Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm ───────────────────
@@ -104,6 +114,13 @@ if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
     sed -i.bak "s|^ANDROID_SDK_VERSION=.*|ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION|" "$ANDROID_WRAPPER_PROPS"
   else
     echo "ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" >> "$ANDROID_WRAPPER_PROPS"
+  fi
+  if [[ -n "$ANDROID_PC_VERSION" ]]; then
+    if grep -q "^ANDROID_PC_VERSION=" "$ANDROID_WRAPPER_PROPS"; then
+      sed -i.bak "s|^ANDROID_PC_VERSION=.*|ANDROID_PC_VERSION=$ANDROID_PC_VERSION|" "$ANDROID_WRAPPER_PROPS"
+    else
+      echo "ANDROID_PC_VERSION=$ANDROID_PC_VERSION" >> "$ANDROID_WRAPPER_PROPS"
+    fi
   fi
   rm -f "${ANDROID_WRAPPER_PROPS}.bak"
 fi
@@ -156,6 +173,9 @@ if [[ -f "$CHANGELOG" ]]; then
     "* Update iOS Purchase Connector version - $IOS_SDK_VERSION"
     "* Update Android unity-wrapper version - $UNITY_WRAPPER_VERSION"
   )
+  if [[ -n "$ANDROID_PC_VERSION" ]]; then
+    CHANGELOG_BULLETS+=("* Update Android Purchase Connector version - $ANDROID_PC_VERSION")
+  fi
   if [[ "$PLUGIN_VERSION" != "$BASE_VERSION" ]]; then
     CHANGELOG_BULLETS+=("* Unity plugin version - $PLUGIN_VERSION")
   fi
