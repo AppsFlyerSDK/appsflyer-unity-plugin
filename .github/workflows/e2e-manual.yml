@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       plugin_version:
-        description: Version label for the package and report
+        description: Version label for the package and report (ignored when release_tag is set)
         required: false
         default: manual-test
+        type: string
+      release_tag:
+        description: "GitHub release tag to test (e.g. v6.18.1). When set, downloads the published .unitypackage instead of building from source."
+        required: false
+        default: ""
         type: string
       platform:
         description: Platform to test
@@ -26,16 +31,52 @@ jobs:
     name: Build Unity package for manual E2E
     runs-on: macos-14
     outputs:
-      artifact_name: unity-packages-${{ inputs.plugin_version || 'manual-test' }}
-      regular_package: appsflyer-unity-plugin-${{ inputs.plugin_version || 'manual-test' }}.unitypackage
+      artifact_name: ${{ steps.resolve.outputs.artifact_name }}
+      regular_package: ${{ steps.resolve.outputs.regular_package }}
+      version_label: ${{ steps.resolve.outputs.version_label }}
+      ref: ${{ steps.resolve.outputs.ref }}
 
     steps:
-      - name: Checkout selected ref
+      - name: Resolve version, package names, and ref
+        id: resolve
+        run: |
+          if [[ -n "${{ inputs.release_tag }}" ]]; then
+            VERSION="${{ inputs.release_tag }}"
+            VERSION="${VERSION#v}"
+            REF="${{ inputs.release_tag }}"
+          else
+            VERSION="${{ inputs.plugin_version || 'manual-test' }}"
+            REF="${{ github.ref_name }}"
+          fi
+          echo "version_label=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=unity-packages-$VERSION" >> "$GITHUB_OUTPUT"
+          echo "regular_package=appsflyer-unity-plugin-$VERSION.unitypackage" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ steps.resolve.outputs.ref }}
+
+      # ── Download from GitHub release (when release_tag is provided) ──────────
+
+      - name: Download from GitHub release
+        if: inputs.release_tag != ''
+        run: |
+          mkdir -p dist/unitypackages
+          gh release download "${{ inputs.release_tag }}" \
+            --repo AppsFlyerSDK/appsflyer-unity-plugin \
+            --pattern "appsflyer-unity-plugin-${{ steps.resolve.outputs.version_label }}.unitypackage" \
+            --dir dist/unitypackages
+          echo "Downloaded:"
+          ls dist/unitypackages/
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Build from source (when release_tag is not provided) ────────────────
 
       - name: Cache Unity Editor installation
+        if: inputs.release_tag == ''
         id: cache-unity
         uses: actions/cache@v4
         with:
@@ -43,7 +84,7 @@ jobs:
           key: unity-6000.3.5f1-core-macos14-arm64
 
       - name: Install Unity Editor
-        if: steps.cache-unity.outputs.cache-hit != 'true'
+        if: inputs.release_tag == '' && steps.cache-unity.outputs.cache-hit != 'true'
         run: |
           curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
             -o /tmp/Unity.pkg
@@ -53,6 +94,7 @@ jobs:
         timeout-minutes: 45
 
       - name: Activate Unity license
+        if: inputs.release_tag == ''
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
           "$UNITY" -quit -batchmode \
@@ -63,14 +105,15 @@ jobs:
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
       - name: Build regular package
+        if: inputs.release_tag == ''
         run: |
           deploy/build_unity_package.sh \
-            --version "${{ inputs.plugin_version || 'manual-test' }}" \
+            --version "${{ steps.resolve.outputs.version_label }}" \
             --output-dir dist/unitypackages
         timeout-minutes: 30
 
       - name: Return Unity license
-        if: always()
+        if: always() && inputs.release_tag == ''
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
           "$UNITY" -quit -batchmode -returnlicense \
@@ -79,10 +122,12 @@ jobs:
             -logFile /tmp/unity-return.log 2>&1 || true
           cat /tmp/unity-return.log || true
 
+      # ── Upload artifact (always) ─────────────────────────────────────────────
+
       - name: Upload Unity package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: unity-packages-${{ inputs.plugin_version || 'manual-test' }}
+          name: ${{ steps.resolve.outputs.artifact_name }}
           path: dist/unitypackages/
           retention-days: 7
 
@@ -91,14 +136,13 @@ jobs:
     needs: build-package
     uses: ./.github/workflows/rc-e2e-ios.yml
     with:
-      plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
-      release_branch: ${{ github.ref_name }}
+      plugin_version: ${{ needs.build-package.outputs.version_label }}
+      release_branch: ${{ needs.build-package.outputs.ref }}
       package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
       package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets: inherit
 
   e2e-android:
-    # For platform=both, run Android after iOS to avoid Unity serial/session contention.
     if: ${{ always() && needs.build-package.result == 'success' && (inputs.platform == 'android' || (inputs.platform == 'both' && needs.e2e-ios.result == 'success')) }}
     needs: [build-package, e2e-ios]
     permissions:
@@ -106,8 +150,8 @@ jobs:
       packages: read
     uses: ./.github/workflows/rc-e2e-android.yml
     with:
-      plugin_version: ${{ inputs.plugin_version || 'manual-test' }}
-      release_branch: ${{ github.ref_name }}
+      plugin_version: ${{ needs.build-package.outputs.version_label }}
+      release_branch: ${{ needs.build-package.outputs.ref }}
       package_artifact_name: ${{ needs.build-package.outputs.artifact_name }}
       package_file_name: ${{ needs.build-package.outputs.regular_package }}
     secrets: inherit
