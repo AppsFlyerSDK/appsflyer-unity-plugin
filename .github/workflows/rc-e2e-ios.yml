@@ -59,6 +59,15 @@ jobs:
           name: ${{ inputs.package_artifact_name }}
           path: .af-artifacts
 
+      - name: Restore AppsFlyerDependencies.xml from artifact (if bundled)
+        run: |
+          if [[ -f ".af-artifacts/AppsFlyerDependencies.xml" ]]; then
+            cp ".af-artifacts/AppsFlyerDependencies.xml" \
+               "Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
+            echo "Restored AppsFlyerDependencies.xml from artifact:"
+            cat Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          fi
+
       - name: Import generated package into test app
         run: |
           python3 scripts/import-unity-package.py \

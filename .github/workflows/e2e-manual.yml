@@ -72,6 +72,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Bundle AppsFlyerDependencies.xml from release tag
+        if: inputs.release_tag != ''
+        run: |
+          git fetch origin "refs/tags/${{ inputs.release_tag }}" --depth=1
+          git show FETCH_HEAD:Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+            > dist/unitypackages/AppsFlyerDependencies.xml
+          echo "Bundled AppsFlyerDependencies.xml:"
+          cat dist/unitypackages/AppsFlyerDependencies.xml
+
       # ── Build from source (when release_tag is not provided) ────────────────
 
       - name: Cache Unity Editor installation
