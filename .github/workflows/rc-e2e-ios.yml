@@ -51,17 +51,7 @@ jobs:
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
-
-      - name: Overlay AppsFlyerDependencies.xml from release ref
-        if: inputs.release_branch != github.ref_name
-        run: |
-          git fetch origin "${{ inputs.release_branch }}" --depth=1 2>/dev/null || \
-            git fetch origin "refs/tags/${{ inputs.release_branch }}:refs/tags/${{ inputs.release_branch }}" --depth=1 2>/dev/null || true
-          git show FETCH_HEAD:Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
-            > Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml 2>/dev/null || true
-          echo "AppsFlyerDependencies.xml contents:"
-          cat Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          ref: ${{ inputs.release_branch }}
 
       - name: Download generated Unity package
         uses: actions/download-artifact@v4

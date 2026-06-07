@@ -43,11 +43,10 @@ jobs:
           if [[ -n "${{ inputs.release_tag }}" ]]; then
             VERSION="${{ inputs.release_tag }}"
             VERSION="${VERSION#v}"
-            REF="${{ inputs.release_tag }}"
           else
             VERSION="${{ inputs.plugin_version || 'manual-test' }}"
-            REF="${{ github.ref_name }}"
           fi
+          REF="${{ github.ref_name }}"
           echo "version_label=$VERSION" >> "$GITHUB_OUTPUT"
           echo "artifact_name=unity-packages-$VERSION" >> "$GITHUB_OUTPUT"
           echo "regular_package=appsflyer-unity-plugin-$VERSION.unitypackage" >> "$GITHUB_OUTPUT"
