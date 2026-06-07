@@ -273,15 +273,11 @@ jobs:
           ANDROID=$(grep -Eo 'Android AppsFlyer SDK v[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android AppsFlyer SDK v//')
           ANDROID_PC=$(grep -Eo 'Android Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/Android Purchase Connector //')
           IOS_PC=$(grep -Eo 'iOS Purchase Connector [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/iOS Purchase Connector //')
-          if [[ -n "$IOS" && -n "$IOS_PC" && "$IOS" != "$IOS_PC" ]]; then
-            echo "::error::README iOS Purchase Connector ($IOS_PC) must match iOS AppsFlyer SDK ($IOS)"
-            exit 1
-          fi
           {
             echo "ios_sdk=${IOS:-unknown}"
             echo "android_sdk=${ANDROID:-unknown}"
             echo "android_pc=${ANDROID_PC:-unknown}"
-            echo "ios_pc=${IOS:-unknown}"
+            echo "ios_pc=${IOS_PC:-unknown}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Fetch Jira tickets

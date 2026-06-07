@@ -30,6 +30,16 @@ on:
         required: false
         default: ""
         type: string
+      ios_pc_version:
+        description: "iOS Purchase Connector version (defaults to ios_sdk_version). Use when PC version differs from iOS SDK version."
+        required: false
+        default: ""
+        type: string
+      android_pc_version:
+        description: "Android Purchase Connector version (defaults to unchanged). Pass to update the Android PC Maven artifact."
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -144,11 +154,15 @@ jobs:
 
       - name: Bump versions
         run: |
-          scripts/bump-version.sh \
-            --plugin-version "${{ steps.branch.outputs.version }}" \
-            --android-sdk-version "${{ inputs.android_sdk_version }}" \
-            --ios-sdk-version "${{ inputs.ios_sdk_version }}" \
+          BUMP_ARGS=(
+            --plugin-version "${{ steps.branch.outputs.version }}"
+            --android-sdk-version "${{ inputs.android_sdk_version }}"
+            --ios-sdk-version "${{ inputs.ios_sdk_version }}"
             --unity-wrapper-version "${{ steps.wrapper.outputs.wrapper_version }}"
+          )
+          [[ -n "${{ inputs.ios_pc_version }}" ]] && BUMP_ARGS+=(--ios-pc-version "${{ inputs.ios_pc_version }}")
+          [[ -n "${{ inputs.android_pc_version }}" ]] && BUMP_ARGS+=(--android-pc-version "${{ inputs.android_pc_version }}")
+          scripts/bump-version.sh "${BUMP_ARGS[@]}"
 
       - name: Verify version bump
         env:
@@ -157,14 +171,15 @@ jobs:
           WRAPPER_VERSION: ${{ steps.wrapper.outputs.wrapper_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          IOS_PC_VERSION: ${{ inputs.ios_pc_version || inputs.ios_sdk_version }}
           BASE_BRANCH: ${{ inputs.base_branch }}
         run: |
           grep -q "af-android-sdk:$ANDROID_SDK_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "unity-wrapper:$WRAPPER_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-          grep -q "PurchaseConnector\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "PurchaseConnector\" version=\"$IOS_PC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -qE "^- iOS AppsFlyer SDK v${IOS_SDK_VERSION}$" README.md
-          grep -qE "^- iOS Purchase Connector ${IOS_SDK_VERSION}$" README.md
+          grep -qE "^- iOS Purchase Connector ${IOS_PC_VERSION}$" README.md
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "pluginVersion:@\"$PLUGIN_VERSION\"" Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
           grep -q "PLUGIN_VERSION = \"$BASE_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
@@ -654,7 +669,7 @@ jobs:
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
           IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
           ANDROID_PC_VERSION: ${{ steps.purchase-connector-versions.outputs.android_pc }}
-          IOS_PC_VERSION: ${{ inputs.ios_sdk_version }}
+          IOS_PC_VERSION: ${{ inputs.ios_pc_version || inputs.ios_sdk_version }}
         run: |
           node <<'NODE'
           const fs = require('fs');
