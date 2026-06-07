@@ -35,7 +35,7 @@ platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
 target 'Unity-iPhone' do
-  pod 'AppsFlyerFramework', '6.18.1'
+  pod 'AppsFlyerFramework', '$AF_VERSION'
 $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
   target 'Unity-iPhone Tests' do
     inherit! :search_paths
@@ -43,7 +43,7 @@ $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
 end
 
 target 'UnityFramework' do
-  pod 'AppsFlyerFramework', '6.18.1'
+  pod 'AppsFlyerFramework', '$AF_VERSION'
 $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
 end
 
