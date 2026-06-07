@@ -47,6 +47,7 @@ jobs:
     permissions:
       contents: read
       packages: read
+      actions: write
 
     steps:
       - name: Checkout release branch
@@ -72,6 +73,14 @@ jobs:
         run: |
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: test-app/Library
+          key: unity-android-library-6000.3.5f1-${{ hashFiles('test-app/Assets/**', 'test-app/Packages/**', 'test-app/ProjectSettings/**') }}
+          restore-keys: |
+            unity-android-library-6000.3.5f1-
+
       - name: Log in to GHCR
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,7 +100,7 @@ jobs:
           buildMethod:    BuildScript.BuildAndroid
           buildsPath:     test-app/Build
           allowDirtyBuild: true
-        timeout-minutes: 30
+        timeout-minutes: 60
 
       - name: Upload Unity build log
         if: always()
