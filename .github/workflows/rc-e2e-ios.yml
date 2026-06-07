@@ -121,6 +121,17 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
+      - name: Select Xcode 16
+        run: |
+          XCODE16=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -1)
+          if [[ -z "$XCODE16" ]]; then
+            echo "::warning::Xcode 16 not found under /Applications, using system default"
+          else
+            sudo xcode-select -s "$XCODE16/Contents/Developer"
+            echo "Selected: $XCODE16"
+            xcodebuild -version
+          fi
+
       - name: Build iOS Simulator Xcode project
         run: |
           UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
