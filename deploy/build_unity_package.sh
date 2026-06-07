@@ -29,7 +29,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
-      PACKAGE_NAME="appsflyer-unity-plugin-6.18.0.unitypackage"
+      PACKAGE_NAME="appsflyer-unity-plugin-$2.unitypackage"
       shift 2
       ;;
     --output-dir)
