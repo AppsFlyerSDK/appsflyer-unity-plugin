@@ -76,7 +76,7 @@ jobs:
         if: inputs.release_tag != ''
         run: |
           git fetch origin "refs/tags/${{ inputs.release_tag }}" --depth=1
-          git show FETCH_HEAD:Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml \
+          git show FETCH_HEAD:Editor/AppsFlyerDependencies.xml \
             > dist/unitypackages/AppsFlyerDependencies.xml
           echo "Bundled AppsFlyerDependencies.xml:"
           cat dist/unitypackages/AppsFlyerDependencies.xml
