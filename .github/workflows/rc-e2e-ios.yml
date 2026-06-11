@@ -196,11 +196,12 @@ jobs:
             -configuration Debug \
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
             ARCHS=arm64 \
-            VALID_ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=NO \
             CURRENT_PROJECT_VERSION=1 \
             MARKETING_VERSION=1.0 \
             ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            LIBRARY_SEARCH_PATHS='$(inherited) $(SDKROOT)/usr/lib/swift' \
+            OTHER_LDFLAGS='$(inherited) -lswiftCore' \
             build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
           if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
             echo "::group::xcodebuild errors"
