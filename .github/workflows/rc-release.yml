@@ -40,6 +40,11 @@ on:
         required: false
         default: ""
         type: string
+      android_billing_version:
+        description: "Android billing library version (com.android.billingclient:billing). Defaults to 8.0.0 — pass 5.2.0 for purchase-connector 2.1.x compatibility."
+        required: false
+        default: "8.0.0"
+        type: string
 
 permissions:
   contents: read
@@ -162,6 +167,7 @@ jobs:
           )
           [[ -n "${{ inputs.ios_pc_version }}" ]] && BUMP_ARGS+=(--ios-pc-version "${{ inputs.ios_pc_version }}")
           [[ -n "${{ inputs.android_pc_version }}" ]] && BUMP_ARGS+=(--android-pc-version "${{ inputs.android_pc_version }}")
+          [[ -n "${{ inputs.android_billing_version }}" ]] && BUMP_ARGS+=(--android-billing-version "${{ inputs.android_billing_version }}")
           scripts/bump-version.sh "${BUMP_ARGS[@]}"
 
       - name: Verify version bump
