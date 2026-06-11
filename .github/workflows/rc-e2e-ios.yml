@@ -201,7 +201,6 @@ jobs:
             CURRENT_PROJECT_VERSION=1 \
             MARKETING_VERSION=1.0 \
             ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
           if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
             echo "::group::xcodebuild errors"
