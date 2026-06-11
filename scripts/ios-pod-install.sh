@@ -30,7 +30,7 @@ echo "[ios-pod-install] PurchaseConnector:  ${PC_VERSION:-"(not found, skipping)
 echo "[ios-pod-install] Writing Podfile to $IOS_BUILD_DIR"
 
 cat > "$IOS_BUILD_DIR/Podfile" <<PODFILE
-platform :ios, '15.0'
+platform :ios, '17.0'
 
 use_frameworks! :linkage => :static
 
