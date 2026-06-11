@@ -130,14 +130,17 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
-      - name: Select Xcode 16
+      - name: Select Xcode 26
         run: |
-          XCODE16=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -1)
-          if [[ -z "$XCODE16" ]]; then
-            echo "::warning::Xcode 16 not found under /Applications, using system default"
+          # Xcode 26 (iOS 26 SDK) is required: _swift_coroFrameAlloc lives in
+          # libswiftCore.tbd starting from the iOS 26 SDK; Xcode 16 (iOS 18 SDK)
+          # does not export it, causing a linker failure for PurchaseConnector 6.17.x.
+          XCODE26=$(find /Applications -maxdepth 1 -name "Xcode_26*.app" | sort -V | tail -1)
+          if [[ -z "$XCODE26" ]]; then
+            echo "::warning::Xcode 26 not found under /Applications, using system default"
           else
-            sudo xcode-select -s "$XCODE16/Contents/Developer"
-            echo "Selected: $XCODE16"
+            sudo xcode-select -s "$XCODE26/Contents/Developer"
+            echo "Selected: $XCODE26"
             xcodebuild -version
           fi
 
