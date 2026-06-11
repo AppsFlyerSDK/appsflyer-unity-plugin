@@ -130,14 +130,36 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
-      - name: Select Xcode 16
+      - name: Select Xcode
         run: |
-          XCODE16=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -1)
-          if [[ -z "$XCODE16" ]]; then
-            echo "::warning::Xcode 16 not found under /Applications, using system default"
+          # PC < 6.18.0 was compiled with Swift 5.9/5.10 (Xcode 15) and references
+          # _swift_coroFrameAlloc, which was removed from the Swift 6.0 (Xcode 16) runtime.
+          # PC >= 6.18.0 was compiled with Swift 6.0 (Xcode 16) and does not need this symbol.
+          PC_VERSION=$(grep -Eo 'name="PurchaseConnector" version="[^"]*"' \
+            Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          echo "PurchaseConnector version: ${PC_VERSION:-none}"
+
+          USE_XCODE15=false
+          if [[ -n "$PC_VERSION" ]]; then
+            LOWER=$(printf '%s\n6.18.0\n' "$PC_VERSION" | sort -V | head -1)
+            if [[ "$LOWER" == "$PC_VERSION" && "$PC_VERSION" != "6.18.0" ]]; then
+              USE_XCODE15=true
+            fi
+          fi
+
+          if [[ "$USE_XCODE15" == "true" ]]; then
+            XCODE=$(find /Applications -maxdepth 1 -name "Xcode_15*.app" | sort -V | tail -1)
+            echo "PC $PC_VERSION < 6.18.0 → selecting Xcode 15"
           else
-            sudo xcode-select -s "$XCODE16/Contents/Developer"
-            echo "Selected: $XCODE16"
+            XCODE=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -1)
+            echo "PC ${PC_VERSION:-none} >= 6.18.0 (or unknown) → selecting Xcode 16"
+          fi
+
+          if [[ -z "$XCODE" ]]; then
+            echo "::warning::Target Xcode not found under /Applications, using system default"
+          else
+            sudo xcode-select -s "$XCODE/Contents/Developer"
+            echo "Selected: $XCODE"
             xcodebuild -version
           fi
 
