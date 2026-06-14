@@ -5,7 +5,7 @@ apply from: '../shared/common.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.appsflyer:af-android-sdk:6.18.0'
+    implementation 'com.appsflyer:af-android-sdk:6.17.6'
     implementation 'com.android.installreferrer:installreferrer:2.1'
     implementation 'com.appsflyer:purchase-connector:2.2.0'
 **DEPS**}

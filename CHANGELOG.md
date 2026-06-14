@@ -1,5 +1,14 @@
 # Versions
 
+## v6.17.900
+* Update Android SDK version - 6.17.6
+* Update iOS SDK version - 6.17.9
+* Update iOS Purchase Connector version - 6.17.9
+* Update Android unity-wrapper version - 6.17.900
+* Update Android Purchase Connector version - 2.1.2
+* Unity plugin version - 6.17.900-rc1
+
+
 ## v6.18.0
 * **Single plugin line:** Purchase Connector remains in the main package; Android uses **Google Play Billing Library 8.0.0** only (no separate v7 plugin variant for 6.18.x).
 * **Android:** `unity-wrapper` and Purchase Connector target Billing Library 8 (`billing:8.0.0`). Requires Unity IAP 5.x if you use Unity Purchasing.

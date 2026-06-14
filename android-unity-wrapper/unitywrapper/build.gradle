@@ -31,7 +31,7 @@ dependencies {
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly "com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION"
     compileOnly "com.appsflyer:purchase-connector:$ANDROID_PC_VERSION"
-    compileOnly 'com.android.billingclient:billing:8.0.0'
+    compileOnly 'com.android.billingclient:billing:5.2.0'
 }
 
 apply from: file('publish.gradle')
