@@ -24,6 +24,7 @@ IOS_SDK_VERSION=""
 UNITY_WRAPPER_VERSION=""
 ANDROID_PC_VERSION=""
 IOS_PC_VERSION=""
+ANDROID_BILLING_VERSION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -33,6 +34,7 @@ while [[ $# -gt 0 ]]; do
     --unity-wrapper-version) UNITY_WRAPPER_VERSION="$2"; shift 2 ;;
     --android-pc-version) ANDROID_PC_VERSION="$2"; shift 2 ;;
     --ios-pc-version) IOS_PC_VERSION="$2"; shift 2 ;;
+    --android-billing-version) ANDROID_BILLING_VERSION="$2"; shift 2 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -53,6 +55,7 @@ echo "  ios-sdk:        $IOS_SDK_VERSION"
 echo "  unity-wrapper:  $UNITY_WRAPPER_VERSION"
 echo "  ios-pc:         $IOS_PC_VERSION"
 echo "  android-pc:     ${ANDROID_PC_VERSION:-"(unchanged)"}"
+echo "  android-billing: ${ANDROID_BILLING_VERSION:-"(unchanged)"}"
 echo ""
 
 # ── 1. Assets/AppsFlyer/package.json ─────────────────────────────────────────
@@ -136,6 +139,11 @@ if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
   echo "[10/14] $UNITYWRAPPER_BUILD — af-android-sdk uses ANDROID_SDK_VERSION"
   if grep -q "com.appsflyer:af-android-sdk:[^$]" "$UNITYWRAPPER_BUILD"; then
     sed -i.bak 's|com.appsflyer:af-android-sdk:[^"'"'"']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|' "$UNITYWRAPPER_BUILD"
+    rm -f "${UNITYWRAPPER_BUILD}.bak"
+  fi
+  if [[ -n "$ANDROID_BILLING_VERSION" ]]; then
+    echo "[10b/14] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
+    sed -i.bak "s|billingclient:billing:[^'\"]*|billingclient:billing:$ANDROID_BILLING_VERSION|" "$UNITYWRAPPER_BUILD"
     rm -f "${UNITYWRAPPER_BUILD}.bak"
   fi
 fi

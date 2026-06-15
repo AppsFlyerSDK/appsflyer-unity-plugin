@@ -42,7 +42,7 @@ on:
 jobs:
   e2e-ios:
     name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
     permissions:
       contents: read
@@ -58,6 +58,15 @@ jobs:
         with:
           name: ${{ inputs.package_artifact_name }}
           path: .af-artifacts
+
+      - name: Restore AppsFlyerDependencies.xml from artifact (if bundled)
+        run: |
+          if [[ -f ".af-artifacts/AppsFlyerDependencies.xml" ]]; then
+            cp ".af-artifacts/AppsFlyerDependencies.xml" \
+               "Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
+            echo "Restored AppsFlyerDependencies.xml from artifact:"
+            cat Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          fi
 
       - name: Import generated package into test app
         run: |
@@ -121,14 +130,17 @@ jobs:
 
           grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
 
-      - name: Select Xcode 16
+      - name: Select Xcode 26
         run: |
-          XCODE16=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -1)
-          if [[ -z "$XCODE16" ]]; then
-            echo "::warning::Xcode 16 not found under /Applications, using system default"
+          # Xcode 26 (iOS 26 SDK) is required: _swift_coroFrameAlloc lives in
+          # libswiftCore.tbd starting from the iOS 26 SDK; Xcode 16 (iOS 18 SDK)
+          # does not export it, causing a linker failure for PurchaseConnector 6.17.x.
+          XCODE26=$(find /Applications -maxdepth 1 -name "Xcode_26*.app" | sort -V | tail -1)
+          if [[ -z "$XCODE26" ]]; then
+            echo "::warning::Xcode 26 not found under /Applications, using system default"
           else
-            sudo xcode-select -s "$XCODE16/Contents/Developer"
-            echo "Selected: $XCODE16"
+            sudo xcode-select -s "$XCODE26/Contents/Developer"
+            echo "Selected: $XCODE26"
             xcodebuild -version
           fi
 
@@ -187,11 +199,12 @@ jobs:
             -configuration Debug \
             -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
             ARCHS=arm64 \
-            VALID_ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=NO \
             CURRENT_PROJECT_VERSION=1 \
             MARKETING_VERSION=1.0 \
             ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            LIBRARY_SEARCH_PATHS='$(inherited) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME)' \
+            OTHER_LDFLAGS='$(inherited) -lswiftCore -lswiftCompatibility56 -lswiftCompatibilityConcurrency' \
             build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
           if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
             echo "::group::xcodebuild errors"

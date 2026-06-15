@@ -1,0 +1,82 @@
+name: E2E - Post Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "GitHub release tag to test (e.g. v6.18.1)"
+        required: true
+        type: string
+      platform:
+        description: Platform to test
+        required: true
+        type: choice
+        options:
+          - both
+          - ios
+          - android
+        default: both
+
+permissions:
+  contents: read
+
+jobs:
+  download-package:
+    name: Download release package — ${{ inputs.release_tag }}
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: unity-packages-${{ inputs.release_tag }}
+      package_file_name: appsflyer-unity-plugin-${{ steps.version.outputs.version }}.unitypackage
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Resolve version from tag
+        id: version
+        run: |
+          VERSION="${{ inputs.release_tag }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download .unitypackage from GitHub release
+        run: |
+          mkdir -p dist
+          gh release download "${{ inputs.release_tag }}" \
+            --repo AppsFlyerSDK/appsflyer-unity-plugin \
+            --pattern "appsflyer-unity-plugin-${{ steps.version.outputs.version }}.unitypackage" \
+            --dir dist
+          echo "Downloaded:"
+          ls dist/
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-packages-${{ inputs.release_tag }}
+          path: dist/
+          retention-days: 7
+
+  e2e-ios:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'ios' }}
+    needs: download-package
+    uses: ./.github/workflows/rc-e2e-ios.yml
+    with:
+      plugin_version: ${{ needs.download-package.outputs.version }}
+      release_branch: ${{ github.ref_name }}
+      package_artifact_name: ${{ needs.download-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.download-package.outputs.package_file_name }}
+    secrets: inherit
+
+  e2e-android:
+    if: ${{ always() && needs.download-package.result == 'success' && (inputs.platform == 'android' || (inputs.platform == 'both' && needs.e2e-ios.result == 'success')) }}
+    needs: [download-package, e2e-ios]
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/rc-e2e-android.yml
+    with:
+      plugin_version: ${{ needs.download-package.outputs.version }}
+      release_branch: ${{ github.ref_name }}
+      package_artifact_name: ${{ needs.download-package.outputs.artifact_name }}
+      package_file_name: ${{ needs.download-package.outputs.package_file_name }}
+    secrets: inherit
