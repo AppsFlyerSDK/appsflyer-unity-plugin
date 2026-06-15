@@ -6,7 +6,14 @@
 * Update iOS Purchase Connector version - 6.17.9
 * Update Android unity-wrapper version - 6.17.900
 * Update Android Purchase Connector version - 2.1.2
-* Unity plugin version - 6.17.900-rc1
+* Unity plugin version - 6.17.900
+
+## v6.18.1
+* Update Android SDK version - 6.18.1
+* Update iOS SDK version - 6.18.1
+* Update iOS Purchase Connector version - 6.18.2
+* Update Android unity-wrapper version - 6.18.1
+* Unity plugin version - 6.18.1
 
 
 ## v6.18.0
@@ -18,6 +25,7 @@
 * Update iOS SDK version - 6.18.0
 * Update iOS Purchase Connector version - 6.18.0
 * Update Android unity-wrapper version - 6.18.01
+* Unity plugin version - 6.18.0
 * Unity plugin version - 6.18.0
 ## v6.17.91
 * Update Android unity-wrapper to Billing Library 8 (billing:8.0.0)
