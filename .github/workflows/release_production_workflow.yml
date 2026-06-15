@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ needs.Prepare-Release.outputs.output2 }}
 
       - name: Set artifact name
         id: artifact
@@ -189,16 +189,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.Prepare-Release.outputs.output2 }}
+          fetch-depth: 0
       - name: Create a version tag and push it
+        env:
+          RELEASE_BRANCH_NAME: ${{ needs.Prepare-Release.outputs.output2 }}
+          PLUGIN_VERSION: ${{ needs.Prepare-Release.outputs.output1 }}
         run: |
-          echo "Pushing release tag: ${{ needs.Prepare-Release.outputs.output1 }}!"
-          git checkout master
-          echo "Checked out to master"
-          git pull origin master
-          git tag "${{ needs.Prepare-Release.outputs.output1 }}"
+          echo "Pushing release tag: $PLUGIN_VERSION!"
+          git pull origin "$RELEASE_BRANCH_NAME"
+          git tag "$PLUGIN_VERSION"
           echo "Created release tag"
-          git push origin "${{needs.Prepare-Release.outputs.output1}}"
-          echo "Pushed release tag ${{ needs.Prepare-Release.outputs.output1 }}"
+          git push origin "$PLUGIN_VERSION"
+          echo "Pushed release tag $PLUGIN_VERSION"
 
   Release-To-Production:
     needs: [Prepare-Release, Build-Production-Packages, Check-Packages, Generate-Tag]
@@ -247,12 +251,12 @@ jobs:
           else echo "failed_stage=Release-To-Production" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Checkout master
+      - name: Checkout release branch
         if: steps.status.outputs.success == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: master
+          ref: ${{ needs.Prepare-Release.outputs.output2 }}
 
       - name: Extract changelog snippet
         id: changelog
