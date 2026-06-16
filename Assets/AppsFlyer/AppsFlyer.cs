@@ -11,6 +11,8 @@ namespace AppsFlyerSDK
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
         private static EventHandler onDeepLinkReceived;
+        private static EventHandler onRequestNetworkError;
+        private static EventHandler onInAppNetworkError;
         public static IAppsFlyerNativeBridge instance = null;
         public delegate void unityCallBack(string message);
 
@@ -96,7 +98,7 @@ namespace AppsFlyerSDK
 #else
             if (instance != null)
             {
-                instance.startSDK(onRequestResponse != null, CallBackObjectName);
+                instance.startSDK(onRequestResponse != null || onRequestNetworkError != null, CallBackObjectName);
             }
 #endif
         }
@@ -119,7 +121,7 @@ namespace AppsFlyerSDK
 #else
             if (instance != null)
             {
-                instance.sendEvent(eventName, eventValues, onInAppResponse != null, CallBackObjectName);
+                instance.sendEvent(eventName, eventValues, onInAppResponse != null || onInAppNetworkError != null, CallBackObjectName);
             }
 #endif
         }
@@ -1010,6 +1012,28 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
+        /// Network error callback for start (session) requests. Android SDK 6.18.2+ only.
+        /// Fired when a session request fails due to a network-level error instead of OnRequestResponse.
+        /// EventArgs is AppsFlyerNetworkErrorEventArgs.
+        /// </summary>
+        public static event EventHandler OnRequestNetworkError
+        {
+            add    { onRequestNetworkError += value; }
+            remove { onRequestNetworkError -= value; }
+        }
+
+        /// <summary>
+        /// Network error callback for in-app events. Android SDK 6.18.2+ only.
+        /// Fired when an in-app event fails due to a network-level error instead of OnInAppResponse.
+        /// EventArgs is AppsFlyerNetworkErrorEventArgs.
+        /// </summary>
+        public static event EventHandler OnInAppNetworkError
+        {
+            add    { onInAppNetworkError += value; }
+            remove { onInAppNetworkError -= value; }
+        }
+
+        /// <summary>
         /// Unified DeepLink Event
         /// </summary>
         public static event EventHandler OnDeepLinkReceived
@@ -1045,6 +1069,41 @@ namespace AppsFlyerSDK
             {
                 onRequestResponse.Invoke(null, parseRequestCallback(response));
             }
+        }
+
+        /// <summary>
+        /// Used to accept session network error callback from UnitySendMessage on native side.
+        /// </summary>
+        public void requestNetworkErrorReceived(string response)
+        {
+            if (onRequestNetworkError != null)
+                onRequestNetworkError.Invoke(null, parseNetworkErrorCallback(response));
+        }
+
+        /// <summary>
+        /// Used to accept in-app network error callback from UnitySendMessage on native side.
+        /// </summary>
+        public void inAppNetworkErrorReceived(string response)
+        {
+            if (onInAppNetworkError != null)
+                onInAppNetworkError.Invoke(null, parseNetworkErrorCallback(response));
+        }
+
+        private static AppsFlyerNetworkErrorEventArgs parseNetworkErrorCallback(string response)
+        {
+            int code = 0;
+            Dictionary<string, object> details = new Dictionary<string, object>();
+            try
+            {
+                details = CallbackStringToDictionary(response);
+                if (details.ContainsKey("statusCode"))
+                    code = (int)(long)details["statusCode"];
+            }
+            catch (Exception e)
+            {
+                AFLog("parseNetworkErrorCallback", String.Format("{0} Exception caught.", e));
+            }
+            return new AppsFlyerNetworkErrorEventArgs(code, details);
         }
 
         /// <summary>

@@ -2,8 +2,7 @@
 <dependencies>
 
   <androidPackages>
-    <androidPackage spec="com.appsflyer:af-android-sdk:6.18.0"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:6.18.01"></androidPackage>
+    <androidPackage spec="com.appsflyer:af-android-sdk-beta:6.18.2-rc1"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <androidPackage spec="com.appsflyer:purchase-connector:2.2.0"></androidPackage>
   </androidPackages>

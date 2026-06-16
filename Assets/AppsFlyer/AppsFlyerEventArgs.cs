@@ -34,6 +34,37 @@ namespace AppsFlyerSDK
     }
 
     /// <summary>
+    /// Event args for OnRequestNetworkError and OnInAppNetworkError.
+    /// Fired when a request fails due to a network-level error (DNS, connectivity, timeout).
+    /// Populated from the onNetworkError callback in AppsFlyerRequestListener (Android SDK 6.18.2+).
+    ///
+    /// Common statusCode values:
+    ///   40 - Network error (UnknownHostException, SocketTimeout, etc.)
+    ///
+    /// Always-present keys in rawDetails: "error", "httpLatencyMs"
+    /// Conditional keys: "networkType", "vpnEnabled", "hasInternetCapability",
+    ///   "hasValidatedCapability", "dataState", "vpnUnderlyingTransport",
+    ///   "devicePrivateVpnAddress", "customDnsEnabled", "customDnsServerName"
+    /// </summary>
+    public class AppsFlyerNetworkErrorEventArgs : EventArgs
+    {
+        public int statusCode { get; }
+        public string error { get; }
+        public string httpLatencyMs { get; }
+        public string networkType { get; }
+        public Dictionary<string, object> rawDetails { get; }
+
+        public AppsFlyerNetworkErrorEventArgs(int code, Dictionary<string, object> details)
+        {
+            statusCode    = code;
+            rawDetails    = details;
+            error         = details.ContainsKey("error")         ? details["error"]?.ToString()         : null;
+            httpLatencyMs = details.ContainsKey("httpLatencyMs") ? details["httpLatencyMs"]?.ToString() : null;
+            networkType   = details.ContainsKey("networkType")   ? details["networkType"]?.ToString()   : null;
+        }
+    }
+
+    /// <summary>
     /// Event args for OnDeepLinkReceived.
     /// Used to handle deep linking results.
     /// </summary>

@@ -60,6 +60,8 @@ public class AppsFlyerAndroidWrapper {
     private static final String ON_DEEPLINKING = "onDeepLinking";
     private static final String START_REQUEST_CALLBACK = "requestResponseReceived";
     private static final String IN_APP_RESPONSE_CALLBACK = "inAppResponseReceived";
+    private static final String NETWORK_ERROR_REQUEST_CALLBACK = "requestNetworkErrorReceived";
+    private static final String NETWORK_ERROR_IN_APP_CALLBACK = "inAppNetworkErrorReceived";
     private static final String VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
     private static final String ERROR_CALLBACK = "didReceivePurchaseRevenueError";
     private static final String PLUGIN_VERSION = "6.18.0";
@@ -104,6 +106,16 @@ public class AppsFlyerAndroidWrapper {
                     map.put("errorDescription", s);
                     JSONObject jsonObject = new JSONObject(map);
                     UnityPlayer.UnitySendMessage(objectName, START_REQUEST_CALLBACK, jsonObject.toString());
+                }
+            }
+
+            @Override
+            public void onNetworkError(int code, @NonNull Map<String, String> errorDetails) {
+                if(shouldCallback && objectName != null){
+                    Map<String,Object> map = new HashMap<String,Object>(errorDetails);
+                    map.put("statusCode", code);
+                    JSONObject jsonObject = new JSONObject(map);
+                    UnityPlayer.UnitySendMessage(objectName, NETWORK_ERROR_REQUEST_CALLBACK, jsonObject.toString());
                 }
             }
         });
@@ -241,6 +253,16 @@ public class AppsFlyerAndroidWrapper {
                     map.put("errorDescription", s);
                     JSONObject jsonObject = new JSONObject(map);
                     UnityPlayer.UnitySendMessage(objectName, IN_APP_RESPONSE_CALLBACK, jsonObject.toString());
+                }
+            }
+
+            @Override
+            public void onNetworkError(int code, @NonNull Map<String, String> errorDetails) {
+                if(shouldCallback && objectName != null){
+                    Map<String,Object> map = new HashMap<String,Object>(errorDetails);
+                    map.put("statusCode", code);
+                    JSONObject jsonObject = new JSONObject(map);
+                    UnityPlayer.UnitySendMessage(objectName, NETWORK_ERROR_IN_APP_CALLBACK, jsonObject.toString());
                 }
             }
         });
