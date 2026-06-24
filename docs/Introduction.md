@@ -30,7 +30,7 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ## Plugin Github Repository
 
-<a style="display: none" href="https://github.com/AppsFlyerSDK/appsflyer-unity-plugin"></a>
+<a style={{display: "none"}} href="https://github.com/AppsFlyerSDK/appsflyer-unity-plugin"></a>
 
 > 📘 Github repository for this plugin is [here](https://github.com/AppsFlyerSDK/appsflyer-unity-plugin)
 
