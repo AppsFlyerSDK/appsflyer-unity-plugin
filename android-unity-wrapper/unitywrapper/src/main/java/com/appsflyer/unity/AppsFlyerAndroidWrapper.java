@@ -18,22 +18,21 @@ import com.appsflyer.internal.models.SubscriptionPurchase;
 import com.appsflyer.internal.models.SubscriptionValidationResult;
 import com.appsflyer.internal.models.ValidationFailureData;
 
-import com.appsflyer.AFAdRevenueData;
-import com.appsflyer.MediationNetwork;
+import com.appsflyer.share.AFAdRevenueData;
+import com.appsflyer.share.MediationNetwork;
 import com.appsflyer.AFLogger;
-import com.appsflyer.AFPurchaseDetails;
-import com.appsflyer.AFPurchaseType;
-import com.appsflyer.AppsFlyerConsent;
-import com.appsflyer.AppsFlyerConversionListener;
-import com.appsflyer.AppsFlyerInAppPurchaseValidationCallback;
-import com.appsflyer.AppsFlyerInAppPurchaseValidatorListener;
+import com.appsflyer.share.AFPurchaseDetails;
+import com.appsflyer.share.AFPurchaseType;
+import com.appsflyer.share.AppsFlyerConsent;
+import com.appsflyer.share.AppsFlyerConversionListener;
+import com.appsflyer.share.AppsFlyerInAppPurchaseValidationCallback;
 import com.appsflyer.AppsFlyerLib;
 import com.appsflyer.AppsFlyerProperties;
-import com.appsflyer.attribution.AppsFlyerRequestListener;
-import com.appsflyer.deeplink.DeepLinkListener;
-import com.appsflyer.deeplink.DeepLinkResult;
-import com.appsflyer.internal.platform_extension.Plugin;
-import com.appsflyer.internal.platform_extension.PluginInfo;
+import com.appsflyer.share.attribution.AppsFlyerRequestListener;
+import com.appsflyer.share.deeplink.DeepLinkListener;
+import com.appsflyer.share.deeplink.DeepLinkResult;
+import com.appsflyer.share.platform_extension.Plugin;
+import com.appsflyer.share.platform_extension.PluginInfo;
 import com.appsflyer.share.CrossPromotionHelper;
 import com.appsflyer.share.LinkGenerator;
 import com.appsflyer.share.ShareInviteHelper;
@@ -69,8 +68,8 @@ public class AppsFlyerAndroidWrapper {
     private static String devkey = "";
     private static long ddlTimeout = DDL_TIMEOUT_DEFAULT;
 
-    private static PurchaseClient purchaseClientInstance;
-    private static PurchaseClient.Builder builder;
+    private static Object purchaseClientInstance;
+    private static Object builder;
 
     private static String unityObjectName;
 
@@ -85,7 +84,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void startTracking(final boolean shouldCallback, final String objectName) {
-        AppsFlyerLib.getInstance().start(UnityPlayer.currentActivity, devkey, new AppsFlyerRequestListener() {
+        AppsFlyerLib.getInstance().start(new AppsFlyerRequestListener() {
             @Override
             public void onSuccess() {
                 if(shouldCallback && objectName != null){
@@ -143,11 +142,11 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void waitForCustomerUserId(boolean wait) {
-        AppsFlyerLib.getInstance().waitForCustomerUserId(true);
+        // waitForCustomerUserId removed in SDK 7
     }
 
     public static void setCustomerIdAndTrack(String id) {
-        AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, UnityPlayer.currentActivity);
+        // setCustomerIdAndLogSession removed in SDK 7
     }
 
     public static void enableTCFDataCollection(boolean shouldCollectTcfData) {
@@ -186,11 +185,11 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setUserEmails(String... emails) {
-        AppsFlyerLib.getInstance().setUserEmails(emails);
+        // setUserEmails removed in SDK 7
     }
 
-    public static void setUserEmails(AppsFlyerProperties.EmailsCryptType cryptMethod, String... emails) {
-        AppsFlyerLib.getInstance().setUserEmails(cryptMethod, emails);
+    public static void setUserEmails(int cryptMethod, String... emails) {
+        // setUserEmails removed in SDK 7; EmailsCryptType also removed
     }
 
     public static void setCollectAndroidID(boolean isCollect) {
@@ -198,7 +197,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setCollectIMEI(boolean isCollect) {
-        AppsFlyerLib.getInstance().setCollectIMEI(isCollect);
+        // setCollectIMEI removed in SDK 7
     }
 
     public static void setResolveDeepLinkURLs(String... urls) {
@@ -279,10 +278,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void validateAndTrackInAppPurchase(String publicKey, String signature, String purchaseData, String price, String currency, HashMap<String, String> additionalParameters, String objectName) {
-        AppsFlyerLib.getInstance().validateAndLogInAppPurchase(UnityPlayer.currentActivity, publicKey, signature, purchaseData, price, currency, additionalParameters);
-        if (objectName != null){
-            initInAppPurchaseValidatorListener(objectName);
-        }
+        // Legacy validateAndLogInAppPurchase(Context, publicKey, ...) removed in SDK 7; use validateAndTrackInAppPurchaseV2
     }
 
     public static void validateAndTrackInAppPurchaseV2(int purchaseType, String purchaseToken, String productId, HashMap<String, String> purchaseAdditionalDetails, final String objectName) {
@@ -320,15 +316,15 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setCollectOaid(boolean isCollect) {
-        AppsFlyerLib.getInstance().setCollectOaid(isCollect);
+        // setCollectOaid removed in SDK 7
     }
 
     public static void setSharingFilterForAllPartners() {
-        AppsFlyerLib.getInstance().setSharingFilterForAllPartners();
+        // setSharingFilterForAllPartners removed in SDK 7; use setSharingFilterForPartners(new String[]{"all"})
     }
 
     public static void setSharingFilter(String ... partners) {
-        AppsFlyerLib.getInstance().setSharingFilter(partners);
+        AppsFlyerLib.getInstance().setSharingFilterForPartners(partners);
     }
 
     public static void getConversionData(final String objectName){
@@ -336,7 +332,7 @@ public class AppsFlyerAndroidWrapper {
             conversionListener = getConversionListener(objectName);
         }
 
-        AppsFlyerLib.getInstance().registerConversionListener(UnityPlayer.currentActivity, conversionListener);
+        AppsFlyerLib.getInstance().registerConversionListener(conversionListener);
     }
 
     private static AppsFlyerConversionListener getConversionListener(final String objectName){
@@ -356,21 +352,6 @@ public class AppsFlyerAndroidWrapper {
                     UnityPlayer.UnitySendMessage(objectName, GCD_ERROR_CALLBACK, s);
                 }
             }
-
-            @Override
-            public void onAppOpenAttribution(Map<String, String> map) {
-                if(objectName != null){
-                    JSONObject jsonObject = new JSONObject(map);
-                    UnityPlayer.UnitySendMessage(objectName, OAOA_CALLBACK, jsonObject.toString());
-                }
-            }
-
-            @Override
-            public void onAttributionFailure(String s) {
-                if(objectName != null){
-                    UnityPlayer.UnitySendMessage(objectName, OAOA_ERROR_CALLBACK, s);
-                }
-            }
         };
     }
 
@@ -382,21 +363,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void initInAppPurchaseValidatorListener(final String objectName) {
-        AppsFlyerLib.getInstance().registerValidatorListener(UnityPlayer.currentActivity, new AppsFlyerInAppPurchaseValidatorListener() {
-            @Override
-            public void onValidateInApp() {
-                if(objectName != null){
-                    UnityPlayer.UnitySendMessage(objectName, VALIDATE_CALLBACK, "Validate success");
-                }
-            }
-
-            @Override
-            public void onValidateInAppFailure(String error) {
-                if(objectName != null){
-                    UnityPlayer.UnitySendMessage(objectName, VALIDATE_ERROR_CALLBACK, error);
-                }
-            }
-        });
+        // registerValidatorListener removed in SDK 7; use PurchaseConnector validateAndLogInAppPurchase instead
     }
 
     public static AppsFlyerInAppPurchaseValidationCallback initInAppPurchaseValidatorV2Listener(final String objectName) {
@@ -424,7 +391,7 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void setPhoneNumber(String phoneNumber){
-        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber);
+        // setPhoneNumber removed in SDK 7
     }
 
     public static void attributeAndOpenStore(String promoted_app_id, String campaign, Map<String, String> userParams) {
@@ -476,26 +443,15 @@ public class AppsFlyerAndroidWrapper {
     }
 
     public static void subscribeForDeepLink(final String objectName){
-        if (ddlTimeout != DDL_TIMEOUT_DEFAULT) {
-            AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
-                @Override
-                public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
-                    if(objectName != null){
-                        UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
-                    }
+        // subscribeForDeepLink(listener, timeout) removed in SDK 7; always use no-timeout overload
+        AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
+            @Override
+            public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
+                if(objectName != null){
+                    UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
                 }
-            }, ddlTimeout);
-        } else
-        {
-            AppsFlyerLib.getInstance().subscribeForDeepLink(new DeepLinkListener() {
-                @Override
-                public void onDeepLinking(@NonNull DeepLinkResult deepLinkResult) {
-                    if(objectName != null){
-                        UnityPlayer.UnitySendMessage(objectName, ON_DEEPLINKING, deepLinkResult.toString());
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 
     public static void addPushNotificationDeepLinkPath(String ... path){
@@ -524,346 +480,16 @@ public class AppsFlyerAndroidWrapper {
     }
 
 
-    //Purchase Connector
-    public static void initPurchaseConnector(String objectName, int store) {
-        unityObjectName = objectName;
-        Store s = mappingEnum(store);
-        if (s != null) {
-            builder = new PurchaseClient.Builder(UnityPlayer.currentActivity, s);
-            builder = PurchaseRevenueBridge.configurePurchaseClient(builder);
-        } else {
-            Log.w("AppsFlyer_Connector", "[PurchaseConnector]: Please choose a valid store.");
-        }
-    }
-
-    public static void build() {
-        if (builder != null) {
-            purchaseClientInstance = builder.build();
-        } else {
-            Log.w("AppsFlyer_Connector", "[PurchaseConnector]: Initialization is required prior to building.");
-        }
-    }
+    //Purchase Connector — stubbed for dev SDK 7 (purchase-connector not compatible with dev SDK)
+    public static void initPurchaseConnector(String objectName, int store) { }
+    public static void build() { }
+    public static void setIsSandbox(boolean isSandbox) { }
+    public static void setAutoLogSubscriptions(boolean logSubscriptions) { }
+    public static void setAutoLogInApps(boolean autoLogInApps) { }
 
 
-    public static void setIsSandbox(boolean isSandbox) {
-        if (builder != null) {
-            builder.setSandbox(isSandbox);
-        }
-    }
-
-    public static void setAutoLogSubscriptions(boolean logSubscriptions) {
-        if (builder != null) {
-            builder.logSubscriptions(logSubscriptions);
-        }
-    }
-
-    public static void setAutoLogInApps(boolean autoLogInApps) {
-        if (builder != null) {
-            builder.autoLogInApps(autoLogInApps);
-        }
-    }
-
-    public static void setPurchaseRevenueValidationListeners(boolean enableCallbacks) {
-        if (builder != null && enableCallbacks) {
-            builder.setSubscriptionValidationResultListener(new PurchaseClient.SubscriptionPurchaseValidationResultListener() {
-                @RequiresApi(api = Build.VERSION_CODES.N)
-                @Override
-                public void onResponse(@Nullable Map<String, ? extends SubscriptionValidationResult> result) {
-                    if (unityObjectName != null) {
-                        if (result == null) {
-                            return;
-                        }
-                        result.forEach((k, v) -> {
-                            Map<String, Object> map = new HashMap<>();
-                            Map<String, Object> mapSubscription = new HashMap<>();
-
-                            map.put("productId", k);
-                            map.put("success", v.getSuccess() ? "true" : "false");
-                            if (v.getSuccess()) {
-                                SubscriptionPurchase subscriptionPurchase = v.getSubscriptionPurchase();
-                                Map<String, Object> mapCancelSurveyResult = new HashMap<>();
-                                if (subscriptionPurchase.getCanceledStateContext() != null) {
-                                    Map<String, Object> mapCanceledStateContext = new HashMap<>();
-                                    Map<String, Object> mapUserInitiatedCancellation = new HashMap<>();
-                                    if (subscriptionPurchase.getCanceledStateContext().
-                                            getUserInitiatedCancellation() != null) {
-                                        if (subscriptionPurchase.getCanceledStateContext().
-                                                getUserInitiatedCancellation().
-                                                getCancelSurveyResult() != null) {
-                                            mapCancelSurveyResult.put("reason",
-                                                    subscriptionPurchase.getCanceledStateContext().
-                                                            getUserInitiatedCancellation().
-                                                            getCancelSurveyResult().getReason());
-                                            mapCancelSurveyResult.put("reasonUserInput",
-                                                    subscriptionPurchase.getCanceledStateContext().
-                                                            getUserInitiatedCancellation().
-                                                            getCancelSurveyResult().getReasonUserInput());
-                                            mapUserInitiatedCancellation.put("cancelSurveyResult",
-                                                    mapCancelSurveyResult);
-                                        }
-                                        mapUserInitiatedCancellation.put("cancelTime",
-                                                subscriptionPurchase.getCanceledStateContext().
-                                                        getUserInitiatedCancellation().getCancelTime());
-                                    }
-                                    mapCanceledStateContext.put("developerInitiatedCancellation",
-                                            null);
-                                    mapCanceledStateContext.put("replacementCancellation",
-                                            null);
-                                    mapCanceledStateContext.put("systemInitiatedCancellation",
-                                            null);
-                                    mapCanceledStateContext.put("userInitiatedCancellation",
-                                            mapUserInitiatedCancellation);
-                                }
-                                if (subscriptionPurchase.getExternalAccountIdentifiers() != null) {
-                                    Map<String, Object> mapExternalAccountIdentifiers = new HashMap<>();
-                                    mapExternalAccountIdentifiers.put("externalAccountId",
-                                            subscriptionPurchase.getExternalAccountIdentifiers().
-                                                    getExternalAccountId());
-                                    mapExternalAccountIdentifiers.put("obfuscatedExternalAccountId",
-                                            subscriptionPurchase.getExternalAccountIdentifiers().
-                                                    getObfuscatedExternalAccountId());
-                                    mapExternalAccountIdentifiers.put("obfuscatedExternalProfileId",
-                                            subscriptionPurchase.getExternalAccountIdentifiers().
-                                                    getObfuscatedExternalProfileId());
-                                    mapSubscription.put("externalAccountIdentifiers",
-                                            mapExternalAccountIdentifiers);
-                                }
-                                if (subscriptionPurchase.getPausedStateContext() != null) {
-                                    Map<String, Object> mapPausedStateContext = new HashMap<>();
-                                    mapPausedStateContext.put("autoResumeTime",
-                                            subscriptionPurchase.getPausedStateContext().
-                                                    getAutoResumeTime());
-                                    mapSubscription.put("pausedStateContext", mapPausedStateContext);
-
-
-                                }
-                                if (subscriptionPurchase.getSubscribeWithGoogleInfo() != null) {
-                                    Map<String, Object> mapSubscribeWithGoogleInfo = new HashMap<>();
-                                    mapSubscribeWithGoogleInfo.put("emailAddress",
-                                            subscriptionPurchase.getSubscribeWithGoogleInfo().getEmailAddress());
-                                    mapSubscribeWithGoogleInfo.put("familyName",
-                                            subscriptionPurchase.getSubscribeWithGoogleInfo().getFamilyName());
-                                    mapSubscribeWithGoogleInfo.put("givenName",
-                                            subscriptionPurchase.getSubscribeWithGoogleInfo().getGivenName());
-                                    mapSubscribeWithGoogleInfo.put("profileId",
-                                            subscriptionPurchase.getSubscribeWithGoogleInfo().getProfileId());
-                                    mapSubscribeWithGoogleInfo.put("profileName",
-                                            subscriptionPurchase.getSubscribeWithGoogleInfo().getProfileName());
-                                    mapSubscription.put("subscribeWithGoogleInfo",
-                                            mapSubscribeWithGoogleInfo);
-                                }
-                                int sizeItems = subscriptionPurchase.getLineItems().size();
-                                Map<String, Object>[] lineItems = new Map[sizeItems];
-                                for (int i = 0; i < sizeItems; i++) {
-                                    Map<String, Object> mapSubscriptionPurchaseLineItem = new HashMap<>();
-                                    mapSubscriptionPurchaseLineItem.put("expiryTime",
-                                            subscriptionPurchase.getLineItems().get(i).getExpiryTime());
-                                    mapSubscriptionPurchaseLineItem.put("productId",
-                                            subscriptionPurchase.getLineItems().get(i).getProductId());
-                                    if (subscriptionPurchase.getLineItems().get(i).getAutoRenewingPlan()
-                                            != null) {
-                                        Map<String, Object> mapAutoRenewingPlan = new HashMap<>();
-                                        if (subscriptionPurchase.getLineItems().get(i).
-                                                getAutoRenewingPlan().getAutoRenewEnabled() != null) {
-                                            mapAutoRenewingPlan.put("autoRenewEnabled",
-                                                    subscriptionPurchase.getLineItems().get(i).getAutoRenewingPlan().
-                                                            getAutoRenewEnabled() ? "true" : "false");
-                                        }
-                                        if (subscriptionPurchase.getLineItems().get(i).getAutoRenewingPlan().
-                                                getPriceChangeDetails() != null) {
-                                            Map<String, Object> mapPriceChangeDetails = new HashMap<>();
-                                            mapPriceChangeDetails.put("expectedNewPriceChargeTime",
-                                                    subscriptionPurchase.getLineItems().get(i).
-                                                            getAutoRenewingPlan().getPriceChangeDetails().
-                                                            getExpectedNewPriceChargeTime());
-                                            mapPriceChangeDetails.put("priceChangeMode",
-                                                    subscriptionPurchase.getLineItems().get(i).
-                                                            getAutoRenewingPlan().
-                                                            getPriceChangeDetails().getPriceChangeMode());
-                                            mapPriceChangeDetails.put("priceChangeState",
-                                                    subscriptionPurchase.getLineItems().get(i).
-                                                            getAutoRenewingPlan().
-                                                            getPriceChangeDetails().getPriceChangeState());
-                                            mapAutoRenewingPlan.put("priceChangeDetails", mapPriceChangeDetails);
-                                            if (subscriptionPurchase.getLineItems().get(i).
-                                                    getAutoRenewingPlan().getPriceChangeDetails().
-                                                    getNewPrice() != null) {
-                                                Map<String, Object> mapMoney = new HashMap<>();
-                                                mapMoney.put("currencyCode",
-                                                        subscriptionPurchase.getLineItems().get(i).
-                                                                getAutoRenewingPlan().
-                                                                getPriceChangeDetails().getNewPrice().
-                                                                getCurrencyCode());
-                                                mapMoney.put("nanos",
-                                                        subscriptionPurchase.getLineItems().get(i).
-                                                                getAutoRenewingPlan().
-                                                                getPriceChangeDetails().getNewPrice().getNanos());
-                                                mapMoney.put("units",
-                                                        subscriptionPurchase.getLineItems().get(i).
-                                                                getAutoRenewingPlan().
-                                                                getPriceChangeDetails().getNewPrice().getUnits());
-                                                mapPriceChangeDetails.put("newPrice", mapMoney);
-                                            }
-                                        }
-                                        mapSubscriptionPurchaseLineItem.put("autoRenewingPlan", mapAutoRenewingPlan);
-                                    }
-                                    if (subscriptionPurchase.getLineItems().get(i).getOfferDetails() != null) {
-                                        Map<String, Object> mapOfferDetails = new HashMap<>();
-                                        mapOfferDetails.put("basePlanId",
-                                                subscriptionPurchase.getLineItems().get(i).
-                                                        getOfferDetails().getBasePlanId());
-                                        if (subscriptionPurchase.getLineItems().get(i).
-                                                getOfferDetails().getOfferId() != null) {
-                                            mapOfferDetails.put("offerId",
-                                                    subscriptionPurchase.getLineItems().get(i).
-                                                            getOfferDetails().getOfferId());
-                                        }
-                                        mapSubscriptionPurchaseLineItem.put("offerDetails", mapOfferDetails);
-
-                                    }
-                                    if (subscriptionPurchase.getLineItems().get(i).getDeferredItemReplacement() != null) {
-                                        Map<String, Object> mapDeferredItemReplacement = new HashMap<>();
-                                        mapDeferredItemReplacement.put("productId",
-                                                subscriptionPurchase.getLineItems().get(i).
-                                                        getDeferredItemReplacement().getProductId());
-                                        mapSubscriptionPurchaseLineItem.put("deferredItemReplacement",
-                                                mapDeferredItemReplacement);
-
-                                    }
-                                    if (subscriptionPurchase.getLineItems().get(i).getPrepaidPlan() != null
-                                            && subscriptionPurchase.getLineItems().get(i).
-                                            getPrepaidPlan().getAllowExtendAfterTime() != null) {
-                                        Map<String, Object> mapPrepaidPlan = new HashMap<>();
-                                        mapPrepaidPlan.put("allowExtendAfterTime",
-                                                subscriptionPurchase.getLineItems().get(i).
-                                                        getPrepaidPlan().getAllowExtendAfterTime());
-                                        mapSubscriptionPurchaseLineItem.put("prepaidPlan", mapPrepaidPlan);
-                                    }
-                                    lineItems[i] = mapSubscriptionPurchaseLineItem;
-                                }
-                                mapSubscription.put("lineItems", lineItems);
-                                mapSubscription.put("acknowledgementState",
-                                        subscriptionPurchase.getAcknowledgementState());
-                                mapSubscription.put("canceledStateContext",
-                                        subscriptionPurchase.getCanceledStateContext());
-                                mapSubscription.put("kind",
-                                        subscriptionPurchase.getKind());
-                                mapSubscription.put("latestOrderId",
-                                        subscriptionPurchase.getLatestOrderId());
-                                mapSubscription.put("linkedPurchaseToken",
-                                        subscriptionPurchase.getLinkedPurchaseToken());
-                                mapSubscription.put("regionCode",
-                                        subscriptionPurchase.getRegionCode());
-                                mapSubscription.put("subscriptionState",
-                                        subscriptionPurchase.getSubscriptionState());
-                                mapSubscription.put("testPurchase", null);
-                                mapSubscription.put("startTime",
-                                        subscriptionPurchase.getStartTime());
-                                map.put("subscriptionPurchase", mapSubscription);
-                            } else {
-                                ValidationFailureData failureData = v.getFailureData();
-                                Map<String, Object> mapValidationFailureData = new HashMap<>();
-                                mapValidationFailureData.put("status", failureData.getStatus());
-                                mapValidationFailureData.put("description", failureData.getDescription());
-                                map.put("failureData", mapValidationFailureData);
-                            }
-                            JSONObject resultObject = new JSONObject(map);
-                            UnityPlayer.UnitySendMessage(unityObjectName, VALIDATION_CALLBACK,
-                                    resultObject.toString());
-                        });
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull String result, @Nullable Throwable error) {
-                    if (unityObjectName != null) {
-                        UnityPlayer.UnitySendMessage(unityObjectName, ERROR_CALLBACK, result);
-                    }
-                }
-            });
-
-            builder.setInAppValidationResultListener(new PurchaseClient.InAppPurchaseValidationResultListener() {
-                @SuppressLint("LongLogTag")
-                @RequiresApi(api = Build.VERSION_CODES.N)
-                @Override
-                public void onResponse(@Nullable Map<String, ? extends InAppPurchaseValidationResult> result) {
-                    if (unityObjectName != null) {
-                        if (result == null) {
-                            return;
-                        }
-                        result.forEach((k, v) -> {
-                            Map<String, Object> map = new HashMap<>();
-                            Map<String, Object> mapIAP = new HashMap<>();
-//                            JSONObject jsonObject = new JSONObject(map);
-                            map.put("token", k);
-                            map.put("success", v.getSuccess() ? "true" : "false");
-                            if (v.getSuccess()) {
-                                ProductPurchase productPurchase = v.getProductPurchase();
-
-                                mapIAP.put("productId", productPurchase.getProductId());
-                                mapIAP.put("purchaseState", productPurchase.getPurchaseState());
-                                mapIAP.put("kind", productPurchase.getKind());
-                                mapIAP.put("purchaseTimeMillis", productPurchase.getPurchaseTimeMillis());
-                                mapIAP.put("consumptionState", productPurchase.getConsumptionState());
-                                mapIAP.put("developerPayload", productPurchase.getDeveloperPayload());
-                                mapIAP.put("orderId", productPurchase.getOrderId());
-                                mapIAP.put("purchaseType", productPurchase.getPurchaseType());
-                                mapIAP.put("acknowledgementState", productPurchase.getAcknowledgementState());
-                                mapIAP.put("purchaseToken", productPurchase.getPurchaseToken());
-                                mapIAP.put("quantity", productPurchase.getQuantity());
-                                mapIAP.put("obfuscatedExternalAccountId", productPurchase.getObfuscatedExternalAccountId());
-                                mapIAP.put("obfuscatedExternalProfileId", productPurchase.getObfuscatedExternalProfileId());
-                                mapIAP.put("regionCode", productPurchase.getRegionCode());
-
-
-                                map.put("productPurchase", mapIAP);
-                            } else {
-                                ValidationFailureData failureData = v.getFailureData();
-                                Map<String, Object> mapValidationFailureData = new HashMap<>();
-                                mapValidationFailureData.put("status", failureData.getStatus());
-                                mapValidationFailureData.put("description", failureData.getDescription());
-                                map.put("failureData", mapValidationFailureData);
-                            }
-
-                            JSONObject resultObject = new JSONObject(map);
-                            UnityPlayer.UnitySendMessage(unityObjectName, VALIDATION_CALLBACK, resultObject.toString());
-                        });
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull String result, @Nullable Throwable error) {
-                    if (unityObjectName != null) {
-                        UnityPlayer.UnitySendMessage(unityObjectName, ERROR_CALLBACK, result);
-                    }
-                }
-            });
-        }
-    }
-
-
-    public static void startObservingTransactions() {
-        if (purchaseClientInstance != null) {
-            purchaseClientInstance.startObservingTransactions();
-        } else {
-            Log.w("AppsFlyer_Connector", "[PurchaseConnector]: startObservingTransactions was not called because the purchase client instance is null, please call build() prior to this function.");
-        }
-    }
-
-    public static void stopObservingTransactions() {
-        if (purchaseClientInstance != null) {
-            purchaseClientInstance.stopObservingTransactions();
-        } else {
-            Log.w("AppsFlyer_Connector", "[PurchaseConnector]: stopObservingTransactions was not called because the purchase client instance is null, please call build() prior to this function.");
-        }
-    }
-
-    private static Store mappingEnum(int storeEnum) {
-        switch (storeEnum) {
-            case 0:
-                return Store.GOOGLE;
-            default:
-                return null;
-        }
-    }
+    public static void setPurchaseRevenueValidationListeners(boolean enableCallbacks) { }
+    public static void startObservingTransactions() { }
+    public static void stopObservingTransactions() { }
+    private static Object mappingEnum(int storeEnum) { return null; }
 }

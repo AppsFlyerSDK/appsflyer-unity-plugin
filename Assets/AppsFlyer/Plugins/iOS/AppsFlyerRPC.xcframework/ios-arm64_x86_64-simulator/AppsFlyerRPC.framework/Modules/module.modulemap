@@ -1,0 +1,11 @@
+framework module AppsFlyerRPC {
+  umbrella header "AppsFlyerRPC.h"
+  export *
+
+  module * { export * }
+}
+
+module AppsFlyerRPC.Swift {
+  header "AppsFlyerRPC-Swift.h"
+  requires objc
+}

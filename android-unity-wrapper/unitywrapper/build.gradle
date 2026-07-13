@@ -23,13 +23,16 @@ android {
 
 repositories {
     mavenCentral()
+    flatDir { dirs 'libs' }
 }
 
 
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly(name: 'af-android-plugin-bridge', ext: 'aar')
+    compileOnly(name: 'af-android-sdk-base', ext: 'aar')
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    compileOnly "com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION"
+    compileOnly(name: 'af-android-sdk-dev', ext: 'aar')
     compileOnly "com.appsflyer:purchase-connector:$ANDROID_PC_VERSION"
     compileOnly 'com.android.billingclient:billing:5.2.0'
 }

@@ -24,8 +24,9 @@ public class AppsFlyerUnityActivity extends UnityPlayerActivity {
         if (intent != null
                 && Intent.ACTION_VIEW.equals(intent.getAction())
                 && intent.getData() != null) {
-            Log.i("AF_QA", "[AF_QA][AndroidDeepLink] onNewIntent data=" + intent.getDataString());
-            AppsFlyerLib.getInstance().performOnDeepLinking(intent, getApplication());
+            String url = intent.getDataString();
+            Log.i("AF_QA", "[AF_QA][AndroidDeepLink] onNewIntent data=" + url);
+            AppsFlyerLib.getInstance().performDeepLinking(url, false);
         }
     }
 }

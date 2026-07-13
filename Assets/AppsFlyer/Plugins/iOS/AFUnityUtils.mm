@@ -88,15 +88,15 @@ static AppsFlyerLinkGenerator* generatorFromDictionary(NSDictionary* dictionary,
     [generator setReferrerCustomerId:[dictionary objectForKey: @"customerID"]];
     [generator setCampaign:[dictionary objectForKey: @"campaign"]];
     [generator setReferrerName:[dictionary objectForKey: @"referrerName"]];
-    [generator setReferrerImageURL:[dictionary objectForKey: @"referrerImageUrl"]];
-    [generator setDeeplinkPath:[dictionary objectForKey: @"deeplinkPath"]];
-    [generator setBaseDeeplink:[dictionary objectForKey: @"baseDeeplink"]];
+    [generator setReferrerImageUrl:[dictionary objectForKey: @"referrerImageUrl"]];
+    [generator setBaseDeepLink:[dictionary objectForKey: @"deeplinkPath"]];
+    [generator setBaseDeepLink:[dictionary objectForKey: @"baseDeeplink"]];
     [generator setBrandDomain:[dictionary objectForKey: @"brandDomain"]];
 
 
     [mutableDictionary removeObjectsForKeys:generatorKeys];
-    
-    [generator addParameters:mutableDictionary];
+
+    [generator addUserParams:mutableDictionary];
     
     return generator;
 }

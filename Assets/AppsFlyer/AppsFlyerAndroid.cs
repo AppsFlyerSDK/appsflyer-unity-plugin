@@ -23,7 +23,8 @@ namespace AppsFlyerSDK
         public void initSDK(string devkey, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
-             appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
+            appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
+            AppsFlyerRPCClient.InitAndroidBridge(gameObject != null ? gameObject.name : "");
 #endif
         }
 

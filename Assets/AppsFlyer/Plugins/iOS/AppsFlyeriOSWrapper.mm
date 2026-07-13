@@ -29,6 +29,14 @@
 #import "UnityFramework-Swift.h"
 #endif
 
+#if __has_include(<AppsFlyerRPC/AppsFlyerRPC-Swift.h>)
+#import <AppsFlyerRPC/AppsFlyerRPC-Swift.h>
+#elif __has_include("AppsFlyerRPC-Swift.h")
+#import "AppsFlyerRPC-Swift.h"
+#endif
+
+static NSString* _storedDevKey = nil;
+
 static void unityCallBack(NSString* objectName, const char* method, const char* msg) {
     if(objectName){
         UnitySendMessage([objectName UTF8String], method, msg);
@@ -37,12 +45,20 @@ static void unityCallBack(NSString* objectName, const char* method, const char* 
 
 extern "C" {
  
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("start") — kept for one release cycle
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
                                 pluginVersion:@"6.17.900"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
+
+#if __has_include(<AppsFlyerRPC/AppsFlyerRPC-Swift.h>) || __has_include("AppsFlyerRPC-Swift.h")
+        NSString *rpcCallbackObject = stringFromChar(objectName);
+        [AppsFlyerRPCBridge.shared setEventHandler:^(NSString *jsonEvent) {
+            unityCallBack(rpcCallbackObject, "onRPCEvent", [jsonEvent UTF8String]);
+        }];
+#endif
         [AppsFlyerAttribution shared].isBridgeReady = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:AF_BRIDGE_SET object: [AppsFlyerAttribution shared]];
         [[AppsFlyerLib shared] startWithCompletionHandler:^(NSDictionary<NSString *,id> *dictionary, NSError *error) {
@@ -65,15 +81,15 @@ extern "C" {
     }
 
     const void _setAdditionalData (const char* customData) {
-        [[AppsFlyerLib shared] setAdditionalData:dictionaryFromJson(customData)];
+        [AppsFlyerLib shared].customData = dictionaryFromJson(customData);
     }
 
     const void _setAppsFlyerDevKey (const char* appsFlyerDevKey) {
-        [AppsFlyerLib shared].appsFlyerDevKey = stringFromChar(appsFlyerDevKey);
+        _storedDevKey = stringFromChar(appsFlyerDevKey);
     }
 
     const void _setAppleAppID (const char* appleAppID) {
-        [AppsFlyerLib shared].appleAppID = stringFromChar(appleAppID);
+        [[AppsFlyerLib shared] initWithDevKey:_storedDevKey appleAppId:stringFromChar(appleAppID)];
     }
 
     const void _setCurrencyCode (const char* currencyCode) {
@@ -84,6 +100,7 @@ extern "C" {
        [AppsFlyerLib shared].disableAdvertisingIdentifier = disableAdvertisingIdentifier;
     }
 
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("isDebug") — kept for one release cycle
     const void _setIsDebug (bool isDebug) {
         [AppsFlyerLib shared].isDebug = isDebug;
     }
@@ -154,6 +171,7 @@ extern "C" {
         }
     }
 
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("logEvent") — kept for one release cycle
     const void _afSendEvent (const char* eventName, const char* eventValues, bool shouldCallback, const char* objectName) {
         inAppRequestObjectName = stringFromChar(objectName);
         [[AppsFlyerLib shared] logEventWithEventName:stringFromChar(eventName) eventValues:dictionaryFromJson(eventValues) completionHandler:^(NSDictionary<NSString *,id> *dictionary, NSError *error) {
@@ -191,11 +209,11 @@ extern "C" {
     }
 
     const char* _getSDKVersion () {
-        return getCString([[[AppsFlyerLib shared] getSDKVersion] UTF8String]);
+        return getCString([[[AppsFlyerLib shared] getSdkVersion] UTF8String]);
     }
 
     const void _setHost (const char* host, const char* hostPrefix) {
-        [[AppsFlyerLib shared] setHost:stringFromChar(host) withHostPrefix:stringFromChar(hostPrefix)];
+        [[AppsFlyerLib shared] setHost:stringFromChar(hostPrefix) hostName:stringFromChar(host)];
     }
 
     const void _setMinTimeBetweenSessions (int minTimeBetweenSessions) {
@@ -214,7 +232,7 @@ extern "C" {
         [[AppsFlyerLib shared] handleOpenURL:[NSURL URLWithString:stringFromChar(url)] sourceApplication:stringFromChar(sourceApplication) withAnnotation:stringFromChar(annotation)];    }
 
     const void _recordCrossPromoteImpression (const char* appID, const char* campaign, const char* parameters) {
-        [AppsFlyerCrossPromotionHelper logCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign) parameters:dictionaryFromJson(parameters)];    }
+        [AppsFlyerCrossPromotionHelper logCrossPromoteImpression:stringFromChar(appID) campaign:stringFromChar(campaign) userParams:dictionaryFromJson(parameters)];    }
     
     const void _attributeAndOpenStore (const char* appID, const char* campaign, const char* parameters, const char* objectName) {
 
@@ -223,7 +241,7 @@ extern "C" {
         [AppsFlyerCrossPromotionHelper
          logAndOpenStore:stringFromChar(appID)
          campaign:stringFromChar(campaign)
-         parameters:dictionaryFromJson(parameters)
+         userParams:dictionaryFromJson(parameters)
          openStore:^(NSURLSession * _Nonnull urlSession, NSURL * _Nonnull clickURL) {
             unityCallBack(openStoreObjectName, OPEN_STORE_LINK_CALLBACK, [clickURL.absoluteString UTF8String]);
         }];
@@ -233,15 +251,15 @@ extern "C" {
 
         generateInviteObjectName = stringFromChar(objectName);
 
-        [AppsFlyerShareInviteHelper generateInviteUrlWithLinkGenerator:^AppsFlyerLinkGenerator * _Nonnull(AppsFlyerLinkGenerator * _Nonnull generator) {
+        [AppsFlyerShareInviteHelper generateInviteLinkWithLinkGenerator:^AppsFlyerLinkGenerator * _Nonnull(AppsFlyerLinkGenerator * _Nonnull generator) {
             return generatorFromDictionary(dictionaryFromJson(parameters), generator);
-        } completionHandler:^(NSURL * _Nullable url) {
-            unityCallBack(generateInviteObjectName, GENERATE_LINK_CALLBACK, [url.absoluteString UTF8String]);
+        } completionHandler:^(NSURL * _Nullable url, NSError * _Nullable error) {
+            unityCallBack(generateInviteObjectName, GENERATE_LINK_CALLBACK, url ? [url.absoluteString UTF8String] : "");
         }];
     }
     
     const void _recordInvite (const char* channel, const char* parameters) {
-        [AppsFlyerShareInviteHelper logInvite:stringFromChar(channel) parameters:dictionaryFromJson(parameters)];
+        [AppsFlyerShareInviteHelper logInvite:stringFromChar(channel) eventParameters:dictionaryFromJson(parameters)];
     }
     
     const void _setUserEmails (int emailCryptTypeInt , int length, const char **userEmails) {
@@ -255,7 +273,7 @@ extern "C" {
     }
 
     const void _setSharingFilterForAllPartners () {
-        [[AppsFlyerLib shared] setSharingFilterForAllPartners];
+        [[AppsFlyerLib shared] setSharingFilterForPartners:@[@"all"]];
     }
 
     const void _setSharingFilter (int length, const char **partners) {
@@ -272,26 +290,9 @@ extern "C" {
         }
     }
     
+    // validateAndLogInAppPurchase V1 API removed in SDK 7.0.0 — use _validateAndSendInAppPurchaseV2
     const void _validateAndSendInAppPurchase (const char* productIdentifier, const char* price, const char* currency, const char* transactionId, const char* additionalParameters, const char* objectName) {
-
-        validateObjectName = stringFromChar(objectName);
-
-        [[AppsFlyerLib shared]
-         validateAndLogInAppPurchase:stringFromChar(productIdentifier)
-         price:stringFromChar(price)
-         currency:stringFromChar(currency)
-         transactionId:stringFromChar(transactionId)
-         additionalParameters:dictionaryFromJson(additionalParameters)
-         success:^(NSDictionary *result){
-                 unityCallBack(validateObjectName, VALIDATE_CALLBACK, stringFromdictionary(result));
-         } failure:^(NSError *error, id response) {
-            if(response && [response isKindOfClass:[NSDictionary class]]) {
-                 NSDictionary* value = (NSDictionary*)response;
-                 unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, stringFromdictionary(value));
-             } else {
-                 unityCallBack(validateObjectName, VALIDATE_ERROR_CALLBACK, error ? [[error localizedDescription] UTF8String] : "error");
-             }
-         }];
+        unityCallBack(stringFromChar(objectName), VALIDATE_ERROR_CALLBACK, "validateAndSendInAppPurchase V1 removed in SDK 7.0.0, use validateAndSendInAppPurchaseV2");
     }
 
     const void _validateAndSendInAppPurchaseV2 (const char* product, const char* transactionId, int purchaseType, const char* purchaseAdditionalDetails, const char* objectName) {
@@ -312,6 +313,7 @@ extern "C" {
          
     }
     
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("registerConversionListener") — kept for one release cycle
     const void _getConversionData(const char* objectName) {
         if (_AppsFlyerdelegate == nil) {
             _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
@@ -320,6 +322,7 @@ extern "C" {
         [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
     }
 
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("waitForATT") — kept for one release cycle
     const void _waitForATTUserAuthorizationWithTimeoutInterval (int timeoutInterval) {
        [[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];
     }
@@ -334,6 +337,7 @@ extern "C" {
         }
     }
 
+    // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("registerDeeplinkListener") — kept for one release cycle
     const void _subscribeForDeepLink (const char* objectName) {
 
         onDeeplinkingObjectName = stringFromChar(objectName);
@@ -349,7 +353,7 @@ extern "C" {
     }
 
     const void _setPartnerData(const char* partnerId, const char* partnerInfo) {
-        [[AppsFlyerLib shared] setPartnerDataWithPartnerId: stringFromChar(partnerId) partnerInfo:dictionaryFromJson(partnerInfo)];
+        [[AppsFlyerLib shared] setPartnerDataWithPartnerId:stringFromChar(partnerId) data:dictionaryFromJson(partnerInfo)];
     }
 
     const void _disableIDFVCollection(bool isDisabled) {

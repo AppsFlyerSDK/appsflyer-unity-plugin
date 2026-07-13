@@ -23,7 +23,10 @@ namespace AppsFlyerSDK
             setAppleAppID(appID);
             if (gameObject != null)
             {
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
+                _setRPCEventHandler(gameObject.name);
+                getConversionData(gameObject.name);
+#elif UNITY_IOS
                 getConversionData(gameObject.name);
 #elif UNITY_STANDALONE_OSX
                 getConversionData(gameObject.GetType().ToString());
@@ -703,6 +706,21 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
         [DllImport("AppsFlyerBundle")]
 #endif
         private static extern void _setAppleAppID(string appleAppID);
+
+#if UNITY_IOS && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void _setRPCEventHandler(string objectName);
+
+    [DllImport("__Internal")]
+    private static extern void _nativeRegisterSessionReadyListener(string objectName);
+#endif
+
+        internal static void NativeRegisterSessionReadyListener(string objectName)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            _nativeRegisterSessionReadyListener(objectName);
+#endif
+        }
 
 #if UNITY_IOS
     [DllImport("__Internal")]
