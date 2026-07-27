@@ -263,13 +263,9 @@ extern "C" {
     }
     
     const void _setUserEmails (int emailCryptTypeInt , int length, const char **userEmails) {
-        if(length > 0 && userEmails) {
-            [[AppsFlyerLib shared] setUserEmails:NSArrayFromCArray(length, userEmails) withCryptType:emailCryptTypeFromInt(emailCryptTypeInt)];
-        }
     }
 
     const void _setPhoneNumber (const char* phoneNumber) {
-        [[AppsFlyerLib shared] setPhoneNumber:stringFromChar(phoneNumber)];
     }
 
     const void _setSharingFilterForAllPartners () {

@@ -5,10 +5,9 @@ apply from: '../shared/common.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    // af-android-sdk provided locally as af-android-sdk-dev.aar (dev branch, SDK 7)
+    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.1'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
     implementation 'com.android.installreferrer:installreferrer:2.1'
-    // purchase-connector excluded for dev SDK 7 smoke test (class conflicts with dev SDK)
 **DEPS**}
 
 android {

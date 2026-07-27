@@ -101,20 +101,6 @@ static AppsFlyerLinkGenerator* generatorFromDictionary(NSDictionary* dictionary,
     return generator;
 }
 
-static EmailCryptType emailCryptTypeFromInt(int emailCryptTypeInt){
-    
-    EmailCryptType emailCryptType;
-    switch (emailCryptTypeInt){
-        case 1:
-            emailCryptType = EmailCryptTypeSHA256;
-            break;
-        default:
-            emailCryptType = EmailCryptTypeNone;
-            break;
-    }
-
-    return emailCryptType;
-}
 
 static NSNumber *intFromNullableBool(const char *cStr) {
     if (!cStr) return nil;
