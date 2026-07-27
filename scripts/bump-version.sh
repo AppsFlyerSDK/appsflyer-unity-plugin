@@ -5,8 +5,6 @@
 # Usage:
 #   ./scripts/bump-version.sh \
 #     --plugin-version 6.18.0-rc1 \
-#     --android-sdk-version 6.18.0 \
-#     --ios-sdk-version 6.18.0 \
 #     [--ios-pc-version 6.18.0] \
 #     [--android-pc-version 2.2.0]
 #
@@ -20,7 +18,6 @@ set -euo pipefail
 
 PLUGIN_VERSION=""
 ANDROID_PLUGIN_BRIDGE_VERSION=""
-ANDROID_SDK_VERSION=""
 IOS_RPC_VERSION=""
 UNITY_WRAPPER_VERSION=""
 ANDROID_PC_VERSION=""
@@ -31,7 +28,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --plugin-version) PLUGIN_VERSION="$2"; shift 2 ;;
     --android-plugin-bridge-version) ANDROID_PLUGIN_BRIDGE_VERSION="$2"; shift 2 ;;
-    --android-sdk-version) ANDROID_SDK_VERSION="$2"; shift 2 ;;
     --ios-rpc-version) IOS_RPC_VERSION="$2"; shift 2 ;;
     --unity-wrapper-version) UNITY_WRAPPER_VERSION="$2"; shift 2 ;;
     --android-pc-version) ANDROID_PC_VERSION="$2"; shift 2 ;;
@@ -43,7 +39,6 @@ done
 
 [[ -z "$PLUGIN_VERSION" ]]                && { echo "Error: --plugin-version is required";                exit 1; }
 [[ -z "$ANDROID_PLUGIN_BRIDGE_VERSION" ]] && { echo "Error: --android-plugin-bridge-version is required"; exit 1; }
-[[ -z "$ANDROID_SDK_VERSION" ]]           && { echo "Error: --android-sdk-version is required";           exit 1; }
 [[ -z "$IOS_RPC_VERSION" ]]               && { echo "Error: --ios-rpc-version is required";               exit 1; }
 
 BASE_VERSION="${PLUGIN_VERSION%%-rc*}"
@@ -53,7 +48,6 @@ echo "Bumping versions:"
 echo "  plugin:                  $PLUGIN_VERSION"
 echo "  plugin-base:             $BASE_VERSION"
 echo "  android-plugin-bridge:   $ANDROID_PLUGIN_BRIDGE_VERSION"
-echo "  android-sdk (compileOnly): $ANDROID_SDK_VERSION"
 echo "  ios-rpc:                 $IOS_RPC_VERSION"
 echo "  unity-wrapper:           $UNITY_WRAPPER_VERSION"
 echo "  ios-pc:                  ${IOS_PC_VERSION:-"(unchanged)"}"
@@ -123,11 +117,6 @@ if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
     echo "  VERSION_CODE=$current_version_code (unchanged; VERSION_NAME already $UNITY_WRAPPER_VERSION)"
   fi
   sed -i.bak "s|^VERSION_NAME=.*|VERSION_NAME=$UNITY_WRAPPER_VERSION|" "$ANDROID_WRAPPER_PROPS"
-  if grep -q "^ANDROID_SDK_VERSION=" "$ANDROID_WRAPPER_PROPS"; then
-    sed -i.bak "s|^ANDROID_SDK_VERSION=.*|ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION|" "$ANDROID_WRAPPER_PROPS"
-  else
-    echo "ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" >> "$ANDROID_WRAPPER_PROPS"
-  fi
   if [[ -n "$ANDROID_PC_VERSION" ]]; then
     if grep -q "^ANDROID_PC_VERSION=" "$ANDROID_WRAPPER_PROPS"; then
       sed -i.bak "s|^ANDROID_PC_VERSION=.*|ANDROID_PC_VERSION=$ANDROID_PC_VERSION|" "$ANDROID_WRAPPER_PROPS"
@@ -144,11 +133,6 @@ if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
   echo "[10/14] $UNITYWRAPPER_BUILD — af-android-plugin-bridge"
   sed -i.bak "s|af-android-plugin-bridge:[^'\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$UNITYWRAPPER_BUILD"
   rm -f "${UNITYWRAPPER_BUILD}.bak"
-  echo "[10b/14] $UNITYWRAPPER_BUILD — af-android-sdk uses ANDROID_SDK_VERSION (compileOnly)"
-  if grep -q "com.appsflyer:af-android-sdk:[^$]" "$UNITYWRAPPER_BUILD"; then
-    sed -i.bak 's|com.appsflyer:af-android-sdk:[^"'"'"']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|' "$UNITYWRAPPER_BUILD"
-    rm -f "${UNITYWRAPPER_BUILD}.bak"
-  fi
   if [[ -n "$ANDROID_BILLING_VERSION" ]]; then
     echo "[10c/14] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
     sed -i.bak "s|billingclient:billing:[^'\"]*|billingclient:billing:$ANDROID_BILLING_VERSION|" "$UNITYWRAPPER_BUILD"

@@ -10,20 +10,17 @@ VALIDATE_SCRIPT="$SCRIPT_DIR/validate-unity-wrapper.sh"
 
 VERSION=""
 PLUGIN_BASE_VERSION=""
-ANDROID_SDK_VERSION=""
 SKIP_IF_EXISTS=false
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --version <version> --plugin-base-version <version> --android-sdk-version <version> [options]
+Usage: $(basename "$0") --version <version> --plugin-base-version <version> [options]
 
 Build and publish com.appsflyer:unity-wrapper to Maven Central via Sonatype.
 
 Options:
   --plugin-base-version <version>
                      Required Unity plugin base version to verify before publishing
-  --android-sdk-version <version>
-                     Required af-android-sdk compileOnly version to verify before publishing
   --skip-if-exists   Skip publish when the artifact already exists in Maven Central
 
 Gradle credentials (pass via -P or ORG_GRADLE_PROJECT_* env vars):
@@ -73,10 +70,6 @@ while [[ $# -gt 0 ]]; do
       PLUGIN_BASE_VERSION="$2"
       shift 2
       ;;
-    --android-sdk-version)
-      ANDROID_SDK_VERSION="$2"
-      shift 2
-      ;;
     --skip-if-exists)
       SKIP_IF_EXISTS=true
       shift
@@ -103,11 +96,6 @@ if [[ -z "$PLUGIN_BASE_VERSION" ]]; then
   usage >&2
   exit 1
 fi
-if [[ -z "$ANDROID_SDK_VERSION" ]]; then
-  echo "Error: --android-sdk-version is required" >&2
-  usage >&2
-  exit 1
-fi
 
 if [[ ! -f "$GRADLE_PROPS" ]]; then
   echo "Error: gradle.properties not found at $GRADLE_PROPS" >&2
@@ -130,18 +118,6 @@ if ! grep -q "PLUGIN_VERSION = \"$PLUGIN_BASE_VERSION\"" "$UNITYWRAPPER_JAVA"; t
   echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Unity PluginInfo version." >&2
   exit 1
 fi
-if ! grep -q "^ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" "$GRADLE_PROPS"; then
-  current_android_sdk="$(grep '^ANDROID_SDK_VERSION=' "$GRADLE_PROPS" | cut -d= -f2 || true)"
-  echo "Error: gradle.properties has ANDROID_SDK_VERSION=${current_android_sdk:-missing}, expected $ANDROID_SDK_VERSION." >&2
-  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Android SDK compile dependency." >&2
-  exit 1
-fi
-if ! grep -q 'com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION' "$UNITYWRAPPER_BUILD"; then
-  echo "Error: unity-wrapper build.gradle must use ANDROID_SDK_VERSION for af-android-sdk." >&2
-  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Android SDK compile dependency." >&2
-  exit 1
-fi
-
 if [[ "$SKIP_IF_EXISTS" == true ]]; then
   echo "Checking whether com.appsflyer:unity-wrapper:$VERSION already exists..."
   if "$VALIDATE_SCRIPT" --version "$VERSION"; then

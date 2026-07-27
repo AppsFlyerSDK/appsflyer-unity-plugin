@@ -11,10 +11,6 @@ on:
         description: Expected Unity plugin base version embedded in Android PluginInfo
         required: true
         type: string
-      android_sdk_version:
-        description: af-android-sdk compileOnly version (transitive from plugin bridge, e.g. 7.0.1)
-        required: true
-        type: string
       release_branch:
         description: Branch to check out before publish
         required: true
@@ -49,10 +45,6 @@ on:
         type: string
       plugin_base_version:
         description: Unity plugin base version embedded in Android PluginInfo (e.g. 7.0.1)
-        required: true
-        type: string
-      android_sdk_version:
-        description: af-android-sdk compileOnly version (transitive from plugin bridge, e.g. 7.0.1)
         required: true
         type: string
       release_branch:
@@ -122,7 +114,6 @@ jobs:
           ARGS=(
             --version "${{ inputs.wrapper_version }}"
             --plugin-base-version "${{ inputs.plugin_base_version }}"
-            --android-sdk-version "${{ inputs.android_sdk_version }}"
           )
           if [[ "${{ inputs.skip_if_exists }}" == "true" ]]; then
             ARGS+=(--skip-if-exists)
