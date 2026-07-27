@@ -19,8 +19,9 @@
 set -euo pipefail
 
 PLUGIN_VERSION=""
+ANDROID_PLUGIN_BRIDGE_VERSION=""
 ANDROID_SDK_VERSION=""
-IOS_SDK_VERSION=""
+IOS_RPC_VERSION=""
 UNITY_WRAPPER_VERSION=""
 ANDROID_PC_VERSION=""
 IOS_PC_VERSION=""
@@ -29,8 +30,9 @@ ANDROID_BILLING_VERSION=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --plugin-version) PLUGIN_VERSION="$2"; shift 2 ;;
+    --android-plugin-bridge-version) ANDROID_PLUGIN_BRIDGE_VERSION="$2"; shift 2 ;;
     --android-sdk-version) ANDROID_SDK_VERSION="$2"; shift 2 ;;
-    --ios-sdk-version) IOS_SDK_VERSION="$2"; shift 2 ;;
+    --ios-rpc-version) IOS_RPC_VERSION="$2"; shift 2 ;;
     --unity-wrapper-version) UNITY_WRAPPER_VERSION="$2"; shift 2 ;;
     --android-pc-version) ANDROID_PC_VERSION="$2"; shift 2 ;;
     --ios-pc-version) IOS_PC_VERSION="$2"; shift 2 ;;
@@ -39,23 +41,24 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -z "$PLUGIN_VERSION" ]]       && { echo "Error: --plugin-version is required";       exit 1; }
-[[ -z "$ANDROID_SDK_VERSION" ]]  && { echo "Error: --android-sdk-version is required";  exit 1; }
-[[ -z "$IOS_SDK_VERSION" ]]      && { echo "Error: --ios-sdk-version is required";      exit 1; }
+[[ -z "$PLUGIN_VERSION" ]]                && { echo "Error: --plugin-version is required";                exit 1; }
+[[ -z "$ANDROID_PLUGIN_BRIDGE_VERSION" ]] && { echo "Error: --android-plugin-bridge-version is required"; exit 1; }
+[[ -z "$ANDROID_SDK_VERSION" ]]           && { echo "Error: --android-sdk-version is required";           exit 1; }
+[[ -z "$IOS_RPC_VERSION" ]]               && { echo "Error: --ios-rpc-version is required";               exit 1; }
 
 BASE_VERSION="${PLUGIN_VERSION%%-rc*}"
 UNITY_WRAPPER_VERSION="${UNITY_WRAPPER_VERSION:-$BASE_VERSION}"
-IOS_PC_VERSION="${IOS_PC_VERSION:-$IOS_SDK_VERSION}"
 
 echo "Bumping versions:"
-echo "  plugin:         $PLUGIN_VERSION"
-echo "  plugin-base:    $BASE_VERSION"
-echo "  android-sdk:    $ANDROID_SDK_VERSION"
-echo "  ios-sdk:        $IOS_SDK_VERSION"
-echo "  unity-wrapper:  $UNITY_WRAPPER_VERSION"
-echo "  ios-pc:         $IOS_PC_VERSION"
-echo "  android-pc:     ${ANDROID_PC_VERSION:-"(unchanged)"}"
-echo "  android-billing: ${ANDROID_BILLING_VERSION:-"(unchanged)"}"
+echo "  plugin:                  $PLUGIN_VERSION"
+echo "  plugin-base:             $BASE_VERSION"
+echo "  android-plugin-bridge:   $ANDROID_PLUGIN_BRIDGE_VERSION"
+echo "  android-sdk (compileOnly): $ANDROID_SDK_VERSION"
+echo "  ios-rpc:                 $IOS_RPC_VERSION"
+echo "  unity-wrapper:           $UNITY_WRAPPER_VERSION"
+echo "  ios-pc:                  ${IOS_PC_VERSION:-"(unchanged)"}"
+echo "  android-pc:              ${ANDROID_PC_VERSION:-"(unchanged)"}"
+echo "  android-billing:         ${ANDROID_BILLING_VERSION:-"(unchanged)"}"
 echo ""
 
 # ── 1. Assets/AppsFlyer/package.json ─────────────────────────────────────────
@@ -72,17 +75,19 @@ rm -f "${AF_CS}.bak"
 
 # ── 3-6. Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml ───────────────────
 DEPS_XML="Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
-echo "[3/14] $DEPS_XML — af-android-sdk"
-sed -i.bak "s|af-android-sdk:[^\"]*|af-android-sdk:$ANDROID_SDK_VERSION|" "$DEPS_XML"
+echo "[3/14] $DEPS_XML — af-android-plugin-bridge"
+sed -i.bak "s|af-android-plugin-bridge:[^\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$DEPS_XML"
 
 echo "[4/14] $DEPS_XML — unity-wrapper"
 sed -i.bak "s|unity-wrapper:[^\"]*|unity-wrapper:$UNITY_WRAPPER_VERSION|" "$DEPS_XML"
 
-echo "[5/14] $DEPS_XML — AppsFlyerFramework"
-sed -i.bak "s|name=\"AppsFlyerFramework\" version=\"[^\"]*\"|name=\"AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"|" "$DEPS_XML"
+echo "[5/14] $DEPS_XML — AppsFlyerRPC"
+sed -i.bak "s|name=\"AppsFlyerRPC\" version=\"[^\"]*\"|name=\"AppsFlyerRPC\" version=\"$IOS_RPC_VERSION\"|" "$DEPS_XML"
 
-echo "[6/14] $DEPS_XML — PurchaseConnector (iOS) → $IOS_PC_VERSION"
-sed -i.bak "s|name=\"PurchaseConnector\" version=\"[^\"]*\"|name=\"PurchaseConnector\" version=\"$IOS_PC_VERSION\"|" "$DEPS_XML"
+if [[ -n "$IOS_PC_VERSION" ]]; then
+  echo "[6/14] $DEPS_XML — PurchaseConnector (iOS) → $IOS_PC_VERSION"
+  sed -i.bak "s|name=\"PurchaseConnector\" version=\"[^\"]*\"|name=\"PurchaseConnector\" version=\"$IOS_PC_VERSION\"|" "$DEPS_XML"
+fi
 
 if [[ -n "$ANDROID_PC_VERSION" ]]; then
   echo "[6b/14] $DEPS_XML — purchase-connector (Android)"
@@ -136,13 +141,16 @@ fi
 # ── 10. android-unity-wrapper/unitywrapper/build.gradle ──────────────────────
 UNITYWRAPPER_BUILD="android-unity-wrapper/unitywrapper/build.gradle"
 if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
-  echo "[10/14] $UNITYWRAPPER_BUILD — af-android-sdk uses ANDROID_SDK_VERSION"
+  echo "[10/14] $UNITYWRAPPER_BUILD — af-android-plugin-bridge"
+  sed -i.bak "s|af-android-plugin-bridge:[^'\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$UNITYWRAPPER_BUILD"
+  rm -f "${UNITYWRAPPER_BUILD}.bak"
+  echo "[10b/14] $UNITYWRAPPER_BUILD — af-android-sdk uses ANDROID_SDK_VERSION (compileOnly)"
   if grep -q "com.appsflyer:af-android-sdk:[^$]" "$UNITYWRAPPER_BUILD"; then
     sed -i.bak 's|com.appsflyer:af-android-sdk:[^"'"'"']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|' "$UNITYWRAPPER_BUILD"
     rm -f "${UNITYWRAPPER_BUILD}.bak"
   fi
   if [[ -n "$ANDROID_BILLING_VERSION" ]]; then
-    echo "[10b/14] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
+    echo "[10c/14] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
     sed -i.bak "s|billingclient:billing:[^'\"]*|billingclient:billing:$ANDROID_BILLING_VERSION|" "$UNITYWRAPPER_BUILD"
     rm -f "${UNITYWRAPPER_BUILD}.bak"
   fi
@@ -160,19 +168,19 @@ echo "[12/14] $STRICT_SH"
 sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage\"|" "$STRICT_SH"
 rm -f "${STRICT_SH}.bak"
 
-# ── 9. test-app/Assets/Plugins/Android/mainTemplate.gradle ───────────────────
+# ── 13. test-app/Assets/Plugins/Android/mainTemplate.gradle ──────────────────
 MAIN_GRADLE="test-app/Assets/Plugins/Android/mainTemplate.gradle"
 if [[ -f "$MAIN_GRADLE" ]]; then
-  echo "[13/14] $MAIN_GRADLE — af-android-sdk"
-  sed -i.bak "s|com.appsflyer:af-android-sdk:[^']*|com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION|" "$MAIN_GRADLE"
+  echo "[13/14] $MAIN_GRADLE — af-android-plugin-bridge"
+  sed -i.bak "s|com.appsflyer:af-android-plugin-bridge:[^']*|com.appsflyer:af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$MAIN_GRADLE"
   rm -f "${MAIN_GRADLE}.bak"
 fi
 
-# ── 10. scripts/ios-pod-install.sh ───────────────────────────────────────────
+# ── 14. scripts/ios-pod-install.sh ───────────────────────────────────────────
 IOS_POD_SH="scripts/ios-pod-install.sh"
 if [[ -f "$IOS_POD_SH" ]]; then
-  echo "[14/14] $IOS_POD_SH — AppsFlyerFramework"
-  sed -i.bak "s|pod 'AppsFlyerFramework', '[^']*'|pod 'AppsFlyerFramework', '$IOS_SDK_VERSION'|g" "$IOS_POD_SH"
+  echo "[14/14] $IOS_POD_SH — AppsFlyerRPC"
+  sed -i.bak "s|pod 'AppsFlyerRPC', '[^']*'|pod 'AppsFlyerRPC', '$IOS_RPC_VERSION'|g" "$IOS_POD_SH"
   rm -f "${IOS_POD_SH}.bak"
 fi
 
@@ -181,11 +189,13 @@ CHANGELOG="CHANGELOG.md"
 CHANGELOG_HEADER="## v${BASE_VERSION}"
 if [[ -f "$CHANGELOG" ]]; then
   CHANGELOG_BULLETS=(
-    "* Update Android SDK version - $ANDROID_SDK_VERSION"
-    "* Update iOS SDK version - $IOS_SDK_VERSION"
-    "* Update iOS Purchase Connector version - $IOS_PC_VERSION"
+    "* Update af-android-plugin-bridge version - $ANDROID_PLUGIN_BRIDGE_VERSION"
+    "* Update AppsFlyerRPC version - $IOS_RPC_VERSION"
     "* Update Android unity-wrapper version - $UNITY_WRAPPER_VERSION"
   )
+  if [[ -n "$IOS_PC_VERSION" ]]; then
+    CHANGELOG_BULLETS+=("* Update iOS Purchase Connector version - $IOS_PC_VERSION")
+  fi
   if [[ -n "$ANDROID_PC_VERSION" ]]; then
     CHANGELOG_BULLETS+=("* Update Android Purchase Connector version - $ANDROID_PC_VERSION")
   fi
@@ -286,29 +296,28 @@ if [[ -f "$CHANGELOG" ]]; then
 fi
 
 # ── README.md / docs — native SDK and Purchase Connector version surfaces ─────
-update_doc_native_versions() {
+update_doc_rpc_versions() {
   local file="$1"
   [[ -f "$file" ]] || return 0
-  sed -i.bak "s|- Android AppsFlyer SDK v[0-9][0-9.]*|- Android AppsFlyer SDK v$ANDROID_SDK_VERSION|" "$file"
-  sed -i.bak "s|- iOS AppsFlyer SDK v[0-9][0-9.]*|- iOS AppsFlyer SDK v$IOS_SDK_VERSION|" "$file"
-  sed -i.bak "s|- iOS Purchase Connector [0-9][0-9.]*|- iOS Purchase Connector $IOS_PC_VERSION|" "$file"
+  sed -i.bak "s|- af-android-plugin-bridge [0-9][0-9.]*|- af-android-plugin-bridge $ANDROID_PLUGIN_BRIDGE_VERSION|" "$file"
+  sed -i.bak "s|- AppsFlyerRPC [0-9][0-9.]*|- AppsFlyerRPC $IOS_RPC_VERSION|" "$file"
+  [[ -n "$IOS_PC_VERSION" ]] && sed -i.bak "s|- iOS Purchase Connector [0-9][0-9.]*|- iOS Purchase Connector $IOS_PC_VERSION|" "$file"
   rm -f "${file}.bak"
 }
 
 README="README.md"
 if [[ -f "$README" ]]; then
-  update_doc_native_versions "$README"
-  sed -i.bak "s|af-android-sdk:[0-9][0-9.]*|af-android-sdk:$ANDROID_SDK_VERSION|g" "$README"
-  sed -i.bak "s|AppsFlyerFramework/[0-9][0-9.]*|AppsFlyerFramework/$IOS_SDK_VERSION|g" "$README"
-  sed -i.bak "s|AppsFlyerFramework', '[0-9][0-9.]*|AppsFlyerFramework', '$IOS_SDK_VERSION|g" "$README"
+  update_doc_rpc_versions "$README"
+  sed -i.bak "s|af-android-plugin-bridge:[0-9][0-9.]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|g" "$README"
+  sed -i.bak "s|AppsFlyerRPC', '[0-9][0-9.]*|AppsFlyerRPC', '$IOS_RPC_VERSION|g" "$README"
   rm -f "${README}.bak"
-  echo "[+] README.md — updated native SDK and Purchase Connector references"
+  echo "[+] README.md — updated RPC bridge version references"
 fi
 
 INTRO="docs/Introduction.md"
 if [[ -f "$INTRO" ]]; then
-  update_doc_native_versions "$INTRO"
-  echo "[+] docs/Introduction.md — updated native SDK and Purchase Connector references"
+  update_doc_rpc_versions "$INTRO"
+  echo "[+] docs/Introduction.md — updated RPC bridge version references"
 fi
 
 echo ""

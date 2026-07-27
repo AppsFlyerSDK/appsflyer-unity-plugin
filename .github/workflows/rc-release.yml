@@ -7,12 +7,16 @@ on:
         description: "Plugin version, e.g. 6.18.0-rc1"
         required: true
         type: string
-      android_sdk_version:
-        description: "Android SDK version, e.g. 6.18.0"
+      android_plugin_bridge_version:
+        description: "af-android-plugin-bridge version, e.g. 7.0.1"
         required: true
         type: string
-      ios_sdk_version:
-        description: "iOS SDK version, e.g. 6.18.0"
+      android_sdk_version:
+        description: "af-android-sdk version used to compile the wrapper (compileOnly dep), e.g. 6.18.0"
+        required: true
+        type: string
+      ios_rpc_version:
+        description: "AppsFlyerRPC pod version, e.g. 7.0.11"
         required: true
         type: string
       base_branch:
@@ -31,7 +35,7 @@ on:
         default: ""
         type: string
       ios_pc_version:
-        description: "iOS Purchase Connector version (defaults to ios_sdk_version). Use when PC version differs from iOS SDK version."
+        description: "iOS Purchase Connector version. Pass when PC version differs from the AppsFlyerRPC version."
         required: false
         default: ""
         type: string
@@ -66,8 +70,9 @@ jobs:
       - name: Validate inputs
         env:
           PLUGIN_VERSION: ${{ inputs.plugin_version }}
+          ANDROID_PLUGIN_BRIDGE_VERSION: ${{ inputs.android_plugin_bridge_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
-          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          IOS_RPC_VERSION: ${{ inputs.ios_rpc_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           UNITY_WRAPPER_VERSION: ${{ inputs.unity_wrapper_version }}
         run: |
@@ -75,12 +80,16 @@ jobs:
             echo "::error::plugin_version must match X.Y.Z-rcN, for example 6.18.0-rc1"
             exit 1
           fi
+          if ! [[ "$ANDROID_PLUGIN_BRIDGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::android_plugin_bridge_version must match X.Y.Z"
+            exit 1
+          fi
           if ! [[ "$ANDROID_SDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::android_sdk_version must match X.Y.Z"
             exit 1
           fi
-          if ! [[ "$IOS_SDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::ios_sdk_version must match X.Y.Z"
+          if ! [[ "$IOS_RPC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::ios_rpc_version must match X.Y.Z"
             exit 1
           fi
           if [[ "$DRY_RUN" == "true" && -z "$UNITY_WRAPPER_VERSION" ]]; then
@@ -161,8 +170,9 @@ jobs:
         run: |
           BUMP_ARGS=(
             --plugin-version "${{ steps.branch.outputs.version }}"
+            --android-plugin-bridge-version "${{ inputs.android_plugin_bridge_version }}"
             --android-sdk-version "${{ inputs.android_sdk_version }}"
-            --ios-sdk-version "${{ inputs.ios_sdk_version }}"
+            --ios-rpc-version "${{ inputs.ios_rpc_version }}"
             --unity-wrapper-version "${{ steps.wrapper.outputs.wrapper_version }}"
           )
           [[ -n "${{ inputs.ios_pc_version }}" ]] && BUMP_ARGS+=(--ios-pc-version "${{ inputs.ios_pc_version }}")
@@ -175,17 +185,16 @@ jobs:
           PLUGIN_VERSION: ${{ steps.branch.outputs.version }}
           BASE_VERSION: ${{ steps.branch.outputs.base_version }}
           WRAPPER_VERSION: ${{ steps.wrapper.outputs.wrapper_version }}
+          ANDROID_PLUGIN_BRIDGE_VERSION: ${{ inputs.android_plugin_bridge_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
-          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
-          IOS_PC_VERSION: ${{ inputs.ios_pc_version || inputs.ios_sdk_version }}
+          IOS_RPC_VERSION: ${{ inputs.ios_rpc_version }}
+          IOS_PC_VERSION: ${{ inputs.ios_pc_version }}
           BASE_BRANCH: ${{ inputs.base_branch }}
         run: |
-          grep -q "af-android-sdk:$ANDROID_SDK_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          grep -q "af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "unity-wrapper:$WRAPPER_VERSION" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-          grep -q "AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-          grep -q "PurchaseConnector\" version=\"$IOS_PC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
-          grep -qE "^- iOS AppsFlyer SDK v${IOS_SDK_VERSION}$" README.md
-          grep -qE "^- iOS Purchase Connector ${IOS_PC_VERSION}$" README.md
+          grep -q "AppsFlyerRPC\" version=\"$IOS_RPC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
+          [[ -n "$IOS_PC_VERSION" ]] && grep -q "PurchaseConnector\" version=\"$IOS_PC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "pluginVersion:@\"$PLUGIN_VERSION\"" Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm
           grep -q "PLUGIN_VERSION = \"$BASE_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
@@ -672,10 +681,11 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
           JIRA_TICKETS: ${{ steps.jira-tickets.outputs.tickets }}
+          ANDROID_PLUGIN_BRIDGE_VERSION: ${{ inputs.android_plugin_bridge_version }}
           ANDROID_SDK_VERSION: ${{ inputs.android_sdk_version }}
-          IOS_SDK_VERSION: ${{ inputs.ios_sdk_version }}
+          IOS_RPC_VERSION: ${{ inputs.ios_rpc_version }}
           ANDROID_PC_VERSION: ${{ steps.purchase-connector-versions.outputs.android_pc }}
-          IOS_PC_VERSION: ${{ inputs.ios_pc_version || inputs.ios_sdk_version }}
+          IOS_PC_VERSION: ${{ inputs.ios_pc_version }}
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -711,9 +721,9 @@ jobs:
             '*Linked tickets and issues:*',
             env.JIRA_TICKETS || 'No assigned fix version found',
             '',
-            '*Native SDK versions:*',
-            `:android: AppsFlyer SDK ${env.ANDROID_SDK_VERSION}`,
-            `:apple_company: AppsFlyer SDK ${env.IOS_SDK_VERSION}`,
+            '*RPC bridge versions:*',
+            `:android: af-android-plugin-bridge ${env.ANDROID_PLUGIN_BRIDGE_VERSION} (wrapper compileOnly: af-android-sdk ${env.ANDROID_SDK_VERSION})`,
+            `:apple_company: AppsFlyerRPC ${env.IOS_RPC_VERSION}`,
             '',
             '*Purchase Connector versions:*',
             `:android: ${env.ANDROID_PC_VERSION}`,

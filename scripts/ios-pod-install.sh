@@ -17,15 +17,15 @@ fi
 
 # Read versions from AppsFlyerDependencies.xml — single source of truth set by bump-version.sh
 DEPS_XML="Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
-AF_VERSION=$(grep -Eo 'name="AppsFlyerFramework" version="[^"]*"' "$DEPS_XML" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+RPC_VERSION=$(grep -Eo 'name="AppsFlyerRPC" version="[^"]*"' "$DEPS_XML" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 PC_VERSION=$(grep -Eo 'name="PurchaseConnector" version="[^"]*"' "$DEPS_XML" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 
-if [[ -z "$AF_VERSION" ]]; then
-  echo "[ios-pod-install] ERROR: could not parse AppsFlyerFramework version from $DEPS_XML" >&2
+if [[ -z "$RPC_VERSION" ]]; then
+  echo "[ios-pod-install] ERROR: could not parse AppsFlyerRPC version from $DEPS_XML" >&2
   exit 1
 fi
 
-echo "[ios-pod-install] AppsFlyerFramework: $AF_VERSION"
+echo "[ios-pod-install] AppsFlyerRPC: $RPC_VERSION"
 echo "[ios-pod-install] PurchaseConnector:  ${PC_VERSION:-"(not found, skipping)"}"
 echo "[ios-pod-install] Writing Podfile to $IOS_BUILD_DIR"
 
@@ -35,7 +35,7 @@ platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
 target 'Unity-iPhone' do
-  pod 'AppsFlyerFramework', '6.17.9'
+  pod 'AppsFlyerRPC', '$RPC_VERSION'
 $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
   target 'Unity-iPhone Tests' do
     inherit! :search_paths
@@ -43,7 +43,7 @@ $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
 end
 
 target 'UnityFramework' do
-  pod 'AppsFlyerFramework', '6.17.9'
+  pod 'AppsFlyerRPC', '$RPC_VERSION'
 $([ -n "$PC_VERSION" ] && echo "  pod 'PurchaseConnector', '$PC_VERSION'")
 end
 
