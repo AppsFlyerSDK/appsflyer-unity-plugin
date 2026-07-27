@@ -19,12 +19,9 @@ namespace AppsFlyerSDK.Tests
         }
 
         #region SDK Initialization
-        [Test]
-        public void StartSDK_ShouldCallBridge()
-        {
-            AppsFlyer.startSDK();
-            mock.Received().startSDK(Arg.Any<bool>(), Arg.Any<string>());
-        }
+        // startSDK no longer calls the legacy native bridge directly on Android (removed to fix double init).
+        // On iOS it still calls instance.startSDK(); on all platforms it fires ExecuteFire("start") via RPC.
+        // Covered by AppsFlyerRPCContractTests.StartSDK_FiresStartViaRPC.
 
         // stopSDK no longer calls the legacy bridge — it fires RPC only.
         // Covered by AppsFlyerRPCContractTests.StopSDK_iOS_SendsStopNotSetStopped.
@@ -491,6 +488,15 @@ namespace AppsFlyerSDK.Tests
         {
             AppsFlyerRPCClient.instance = AppsFlyerRPCClient.DefaultInstance;
             AppsFlyer.instance = null;
+        }
+
+        // ── Platform-agnostic: startSDK fires RPC on all platforms ───────────────
+
+        [Test]
+        public void StartSDK_FiresStartViaRPC()
+        {
+            AppsFlyer.startSDK();
+            mockRpc.Received(1).ExecuteFire("start");
         }
 
         // ── Platform-agnostic: verify BuildRequest envelope shape ─────────────────
