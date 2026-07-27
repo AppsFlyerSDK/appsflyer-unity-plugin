@@ -3,9 +3,9 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.1"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.12"></androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.13"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
-    <androidPackage spec="com.appsflyer:purchase-connector:2.2.0"></androidPackage>
+    <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage>
   </androidPackages>
 
   <iosPods>
