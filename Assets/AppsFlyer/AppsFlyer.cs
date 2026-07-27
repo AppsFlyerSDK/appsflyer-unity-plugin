@@ -1197,11 +1197,9 @@ namespace AppsFlyerSDK
                     { "callbackObjectName", CallBackObjectName }
                 });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-                AppsFlyerRPCClient.instance.ExecuteFire("registerDeeplinkListener", new Dictionary<string, object>
-                {
-                    { "register", true },
-                    { "callbackObjectName", CallBackObjectName }
-                });
+                // AppsFlyerRPC bridge does not yet handle registerDeeplinkListener;
+                // use the direct P/Invoke path to set AppsFlyerLib.deepLinkDelegate.
+                instance.subscribeForDeepLink(CallBackObjectName);
 #endif
             }
             catch (AppsFlyerRPCException e)
