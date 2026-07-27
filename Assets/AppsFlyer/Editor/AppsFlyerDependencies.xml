@@ -2,7 +2,6 @@
 <dependencies>
 
   <androidPackages>
-    <androidPackage spec="com.appsflyer:af-android-sdk:6.17.6"></androidPackage>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.1"></androidPackage>
     <androidPackage spec="com.appsflyer:unity-wrapper:7.0.11"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
@@ -10,9 +9,9 @@
   </androidPackages>
 
   <iosPods>
-    <iosPod name="AppsFlyerFramework" version="7.0.0" minTargetSdk="13.0"></iosPod>
+    <iosPod name="AppsFlyerFramework" version="7.0.1" minTargetSdk="13.0"></iosPod>
     <iosPod name="AppsFlyerRPC" version="7.0.11" minTargetSdk="13.0"></iosPod>
-    <iosPod name="PurchaseConnector" version="7.0.0" minTargetSdk="13.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="7.0.1" minTargetSdk="13.0"></iosPod>
   </iosPods>
 
 </dependencies>
