@@ -41,6 +41,35 @@ on:
       MAVEN_SIGNING_PASSWORD:
         required: false
 
+  workflow_dispatch:
+    inputs:
+      wrapper_version:
+        description: Maven coord version to publish (base semver, e.g. 7.0.1)
+        required: true
+        type: string
+      plugin_base_version:
+        description: Unity plugin base version embedded in Android PluginInfo (e.g. 7.0.1)
+        required: true
+        type: string
+      android_sdk_version:
+        description: af-android-sdk version used as compileOnly dep (e.g. 6.17.6)
+        required: true
+        type: string
+      release_branch:
+        description: Branch to check out before publish (e.g. dev/DELIVERY-124647/rpc-implementation)
+        required: true
+        type: string
+      skip_if_exists:
+        description: Skip Sonatype publish when the artifact is already on Maven Central
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: Log only; do not run Gradle publish
+        required: false
+        default: false
+        type: boolean
+
 jobs:
   publish-wrapper:
     name: Publish unity-wrapper — ${{ inputs.wrapper_version }}
