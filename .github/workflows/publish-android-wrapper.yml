@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       android_sdk_version:
-        description: Expected af-android-sdk version used to compile the wrapper
+        description: af-android-sdk compileOnly version (transitive from plugin bridge, e.g. 7.0.1)
         required: true
         type: string
       release_branch:
@@ -52,7 +52,7 @@ on:
         required: true
         type: string
       android_sdk_version:
-        description: af-android-sdk version used as compileOnly dep (e.g. 6.17.6)
+        description: af-android-sdk compileOnly version (transitive from plugin bridge, e.g. 7.0.1)
         required: true
         type: string
       release_branch:
