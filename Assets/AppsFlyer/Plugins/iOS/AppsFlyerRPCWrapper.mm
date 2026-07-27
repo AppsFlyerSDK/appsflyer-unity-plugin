@@ -13,12 +13,6 @@
 #import "AppsFlyerRPC-Swift.h"
 #endif
 
-#if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
-#import <AppsFlyerLib/AppsFlyerLib.h>
-#elif __has_include("AppsFlyerLib.h")
-#import "AppsFlyerLib.h"
-#endif
-
 #include <dispatch/dispatch.h>
 
 extern "C" {
@@ -32,28 +26,6 @@ void _setRPCEventHandler(const char* objectName) {
         if (callbackObject.length > 0)
             UnitySendMessage([callbackObject UTF8String], "onRPCEvent", [jsonEvent UTF8String] ?: "{}");
     }];
-#endif
-}
-
-// Registers a session-ready listener directly on AppsFlyerLib and ALWAYS fires the
-// callback immediately on the main queue. Bypasses the RPC bridge timing issue:
-// AppsFlyerLib fires the block once per foreground cycle (at applicationDidBecomeActive).
-// Unity's Start() runs after that event has already fired, so a new listener registered
-// here would only fire on the NEXT foreground cycle. Since Unity always initialises
-// after applicationDidBecomeActive, the session is always ready at this point — fire now.
-void _nativeRegisterSessionReadyListener(const char* objectName) {
-#if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
-    NSString *callbackObj = [[NSString alloc] initWithUTF8String:objectName ?: ""];
-    // Register for future foreground cycles (background→foreground transitions).
-    [[AppsFlyerLib shared] registerSessionReadyListener:^{
-        if (callbackObj.length > 0)
-            UnitySendMessage([callbackObj UTF8String], "onRPCEvent", "{\"event\":\"sessionReady\"}");
-    }];
-    // Fire immediately for the current cycle — session is always ready by this point.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (callbackObj.length > 0)
-            UnitySendMessage([callbackObj UTF8String], "onRPCEvent", "{\"event\":\"sessionReady\"}");
-    });
 #endif
 }
 

@@ -1266,26 +1266,10 @@ namespace AppsFlyerSDK
         /// <param name="callbackObjectName">Name of the Unity GameObject to receive session-ready callbacks.</param>
         public static void registerSessionReadyListener(string callbackObjectName)
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            // On iOS, AppsFlyerLib fires the session-ready block once per foreground cycle
-            // (at applicationDidBecomeActive). By the time Unity's Start() coroutine runs,
-            // that event has already fired. The native path handles the "already ready" case
-            // by calling isSessionReady and firing immediately when needed.
-            AppsFlyeriOS.NativeRegisterSessionReadyListener(callbackObjectName);
-#elif UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             try
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("registerSessionReadyListener");
-                // Session may have already become ready before this listener was registered.
-                // Check synchronously and fire the callback immediately if so — same fix as iOS.
-                object isReadyObj = AppsFlyerRPCClient.instance.Execute("isSessionReady");
-                if (isReadyObj is bool isReady && isReady)
-                {
-                    var go = GameObject.Find(callbackObjectName);
-                    go?.SendMessage("onRPCEvent",
-                        "{\"event\":\"onSessionReady\",\"data\":null,\"origin\":\"android\"}",
-                        SendMessageOptions.DontRequireReceiver);
-                }
             }
             catch (AppsFlyerRPCException e) { AFLog("registerSessionReadyListener", "RPC error: " + e.Message); }
 #else

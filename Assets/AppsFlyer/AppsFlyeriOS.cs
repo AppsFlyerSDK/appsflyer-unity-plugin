@@ -711,16 +711,7 @@ public void startSDK(bool shouldCallback, string CallBackObjectName)
     [DllImport("__Internal")]
     private static extern void _setRPCEventHandler(string objectName);
 
-    [DllImport("__Internal")]
-    private static extern void _nativeRegisterSessionReadyListener(string objectName);
 #endif
-
-        internal static void NativeRegisterSessionReadyListener(string objectName)
-        {
-#if UNITY_IOS && !UNITY_EDITOR
-            _nativeRegisterSessionReadyListener(objectName);
-#endif
-        }
 
 #if UNITY_IOS
     [DllImport("__Internal")]
