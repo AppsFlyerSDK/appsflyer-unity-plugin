@@ -184,6 +184,10 @@ public class AppsFlyerAndroidWrapper {
         AppsFlyerLib.getInstance().setAdditionalData(customData);
     }
 
+    public static void setPartnerData(String partnerId, HashMap<String, Object> partnerData) {
+        AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerData);
+    }
+
     public static void setUserEmails(String... emails) {
         // setUserEmails removed in SDK 7
     }
