@@ -171,4 +171,219 @@ If your plugin's existing native code was written against a pre-SDK7 `AppsFlyerL
 | **`onAppOpenAttribution` / `onAppOpenAttributionFailure` retired** | These delegate callbacks (and their would-be RPC events) don't exist in SDK7. All retargeting/deep-link outcomes — including what used to be "on-app attribution" — now arrive as a single `onDeepLinkReceived` event; branch on `data.status`. |
 | **`handleLaunchOptions` is new** | No pre-SDK7 direct equivalent exposed through RPC; forward the host app's launch options dictionary through this RPC call instead of any ad hoc native code you had. |
 
+---
+
+## Unit testing bridge calls
+
+Examples below follow the exact conventions of the existing suite in
+`AppsFlyerRPC/AppsFlyerRPCTests/`: XCTest, `@testable import AppsFlyerRPC`, one hand-written mock
+per domain SDK protocol (`AFRPCConsolidatedHandlerTests.swift`), and shared assertion helpers
+(`RPCTestHelpers.swift`). Every SDK call is mocked — nothing hits `AppsFlyerLib` or the network.
+Use these as templates for testing your own plugin bridge's integration with `AppsFlyerRPC`, or
+for extending the RPC module's own test suite.
+
+### 1. Common setup — mock the domain SDK protocol, not `AppsFlyerLib`
+
+Each domain handler (`AFRPCCoreHandler`, `AFRPCSimpleConfigHandler`, …) depends on a narrow
+protocol (`AFRPCCoreSDK`, `AFRPCSimpleConfigSDK`, …), never on `AppsFlyerLib` directly. Tests
+conform a small mock class to the protocol slice the handler actually needs — no 40-member stub:
+
+```swift
+import XCTest
+@testable import AppsFlyerRPC
+
+final class MockSimpleConfigSDK: AFRPCSimpleConfigSDK {
+    var isDebug: Bool = false
+    var customerUserID: String?
+    var customData: [AnyHashable: Any]?
+    var currencyCode: String?
+    var disableAdvertisingIdentifier: Bool = false
+    var disableSKAdNetwork: Bool = false
+    var shouldCollectDeviceName: Bool = false
+    var appInviteOneLinkID: String?
+    var anonymizeUser: Bool = false
+    var disableCollectASA: Bool = false
+    var disableAppleAdsAttribution: Bool = false
+    var useReceiptValidationSandbox: Bool = false
+    var useUninstallSandbox: Bool = false
+    func setPhoneNumber(_ phoneNumber: String) {}
+    var disableIDFVCollection: Bool = false
+    var currentDeviceLanguage: String?
+    var isStopped: Bool = false
+}
+```
+
+### 2. Handler-level unit test (sync property setter)
+
+Construct the handler directly with the mock, build a typed request, call `handle(_:)`, and assert
+against the mock's captured state — no JSON involved at this layer.
+
+```swift
+final class AFRPCSimpleConfigHandlerTests: XCTestCase {
+    func testSetCustomerUserId_setsValue() async throws {
+        // Given
+        let mock = MockSimpleConfigSDK()
+        let handler = AFRPCSimpleConfigHandler(sdk: mock)
+        let req = try AFRPCSetCustomerUserIdRequest(from: ["customerId": "user-42"])
+
+        // When
+        let result = await handler.handle(.setCustomerUserId(req))
+
+        // Then
+        XCTAssertEqual(mock.customerUserID, "user-42")
+        guard case .success = result else { XCTFail("Expected success"); return }
+    }
+}
+```
+
+### 3. End-to-end JSON round trip (the exact contract a plugin's native bridge exercises)
+
+This is the layer your plugin's own Objective-C/Swift bridge code actually calls
+(`AppsFlyerRPCBridge.executeJson` wraps `AFRPCClient.execute(jsonRequest:)`). Testing at this level
+exercises real JSON parsing + validation + routing, not just one handler in isolation. Passing
+`{ _ in }` as the event emitter is enough when the test doesn't care about async events.
+
+```swift
+final class MyBridgeUsageTests: XCTestCase {
+    func testSetCustomerUserId_endToEndFromRawJSON() async {
+        // Given
+        let client = AFRPCClient { _ in }
+        let json = #"{"id":"req-1","method":"setCustomerUserId","params":{"customerId":"user-42"}}"#
+
+        // When
+        let response = await client.execute(jsonRequest: json)
+
+        // Then
+        RPCTestHelpers.assertSuccessEnvelope(response, expectedId: "req-1")
+    }
+}
+```
+
+### 4. Blocking/awaited call — success path (`awaitResponse: true`)
+
+`start`, `logEvent`, `validateAndLogInAppPurchase`, `logAndOpenStore`, and `generateInviteLink`
+support `awaitResponse: true`, which routes through `SDKTimeoutHelper.withSDKCompletionTimeout` —
+an `async` race between the SDK's completion handler and a timer, not a blocked thread + latch (the
+Android bridge blocks a real thread for this; the iOS one is structured concurrency throughout).
+Mocks that invoke their completion handler synchronously make this deterministic, no sleeping:
+
+```swift
+final class AFRPCCoreHandlerTests: XCTestCase {
+    func testStart_awaitResponseTrue_returnsSuccessOnceSDKCompletes() async throws {
+        // Given — MockCoreSDK.start(completionHandler:) invokes the handler immediately
+        let mock = MockCoreSDK()
+        let handler = AFRPCCoreHandler(sdk: mock, timeoutConfig: .test)
+        let req = try AFRPCStartRequest(from: ["awaitResponse": true])
+
+        // When
+        let result = await handler.handle(.start(req))
+
+        // Then
+        guard case .success = result else { XCTFail("Expected success"); return }
+        XCTAssertTrue(mock.startCalled)
+    }
+}
+```
+
+`timeoutConfig: .test` (defined in `SDKTimeoutHelper.swift`) shortens every timeout to 0.3s so
+timeout-path tests stay fast; production code always uses `.default` (10–30s per operation).
+
+### 5. Timeout path — SDK callback never fires
+
+`SDKTimeoutHelperTests.swift` covers this directly at the helper level, since it's the single
+choke point every awaited domain call routes through:
+
+```swift
+final class SDKTimeoutHelperTests: XCTestCase {
+    func testTimeoutFiresWhenOperationNeverCompletes() async {
+        // Given / When — the SDK-call closure never invokes `completion`
+        let result = await SDKTimeoutHelper.withSDKCompletionTimeout(
+            timeoutSeconds: 0.5,
+            operationName: "neverComplete"
+        ) { _ in }
+
+        // Then
+        guard case .failure(let failure) = result else { XCTFail("Expected failure"); return }
+        XCTAssertEqual(failure.errorType, "timeout")
+        XCTAssertTrue(failure.message.contains("timed out"))
+    }
+}
+```
+
+If your plugin bridge wraps this in its own async/await or Promise layer, mirror this shape: never
+invoke the mock's completion handler and assert your wrapper surfaces a timeout, not a hang.
+
+### 6. Malformed / unknown input
+
+Two independent failure points: an unrecognized `method` string (404), and a recognized method
+missing a required param (422).
+
+```swift
+func testUnknownMethod_throwsUnknownMethodError() {
+    XCTAssertThrowsError(try AFRPCParser.validateMethod("notARealMethod")) { error in
+        guard case AFRPCClientError.unknownMethod(let method) = error else {
+            XCTFail("Expected unknownMethod, got \(error)"); return
+        }
+        XCTAssertEqual(method, "notARealMethod")
+        XCTAssertEqual(AFRPCClientError.unknownMethod(method).rpcError.code, 404)
+    }
+}
+
+func testInitialize_missingDevKey_throwsMissingParameter() {
+    XCTAssertThrowsError(try AFRPCInitRequest(from: ["appId": "id123456789"])) { error in
+        guard case AFRPCClientError.missingParameter(let param) = error else {
+            XCTFail("Expected missingParameter, got \(error)"); return
+        }
+        XCTAssertEqual(param, "devKey")
+        XCTAssertEqual(AFRPCClientError.missingParameter(param).rpcError.code, 422)
+    }
+}
+```
+
+Unlike the Android bridge (`optString`/`optBoolean` with silent defaults), the iOS `Request(from:)`
+initializers throw on missing required params — there's no equivalent "loose validation" gotcha
+here to defend against on the plugin side.
+
+### 7. Persistent listener → event emission shape
+
+`registerConversionListener` / `registerDeeplinkListener` don't return data directly — they wire
+the RPC layer as the SDK delegate, which later emits async events through the same emitter your
+plugin's `setEventHandler` callback receives. Simulate the SDK invoking its delegate method and
+assert on the emitted `AFRPCEvent`, exactly as `AFRPCListenerLifecycleTests.swift` does:
+
+```swift
+final class AFRPCListenerLifecycleTests: XCTestCase {
+    func testRegisterConversionListener_delegateCallback_emitsEvent() async throws {
+        // Given
+        var receivedEvents: [AFRPCEvent] = []
+        let eventExpectation = expectation(description: "onConversionDataSuccess emitted")
+        let handler = AFRPCRequestHandler { event in
+            receivedEvents.append(event)
+            if event.event == "onConversionDataSuccess" { eventExpectation.fulfill() }
+        }
+        let request = try AFRPCRegisterConversionListenerRequest(from: [:])
+        _ = await handler.handle(request: .registerConversionListenerRequest(request), requestId: nil)
+
+        // When — simulate the SDK firing its AppsFlyerLibDelegate callback
+        handler.onConversionDataSuccess(["af_status": "Non-organic", "media_source": "facebook"])
+
+        // Then
+        await fulfillment(of: [eventExpectation], timeout: 2.0)
+        XCTAssertEqual(receivedEvents.first?.event, "onConversionDataSuccess")
+        XCTAssertEqual(receivedEvents.first?.origin, "ios")
+    }
+}
+```
+
+For the full existing suite (mock-per-domain handler tests, router dispatch tests, concurrency
+tests, bridge hardening tests, characterization tests), see:
+- `AppsFlyerRPC/AppsFlyerRPCTests/AFRPCConsolidatedHandlerTests.swift` — one mock + handler test per domain, plus router dispatch tests
+- `AppsFlyerRPC/AppsFlyerRPCTests/AppsFlyerRPCiOSTests.swift` — handler/event/bridge/client integration tests
+- `AppsFlyerRPC/AppsFlyerRPCTests/SDKTimeoutHelperTests.swift` — timeout helper unit tests
+- `AppsFlyerRPC/AppsFlyerRPCTests/AppsFlyerRPCValidationTests.swift` — required-param validation errors, one per method
+- `AppsFlyerRPC/AppsFlyerRPCTests/AppsFlyerRPCRoutingTests.swift` — unknown-method / error-code mapping
+- `AppsFlyerRPC/AppsFlyerRPCTests/RPCTestHelpers.swift` — shared envelope assertion helpers used above
+
+---
+
 For full JSON payloads, parameter tables, and the plugin integration walkthrough (React Native / Flutter examples, step-by-step new-plugin guide, event schemas), see [`README.md`](../README.md).
