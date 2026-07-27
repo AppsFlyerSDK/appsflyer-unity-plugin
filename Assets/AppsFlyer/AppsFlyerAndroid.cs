@@ -23,7 +23,8 @@ namespace AppsFlyerSDK
         public void initSDK(string devkey, MonoBehaviour gameObject)
         {
 #if !UNITY_EDITOR
-            appsFlyerAndroid.CallStatic("initSDK", devkey, gameObject ? gameObject.name : null);
+            // AppsFlyerLib.init() is owned by the RPC bridge (ExecuteFire("init")).
+            // Only wire up the RPC bridge callback routing here.
             AppsFlyerRPCClient.InitAndroidBridge(gameObject != null ? gameObject.name : "");
 #endif
         }

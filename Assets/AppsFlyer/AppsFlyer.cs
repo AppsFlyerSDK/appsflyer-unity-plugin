@@ -115,10 +115,12 @@ namespace AppsFlyerSDK
               AppsFlyerWindows.Start();
            
 #else
+#if UNITY_IOS || UNITY_STANDALONE_OSX
             if (instance != null)
             {
                 instance.startSDK(onRequestResponse != null, CallBackObjectName);
             }
+#endif
             try
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("start");
