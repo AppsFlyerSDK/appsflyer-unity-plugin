@@ -10,6 +10,7 @@
 
   <iosPods>
     <iosPod name="AppsFlyerFramework" version="7.0.0" minTargetSdk="13.0"></iosPod>
+    <iosPod name="AppsFlyerRPC" version="7.0.11" minTargetSdk="13.0"></iosPod>
     <iosPod name="PurchaseConnector" version="7.0.0" minTargetSdk="13.0"></iosPod>
   </iosPods>
 
