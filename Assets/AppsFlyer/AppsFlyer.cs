@@ -13,6 +13,7 @@ namespace AppsFlyerSDK
         private static EventHandler onInAppResponse;
         private static EventHandler onDeepLinkReceived;
         private static EventHandler onSessionReady;
+        private static bool _isSessionReady = false;
         public static IAppsFlyerNativeBridge instance = null;
         public delegate void unityCallBack(string message);
 
@@ -97,6 +98,11 @@ namespace AppsFlyerSDK
                     { "appId", appID }
                 });
 #endif
+                AppsFlyerRPCClient.instance.ExecuteFire("setPluginInfo", new Dictionary<string, object>
+                {
+                    { "plugin", "unity" },
+                    { "pluginVersion", kAppsFlyerPluginVersion }
+                });
             }
             catch (AppsFlyerRPCException e)
             {
@@ -238,7 +244,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("isDebug", new Dictionary<string, object>
                 {
-                    { "enabled", shouldEnable }
+                    { "isDebug", shouldEnable }
                 });
             }
             catch (AppsFlyerRPCException e)
@@ -266,7 +272,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("setCustomerUserId", new Dictionary<string, object>
                 {
-                    { "userId", id }
+                    { "customerId", id }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("setCustomerUserId", "RPC error: " + e.Message); }
@@ -452,7 +458,7 @@ namespace AppsFlyerSDK
                     { "monetizationNetwork", adRevenueData?.monetizationNetwork },
                     { "mediationNetwork", adRevenueData != null ? (int)adRevenueData.mediationNetwork : 0 },
                     { "currencyIso4217Code", adRevenueData?.currencyIso4217Code },
-                    { "eventRevenue", adRevenueData?.eventRevenue },
+                    { "revenue", adRevenueData?.eventRevenue },
                     { "additionalParameters", additionalParameters }
                 });
             }
@@ -493,7 +499,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("anonymizeUser", new Dictionary<string, object>
                 {
-                    { "anonymize", shouldAnonymizeUser }
+                    { "shouldAnonymize", shouldAnonymizeUser }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("anonymizeUser", "RPC error: " + e.Message); }
@@ -514,7 +520,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("enableTCFDataCollection", new Dictionary<string, object>
                 {
-                    { "enable", shouldCollectTcfData }
+                    { "shouldCollect", shouldCollectTcfData }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("enableTCFDataCollection", "RPC error: " + e.Message); }
@@ -629,6 +635,16 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.updateServerUninstallToken(token);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("updateServerUninstallToken", new Dictionary<string, object>
+                {
+                    { "token", token }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("updateServerUninstallToken", "RPC error: " + e.Message); }
+#endif
         }
 
         /// <summary>
@@ -767,6 +783,16 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.setOutOfStore(sourceName);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setOutOfStore", new Dictionary<string, object>
+                {
+                    { "sourceName", sourceName }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setOutOfStore", "RPC error: " + e.Message); }
+#endif
         }
 
         /// <summary>
@@ -812,6 +838,16 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.setCollectAndroidID(isCollect);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setCollectAndroidID", new Dictionary<string, object>
+                {
+                    { "isCollect", isCollect }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setCollectAndroidID", "RPC error: " + e.Message); }
+#endif
         }
 
         public static void setIsUpdate(bool isUpdate)
@@ -821,6 +857,16 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.setIsUpdate(isUpdate);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setIsUpdate", new Dictionary<string, object>
+                {
+                    { "isUpdate", isUpdate }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setIsUpdate", "RPC error: " + e.Message); }
+#endif
         }
 
         public static void setCollectIMEI(bool isCollect)
@@ -898,6 +944,18 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.setPreinstallAttribution(mediaSource, campaign, siteId);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setPreinstallAttribution", new Dictionary<string, object>
+                {
+                    { "mediaSource", mediaSource },
+                    { "campaign", campaign },
+                    { "siteId", siteId }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setPreinstallAttribution", "RPC error: " + e.Message); }
+#endif
         }
 
         public static void setDisableCollectIAd(bool disableCollectIAd)
@@ -953,7 +1011,7 @@ namespace AppsFlyerSDK
                 {
                     { "appId", appID },
                     { "campaign", campaign },
-                    { "params", parameters }
+                    { "userParams", parameters }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("recordCrossPromoteImpression", "RPC error: " + e.Message); }
@@ -988,6 +1046,13 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.handlePushNotifications();
             }
+#if UNITY_IOS && !UNITY_EDITOR
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("handlePushNotification");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("handlePushNotifications", "RPC error: " + e.Message); }
+#endif
         }
 
         /// <summary>
@@ -1165,7 +1230,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("addPushNotificationDeepLinkPath", new Dictionary<string, object>
                 {
-                    { "paths", paths }
+                    { "deepLinkPath", paths }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("addPushNotificationDeepLinkPath", "RPC error: " + e.Message); }
@@ -1191,23 +1256,21 @@ namespace AppsFlyerSDK
         public static void subscribeForDeepLink()
         {
 
+#if UNITY_ANDROID
+            if (instance != null && instance is IAppsFlyerAndroidBridge)
+            {
+                ((IAppsFlyerAndroidBridge)instance).subscribeForDeepLink(CallBackObjectName);
+            }
+#elif UNITY_IOS || UNITY_STANDALONE_OSX
             try
             {
-#if UNITY_ANDROID
-                AppsFlyerRPCClient.instance.ExecuteFire("subscribeForDeepLink", new Dictionary<string, object>
-                {
-                    { "callbackObjectName", CallBackObjectName }
-                });
-#elif UNITY_IOS || UNITY_STANDALONE_OSX
-                // AppsFlyerRPC bridge does not yet handle registerDeeplinkListener;
-                // use the direct P/Invoke path to set AppsFlyerLib.deepLinkDelegate.
-                instance.subscribeForDeepLink(CallBackObjectName);
-#endif
+                AppsFlyerRPCClient.instance.ExecuteFire("registerDeeplinkListener");
             }
             catch (AppsFlyerRPCException e)
             {
                 AFLog("subscribeForDeepLink", "RPC error: " + e.Message);
             }
+#endif
 
         }
 
@@ -1241,6 +1304,16 @@ namespace AppsFlyerSDK
                 IAppsFlyerAndroidBridge appsFlyerAndroidInstance = (IAppsFlyerAndroidBridge)instance;
                 appsFlyerAndroidInstance.setDisableNetworkData(disable);
             }
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setDisableNetworkData", new Dictionary<string, object>
+                {
+                    { "isDisable", disable }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setDisableNetworkData", "RPC error: " + e.Message); }
+#endif
         }
 
 
@@ -1379,6 +1452,7 @@ namespace AppsFlyerSDK
         /// </summary>
         public void onSessionReadyReceived(string response)
         {
+            _isSessionReady = true;
             if (onSessionReady != null)
             {
                 onSessionReady.Invoke(null, new AppsFlyerRequestEventArgs(0, response));
@@ -1476,6 +1550,359 @@ namespace AppsFlyerSDK
         public static Dictionary<string, object> CallbackStringToDictionary(string str)
         {
             return AFMiniJSON.Json.Deserialize(str) as Dictionary<string, object>;
+        }
+
+        // ── Cross-platform missing methods ────────────────────────────────────────
+
+        /// <summary>
+        /// Returns true when the SDK has reported that the current session is ready.
+        /// The flag is set when the OnSessionReady event fires.
+        /// </summary>
+        public static bool isSessionReady() => _isSessionReady;
+
+        /// <summary>
+        /// Appends query parameters to every deep-linking URL that contains the given substring.
+        /// </summary>
+        public static void appendParametersToDeepLinkingURL(string contains, Dictionary<string, string> parameters)
+        {
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("appendParametersToDeepLinkingURL", new Dictionary<string, object>
+                {
+                    { "contains", contains },
+                    { "parameters", parameters }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("appendParametersToDeepLinkingURL", "RPC error: " + e.Message); }
+        }
+
+        /// <summary>
+        /// Enables or disables Facebook deferred app links.
+        /// </summary>
+        public static void enableFacebookDeferredApplinks(bool isEnabled)
+        {
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("enableFacebookDeferredApplinks", new Dictionary<string, object>
+                {
+                    { "isEnabled", isEnabled }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("enableFacebookDeferredApplinks", "RPC error: " + e.Message); }
+        }
+
+        /// <summary>
+        /// Logs a user-invite event for the given channel with optional parameters.
+        /// </summary>
+        public static void logInvite(string channel, Dictionary<string, string> eventParameters)
+        {
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("logInvite", new Dictionary<string, object>
+                {
+                    { "channel", channel },
+                    { "eventParameters", eventParameters }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("logInvite", "RPC error: " + e.Message); }
+        }
+
+        /// <summary>
+        /// Sets a custom install ID to be reported to AppsFlyer.
+        /// </summary>
+        public static void setInstallId(string installId)
+        {
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setInstallId", new Dictionary<string, object>
+                {
+                    { "installId", installId }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setInstallId", "RPC error: " + e.Message); }
+        }
+
+        // ── Android-only methods ──────────────────────────────────────────────────
+
+        /// <summary>
+        /// Overrides the app ID reported to AppsFlyer (Android package name override).
+        /// In most cases this is set automatically from the manifest; only call this
+        /// if you need to override it at runtime.
+        /// Android only.
+        /// </summary>
+        public static void setAppId(string appId)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setAppId", new Dictionary<string, object>
+                {
+                    { "appId", appId }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setAppId", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Unregisters the conversion data listener previously registered with getConversionData.
+        /// Android only.
+        /// </summary>
+        public static void unregisterConversionListener()
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("unregisterConversionListener");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("unregisterConversionListener", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Sets the user's phone number including country code.
+        /// Android only — iOS uses setPhoneNumber(string).
+        /// </summary>
+        public static void setUserPhone(string countryCode, string phoneNumber)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setUserPhone", new Dictionary<string, object>
+                {
+                    { "countryCode", countryCode },
+                    { "phoneNumber", phoneNumber }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setUserPhone", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Sets the user's first name. Android only.</summary>
+        public static void setUserFirstName(string firstName)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setUserFirstName", new Dictionary<string, object>
+                {
+                    { "firstName", firstName }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setUserFirstName", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Sets the user's last name. Android only.</summary>
+        public static void setUserLastName(string lastName)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setUserLastName", new Dictionary<string, object>
+                {
+                    { "lastName", lastName }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setUserLastName", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Sets the user's Facebook Login ID. Android only.</summary>
+        public static void setUserFbLoginId(long fbLoginId)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setUserFbLoginId", new Dictionary<string, object>
+                {
+                    { "fbLoginId", fbLoginId }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setUserFbLoginId", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Clears all PII data previously set via the user-profile setters. Android only.</summary>
+        public static void clearUserPii()
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("clearUserPii");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("clearUserPii", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Sets the SDK log level.
+        /// Accepted values: "NONE", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE".
+        /// Android only.
+        /// </summary>
+        public static void setLogLevel(string logLevel)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setLogLevel", new Dictionary<string, object>
+                {
+                    { "logLevel", logLevel }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setLogLevel", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Unsubscribes from deep-link events. Android only.</summary>
+        public static void unsubscribeForDeepLink()
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("unsubscribeForDeepLink");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("unsubscribeForDeepLink", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Manually triggers deep-link attribution for the given URL.
+        /// Android only.
+        /// </summary>
+        public static void performDeepLinking(string url, bool shouldTriggerSession)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("performDeepLinking", new Dictionary<string, object>
+                {
+                    { "url", url },
+                    { "shouldTriggerSession", shouldTriggerSession }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("performDeepLinking", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Manually records a session. Android only.</summary>
+        public static void logSession()
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("logSession");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("logSession", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Sends push-notification campaign data to AppsFlyer for attribution.
+        /// Android only — call this from the activity that handles the notification tap.
+        /// </summary>
+        public static void sendPushNotificationData(string campaign, string pid, bool isRetargeting, Dictionary<string, string> additionalParameters = null)
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("sendPushNotificationData", new Dictionary<string, object>
+                {
+                    { "campaign", campaign },
+                    { "pid", pid },
+                    { "isRetargeting", isRetargeting },
+                    { "additionalParameters", additionalParameters }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("sendPushNotificationData", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>Disables collection of the Android App Set ID. Android only.</summary>
+        public static void disableAppSetId()
+        {
+#if UNITY_ANDROID
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("disableAppSetId");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("disableAppSetId", "RPC error: " + e.Message); }
+#endif
+        }
+
+        // ── iOS-only methods ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Sets the Facebook deferred app-link URL for iOS attribution.
+        /// iOS only.
+        /// </summary>
+        public static void setFacebookDeferredAppLink(string url)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("setFacebookDeferredAppLink", new Dictionary<string, object>
+                {
+                    { "url", url }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("setFacebookDeferredAppLink", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Handles a Universal Link (NSUserActivity) for deep-link attribution.
+        /// iOS only.
+        /// </summary>
+        public static void continueUserActivity(string url, string activityType = null)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("continueUserActivity", new Dictionary<string, object>
+                {
+                    { "url", url },
+                    { "activityType", activityType }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("continueUserActivity", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Passes launch options to the SDK for attribution on cold start.
+        /// iOS only.
+        /// </summary>
+        public static void handleLaunchOptions(Dictionary<string, string> launchOptions)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("handleLaunchOptions", new Dictionary<string, object>
+                {
+                    { "launchOptions", launchOptions }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("handleLaunchOptions", "RPC error: " + e.Message); }
+#endif
+        }
+
+        /// <summary>
+        /// Triggers on-app attribution for the given URL (re-engagement).
+        /// iOS only.
+        /// </summary>
+        public static void performOnAppAttributionWithURL(string url)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("performOnAppAttributionWithURL", new Dictionary<string, object>
+                {
+                    { "url", url }
+                });
+            }
+            catch (AppsFlyerRPCException e) { AFLog("performOnAppAttributionWithURL", "RPC error: " + e.Message); }
+#endif
         }
 
         /// <summary>

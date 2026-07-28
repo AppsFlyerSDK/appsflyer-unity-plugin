@@ -203,6 +203,9 @@ android_install() {
 
 android_launch() {
   log_info "Launching $PACKAGE_NAME..."
+  # google_apis emulators run adb as shell user; root is needed for both the
+  # logcat buffer resize and direct cat of /data/data/.../af_qa_logs.txt.
+  adb root 2>/dev/null || true
   # Increase ring buffer so 240s of Unity output (~100-200 lines/sec) does not
   # overflow it before log collection runs. The emulator runner sets it to 2M
   # which holds only ~10-20s at typical Unity rates.
@@ -819,6 +822,11 @@ run_phase() {
 
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
 
+    # Always record the check result before any early exit so it appears in
+    # the JSON report even when fail_action=abort triggers a break.
+    result=$(echo "$result" | tr -d '\000-\031')
+    checks_json=$(echo "$checks_json" | jq --arg k "$check_id" --argjson v "$result" '. + {($k): $v}')
+
     if [[ "$check_status" == "PASS" ]]; then
       log_ok "$check_id: $check_desc"
       PASSED_CHECKS=$((PASSED_CHECKS + 1))
@@ -837,8 +845,6 @@ run_phase() {
       fi
     fi
 
-    result=$(echo "$result" | tr -d '\000-\031')
-    checks_json=$(echo "$checks_json" | jq --arg k "$check_id" --argjson v "$result" '. + {($k): $v}')
     i=$((i + 1))
   done
 
