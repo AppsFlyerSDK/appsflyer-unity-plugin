@@ -1428,6 +1428,11 @@ namespace AppsFlyerSDK
                     case "onDeepLinkReceived":
                         onDeepLinking(dataStr);
                         break;
+                    case "onConversionDataSuccess":
+                    case "onConversionDataFail":
+                        var go = GameObject.Find(CallBackObjectName);
+                        go?.SendMessage(eventType, dataStr, SendMessageOptions.DontRequireReceiver);
+                        break;
                     case "sessionReady":
                     case "onSessionReady":
                         onSessionReadyReceived(dataStr);

@@ -198,7 +198,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AFQALogger.Log("[AF_QA][logEvent] name=af_qa_identity_check params={customer_user_id: e2e_user_42, tenant: qa_eu, experiment: rc_pipeline_v1}");
         AppsFlyer.sendEvent("af_qa_identity_check", identityParams);
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(6f);
 
         // E2E-006: stop / resume toggle
         AppsFlyer.stopSDK(true);
