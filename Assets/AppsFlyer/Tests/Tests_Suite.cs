@@ -668,9 +668,20 @@ namespace AppsFlyerSDK.Tests
         public void StopSDK_iOS_SendsStopNotSetStopped()
         {
             AppsFlyer.stopSDK(true);
-            mockRpc.Received(1).ExecuteFire("stop", Arg.Any<Dictionary<string, object>>());
+            mockRpc.Received(1).ExecuteFire("stop",
+                Arg.Is<Dictionary<string, object>>(d =>
+                    d.ContainsKey("shouldStop") && (bool)d["shouldStop"] == true));
             mockRpc.DidNotReceive().ExecuteFire("setStopped",
                 Arg.Any<Dictionary<string, object>>());
+        }
+
+        [Test]
+        public void StopSDK_Resume_SendsShouldStopFalse()
+        {
+            AppsFlyer.stopSDK(false);
+            mockRpc.Received(1).ExecuteFire("stop",
+                Arg.Is<Dictionary<string, object>>(d =>
+                    d.ContainsKey("shouldStop") && (bool)d["shouldStop"] == false));
         }
 
         [Test]

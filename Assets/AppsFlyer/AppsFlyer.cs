@@ -178,7 +178,7 @@ namespace AppsFlyerSDK
             {
                 AppsFlyerRPCClient.instance.ExecuteFire("stop", new Dictionary<string, object>
                 {
-                    { "stopped", isSDKStopped }
+                    { "shouldStop", isSDKStopped }
                 });
             }
             catch (AppsFlyerRPCException e) { AFLog("stopSDK", "RPC error: " + e.Message); }

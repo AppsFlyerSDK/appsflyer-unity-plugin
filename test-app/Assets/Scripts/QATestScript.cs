@@ -21,6 +21,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _devKey;
     private string _iosAppId;
     private string _androidAppId;
+    private bool _conversionDataReceived = false;
 
     void Start()
     {
@@ -198,7 +199,14 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AFQALogger.Log("[AF_QA][logEvent] name=af_qa_identity_check params={customer_user_id: e2e_user_42, tenant: qa_eu, experiment: rc_pipeline_v1}");
         AppsFlyer.sendEvent("af_qa_identity_check", identityParams);
 
-        yield return new WaitForSeconds(6f);
+        // Wait for conversion data before stopping — prevents ClearCache from evicting the
+        // in-flight conversion request. Falls back after 120s so the test can still complete.
+        float _conversionWaitTimeout = 120f;
+        while (!_conversionDataReceived && _conversionWaitTimeout > 0f)
+        {
+            yield return new WaitForSeconds(1f);
+            _conversionWaitTimeout -= 1f;
+        }
 
         // E2E-006: stop / resume toggle
         AppsFlyer.stopSDK(true);
@@ -335,11 +343,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     public void onConversionDataSuccess(string conversionData)
     {
+        _conversionDataReceived = true;
         AFQALogger.Log("[AF_QA][CALLBACK][onInstallConversionData] " + conversionData);
     }
 
     public void onConversionDataFail(string error)
     {
+        _conversionDataReceived = true;
         AFQALogger.Log("[AF_QA][CALLBACK][onInstallConversionData] error: " + error);
     }
 
