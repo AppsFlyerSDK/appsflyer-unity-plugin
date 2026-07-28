@@ -52,6 +52,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
         AppsFlyer.setIsDebug(true);
         AppsFlyer.initSDK(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
+        AppsFlyer.getConversionData(gameObject.name);
         AppsFlyer.OnDeepLinkReceived += OnDeepLinkReceived;
 
         // SDK 7 flow: session readiness gates startSDK
