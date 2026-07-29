@@ -53,8 +53,15 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
         AppsFlyer.setIsDebug(true);
         AppsFlyer.initSDK(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
-        AppsFlyer.getConversionData(gameObject.name);
+
+        // Subscribe before any other post-init call: the native SDK only enqueues the
+        // clean-launch deferred deep-link check (which delivers onDeepLinking NOT_FOUND)
+        // if a listener is already registered at the moment its automatic UDL check runs
+        // right after init(). Registering here, immediately, minimizes that window instead
+        // of leaving it open across the getConversionData() round-trip below.
         AppsFlyer.OnDeepLinkReceived += OnDeepLinkReceived;
+
+        AppsFlyer.getConversionData(gameObject.name);
 
         // SDK 7 flow: session readiness gates startSDK
         AppsFlyer.OnSessionReady += OnSessionReadyHandler;

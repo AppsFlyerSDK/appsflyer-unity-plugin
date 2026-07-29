@@ -73,6 +73,7 @@ namespace AppsFlyerSDK
                 appsFlyerAndroid.initSDK(devKey, gameObject);
                 instance = appsFlyerAndroid;
                 instance.isInit = true;
+                
             }
 #elif UNITY_WSA_10_0
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
@@ -90,16 +91,6 @@ namespace AppsFlyerSDK
                 {
                     { "devKey", devKey }
                 });
-
-                // Register the native deep-link listener immediately after native
-                // init(), before any other RPC call. The native SDK only enqueues the
-                // clean-launch DDL check if a listener is already registered at the
-                // exact moment unifiedDeepLinking() runs (F-094-deferred-deep-linking.md)
-                // — it's a one-shot gate, not a retry — and unifiedDeepLinking() fires
-                // synchronously off native init() itself. Subscribing later (e.g. only
-                // when the app adds an OnDeepLinkReceived handler) can permanently miss
-                // the first-launch NOT_FOUND/FOUND callback.
-                subscribeForDeepLink();
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
                 AppsFlyerRPCClient.instance.ExecuteFire("initialize", new Dictionary<string, object>
                 {
