@@ -1262,13 +1262,9 @@ namespace AppsFlyerSDK
                 ((IAppsFlyerAndroidBridge)instance).subscribeForDeepLink(CallBackObjectName);
             }
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            try
+            if (instance != null)
             {
-                AppsFlyerRPCClient.instance.ExecuteFire("registerDeeplinkListener");
-            }
-            catch (AppsFlyerRPCException e)
-            {
-                AFLog("subscribeForDeepLink", "RPC error: " + e.Message);
+                instance.subscribeForDeepLink(CallBackObjectName);
             }
 #endif
 
