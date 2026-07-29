@@ -48,7 +48,7 @@ extern "C" {
     // DEPRECATED via RPC: use AppsFlyerRPCClient.instance.Execute("start") — kept for one release cycle
     const void _startSDK(bool shouldCallback, const char* objectName) {
         [[AppsFlyerLib shared] setPluginInfoWith: AFSDKPluginUnity
-                                pluginVersion:@"6.17.900"
+                                pluginVersion:@"7.0.1-rc1"
                                 additionalParams:nil];
         startRequestObjectName = stringFromChar(objectName);
         AppsFlyeriOSWarpper.didCallStart = YES;
