@@ -1826,6 +1826,26 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>
+        /// Unity engine callback, invoked automatically when the app is paused/resumed.
+        /// The native Android SDK's own Activity-lifecycle foreground/background detection
+        /// is not reliably delivered through Unity's engine, so the SDK exposes onPause()
+        /// as the documented workaround for plugin bridges (Cocos2dx, Unity). Forwarding it
+        /// here keeps the SDK's session/deep-link state machine in sync with the real app
+        /// lifecycle instead of depending on Android Activity callbacks Unity may not deliver.
+        /// </summary>
+        void OnApplicationPause(bool pauseStatus)
+        {
+#if UNITY_ANDROID
+            if (!pauseStatus) return;
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire("onPause");
+            }
+            catch (AppsFlyerRPCException e) { AFLog("OnApplicationPause", "RPC error: " + e.Message); }
+#endif
+        }
+
         // ── iOS-only methods ──────────────────────────────────────────────────────
 
         /// <summary>
