@@ -23,6 +23,18 @@
                 <data android:scheme="afqa-unity" />
             </intent-filter>
 
+            <!-- App Links (universal links) for the testunity6 OneLink domain. autoVerify
+                 requires AppsFlyer's assetlinks.json for this domain to list this app's
+                 package name + signing cert SHA-256 fingerprint (managed in the OneLink
+                 dashboard, not this repo) — otherwise Android falls back to opening the
+                 link in a browser instead of this app. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="testunity6.onelink.me" />
+            </intent-filter>
+
         </activity>
     </application>
 

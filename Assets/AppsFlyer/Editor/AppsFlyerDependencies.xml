@@ -5,7 +5,18 @@
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.1"></androidPackage>
     <androidPackage spec="com.appsflyer:unity-wrapper:7.0.13"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
+    <!-- Required for the SDK to read the Google Advertising ID (GAID) — without it,
+         AdvertisingIdClient is missing from the app's classpath even when Play Services
+         itself is installed on the device, surfacing as a ClassNotFoundException in
+         the "gaidError" field of outgoing SDK requests. -->
+    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
+    <!-- TEMPORARILY DISABLED: com.appsflyer:purchase-connector:2.3.0 shares the exact manifest
+         package "com.appsflyer" with com.appsflyer:af-android-sdk:7.0.1 (confirmed true of every
+         published version of both artifacts on Maven Central), which AGP 8's namespace-uniqueness
+         check now hard-fails on. Needs an upstream repackage of purchase-connector (or af-android-sdk)
+         with a distinct manifest package before this can be re-enabled. Re-add once fixed:
     <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage>
+    -->
   </androidPackages>
 
   <iosPods>

@@ -14,6 +14,40 @@ public static class iOSBuildPostProcess
 
         AddURLScheme(buildPath);
         EnableSimulatorSupport(buildPath);
+        AddTrackingUsageDescription(buildPath);
+        AddATTFramework(buildPath);
+    }
+
+    // Required by iOS to show the ATT popup at all — without this key the OS silently
+    // skips the prompt and reports .denied.
+    static void AddTrackingUsageDescription(string buildPath)
+    {
+        string plistPath = Path.Combine(buildPath, "Info.plist");
+        var plist = new PlistDocument();
+        plist.ReadFromFile(plistPath);
+
+        plist.root.SetString("NSUserTrackingUsageDescription",
+            "This identifier will be used to test AppsFlyer attribution.");
+
+        plist.WriteToFile(plistPath);
+    }
+
+    // Weak-link so the binary still loads on the iOS 13 deployment target the core plugin
+    // enforces (AppTrackingTransparency is iOS 14+); the @available guard in
+    // ATTPermissionRequest.mm skips the call itself on older OS versions.
+    static void AddATTFramework(string buildPath)
+    {
+        string projPath = PBXProject.GetPBXProjectPath(buildPath);
+        var proj = new PBXProject();
+        proj.ReadFromFile(projPath);
+
+        // ATTPermissionRequest.mm compiles into UnityFramework (Unity 2019.3+ splits native
+        // plugin code out of the thin main app target), so the framework must be linked there,
+        // not just on the main target.
+        proj.AddFrameworkToProject(proj.GetUnityFrameworkTargetGuid(), "AppTrackingTransparency.framework", true);
+        proj.AddFrameworkToProject(proj.GetUnityMainTargetGuid(), "AppTrackingTransparency.framework", true);
+
+        proj.WriteToFile(projPath);
     }
 
     static void EnableSimulatorSupport(string buildPath)

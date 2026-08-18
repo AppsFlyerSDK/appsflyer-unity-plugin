@@ -8,8 +8,28 @@ dependencies {
     implementation 'com.appsflyer:af-android-plugin-bridge:7.0.1'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
     implementation 'com.android.installreferrer:installreferrer:2.1'
+// Android Resolver Dependencies Start
+    implementation 'com.android.installreferrer:installreferrer:2.1' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:7
+    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.1' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:5
+    // TEMPORARILY DISABLED — see AppsFlyerDependencies.xml comment: purchase-connector:2.3.0
+    // shares AGP-namespace "com.appsflyer" with af-android-sdk:7.0.1, hard-failing the manifest merge.
+    // implementation 'com.appsflyer:purchase-connector:2.3.0' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:8
+    implementation 'com.appsflyer:unity-wrapper:7.0.13' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:6
+// Android Resolver Dependencies End
 **DEPS**}
 
+// Android Resolver Exclusions Start
+android {
+  packaging {
+      exclude ('/lib/armeabi/*' + '*')
+      exclude ('/lib/armeabi-v7a/*' + '*')
+      exclude ('/lib/mips/*' + '*')
+      exclude ('/lib/mips64/*' + '*')
+      exclude ('/lib/x86/*' + '*')
+      exclude ('/lib/x86_64/*' + '*')
+  }
+}
+// Android Resolver Exclusions End
 android {
     namespace "com.unity3d.player"
     ndkPath "**NDKPATH**"
