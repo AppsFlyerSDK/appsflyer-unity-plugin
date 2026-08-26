@@ -25,14 +25,14 @@
 #import <StoreKit/StoreKit.h>
 #endif
 
+// Conversion data / deep-link delivery now routes through AppsFlyerRPCBridge.setEventHandler ->
+// onRPCEvent (see AppsFlyerRPCWrapper.swift's _setRPCEventHandler), not AppsFlyerLibDelegate —
+// this class no longer needs to conform to it.
 #if __has_include(<PurchaseConnector/PurchaseConnector.h>) || __has_include("PurchaseConnector.h")
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate, AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource, AppsFlyerPurchaseRevenueDataSourceStoreKit2>
+@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerPurchaseRevenueDelegate, AppsFlyerPurchaseRevenueDataSource, AppsFlyerPurchaseRevenueDataSourceStoreKit2>
 #else
-@interface AppsFlyeriOSWarpper : NSObject <AppsFlyerLibDelegate>
+@interface AppsFlyeriOSWarpper : NSObject
 #endif
-
-+ (BOOL) didCallStart;
-+ (void) setDidCallStart:(BOOL)val;
 
 #if __has_include(<PurchaseConnector/PurchaseConnector.h>) || __has_include("PurchaseConnector.h")
 - (void)setStoreKitVersion:(int)storeKitVersion;
@@ -43,13 +43,6 @@
 
 
 static AppsFlyeriOSWarpper *_AppsFlyerdelegate;
-
-static NSString* ConversionDataCallbackObject = @"AppsFlyerObject";
-
-static const char* GCD_CALLBACK = "onConversionDataSuccess";
-static const char* GCD_ERROR_CALLBACK = "onConversionDataFail";
-static const char* OAOA_CALLBACK = "onAppOpenAttribution";
-static const char* OAOA_ERROR_CALLBACK = "onAppOpenAttributionFailure";
 
 static const char* PURCHASE_REVENUE_VALIDATION_CALLBACK = "didReceivePurchaseRevenueValidationInfo";
 static const char* PURCHASE_REVENUE_ERROR_CALLBACK = "didReceivePurchaseRevenueError";

@@ -28,17 +28,22 @@ namespace AppsFlyerSDK
     public class AppsFlyerRPCClient : IAppsFlyerRPCClient
     {
         public static readonly AppsFlyerRPCClient DefaultInstance = new AppsFlyerRPCClient();
-        public static IAppsFlyerRPCClient instance { get; set; } = DefaultInstance;
+        internal static IAppsFlyerRPCClient instance { get; set; } = DefaultInstance;
         private AppsFlyerRPCClient() { }
 
         private long _requestCounter = 0;
 
         public string BuildRequest(string method, Dictionary<string, object> parameters)
         {
-            _requestCounter++;
+            return BuildRequest(method, parameters, out _);
+        }
+
+        public string BuildRequest(string method, Dictionary<string, object> parameters, out string id)
+        {
+            id = method + "-" + System.Threading.Interlocked.Increment(ref _requestCounter);
             var request = new Dictionary<string, object>
             {
-                { "id", method + "-" + _requestCounter },
+                { "id", id },
                 { "method", method },
                 { "params", parameters ?? new Dictionary<string, object>() }
             };
@@ -52,23 +57,37 @@ namespace AppsFlyerSDK
 #elif UNITY_ANDROID && !UNITY_EDITOR
             if (_rpcBridge != null)
                 _rpcBridge.CallStatic("fireJson", jsonRequest);
+            else
+                Debug.LogWarning("AppsFlyer: dropped fire-and-forget call, RPC bridge failed to load — " + jsonRequest);
 #endif
         }
 
         public string Dispatch(string jsonRequest)
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            return _afExecuteJson(jsonRequest);
+            IntPtr responsePtr = _afExecuteJson(jsonRequest);
+            try { return Marshal.PtrToStringAnsi(responsePtr); }
+            finally { _afFreeCString(responsePtr); }
 #elif UNITY_ANDROID && !UNITY_EDITOR
             if (_rpcBridge != null)
                 return _rpcBridge.CallStatic<string>("executeJson", jsonRequest);
-            return "{\"id\":\"android-stub\",\"result\":{\"data\":null}}";
+            return StubResponse(jsonRequest, "\"error\":{\"code\":503,\"message\":\"AppsFlyer Android RPC bridge failed to load\"}");
 #else
-            return "{\"id\":\"editor\",\"result\":{\"data\":null}}";
+            return StubResponse(jsonRequest, "\"result\":{\"data\":null}");
 #endif
         }
 
-        public object ParseResponse(string jsonResponse)
+#if !UNITY_IOS || UNITY_EDITOR
+        // Echoes the request's own id so stub responses still pass ParseResponse's id check.
+        private static string StubResponse(string jsonRequest, string payload)
+        {
+            var request = Json.Deserialize(jsonRequest) as Dictionary<string, object>;
+            string id = request != null && request.ContainsKey("id") ? (string)request["id"] : "stub";
+            return "{\"id\":\"" + id + "\"," + payload + "}";
+        }
+#endif
+
+        public object ParseResponse(string jsonResponse, string expectedId = null)
         {
             if (string.IsNullOrEmpty(jsonResponse))
                 throw new AppsFlyerRPCException(-1, "Empty response from native");
@@ -76,6 +95,14 @@ namespace AppsFlyerSDK
             var root = Json.Deserialize(jsonResponse) as Dictionary<string, object>;
             if (root == null)
                 throw new AppsFlyerRPCException(-1, "Malformed response: " + jsonResponse);
+
+            if (expectedId != null)
+            {
+                object actualId = root.ContainsKey("id") ? root["id"] : null;
+                if (!expectedId.Equals(actualId))
+                    throw new AppsFlyerRPCException(-1,
+                        "RPC response id mismatch: expected " + expectedId + " but got " + actualId);
+            }
 
             if (root.ContainsKey("error"))
             {
@@ -108,22 +135,30 @@ namespace AppsFlyerSDK
         // Synchronous execute — use only for getter methods that return data.
         public object Execute(string method, Dictionary<string, object> parameters = null)
         {
-            string request = BuildRequest(method, parameters);
+            string request = BuildRequest(method, parameters, out string id);
             string response = Dispatch(request);
-            return ParseResponse(response);
+            return ParseResponse(response, id);
         }
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
         private static extern void _afFireJson(string jsonRequest);
         [DllImport("__Internal")]
-        private static extern string _afExecuteJson(string jsonRequest);
+        private static extern IntPtr _afExecuteJson(string jsonRequest);
+        [DllImport("__Internal")]
+        private static extern void _afFreeCString(IntPtr ptr);
+        [DllImport("__Internal")]
+        private static extern void _setRPCEventHandler(string objectName);
 #elif UNITY_ANDROID && !UNITY_EDITOR
         private static readonly AndroidJavaClass _rpcBridge = TryLoadAndroidBridge();
         private static AndroidJavaClass TryLoadAndroidBridge()
         {
             try { return new AndroidJavaClass("com.appsflyer.unity.AppsFlyerRPCBridge"); }
-            catch { return null; }
+            catch (Exception e)
+            {
+                Debug.LogError("AppsFlyer: failed to load AppsFlyerRPCBridge — " + e);
+                return null;
+            }
         }
 #endif
 
@@ -131,6 +166,13 @@ namespace AppsFlyerSDK
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             _rpcBridge?.CallStatic("init", callbackObjectName ?? "");
+#endif
+        }
+
+        public static void InitIOSBridge(string callbackObjectName)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            _setRPCEventHandler(callbackObjectName ?? "");
 #endif
         }
     }

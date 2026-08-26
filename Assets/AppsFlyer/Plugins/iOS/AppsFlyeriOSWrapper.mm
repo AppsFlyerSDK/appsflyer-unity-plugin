@@ -144,28 +144,6 @@ extern "C" {
 
 @implementation AppsFlyeriOSWarpper
 
-static BOOL didCallStart;
-+ (BOOL) didCallStart
-{ @synchronized(self) { return didCallStart; } }
-+ (void) setDidCallStart:(BOOL)val
-{ @synchronized(self) { didCallStart = val; } }
-
-- (void)onConversionDataSuccess:(NSDictionary *)installData {
-    unityCallBack(ConversionDataCallbackObject, GCD_CALLBACK, stringFromdictionary(installData));
-}
-
-- (void)onConversionDataFail:(NSError *)error {
-    unityCallBack(ConversionDataCallbackObject, GCD_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
-}
-
-- (void)onAppOpenAttribution:(NSDictionary *)attributionData {
-    unityCallBack(ConversionDataCallbackObject, OAOA_CALLBACK, stringFromdictionary(attributionData));
-}
-
-- (void)onAppOpenAttributionFailure:(NSError *)error {
-    unityCallBack(ConversionDataCallbackObject, OAOA_ERROR_CALLBACK, [[error localizedDescription] UTF8String]);
-}
-
 // Purchase Connector
 #if __has_include(<PurchaseConnector/PurchaseConnector-Swift.h>) || __has_include("PurchaseConnector-Swift.h")
 - (void)didReceivePurchaseRevenueValidationInfo:(NSDictionary *)validationInfo error:(NSError *)error {

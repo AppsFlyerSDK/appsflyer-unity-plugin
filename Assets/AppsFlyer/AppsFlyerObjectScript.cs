@@ -23,7 +23,6 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     {
         // These fields are set from the editor so do not modify!
         //******************************//
-        AppsFlyer.enableDebug(isDebug);
 #if UNITY_STANDALONE_OSX && !UNITY_EDITOR
         AppsFlyer.init(devKey, macOSAppID, this);
 #elif UNITY_WSA_10_0
@@ -31,6 +30,7 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
 #else
         AppsFlyer.init(devKey, appID, this);
 #endif
+        AppsFlyer.enableDebug(isDebug);
         if (getConversionData) AppsFlyer.registerConversionListener();
         //******************************/
 

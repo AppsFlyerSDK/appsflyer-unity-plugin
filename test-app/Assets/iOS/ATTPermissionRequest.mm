@@ -14,15 +14,14 @@
 extern "C" {
 
 void _afqaRequestTrackingAuthorization() {
-    static BOOL requested = NO;
-    if (requested) return;
-    requested = YES;
-
-    if (@available(iOS 14, *)) {
-        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
-            NSLog(@"[AF_QA][ATT] requestTrackingAuthorization status=%ld", (long)status);
-        }];
-    }
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (@available(iOS 14, *)) {
+            [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+                NSLog(@"[AF_QA][ATT] requestTrackingAuthorization status=%ld", (long)status);
+            }];
+        }
+    });
 }
 
 }

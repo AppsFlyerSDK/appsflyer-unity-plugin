@@ -6,6 +6,14 @@ using UnityEditor.iOS.Xcode;
 
 public static class iOSBuildPostProcess
 {
+    // Universal Links (Associated Domains) for the testunity6 OneLink domain. Requires
+    // AppsFlyer's apple-app-site-association file for this domain to list this app's
+    // Team ID + bundle ID (managed in the OneLink dashboard, not this repo) — otherwise
+    // iOS falls back to opening the link in Safari instead of this app.
+    // QA-only: this domain is specific to this test app and must never ship in the plugin.
+    static readonly string[] AssociatedDomains = { "applinks:testunity6.onelink.me" };
+    const string EntitlementsFileName = "Unity-iPhone.entitlements";
+
     [PostProcessBuild(100)]
     public static void OnPostProcessBuild(BuildTarget target, string buildPath)
     {
@@ -16,6 +24,39 @@ public static class iOSBuildPostProcess
         EnableSimulatorSupport(buildPath);
         AddTrackingUsageDescription(buildPath);
         AddATTFramework(buildPath);
+        AddAssociatedDomains(buildPath);
+    }
+
+    // Registers the Associated Domains capability and merges our domain into the entitlements
+    // file's existing array — additive, so it never clobbers an integrator's own domains.
+    static void AddAssociatedDomains(string buildPath)
+    {
+        string projPath = PBXProject.GetPBXProjectPath(buildPath);
+        var proj = new PBXProject();
+        proj.ReadFromFile(projPath);
+
+        string mainTarget = proj.GetUnityMainTargetGuid();
+        proj.AddCapability(mainTarget, PBXCapabilityType.AssociatedDomains, EntitlementsFileName);
+        proj.WriteToFile(projPath);
+
+        string entitlementsPath = Path.Combine(buildPath, EntitlementsFileName);
+        var entitlements = new PlistDocument();
+        if (File.Exists(entitlementsPath))
+            entitlements.ReadFromFile(entitlementsPath);
+
+        PlistElementArray domains = entitlements.root["com.apple.developer.associated-domains"] as PlistElementArray
+            ?? entitlements.root.CreateArray("com.apple.developer.associated-domains");
+
+        foreach (string domain in AssociatedDomains)
+        {
+            bool alreadyPresent = false;
+            foreach (var value in domains.values)
+                if (value.AsString() == domain) { alreadyPresent = true; break; }
+            if (!alreadyPresent)
+                domains.AddString(domain);
+        }
+
+        entitlements.WriteToFile(entitlementsPath);
     }
 
     // Required by iOS to show the ATT popup at all — without this key the OS silently

@@ -30,7 +30,11 @@ object AppsFlyerRPCBridge {
     @JvmStatic
     fun init(callbackObjectName: String) {
         sCallbackObjectName = callbackObjectName
-        val context = UnityPlayer.currentActivity
+        // af-android-plugin-bridge:7.0.1's AppsFlyerRpcHandler only accepts a fixed Context at
+        // construction time (no per-call context-provider overload yet), and sHandler is a
+        // process-lifetime singleton — so we must pass applicationContext, not currentActivity,
+        // to avoid pinning a since-destroyed Activity for the life of the process.
+        val context = UnityPlayer.currentActivity?.applicationContext ?: return
         sHandler = AppsFlyerRpcHandler(context, { eventJson ->
             val obj = sCallbackObjectName
             if (!obj.isNullOrEmpty()) {

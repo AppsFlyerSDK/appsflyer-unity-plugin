@@ -11,11 +11,26 @@ namespace AppsFlyerSDK.Tests
     public class AppsFlyerRPCClientTests
     {
         private AppsFlyerRPCClient rpc;
+        private readonly List<GameObject> _spawned = new List<GameObject>();
 
         [SetUp]
         public void SetUp()
         {
             rpc = AppsFlyerRPCClient.DefaultInstance;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var go in _spawned) UnityEngine.Object.DestroyImmediate(go);
+            _spawned.Clear();
+        }
+
+        private AppsFlyer NewAppsFlyerComponent()
+        {
+            var go = new GameObject();
+            _spawned.Add(go);
+            return go.AddComponent<AppsFlyer>();
         }
 
         // --- BuildRequest tests ---
@@ -151,16 +166,28 @@ namespace AppsFlyerSDK.Tests
             bool fired = false;
             EventHandler handler = (s, e) => { fired = true; };
             AppsFlyer.OnRequestResponse += handler;
-            var af = new GameObject().AddComponent<AppsFlyer>();
+            var af = NewAppsFlyerComponent();
             af.onRPCEvent("{\"event\":\"start\",\"data\":{\"statusCode\":200,\"errorDescription\":\"\"}}");
             Assert.IsTrue(fired);
             AppsFlyer.OnRequestResponse -= handler;
         }
 
         [Test]
+        public void OnRPCEvent_SessionReadyEvent_FiresOnSessionReady()
+        {
+            bool fired = false;
+            EventHandler handler = (s, e) => { fired = true; };
+            AppsFlyer.OnSessionReady += handler;
+            var af = NewAppsFlyerComponent();
+            af.onRPCEvent("{\"event\":\"sessionReady\",\"data\":{}}");
+            Assert.IsTrue(fired);
+            AppsFlyer.OnSessionReady -= handler;
+        }
+
+        [Test]
         public void OnRPCEvent_UnknownEvent_DoesNotThrow()
         {
-            var af = new GameObject().AddComponent<AppsFlyer>();
+            var af = NewAppsFlyerComponent();
             Assert.DoesNotThrow(() =>
                 af.onRPCEvent("{\"event\":\"unknownEvent\",\"data\":{}}"));
         }
@@ -168,7 +195,7 @@ namespace AppsFlyerSDK.Tests
         [Test]
         public void OnRPCEvent_EmptyString_DoesNotThrow()
         {
-            var af = new GameObject().AddComponent<AppsFlyer>();
+            var af = NewAppsFlyerComponent();
             Assert.DoesNotThrow(() => af.onRPCEvent(""));
         }
     }
@@ -298,6 +325,28 @@ namespace AppsFlyerSDK.Tests
                     (string)d["channel"] == "sms" && (string)d["campaign"] == "referral" && !d.ContainsKey("parameters")));
         }
 
+#if UNITY_ANDROID
+        [Test]
+        public void GenerateInviteLink_Android_RemapsReferrerCustomerIdToCustomerId()
+        {
+            var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
+            AppsFlyer.generateInviteLink(parameters);
+            mockRpc.Received(1).Execute("generateInviteLink",
+                Arg.Is<Dictionary<string, object>>(d =>
+                    (string)d["customerId"] == "cust-1" && !d.ContainsKey("referrerCustomerId")));
+        }
+#else
+        [Test]
+        public void GenerateInviteLink_NonAndroid_PassesReferrerCustomerIdThrough()
+        {
+            var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
+            AppsFlyer.generateInviteLink(parameters);
+            mockRpc.Received(1).Execute("generateInviteLink",
+                Arg.Is<Dictionary<string, object>>(d =>
+                    (string)d["referrerCustomerId"] == "cust-1" && !d.ContainsKey("customerId")));
+        }
+#endif
+
         [Test]
         public void RegisterConversionListener_FiresWithNoParams()
         {
@@ -387,6 +436,31 @@ namespace AppsFlyerSDK.Tests
             AppsFlyer.updateServerUninstallToken(token);
             mockRpc.Received(1).ExecuteFire("registerUninstall",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("deviceToken") && !d.ContainsKey("token")));
+        }
+
+        [Test]
+        public void UpdateServerUninstallToken_iOS_EncodesBytesAsHexString()
+        {
+            var token = new byte[] { 0x74, 0x0F, 0x47, 0x07 };
+            AppsFlyer.updateServerUninstallToken(token);
+            mockRpc.Received(1).ExecuteFire("registerUninstall",
+                Arg.Is<Dictionary<string, object>>(d => (string)d["deviceToken"] == "740F4707"));
+        }
+
+        [Test]
+        public void UpdateServerUninstallToken_iOS_NullToken_SendsNullDeviceToken()
+        {
+            AppsFlyer.updateServerUninstallToken((byte[])null);
+            mockRpc.Received(1).ExecuteFire("registerUninstall",
+                Arg.Is<Dictionary<string, object>>(d => d["deviceToken"] == null));
+        }
+
+        [Test]
+        public void UpdateServerUninstallToken_iOS_EmptyToken_SendsEmptyDeviceTokenString()
+        {
+            AppsFlyer.updateServerUninstallToken(new byte[0]);
+            mockRpc.Received(1).ExecuteFire("registerUninstall",
+                Arg.Is<Dictionary<string, object>>(d => (string)d["deviceToken"] == ""));
         }
 
         [Test]

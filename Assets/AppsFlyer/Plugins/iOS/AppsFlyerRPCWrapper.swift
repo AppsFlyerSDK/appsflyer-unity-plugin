@@ -18,17 +18,21 @@ private func UnitySendMessageC(_ obj: UnsafePointer<CChar>?, _ method: UnsafePoi
 
 // Wires the RPC -> Unity event channel. Must be called during SDK init, before
 // registerSessionReadyListener, so the sessionReady callback can reach Unity.
-// Called synchronously from Unity's main thread during init, so we're
-// genuinely on the main actor already — assumeIsolated asserts that rather
-// than hopping.
+// Expected to be called synchronously from Unity's main thread during init, but
+// that's only a convention, not something the type system enforces on a raw
+// @_cdecl symbol — so hop via DispatchQueue.main.async (matching _afFireJson
+// below) instead of asserting isolation with assumeIsolated, which would crash
+// if this is ever invoked off the main thread.
 @_cdecl("_setRPCEventHandler")
 public func _setRPCEventHandler(_ objectName: UnsafePointer<CChar>?) {
 #if canImport(AppsFlyerRPC)
     let callbackObject = objectName.map { String(cString: $0) } ?? ""
-    MainActor.assumeIsolated {
-        AppsFlyerRPCBridge.shared.setEventHandler { jsonEvent in
-            if !callbackObject.isEmpty {
-                UnitySendMessageC(callbackObject, "onRPCEvent", jsonEvent)
+    DispatchQueue.main.async {
+        MainActor.assumeIsolated {
+            AppsFlyerRPCBridge.shared.setEventHandler { jsonEvent in
+                if !callbackObject.isEmpty {
+                    UnitySendMessageC(callbackObject, "onRPCEvent", jsonEvent)
+                }
             }
         }
     }
@@ -78,4 +82,11 @@ public func _afExecuteJson(_ jsonRequest: UnsafePointer<CChar>?) -> UnsafeMutabl
 #else
     return strdup("{\"id\":\"rpc-stub\",\"error\":{\"code\":-2,\"message\":\"AppsFlyerRPC framework not linked\"}}")
 #endif
+}
+
+// Frees a buffer returned by _afExecuteJson. The C# side must call this after marshaling the
+// response to a managed string — strdup's allocation is otherwise never released.
+@_cdecl("_afFreeCString")
+public func _afFreeCString(_ ptr: UnsafeMutablePointer<CChar>?) {
+    free(ptr)
 }

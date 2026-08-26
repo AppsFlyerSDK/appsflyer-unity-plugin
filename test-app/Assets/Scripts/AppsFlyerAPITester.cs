@@ -29,6 +29,11 @@ public class AppsFlyerAPITester : MonoBehaviour
         public List<Param> Params = new List<Param>();
         public Action<ApiEntry> Call;
         public string Result = "";
+
+        // Cached on first access instead of recomputed every OnGUI() call (Layout + Repaint,
+        // every visible row, every frame the panel is open) — Name never changes after BuildEntries().
+        private string _displayName;
+        public string DisplayName => _displayName ?? (_displayName = WrapFriendly(Name));
     }
 
     private List<ApiEntry> _entries;
@@ -522,7 +527,7 @@ public class AppsFlyerAPITester : MonoBehaviour
 
             GUILayout.BeginVertical(_entryBoxStyle);
 
-            GUILayout.Label(WrapFriendly(entry.Name), _labelStyle);
+            GUILayout.Label(entry.DisplayName, _labelStyle);
             if (GUILayout.Button("Call", _buttonStyle))
             {
                 try

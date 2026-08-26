@@ -13,7 +13,7 @@ namespace AppsFlyerSDK
     /// </summary>
     public class AppsFlyer : MonoBehaviour
     {
-        public static readonly string kAppsFlyerPluginVersion = "8.0.0-rpc";
+        public static readonly string kAppsFlyerPluginVersion = "7.0.1";
         public static string CallBackObjectName = null;
         private static EventHandler onRequestResponse;
         private static EventHandler onInAppResponse;
@@ -54,6 +54,10 @@ namespace AppsFlyerSDK
             AppsFlyerRPCClient.InitAndroidBridge(CallBackObjectName ?? "");
             Fire("init", new Dictionary<string, object> { { "devKey", devKey } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
+            // Wire the RPC -> Unity event channel before initializing, so onRPCEvent (conversion
+            // data, deep links, sessionReady) has somewhere to route to as soon as native starts
+            // firing events. No-op on macOS standalone, matching Fire/Dispatch's stub behavior there.
+            AppsFlyerRPCClient.InitIOSBridge(CallBackObjectName ?? "");
             // Blocking, not Fire: iOS's fire-and-forget path (_afFireJson) dispatches async and
             // returns before native has necessarily set devKey/appId, which can race with an
             // immediately-following registerSessionReadyListener()/start() and crash with
@@ -166,6 +170,14 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>Collects attribution data from the launcher Activity. Android only.</summary>
+        public static void collectDataFromLauncherActivity()
+        {
+#if UNITY_ANDROID
+            Fire("collectDataFromLauncherActivity");
+#endif
+        }
+
         /// <summary>
         /// Manually triggers deep-link attribution for the given URL. Manual/advanced-integration escape
         /// hatch only — native already resolves real deep links automatically (Android via AppsFlyerLib's
@@ -178,7 +190,7 @@ namespace AppsFlyerSDK
 #if UNITY_ANDROID
             Fire("performDeepLinking", new Dictionary<string, object> { { "url", url }, { "shouldTriggerSession", shouldTriggerSession } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("performOnAppAttributionWithURL", new Dictionary<string, object> { { "url", url } });
+            Fire("performDeepLinking", new Dictionary<string, object> { { "url", url } });
 #endif
         }
 
@@ -462,6 +474,12 @@ namespace AppsFlyerSDK
         /// "referrerCustomerId" key on both platforms — Android's wire remap to "customerId" is handled
         /// internally. A raw "customerId" key (Android's old wire key) is still passed through as-is
         /// for backward compatibility.
+        ///
+        /// The schema declares a string "result" for this RPC method on both platforms (native blocks
+        /// internally until the link is generated), so this dispatches synchronously via Execute — not
+        /// Fire — and delivers the outcome to CallBackObjectName via the pre-RPC IAppsFlyerUserInvite
+        /// callback names (onInviteLinkGenerated / onInviteLinkGeneratedFailure), since onRPCEvent has
+        /// no routing for this call.
         /// </summary>
         public static void generateInviteLink(Dictionary<string, string> parameters)
         {
@@ -478,7 +496,18 @@ namespace AppsFlyerSDK
                     payload[key] = kv.Value;
                 }
             }
-            Fire("generateInviteLink", payload);
+
+            var go = string.IsNullOrEmpty(CallBackObjectName) ? null : GameObject.Find(CallBackObjectName);
+            try
+            {
+                var link = AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
+                go?.SendMessage("onInviteLinkGenerated", link, SendMessageOptions.DontRequireReceiver);
+            }
+            catch (AppsFlyerRPCException e)
+            {
+                AFLog("generateInviteLink", "RPC error: " + e.Message);
+                go?.SendMessage("onInviteLinkGeneratedFailure", e.Message, SendMessageOptions.DontRequireReceiver);
+            }
         }
 
         // ── Advertising identifiers & privacy ─────────────────────────────────────
