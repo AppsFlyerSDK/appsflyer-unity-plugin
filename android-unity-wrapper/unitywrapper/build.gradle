@@ -43,6 +43,10 @@ dependencies {
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly "com.appsflyer:purchase-connector:$ANDROID_PC_VERSION"
     compileOnly 'com.android.billingclient:billing:8.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    // android.jar's org.json classes are compile-only stubs that throw at runtime;
+    // provide a real implementation for plain JVM unit tests.
+    testImplementation 'org.json:json:20231013'
 }
 
 apply from: file('publish.gradle')

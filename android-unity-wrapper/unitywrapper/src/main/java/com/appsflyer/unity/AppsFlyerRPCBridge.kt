@@ -30,12 +30,14 @@ object AppsFlyerRPCBridge {
     @JvmStatic
     fun init(callbackObjectName: String) {
         sCallbackObjectName = callbackObjectName
-        // af-android-plugin-bridge:7.0.1's AppsFlyerRpcHandler only accepts a fixed Context at
-        // construction time (no per-call context-provider overload yet), and sHandler is a
-        // process-lifetime singleton — so we must pass applicationContext, not currentActivity,
-        // to avoid pinning a since-destroyed Activity for the life of the process.
-        val context = UnityPlayer.currentActivity?.applicationContext ?: return
-        sHandler = AppsFlyerRpcHandler(context, { eventJson ->
+        // AppsFlyerRpcHandler wraps this provider in its own `by lazy` and only calls it on the
+        // first actual RPC execution, not at construction time - so the handler can be built here
+        // immediately without needing UnityPlayer.currentActivity to be set yet. Re-querying
+        // currentActivity inside the lambda (instead of resolving it once up front) also means we
+        // always read the current Activity's applicationContext rather than a value memoized
+        // before it existed; applicationContext (not currentActivity itself) avoids pinning a
+        // since-destroyed Activity for the life of this process-lifetime singleton.
+        sHandler = AppsFlyerRpcHandler({ UnityPlayer.currentActivity!!.applicationContext }, { eventJson ->
             val obj = sCallbackObjectName
             if (!obj.isNullOrEmpty()) {
                 UnityPlayer.UnitySendMessage(obj, "onRPCEvent", eventJson)
@@ -59,14 +61,35 @@ object AppsFlyerRPCBridge {
      */
     @JvmStatic
     fun executeJson(jsonRequest: String): String {
+        val requestId = extractRequestId(jsonRequest)
         val handler = sHandler
-            ?: return "{\"error\":{\"code\":503,\"message\":\"RPC bridge not initialized — call init() first\"}}"
-        return serializeResponse(handler.execute(jsonRequest))
+            ?: return serializeError(requestId, 503, "RPC bridge not initialized — call init() first")
+        return serializeResponse(handler.execute(jsonRequest), requestId)
     }
 
-    private fun serializeResponse(response: RpcResponse): String {
+    // Internal (not private) so AppsFlyerRPCBridgeTest can exercise the real serializer directly.
+    internal fun serializeError(requestId: String?, code: Int, message: String): String {
+        val json = JSONObject()
+        if (requestId != null) json.put("id", requestId)
+        json.put("error", JSONObject().put("code", code).put("message", message))
+        return json.toString()
+    }
+
+    // AppsFlyerRPCClient.cs's ParseResponse rejects any response whose "id" doesn't match the
+    // request it sent, so every response — success or error — must echo it back.
+    internal fun extractRequestId(jsonRequest: String): String? {
+        return try {
+            val request = JSONObject(jsonRequest)
+            if (request.has("id")) request.getString("id") else null
+        } catch (e: JSONException) {
+            null
+        }
+    }
+
+    internal fun serializeResponse(response: RpcResponse, requestId: String?): String {
         return try {
             val json = JSONObject()
+            if (requestId != null) json.put("id", requestId)
             when (response) {
                 is RpcResponse.VoidSuccess -> json.put("result", JSONObject().put("data", JSONObject.NULL))
                 is RpcResponse.Success<*> -> json.put("result", JSONObject().put("data", response.result ?: JSONObject.NULL))
@@ -80,7 +103,7 @@ object AppsFlyerRPCBridge {
             }
             json.toString()
         } catch (e: JSONException) {
-            "{\"error\":{\"code\":500,\"message\":\"Response serialization failed\"}}"
+            serializeError(requestId, 500, "Response serialization failed")
         }
     }
 }

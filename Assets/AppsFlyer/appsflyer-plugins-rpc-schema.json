@@ -1,0 +1,5873 @@
+{
+    "$schema": "https://schemas.appsflyer.com/plugins/plugin-api.schema.json",
+    "schemaVersion": "1.0.6",
+    "methods": [
+      {
+        "name": "addPushNotificationDeepLinkPath",
+        "rpc": {
+          "android": {
+            "method": "addPushNotificationDeepLinkPath",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "deepLinkPath": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "deepLinkPath"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "addPushNotificationDeepLinkPath",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "deepLinkPath": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "deepLinkPath"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "deepLinkPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "deepLinkPath"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/deepLinkPath": {
+              "from": "deepLinkPath"
+            }
+          },
+          "ios": {
+            "/deepLinkPath": {
+              "from": "deepLinkPath"
+            }
+          }
+        }
+      },
+      {
+        "name": "anonymizeUser",
+        "rpc": {
+          "android": {
+            "method": "anonymizeUser",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldAnonymize": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "anonymizeUser",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldAnonymize": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "shouldAnonymize"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "shouldAnonymize": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "shouldAnonymize"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/shouldAnonymize": {
+              "from": "shouldAnonymize"
+            }
+          },
+          "ios": {
+            "/shouldAnonymize": {
+              "from": "shouldAnonymize"
+            }
+          }
+        }
+      },
+      {
+        "name": "appendParametersToDeepLinkingURL",
+        "rpc": {
+          "android": {
+            "method": "appendParametersToDeepLinkingURL",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "contains": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "parameters": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "contains"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "appendParametersToDeepLinkingURL",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "contains": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "parameters": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "minProperties": 1
+                }
+              },
+              "required": [
+                "contains",
+                "parameters"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "contains",
+              "parameters"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/contains": {
+              "from": "contains"
+            },
+            "/parameters": {
+              "from": "parameters"
+            }
+          },
+          "ios": {
+            "/contains": {
+              "from": "contains"
+            },
+            "/parameters": {
+              "from": "parameters"
+            }
+          }
+        }
+      },
+      {
+        "name": "clearUserPii",
+        "rpc": {
+          "android": {
+            "method": "clearUserPii",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "clearUserPii",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "collectDataFromLauncherActivity",
+        "rpc": {
+          "android": {
+            "method": "collectDataFromLauncherActivity",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "continueUserActivity",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "continueUserActivity",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "activityType": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "activityType": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/url": {
+              "from": "url"
+            },
+            "/activityType": {
+              "from": "activityType"
+            }
+          }
+        },
+        "plugins": {
+          "default": "internal"
+        }
+      },
+      {
+        "name": "disableAppSetId",
+        "rpc": {
+          "android": {
+            "method": "disableAppSetId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "enableFacebookDeferredApplinks",
+        "rpc": {
+          "android": {
+            "method": "enableFacebookDeferredApplinks",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isEnabled": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "enableFacebookDeferredApplinks",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isEnabled": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "isEnabled"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "isEnabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEnabled"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isEnabled": {
+              "from": "isEnabled"
+            }
+          },
+          "ios": {
+            "/isEnabled": {
+              "from": "isEnabled"
+            }
+          }
+        }
+      },
+      {
+        "name": "enableTCFDataCollection",
+        "rpc": {
+          "android": {
+            "method": "enableTCFDataCollection",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldCollect": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "enableTCFDataCollection",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldCollect": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "shouldCollect"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "shouldCollect": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "shouldCollect"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/shouldCollect": {
+              "from": "shouldCollect"
+            }
+          },
+          "ios": {
+            "/shouldCollect": {
+              "from": "shouldCollect"
+            }
+          }
+        }
+      },
+      {
+        "name": "generateInviteLink",
+        "rpc": {
+          "android": {
+            "method": "generateInviteLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "channel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "campaign": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "referrerName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "referrerImageUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "customerId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "baseDeepLink": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "brandDomain": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "userParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "awaitResponse": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "result": {
+              "type": "string"
+            }
+          },
+          "ios": {
+            "method": "generateInviteLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "channel": {
+                  "type": "string"
+                },
+                "campaign": {
+                  "type": "string"
+                },
+                "referrerName": {
+                  "type": "string"
+                },
+                "referrerImageUrl": {
+                  "type": "string"
+                },
+                "referrerCustomerId": {
+                  "type": "string"
+                },
+                "baseDeepLink": {
+                  "type": "string"
+                },
+                "brandDomain": {
+                  "type": "string"
+                },
+                "userParams": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "parameters": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "channel": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "campaign": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "referrerName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "referrerImageUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "referrerCustomerId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "baseDeepLink": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "brandDomain": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "userParams": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "awaitResponse": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/channel": {
+              "from": "parameters",
+              "path": "/channel"
+            },
+            "/campaign": {
+              "from": "parameters",
+              "path": "/campaign"
+            },
+            "/referrerName": {
+              "from": "parameters",
+              "path": "/referrerName"
+            },
+            "/referrerImageUrl": {
+              "from": "parameters",
+              "path": "/referrerImageUrl"
+            },
+            "/customerId": {
+              "from": "parameters",
+              "path": "/referrerCustomerId"
+            },
+            "/baseDeepLink": {
+              "from": "parameters",
+              "path": "/baseDeepLink"
+            },
+            "/brandDomain": {
+              "from": "parameters",
+              "path": "/brandDomain"
+            },
+            "/userParams": {
+              "from": "parameters",
+              "path": "/userParams"
+            },
+            "/awaitResponse": {
+              "from": "awaitResponse"
+            }
+          },
+          "ios": {
+            "/channel": {
+              "from": "parameters",
+              "path": "/channel"
+            },
+            "/campaign": {
+              "from": "parameters",
+              "path": "/campaign"
+            },
+            "/referrerName": {
+              "from": "parameters",
+              "path": "/referrerName"
+            },
+            "/referrerImageUrl": {
+              "from": "parameters",
+              "path": "/referrerImageUrl"
+            },
+            "/referrerCustomerId": {
+              "from": "parameters",
+              "path": "/referrerCustomerId"
+            },
+            "/baseDeepLink": {
+              "from": "parameters",
+              "path": "/baseDeepLink"
+            },
+            "/brandDomain": {
+              "from": "parameters",
+              "path": "/brandDomain"
+            },
+            "/userParams": {
+              "from": "parameters",
+              "path": "/userParams"
+            }
+          }
+        }
+      },
+      {
+        "name": "getAppsFlyerUID",
+        "rpc": {
+          "android": {
+            "method": "getAppsFlyerUID",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "ios": {
+            "method": "getAppsFlyerUID",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "getAttributionId",
+        "rpc": {
+          "android": {
+            "method": "getAttributionId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "getHostName",
+        "rpc": {
+          "android": {
+            "method": "getHostName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          },
+          "ios": {
+            "method": "getHostName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "getHostPrefix",
+        "rpc": {
+          "android": {
+            "method": "getHostPrefix",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          },
+          "ios": {
+            "method": "getHostPrefix",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "getOutOfStore",
+        "rpc": {
+          "android": {
+            "method": "getOutOfStore",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "getSdkVersion",
+        "rpc": {
+          "android": {
+            "method": "getSdkVersion",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          },
+          "ios": {
+            "method": "getSdkVersion",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "handleLaunchOptions",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "handleLaunchOptions",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "launchOptions": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "launchOptions": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            }
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/launchOptions": {
+              "from": "launchOptions"
+            }
+          }
+        },
+        "plugins": {
+          "default": "internal"
+        }
+      },
+      {
+        "name": "handleOpenUrl",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "handleOpenUrl",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "options": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "options": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/url": {
+              "from": "url"
+            },
+            "/options": {
+              "from": "options"
+            }
+          }
+        },
+        "plugins": {
+          "default": "internal"
+        }
+      },
+      {
+        "name": "handleOpenURL",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "handleOpenURL",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "options": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "options": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/url": {
+              "from": "url"
+            },
+            "/options": {
+              "from": "options"
+            }
+          }
+        },
+        "plugins": {
+          "default": "internal"
+        }
+      },
+      {
+        "name": "handlePushNotification",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "handlePushNotification",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "pushPayload": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "minProperties": 1
+                }
+              },
+              "required": [
+                "pushPayload"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "pushPayload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "pushPayload"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/pushPayload": {
+              "from": "pushPayload"
+            }
+          }
+        }
+      },
+      {
+        "name": "init",
+        "rpc": {
+          "android": {
+            "method": "init",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "devKey": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "devKey"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "initialize",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "devKey": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "appId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "devKey",
+                "appId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "devKey": {
+                "type": "string"
+              },
+              "appId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "devKey"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/devKey": {
+              "from": "devKey"
+            }
+          },
+          "ios": {
+            "/devKey": {
+              "from": "devKey"
+            },
+            "/appId": {
+              "from": "appId"
+            }
+          }
+        }
+      },
+      {
+        "name": "isPreInstalledApp",
+        "rpc": {
+          "android": {
+            "method": "isPreInstalledApp",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "boolean"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "boolean"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "isSessionReady",
+        "rpc": {
+          "android": {
+            "method": "isSessionReady",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "boolean"
+            }
+          },
+          "ios": {
+            "method": "isSessionReady",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "boolean"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "boolean"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "isStopped",
+        "rpc": {
+          "android": {
+            "method": "isStopped",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "boolean"
+            }
+          },
+          "ios": {
+            "method": "isStopped",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "boolean"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "boolean"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "logAdRevenue",
+        "rpc": {
+          "android": {
+            "method": "logAdRevenue",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "monetizationNetwork": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mediationNetwork": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currencyIso4217Code": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "revenue": {
+                  "type": "number",
+                  "default": 0
+                },
+                "additionalParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "monetizationNetwork",
+                "mediationNetwork",
+                "currencyIso4217Code"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logAdRevenue",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "monetizationNetwork": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mediationNetwork": {
+                  "type": "string",
+                  "default": "custom"
+                },
+                "currencyIso4217Code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "revenue": {
+                  "type": "number"
+                },
+                "additionalParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "monetizationNetwork",
+                "currencyIso4217Code",
+                "revenue"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "monetizationNetwork": {
+                "type": "string"
+              },
+              "mediationNetwork": {
+                "type": "string"
+              },
+              "currencyIso4217Code": {
+                "type": "string"
+              },
+              "revenue": {
+                "type": "number"
+              },
+              "additionalParameters": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "monetizationNetwork",
+              "mediationNetwork",
+              "currencyIso4217Code",
+              "revenue"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/monetizationNetwork": {
+              "from": "monetizationNetwork"
+            },
+            "/mediationNetwork": {
+              "from": "mediationNetwork",
+              "transform": "androidMediationNetwork",
+              "valueMap": {}
+            },
+            "/currencyIso4217Code": {
+              "from": "currencyIso4217Code"
+            },
+            "/revenue": {
+              "from": "revenue"
+            },
+            "/additionalParameters": {
+              "from": "additionalParameters"
+            }
+          },
+          "ios": {
+            "/monetizationNetwork": {
+              "from": "monetizationNetwork"
+            },
+            "/mediationNetwork": {
+              "from": "mediationNetwork",
+              "transform": "iosMediationNetwork",
+              "valueMap": {
+                "custom_mediation": "custom",
+                "direct_monetization_network": "directmonetization"
+              }
+            },
+            "/currencyIso4217Code": {
+              "from": "currencyIso4217Code"
+            },
+            "/revenue": {
+              "from": "revenue"
+            },
+            "/additionalParameters": {
+              "from": "additionalParameters"
+            }
+          }
+        }
+      },
+      {
+        "name": "logAndOpenStore",
+        "rpc": {
+          "android": {
+            "method": "logAndOpenStore",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "promotedAppId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "campaign": {
+                  "type": "string",
+                  "default": ""
+                },
+                "userParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "promotedAppId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logAndOpenStore",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "promotedAppId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "campaign": {
+                  "type": "string"
+                },
+                "userParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "promotedAppId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "promotedAppId": {
+                "type": "string"
+              },
+              "campaign": {
+                "type": "string",
+                "default": ""
+              },
+              "userParams": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "promotedAppId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/promotedAppId": {
+              "from": "promotedAppId"
+            },
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/userParams": {
+              "from": "userParams"
+            }
+          },
+          "ios": {
+            "/promotedAppId": {
+              "from": "promotedAppId"
+            },
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/userParams": {
+              "from": "userParams"
+            }
+          }
+        }
+      },
+      {
+        "name": "logCrossPromoteImpression",
+        "rpc": {
+          "android": {
+            "method": "logCrossPromoteImpression",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "appId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "campaign": {
+                  "type": "string",
+                  "default": ""
+                },
+                "userParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "appId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logCrossPromoteImpression",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "appId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "campaign": {
+                  "type": "string"
+                },
+                "userParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "appId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "appId": {
+                "type": "string"
+              },
+              "campaign": {
+                "type": "string",
+                "default": ""
+              },
+              "userParams": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "appId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/appId": {
+              "from": "appId"
+            },
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/userParams": {
+              "from": "userParams"
+            }
+          },
+          "ios": {
+            "/appId": {
+              "from": "appId"
+            },
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/userParams": {
+              "from": "userParams"
+            }
+          }
+        }
+      },
+      {
+        "name": "logEvent",
+        "rpc": {
+          "android": {
+            "method": "logEvent",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "eventName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "eventValues": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                },
+                "awaitResponse": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "eventName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logEvent",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "eventName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "eventValues": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                },
+                "awaitResponse": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "eventName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "eventName": {
+                "type": "string"
+              },
+              "eventValues": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              },
+              "awaitResponse": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "eventName"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/eventName": {
+              "from": "eventName"
+            },
+            "/eventValues": {
+              "from": "eventValues"
+            },
+            "/awaitResponse": {
+              "from": "awaitResponse"
+            }
+          },
+          "ios": {
+            "/eventName": {
+              "from": "eventName"
+            },
+            "/eventValues": {
+              "from": "eventValues"
+            },
+            "/awaitResponse": {
+              "from": "awaitResponse"
+            }
+          }
+        }
+      },
+      {
+        "name": "logInvite",
+        "rpc": {
+          "android": {
+            "method": "logInvite",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "channel": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "eventParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "channel"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logInvite",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "channel": {
+                  "type": "string"
+                },
+                "eventParameters": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "channel": {
+                "type": "string"
+              },
+              "eventParameters": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "channel"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/channel": {
+              "from": "channel"
+            },
+            "/eventParameters": {
+              "from": "eventParameters"
+            }
+          },
+          "ios": {
+            "/channel": {
+              "from": "channel"
+            },
+            "/eventParameters": {
+              "from": "eventParameters"
+            }
+          }
+        }
+      },
+      {
+        "name": "logLocation",
+        "rpc": {
+          "android": {
+            "method": "logLocation",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "default": 0
+                },
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "default": 0
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "logLocation",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                }
+              },
+              "required": [
+                "longitude",
+                "latitude"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/latitude": {
+              "from": "latitude"
+            },
+            "/longitude": {
+              "from": "longitude"
+            }
+          },
+          "ios": {
+            "/latitude": {
+              "from": "latitude"
+            },
+            "/longitude": {
+              "from": "longitude"
+            }
+          }
+        }
+      },
+      {
+        "name": "logSession",
+        "rpc": {
+          "android": {
+            "method": "logSession",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "onPause",
+        "rpc": {
+          "android": {
+            "method": "onPause",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        },
+        "plugins": {
+          "default": "none",
+          "cocos2dx": "public"
+        }
+      },
+      {
+        "name": "performDeepLinking",
+        "rpc": {
+          "android": {
+            "method": "performDeepLinking",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "shouldTriggerSession": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "performDeepLinking",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "shouldTriggerSession": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/url": {
+              "from": "url"
+            },
+            "/shouldTriggerSession": {
+              "from": "shouldTriggerSession"
+            }
+          },
+          "ios": {
+            "/url": {
+              "from": "url"
+            }
+          }
+        }
+      },
+      {
+        "name": "registerConversionListener",
+        "rpc": {
+          "android": {
+            "method": "registerConversionListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onConversionDataSuccess",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              {
+                "name": "onConversionDataFail",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "ios": {
+            "method": "registerConversionListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onConversionDataSuccess",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              {
+                "name": "onConversionDataFail",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          },
+          "callbacks": {
+            "onConversionDataSuccess": {
+              "required": false,
+              "delivery": "stream",
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "onConversionDataFail": {
+              "required": false,
+              "delivery": "stream",
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        },
+        "callbackMappings": {
+          "android": {
+            "onConversionDataSuccess": "onConversionDataSuccess",
+            "onConversionDataFail": "onConversionDataFail"
+          },
+          "ios": {
+            "onConversionDataSuccess": "onConversionDataSuccess",
+            "onConversionDataFail": "onConversionDataFail"
+          }
+        }
+      },
+      {
+        "name": "registerDeepLinkListener",
+        "rpc": {
+          "android": {
+            "method": "subscribeForDeepLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onDeepLinking",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "ios": {
+            "method": "registerDeeplinkListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onDeepLinkReceived",
+                "delivery": "stream",
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          },
+          "callbacks": {
+            "onDeepLinking": {
+              "required": false,
+              "delivery": "stream",
+              "payload": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        },
+        "callbackMappings": {
+          "android": {
+            "onDeepLinking": "onDeepLinking"
+          },
+          "ios": {
+            "onDeepLinking": "onDeepLinkReceived"
+          }
+        }
+      },
+      {
+        "name": "registerSessionReadyListener",
+        "rpc": {
+          "android": {
+            "method": "registerSessionReadyListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onSessionReady",
+                "delivery": "stream",
+                "payload": {
+                  "type": "null"
+                }
+              }
+            ]
+          },
+          "ios": {
+            "method": "registerSessionReadyListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            },
+            "events": [
+              {
+                "name": "onSessionReady",
+                "delivery": "stream",
+                "payload": {
+                  "type": "null"
+                }
+              }
+            ]
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          },
+          "callbacks": {
+            "onReady": {
+              "required": true,
+              "delivery": "stream",
+              "payload": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        },
+        "callbackMappings": {
+          "android": {
+            "onReady": "onSessionReady"
+          },
+          "ios": {
+            "onReady": "onSessionReady"
+          }
+        }
+      },
+      {
+        "name": "sendPushNotificationData",
+        "rpc": {
+          "android": {
+            "method": "sendPushNotificationData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "campaign": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "pid": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "isRetargeting": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "additionalParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "campaign",
+                "pid"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "campaign": {
+                "type": "string"
+              },
+              "pid": {
+                "type": "string"
+              },
+              "isRetargeting": {
+                "type": "boolean",
+                "default": false
+              },
+              "additionalParameters": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "campaign",
+              "pid"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/pid": {
+              "from": "pid"
+            },
+            "/isRetargeting": {
+              "from": "isRetargeting"
+            },
+            "/additionalParameters": {
+              "from": "additionalParameters"
+            }
+          }
+        }
+      },
+      {
+        "name": "setAdditionalData",
+        "rpc": {
+          "android": {
+            "method": "setAdditionalData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "customData": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "default": {}
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setAdditionalData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "customData": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "customData"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "customData": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "customData"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/customData": {
+              "from": "customData"
+            }
+          },
+          "ios": {
+            "/customData": {
+              "from": "customData"
+            }
+          }
+        }
+      },
+      {
+        "name": "setAppId",
+        "rpc": {
+          "android": {
+            "method": "setAppId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "appId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "appId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "appId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "appId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/appId": {
+              "from": "appId"
+            }
+          }
+        }
+      },
+      {
+        "name": "setAppInviteOneLink",
+        "rpc": {
+          "android": {
+            "method": "setAppInviteOneLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "oneLinkId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "oneLinkId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setAppInviteOneLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "oneLinkId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "oneLinkId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "oneLinkId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oneLinkId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/oneLinkId": {
+              "from": "oneLinkId"
+            }
+          },
+          "ios": {
+            "/oneLinkId": {
+              "from": "oneLinkId"
+            }
+          }
+        }
+      },
+      {
+        "name": "setCollectAndroidID",
+        "rpc": {
+          "android": {
+            "method": "setCollectAndroidID",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isCollect": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "isCollect": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isCollect"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isCollect": {
+              "from": "isCollect"
+            }
+          }
+        }
+      },
+      {
+        "name": "setConsentData",
+        "rpc": {
+          "android": {
+            "method": "setConsentData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isUserSubjectToGDPR": {
+                  "type": "boolean"
+                },
+                "hasConsentForDataUsage": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hasConsentForAdsPersonalization": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hasConsentForAdStorage": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "isUserSubjectToGDPR"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setConsentData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isUserSubjectToGDPR": {
+                  "type": "boolean"
+                },
+                "hasConsentForDataUsage": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hasConsentForAdsPersonalization": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hasConsentForAdStorage": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "isUserSubjectToGDPR"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "isUserSubjectToGDPR": {
+                "type": "boolean"
+              },
+              "hasConsentForDataUsage": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "hasConsentForAdsPersonalization": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "hasConsentForAdStorage": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "isUserSubjectToGDPR"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isUserSubjectToGDPR": {
+              "from": "isUserSubjectToGDPR"
+            },
+            "/hasConsentForDataUsage": {
+              "from": "hasConsentForDataUsage"
+            },
+            "/hasConsentForAdsPersonalization": {
+              "from": "hasConsentForAdsPersonalization"
+            },
+            "/hasConsentForAdStorage": {
+              "from": "hasConsentForAdStorage"
+            }
+          },
+          "ios": {
+            "/isUserSubjectToGDPR": {
+              "from": "isUserSubjectToGDPR"
+            },
+            "/hasConsentForDataUsage": {
+              "from": "hasConsentForDataUsage"
+            },
+            "/hasConsentForAdsPersonalization": {
+              "from": "hasConsentForAdsPersonalization"
+            },
+            "/hasConsentForAdStorage": {
+              "from": "hasConsentForAdStorage"
+            }
+          }
+        }
+      },
+      {
+        "name": "setCurrencyCode",
+        "rpc": {
+          "android": {
+            "method": "setCurrencyCode",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currencyCode": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "currencyCode"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setCurrencyCode",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currencyCode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "currencyCode"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currencyCode": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "currencyCode"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/currencyCode": {
+              "from": "currencyCode"
+            }
+          },
+          "ios": {
+            "/currencyCode": {
+              "from": "currencyCode"
+            }
+          }
+        }
+      },
+      {
+        "name": "setCurrentDeviceLanguage",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setCurrentDeviceLanguage",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "language": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "language": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "language"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/language": {
+              "from": "language"
+            }
+          }
+        }
+      },
+      {
+        "name": "setCustomerUserId",
+        "rpc": {
+          "android": {
+            "method": "setCustomerUserId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "customerId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "customerId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setCustomerUserId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "customerId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "customerId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "customerId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "customerId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/customerId": {
+              "from": "customerId"
+            }
+          },
+          "ios": {
+            "/customerId": {
+              "from": "customerId"
+            }
+          }
+        }
+      },
+      {
+        "name": "enableDebug",
+        "rpc": {
+          "android": {
+            "method": "isDebug",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isDebug": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "isDebug",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isDebug": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "isDebug"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isDebug": {
+              "from": "enabled"
+            }
+          },
+          "ios": {
+            "/isDebug": {
+              "from": "enabled"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDeepLinkTimeout",
+        "rpc": {
+          "android": {
+            "method": "setDeepLinkTimeout",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "timeout": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "timeout"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setDeepLinkTimeout",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "timeout": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "timeout"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "timeout": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "timeout"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/timeout": {
+              "from": "timeout"
+            }
+          },
+          "ios": {
+            "/timeout": {
+              "from": "timeout"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableAdvertisingIdentifiers",
+        "rpc": {
+          "android": {
+            "method": "setDisableAdvertisingIdentifiers",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isDisable": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setDisableAdvertisingIdentifiers",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disable"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "disable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "disable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isDisable": {
+              "from": "disable"
+            }
+          },
+          "ios": {
+            "/disable": {
+              "from": "disable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableAppleAdsAttribution",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setDisableAppleAdsAttribution",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disable"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "disable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "disable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/disable": {
+              "from": "disable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableCollectASA",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setDisableCollectASA",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disable"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "disable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "disable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/disable": {
+              "from": "disable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableIDFVCollection",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setDisableIDFVCollection",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disable"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "disable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "disable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/disable": {
+              "from": "disable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableNetworkData",
+        "rpc": {
+          "android": {
+            "method": "setDisableNetworkData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isDisable": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "isDisable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isDisable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isDisable": {
+              "from": "isDisable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setDisableSKAdNetwork",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setDisableSKAdNetwork",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "disable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "disable"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "disable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "disable"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/disable": {
+              "from": "disable"
+            }
+          }
+        }
+      },
+      {
+        "name": "setFacebookDeferredAppLink",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setFacebookDeferredAppLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/url": {
+              "from": "url"
+            }
+          }
+        }
+      },
+      {
+        "name": "setHost",
+        "rpc": {
+          "android": {
+            "method": "setHost",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "hostPrefixName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "hostName": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "hostName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setHost",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "hostPrefixName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "hostName": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "hostPrefixName",
+                "hostName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hostPrefixName": {
+                "type": "string"
+              },
+              "hostName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hostPrefixName",
+              "hostName"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/hostPrefixName": {
+              "from": "hostPrefixName"
+            },
+            "/hostName": {
+              "from": "hostName"
+            }
+          },
+          "ios": {
+            "/hostPrefixName": {
+              "from": "hostPrefixName"
+            },
+            "/hostName": {
+              "from": "hostName"
+            }
+          }
+        }
+      },
+      {
+        "name": "setInstallId",
+        "rpc": {
+          "android": {
+            "method": "setInstallId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "installId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "installId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setInstallId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "installId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "installId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "installId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "installId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/installId": {
+              "from": "installId"
+            }
+          },
+          "ios": {
+            "/installId": {
+              "from": "installId"
+            }
+          }
+        }
+      },
+      {
+        "name": "setIsUpdate",
+        "rpc": {
+          "android": {
+            "method": "setIsUpdate",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isUpdate": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "isUpdate": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isUpdate"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/isUpdate": {
+              "from": "isUpdate"
+            }
+          }
+        }
+      },
+      {
+        "name": "setLogLevel",
+        "rpc": {
+          "android": {
+            "method": "setLogLevel",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "logLevel": {
+                  "type": "string",
+                  "enum": [
+                    "NONE",
+                    "ERROR",
+                    "WARNING",
+                    "INFO",
+                    "DEBUG",
+                    "VERBOSE"
+                  ]
+                }
+              },
+              "required": [
+                "logLevel"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "logLevel": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "error",
+                  "warning",
+                  "info",
+                  "debug",
+                  "verbose"
+                ]
+              }
+            },
+            "required": [
+              "logLevel"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/logLevel": {
+              "from": "logLevel",
+              "transform": "androidLogLevel"
+            }
+          }
+        }
+      },
+      {
+        "name": "setMinTimeBetweenSessions",
+        "rpc": {
+          "android": {
+            "method": "setMinTimeBetweenSessions",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setMinTimeBetweenSessions",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "seconds"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "seconds": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "seconds"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/seconds": {
+              "from": "seconds"
+            }
+          },
+          "ios": {
+            "/seconds": {
+              "from": "seconds"
+            }
+          }
+        }
+      },
+      {
+        "name": "setOneLinkCustomDomain",
+        "rpc": {
+          "android": {
+            "method": "setOneLinkCustomDomain",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "domains": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "domains"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setOneLinkCustomDomain",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "domains": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "domains"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "domains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "domains"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/domains": {
+              "from": "domains"
+            }
+          },
+          "ios": {
+            "/domains": {
+              "from": "domains"
+            }
+          }
+        }
+      },
+      {
+        "name": "setOutOfStore",
+        "rpc": {
+          "android": {
+            "method": "setOutOfStore",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceName": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "sourceName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "sourceName"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/sourceName": {
+              "from": "sourceName"
+            }
+          }
+        }
+      },
+      {
+        "name": "setPartnerData",
+        "rpc": {
+          "android": {
+            "method": "setPartnerData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "partnerId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "default": {}
+                }
+              },
+              "required": [
+                "partnerId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setPartnerData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "partnerId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "partnerId",
+                "data"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "partnerId": {
+                "type": "string"
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "partnerId",
+              "data"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/partnerId": {
+              "from": "partnerId"
+            },
+            "/data": {
+              "from": "data"
+            }
+          },
+          "ios": {
+            "/partnerId": {
+              "from": "partnerId"
+            },
+            "/data": {
+              "from": "data"
+            }
+          }
+        }
+      },
+      {
+        "name": "setPluginInfo",
+        "rpc": {
+          "android": {
+            "method": "setPluginInfo",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "plugin": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "pluginVersion": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "plugin",
+                "pluginVersion"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setPluginInfo",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "plugin": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "pluginVersion": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "additionalParams": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "plugin",
+                "pluginVersion"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "plugin": {
+                "type": "string"
+              },
+              "pluginVersion": {
+                "type": "string"
+              },
+              "additionalParams": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "plugin",
+              "pluginVersion"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/plugin": {
+              "from": "plugin"
+            },
+            "/pluginVersion": {
+              "from": "pluginVersion"
+            }
+          },
+          "ios": {
+            "/plugin": {
+              "from": "plugin"
+            },
+            "/pluginVersion": {
+              "from": "pluginVersion"
+            },
+            "/additionalParams": {
+              "from": "additionalParams"
+            }
+          }
+        },
+        "plugins": {
+          "default": "internal"
+        }
+      },
+      {
+        "name": "setPreinstallAttribution",
+        "rpc": {
+          "android": {
+            "method": "setPreinstallAttribution",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "mediaSource": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "campaign": {
+                  "type": "string",
+                  "default": ""
+                },
+                "siteId": {
+                  "type": "string",
+                  "default": ""
+                }
+              },
+              "required": [
+                "mediaSource"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mediaSource": {
+                "type": "string",
+                "minLength": 1
+              },
+              "campaign": {
+                "type": "string",
+                "default": ""
+              },
+              "siteId": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "required": [
+              "mediaSource"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/mediaSource": {
+              "from": "mediaSource"
+            },
+            "/campaign": {
+              "from": "campaign"
+            },
+            "/siteId": {
+              "from": "siteId"
+            }
+          }
+        }
+      },
+      {
+        "name": "setResolveDeepLinkURLs",
+        "rpc": {
+          "android": {
+            "method": "setResolveDeepLinkURLs",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "urls": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "urls"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setResolveDeepLinkURLs",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "urls": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "urls"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "urls"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/urls": {
+              "from": "urls"
+            }
+          },
+          "ios": {
+            "/urls": {
+              "from": "urls"
+            }
+          }
+        }
+      },
+      {
+        "name": "setSharingFilterForPartners",
+        "rpc": {
+          "android": {
+            "method": "setSharingFilterForPartners",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "partners": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "partners"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setSharingFilterForPartners",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "partners": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "partners"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "partners": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "partners"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/partners": {
+              "from": "partners"
+            }
+          },
+          "ios": {
+            "/partners": {
+              "from": "partners"
+            }
+          }
+        }
+      },
+      {
+        "name": "setShouldCollectDeviceName",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setShouldCollectDeviceName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "collect": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "collect"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "collect": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "collect"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/collect": {
+              "from": "collect"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUseReceiptValidationSandbox",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setUseReceiptValidationSandbox",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sandbox": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "sandbox"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sandbox": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sandbox"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/sandbox": {
+              "from": "sandbox"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUserEmail",
+        "rpc": {
+          "android": {
+            "method": "setUserEmail",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "email"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setUserEmail",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "email": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/email": {
+              "from": "email"
+            }
+          },
+          "ios": {
+            "/email": {
+              "from": "email"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUserFbLoginId",
+        "rpc": {
+          "android": {
+            "method": "setUserFbLoginId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fbLoginId": {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^-?[0-9]+$"
+                    }
+                  ],
+                  "default": 0
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setUserFbLoginId",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fbLoginId": {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^-?[0-9]+$"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "fbLoginId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fbLoginId": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^-?[0-9]+$"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "fbLoginId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/fbLoginId": {
+              "from": "fbLoginId"
+            }
+          },
+          "ios": {
+            "/fbLoginId": {
+              "from": "fbLoginId"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUserFirstName",
+        "rpc": {
+          "android": {
+            "method": "setUserFirstName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "firstName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setUserFirstName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "firstName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "firstName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "firstName"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/firstName": {
+              "from": "firstName"
+            }
+          },
+          "ios": {
+            "/firstName": {
+              "from": "firstName"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUserLastName",
+        "rpc": {
+          "android": {
+            "method": "setUserLastName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "lastName": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "lastName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setUserLastName",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "lastName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "lastName"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lastName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "lastName"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/lastName": {
+              "from": "lastName"
+            }
+          },
+          "ios": {
+            "/lastName": {
+              "from": "lastName"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUserPhone",
+        "rpc": {
+          "android": {
+            "method": "setUserPhone",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "countryCode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "countryCode",
+                "phoneNumber"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "setUserPhone",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "countryCode": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "countryCode",
+                "phoneNumber"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "countryCode": {
+                "type": "string"
+              },
+              "phoneNumber": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "countryCode",
+              "phoneNumber"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/countryCode": {
+              "from": "countryCode"
+            },
+            "/phoneNumber": {
+              "from": "phoneNumber"
+            }
+          },
+          "ios": {
+            "/countryCode": {
+              "from": "countryCode"
+            },
+            "/phoneNumber": {
+              "from": "phoneNumber"
+            }
+          }
+        }
+      },
+      {
+        "name": "setUseUninstallSandbox",
+        "rpc": {
+          "android": null,
+          "ios": {
+            "method": "setUseUninstallSandbox",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sandbox": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "sandbox"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sandbox": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sandbox"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "ios": {
+            "/sandbox": {
+              "from": "sandbox"
+            }
+          }
+        }
+      },
+      {
+        "name": "start",
+        "rpc": {
+          "android": {
+            "method": "start",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "awaitResponse": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "start",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "awaitResponse": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "awaitResponse": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/awaitResponse": {
+              "from": "awaitResponse"
+            }
+          },
+          "ios": {
+            "/awaitResponse": {
+              "from": "awaitResponse"
+            }
+          }
+        }
+      },
+      {
+        "name": "stop",
+        "rpc": {
+          "android": {
+            "method": "stop",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldStop": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "stop",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shouldStop": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "shouldStop"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "shouldStop": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "shouldStop"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/shouldStop": {
+              "from": "shouldStop"
+            }
+          },
+          "ios": {
+            "/shouldStop": {
+              "from": "shouldStop"
+            }
+          }
+        }
+      },
+      {
+        "name": "unregisterConversionListener",
+        "rpc": {
+          "android": {
+            "method": "unregisterConversionListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "unregisterSessionReadyListener",
+        "rpc": {
+          "android": {
+            "method": "unregisterSessionReadyListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "unregisterSessionReadyListener",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {},
+          "ios": {}
+        }
+      },
+      {
+        "name": "unregisterDeepLinkListener",
+        "rpc": {
+          "android": {
+            "method": "unsubscribeForDeepLink",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "maxProperties": 0
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {}
+        }
+      },
+      {
+        "name": "updateServerUninstallToken",
+        "rpc": {
+          "android": {
+            "method": "updateServerUninstallToken",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "token"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": {
+            "method": "registerUninstall",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "deviceToken": {
+                  "type": "string",
+                  "minLength": 2,
+                  "pattern": "^(?:[0-9A-Fa-f]{2})+$"
+                }
+              },
+              "required": [
+                "deviceToken"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "token": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "token"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/token": {
+              "from": "token"
+            }
+          },
+          "ios": {
+            "/deviceToken": {
+              "from": "token"
+            }
+          }
+        }
+      },
+      {
+        "name": "validateAndLogInAppPurchase",
+        "rpc": {
+          "android": {
+            "method": "validateAndLogInAppPurchase",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "purchaseType": {
+                  "type": "string",
+                  "enum": [
+                    "subscription",
+                    "one_time_purchase",
+                    "oneTimePurchase"
+                  ]
+                },
+                "purchaseToken": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "productId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "additionalParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "purchaseType",
+                "purchaseToken",
+                "productId"
+              ]
+            },
+            "result": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "ios": {
+            "method": "validateAndLogInAppPurchase",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "productId"
+                  ]
+                },
+                "transaction": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "transactionId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "purchaseType": {
+                      "type": "string",
+                      "enum": [
+                        "subscription",
+                        "oneTimePurchase"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "transactionId",
+                    "purchaseType"
+                  ]
+                },
+                "additionalParameters": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "product",
+                "transaction"
+              ]
+            },
+            "result": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "purchase": {
+                "oneOf": [
+                  {
+                    "title": "Android purchase details",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "purchaseType": {
+                        "type": "string",
+                        "enum": [
+                          "oneTimePurchase",
+                          "subscription"
+                        ]
+                      },
+                      "productId": {
+                        "type": "string"
+                      },
+                      "purchaseToken": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "purchaseType",
+                      "productId",
+                      "purchaseToken"
+                    ]
+                  },
+                  {
+                    "title": "iOS purchase details",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "purchaseType": {
+                        "type": "string",
+                        "enum": [
+                          "oneTimePurchase",
+                          "subscription"
+                        ]
+                      },
+                      "productId": {
+                        "type": "string"
+                      },
+                      "transactionId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "purchaseType",
+                      "productId",
+                      "transactionId"
+                    ]
+                  }
+                ]
+              },
+              "additionalParameters": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "purchase"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "mappings": {
+          "android": {
+            "/purchaseType": {
+              "from": "purchase",
+              "path": "/purchaseType",
+              "transform": "androidPurchaseType"
+            },
+            "/purchaseToken": {
+              "from": "purchase",
+              "path": "/purchaseToken"
+            },
+            "/productId": {
+              "from": "purchase",
+              "path": "/productId"
+            },
+            "/additionalParameters": {
+              "from": "additionalParameters"
+            }
+          },
+          "ios": {
+            "/product/productId": {
+              "from": "purchase",
+              "path": "/productId"
+            },
+            "/transaction/transactionId": {
+              "from": "purchase",
+              "path": "/transactionId"
+            },
+            "/transaction/purchaseType": {
+              "from": "purchase",
+              "path": "/purchaseType",
+              "transform": "iosPurchaseType"
+            },
+            "/additionalParameters": {
+              "from": "additionalParameters"
+            }
+          }
+        }
+      }
+    ]
+  }

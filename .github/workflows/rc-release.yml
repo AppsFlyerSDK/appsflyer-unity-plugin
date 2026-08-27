@@ -185,7 +185,6 @@ jobs:
           grep -q "AppsFlyerRPC\" version=\"$IOS_RPC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           [[ -n "$IOS_PC_VERSION" ]] && grep -q "PurchaseConnector\" version=\"$IOS_PC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
-          grep -q "{ \"pluginVersion\", kAppsFlyerPluginVersion }" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "PLUGIN_VERSION = \"$BASE_VERSION\"" android-unity-wrapper/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java
           grep -q "^VERSION_NAME=$WRAPPER_VERSION" android-unity-wrapper/gradle.properties
           BASE_WRAPPER_VERSION=$(git show "origin/$BASE_BRANCH:android-unity-wrapper/gradle.properties" | grep '^VERSION_NAME=' | cut -d= -f2)

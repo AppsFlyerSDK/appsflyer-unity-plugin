@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using AFMiniJSON;
 
@@ -33,6 +34,28 @@ namespace AppsFlyerSDK
             catch (AppsFlyerRPCException e) { AFLog(method, "RPC error: " + e.Message); return null; }
         }
 
+        // On iOS, Execute() blocks on _afExecuteJson's semaphore, which can only be signaled once
+        // the main thread is free — calling Query() directly from Unity's main thread deadlocks.
+        // QueryAsync hops to a background thread first (matching generateInviteLinkAsync), so every
+        // *Async getter below is safe to call from the main thread; the synchronous getters are not.
+        private static async Awaitable<object> QueryAsync(string method, Dictionary<string, object> parameters = null)
+        {
+            await Awaitable.BackgroundThreadAsync();
+            try
+            {
+                return AppsFlyerRPCClient.instance.Execute(method, parameters);
+            }
+            catch (AppsFlyerRPCException e)
+            {
+                AFLog(method, "RPC error: " + e.Message);
+                return null;
+            }
+            finally
+            {
+                await Awaitable.MainThreadAsync();
+            }
+        }
+
         // ── Initialization ──────────────────────────────────────────────────────
 
         /// <summary>
@@ -51,13 +74,13 @@ namespace AppsFlyerSDK
             }
 
 #if UNITY_ANDROID
-            AppsFlyerRPCClient.InitAndroidBridge(CallBackObjectName ?? "");
+            AppsFlyerRPCClient.instance.InitBridge(CallBackObjectName ?? "");
             Fire("init", new Dictionary<string, object> { { "devKey", devKey } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
             // Wire the RPC -> Unity event channel before initializing, so onRPCEvent (conversion
             // data, deep links, sessionReady) has somewhere to route to as soon as native starts
             // firing events. No-op on macOS standalone, matching Fire/Dispatch's stub behavior there.
-            AppsFlyerRPCClient.InitIOSBridge(CallBackObjectName ?? "");
+            AppsFlyerRPCClient.instance.InitBridge(CallBackObjectName ?? "");
             // Blocking, not Fire: iOS's fire-and-forget path (_afFireJson) dispatches async and
             // returns before native has necessarily set devKey/appId, which can race with an
             // immediately-following registerSessionReadyListener()/start() and crash with
@@ -90,25 +113,53 @@ namespace AppsFlyerSDK
             Fire("stop", new Dictionary<string, object> { { "shouldStop", shouldStop } });
         }
 
-        /// <summary>Synchronous RPC query — matches the schema's canonical isSessionReady contract.</summary>
+        /// <summary>Synchronous RPC query — matches the schema's canonical isSessionReady contract.
+        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// <see cref="isSessionReadyAsync"/>.</summary>
         public static bool isSessionReady()
         {
             return (Query("isSessionReady") as bool?) ?? false;
         }
 
-        /// <summary>Gets the AppsFlyer SDK version used by native, via a synchronous RPC query.</summary>
+        /// <summary>Awaitable counterpart of <see cref="isSessionReady"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<bool> isSessionReadyAsync()
+        {
+            return (await QueryAsync("isSessionReady") as bool?) ?? false;
+        }
+
+        /// <summary>Gets the AppsFlyer SDK version used by native, via a synchronous RPC query.
+        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// <see cref="getSdkVersionAsync"/>.</summary>
         public static string getSdkVersion()
         {
             return Query("getSdkVersion") as string ?? string.Empty;
         }
 
-        /// <summary>Gets AppsFlyer's unique device ID, via a synchronous RPC query.</summary>
+        /// <summary>Awaitable counterpart of <see cref="getSdkVersion"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getSdkVersionAsync()
+        {
+            return await QueryAsync("getSdkVersion") as string ?? string.Empty;
+        }
+
+        /// <summary>Gets AppsFlyer's unique device ID, via a synchronous RPC query.
+        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// <see cref="getAppsFlyerUIDAsync"/>.</summary>
         public static string getAppsFlyerUID()
         {
 #if UNITY_WSA_10_0
             return AppsFlyerWindows.GetAppsFlyerId();
 #else
             return Query("getAppsFlyerUID") as string ?? string.Empty;
+#endif
+        }
+
+        /// <summary>Awaitable counterpart of <see cref="getAppsFlyerUID"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getAppsFlyerUIDAsync()
+        {
+#if UNITY_WSA_10_0
+            return AppsFlyerWindows.GetAppsFlyerId();
+#else
+            return await QueryAsync("getAppsFlyerUID") as string ?? string.Empty;
 #endif
         }
 
@@ -184,6 +235,8 @@ namespace AppsFlyerSDK
         /// onResume() UDL hook, iOS via the plugin's AppDelegateListener/swizzle). Calling this alongside
         /// that automatic path has previously caused a real race condition that dropped callbacks
         /// (see commit 2de97096) — do not call if relying on the default automatic integration.
+        /// <paramref name="shouldTriggerSession"/> is Android-only; iOS's native SDK has no
+        /// equivalent capability, so this parameter has no effect on iOS/macOS.
         /// </summary>
         public static void performDeepLinking(string url, bool shouldTriggerSession = false)
         {
@@ -468,20 +521,13 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Builds and fires a OneLink user-invite request. `parameters` is spread as top-level RPC keys
-        /// (channel, campaign, referrerName, referrerImageUrl, referrerCustomerId, baseDeepLink,
-        /// brandDomain, etc.), not nested under a single "parameters" key. Use the canonical
-        /// "referrerCustomerId" key on both platforms — Android's wire remap to "customerId" is handled
-        /// internally. A raw "customerId" key (Android's old wire key) is still passed through as-is
-        /// for backward compatibility.
-        ///
-        /// The schema declares a string "result" for this RPC method on both platforms (native blocks
-        /// internally until the link is generated), so this dispatches synchronously via Execute — not
-        /// Fire — and delivers the outcome to CallBackObjectName via the pre-RPC IAppsFlyerUserInvite
-        /// callback names (onInviteLinkGenerated / onInviteLinkGeneratedFailure), since onRPCEvent has
-        /// no routing for this call.
+        /// `parameters` is spread as top-level RPC keys (channel, campaign, referrerName,
+        /// referrerImageUrl, referrerCustomerId, baseDeepLink, brandDomain, etc.), not nested under a
+        /// single "parameters" key. Use the canonical "referrerCustomerId" key on both platforms —
+        /// Android's wire remap to "customerId" is handled internally. A raw "customerId" key (Android's
+        /// old wire key) is still passed through as-is for backward compatibility.
         /// </summary>
-        public static void generateInviteLink(Dictionary<string, string> parameters)
+        private static Dictionary<string, object> BuildInviteLinkPayload(Dictionary<string, string> parameters)
         {
             var payload = new Dictionary<string, object>();
             if (parameters != null)
@@ -496,11 +542,49 @@ namespace AppsFlyerSDK
                     payload[key] = kv.Value;
                 }
             }
+            return payload;
+        }
 
+        /// <summary>
+        /// Generates a OneLink user-invite link and returns it directly to the caller. The schema
+        /// declares a string "result" for this RPC method on both platforms — native blocks internally
+        /// until the link is generated over the network — so the Execute() call itself happens off the
+        /// main thread via Awaitable.BackgroundThreadAsync(), instead of blocking Unity's player loop for
+        /// the round trip.
+        /// </summary>
+        public static async Awaitable<string> generateInviteLinkAsync(Dictionary<string, string> parameters)
+        {
+            var payload = BuildInviteLinkPayload(parameters);
+            await Awaitable.BackgroundThreadAsync();
+            try
+            {
+                return AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
+            }
+            finally
+            {
+                await Awaitable.MainThreadAsync();
+            }
+        }
+
+        /// <summary>
+        /// Builds and fires a OneLink user-invite request; delivers the outcome to CallBackObjectName via
+        /// the pre-RPC IAppsFlyerUserInvite callback names (onInviteLinkGenerated /
+        /// onInviteLinkGeneratedFailure), since onRPCEvent has no routing for this call. Thin wrapper
+        /// around <see cref="generateInviteLinkAsync"/>; prefer calling that directly to get the link
+        /// without going through CallBackObjectName.
+        /// </summary>
+        public static async void generateInviteLink(Dictionary<string, string> parameters)
+        {
+            await DeliverInviteLinkAsync(parameters);
+        }
+
+        // Task-returning so tests can await the exact delivery logic generateInviteLink fires-and-forgets.
+        internal static async Task DeliverInviteLinkAsync(Dictionary<string, string> parameters)
+        {
             var go = string.IsNullOrEmpty(CallBackObjectName) ? null : GameObject.Find(CallBackObjectName);
             try
             {
-                var link = AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
+                var link = await generateInviteLinkAsync(parameters);
                 go?.SendMessage("onInviteLinkGenerated", link, SendMessageOptions.DontRequireReceiver);
             }
             catch (AppsFlyerRPCException e)
@@ -644,11 +728,22 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only.</summary>
+        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="getOutOfStoreAsync"/> to avoid
+        /// blocking the calling thread.</summary>
         public static string getOutOfStore()
         {
 #if UNITY_ANDROID
             return Query("getOutOfStore") as string ?? string.Empty;
+#else
+            return string.Empty;
+#endif
+        }
+
+        /// <summary>Awaitable counterpart of <see cref="getOutOfStore"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getOutOfStoreAsync()
+        {
+#if UNITY_ANDROID
+            return await QueryAsync("getOutOfStore") as string ?? string.Empty;
 #else
             return string.Empty;
 #endif
@@ -664,7 +759,8 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only.</summary>
+        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="isPreInstalledAppAsync"/> to
+        /// avoid blocking the calling thread.</summary>
         public static bool isPreInstalledApp()
         {
 #if UNITY_ANDROID
@@ -674,7 +770,18 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only.</summary>
+        /// <summary>Awaitable counterpart of <see cref="isPreInstalledApp"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<bool> isPreInstalledAppAsync()
+        {
+#if UNITY_ANDROID
+            return (await QueryAsync("isPreInstalledApp") as bool?) ?? false;
+#else
+            return false;
+#endif
+        }
+
+        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="getAttributionIdAsync"/> to
+        /// avoid blocking the calling thread.</summary>
         public static string getAttributionId()
         {
 #if UNITY_ANDROID
@@ -684,7 +791,18 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.</summary>
+        /// <summary>Awaitable counterpart of <see cref="getAttributionId"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getAttributionIdAsync()
+        {
+#if UNITY_ANDROID
+            return await QueryAsync("getAttributionId") as string ?? string.Empty;
+#else
+            return string.Empty;
+#endif
+        }
+
+        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.
+        /// Prefer <see cref="getHostNameAsync"/> to avoid blocking the calling thread.</summary>
         public static string getHostName()
         {
 #if UNITY_ANDROID
@@ -694,7 +812,18 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.</summary>
+        /// <summary>Awaitable counterpart of <see cref="getHostName"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getHostNameAsync()
+        {
+#if UNITY_ANDROID
+            return await QueryAsync("getHostName") as string ?? string.Empty;
+#else
+            return string.Empty;
+#endif
+        }
+
+        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.
+        /// Prefer <see cref="getHostPrefixAsync"/> to avoid blocking the calling thread.</summary>
         public static string getHostPrefix()
         {
 #if UNITY_ANDROID
@@ -704,15 +833,36 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        /// <summary>Awaitable counterpart of <see cref="getHostPrefix"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<string> getHostPrefixAsync()
+        {
+#if UNITY_ANDROID
+            return await QueryAsync("getHostPrefix") as string ?? string.Empty;
+#else
+            return string.Empty;
+#endif
+        }
+
         /// <summary>
         /// Synchronous RPC query. Android only per the schema — note this is a capability reduction from
         /// the old isSDKStopped(), which also worked on iOS via the legacy bridge (no iOS RPC method for
-        /// "isStopped" is declared in the schema).
+        /// "isStopped" is declared in the schema). Prefer <see cref="isStoppedAsync"/> to avoid blocking
+        /// the calling thread.
         /// </summary>
         public static bool isStopped()
         {
 #if UNITY_ANDROID
             return (Query("isStopped") as bool?) ?? false;
+#else
+            return false;
+#endif
+        }
+
+        /// <summary>Awaitable counterpart of <see cref="isStopped"/> — safe to call from the main thread.</summary>
+        public static async Awaitable<bool> isStoppedAsync()
+        {
+#if UNITY_ANDROID
+            return (await QueryAsync("isStopped") as bool?) ?? false;
 #else
             return false;
 #endif

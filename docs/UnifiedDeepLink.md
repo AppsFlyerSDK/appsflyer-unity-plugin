@@ -20,6 +20,17 @@ hidden: false
 
 > Check out the Unified Deep Linking docs for [Android](https://dev.appsflyer.com/docs/android-unified-deep-linking) and [iOS](https://dev.appsflyer.com/docs/ios-unified-deep-linking).
 
+> ⚠️ **iOS Universal Links under Unity's Swift Xcode project type**
+>
+> If your Unity project exports a **Swift** Xcode project (rather than the Classic Objective-C
+> `AppDelegate` project), the plugin has **no automatic delivery path for Universal Links** — Unity's
+> Swift template provides no hook the plugin can attach to for `continueUserActivity`, and this fails
+> silently with no compile error or runtime warning. On that export type, call
+> `AppsFlyer.continueUserActivity(url, activityType)` yourself from your app's
+> `continueUserActivity` handler. Cold-start custom-URL-scheme launches and Universal Links under the
+> Classic project type are both handled automatically. See
+> [ADR 0001](adr/0001-ios-deep-link-delivery-architecture.md) for the full architecture and rationale.
+
 # Considerations
 
 * Requires AppsFlyer Android SDK V6.1.3 or later.

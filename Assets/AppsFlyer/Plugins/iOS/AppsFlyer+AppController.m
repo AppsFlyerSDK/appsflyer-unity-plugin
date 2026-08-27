@@ -5,12 +5,13 @@
 //  Created by Jonathan Wesfield on 24/07/2019.
 //
 
-// Classic (AppDelegate-style) UnityAppController swallows continueUserActivity without posting any
-// NotificationCenter notification (see UnityAppController.mm) - unlike openURL and Scene-lifecycle
-// deep links, which route through kUnityOnOpenURL and are observed directly in
-// AppsFlyerAppController.mm. This is the one remaining case that still needs UnityAppController
-// itself, so it's guarded out entirely where that header doesn't exist - e.g. Unity's Swift Xcode
-// project type, which doesn't support UnityAppController subclassing or category swizzling at all.
+// Classic (AppDelegate-style) UnityAppController swallows continueUserActivity and a cold-start
+// URL-scheme launch without posting any NotificationCenter notification (see UnityAppController.mm)
+// - unlike openURL and Scene-lifecycle deep links, which route through kUnityOnOpenURL and are
+// observed directly in AppsFlyerAppController.mm. These are the remaining cases that still need
+// UnityAppController itself, so this file is guarded out entirely where that header doesn't exist -
+// e.g. Unity's Swift Xcode project type, which doesn't support UnityAppController subclassing or
+// category swizzling at all.
 #if __has_include("UnityAppController.h")
 
 #import <objc/runtime.h>
@@ -20,11 +21,13 @@
 @implementation UnityAppController (AppsFlyerSwizzledAppController)
 
 static IMP __original_continueUserActivity_Imp __unused;
+static IMP __original_didFinishLaunchingWithOptions_Imp __unused;
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self swizzleContinueUserActivity:[self class]];
+        [self swizzleDidFinishLaunchingWithOptions:[self class]];
     });
 }
 
@@ -50,6 +53,40 @@ BOOL __swizzled_continueUserActivity(id self, SEL _cmd, UIApplication* applicati
 
     if(__original_continueUserActivity_Imp){
         return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*, void (^)(NSArray*)))__original_continueUserActivity_Imp)(self, _cmd, application, userActivity, NULL);
+    }
+
+    return YES;
+}
+
++(void)swizzleDidFinishLaunchingWithOptions:(Class)class {
+
+    SEL originalSelector = @selector(application:didFinishLaunchingWithOptions:);
+
+    Method defaultMethod = class_getInstanceMethod(class, originalSelector);
+    Method swizzledMethod = class_getInstanceMethod(class, @selector(__swizzled_didFinishLaunchingWithOptions));
+
+    BOOL isMethodExists = !class_addMethod(class, originalSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
+
+    if (isMethodExists) {
+        __original_didFinishLaunchingWithOptions_Imp = method_setImplementation(defaultMethod, (IMP)__swizzled_didFinishLaunchingWithOptions);
+    } else {
+        class_replaceMethod(class, originalSelector, (IMP)__swizzled_didFinishLaunchingWithOptions, method_getTypeEncoding(swizzledMethod));
+    }
+}
+
+// Cold launch via a custom URL scheme delivers the URL through
+// UIApplicationLaunchOptionsURLKey here, not through application:openURL:options: (which only
+// fires for a warm/backgrounded relaunch) - so kUnityOnOpenURL, observed in
+// AppsFlyerAppController.mm, never fires for this case and the launch would otherwise be dropped.
+BOOL __swizzled_didFinishLaunchingWithOptions(id self, SEL _cmd, UIApplication* application, NSDictionary* launchOptions) {
+    NSLog(@"swizzled didFinishLaunchingWithOptions");
+    NSURL *url = launchOptions[UIApplicationLaunchOptionsURLKey];
+    if (url != nil) {
+        [[AppsFlyerAttribution shared] handleOpenUrl:url options:launchOptions];
+    }
+
+    if(__original_didFinishLaunchingWithOptions_Imp){
+        return ((BOOL(*)(id, SEL, UIApplication*, NSDictionary*))__original_didFinishLaunchingWithOptions_Imp)(self, _cmd, application, launchOptions);
     }
 
     return YES;

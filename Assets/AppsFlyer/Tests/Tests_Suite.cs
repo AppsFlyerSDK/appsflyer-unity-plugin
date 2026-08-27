@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using NSubstitute;
@@ -158,6 +159,56 @@ namespace AppsFlyerSDK.Tests
             Assert.AreEqual(503, ex.Code);
         }
 
+        // --- ParseResponse expectedId tests ---
+
+        [Test]
+        public void ParseResponse_MatchingExpectedId_ReturnsData()
+        {
+            string response = "{\"id\":\"x\",\"result\":{\"data\":\"ok\"}}";
+            var result = rpc.ParseResponse(response, "x");
+            Assert.AreEqual("ok", result);
+        }
+
+        [Test]
+        public void ParseResponse_MismatchedExpectedId_ThrowsRPCException()
+        {
+            string response = "{\"id\":\"y\",\"result\":{\"data\":\"ok\"}}";
+            var ex = Assert.Throws<AppsFlyerRPCException>(() => rpc.ParseResponse(response, "x"));
+            StringAssert.Contains("id mismatch", ex.Message);
+        }
+
+        [Test]
+        public void ParseResponse_MissingIdWithExpectedId_ThrowsRPCException()
+        {
+            string response = "{\"result\":{\"data\":\"ok\"}}";
+            Assert.Throws<AppsFlyerRPCException>(() => rpc.ParseResponse(response, "x"));
+        }
+
+        [Test]
+        public void ParseResponse_NoExpectedId_SkipsIdCheckEvenIfMismatched()
+        {
+            string response = "{\"id\":\"y\",\"result\":{\"data\":\"ok\"}}";
+            Assert.DoesNotThrow(() => rpc.ParseResponse(response));
+        }
+
+        // --- End-to-end: real DefaultInstance (BuildRequest -> Dispatch -> ParseResponse), not a mock ---
+
+        [Test]
+        public void Execute_EndToEnd_RealDefaultInstance_RoundTripsRequestIdThroughStubResponse()
+        {
+            // In the Editor, Dispatch() hits the no-native-bridge StubResponse path, which echoes the
+            // BuildRequest-generated id back — this exercises the exact BuildRequest -> Dispatch ->
+            // ParseResponse id round trip end to end, on the real AppsFlyerRPCClient, not a mocked
+            // IAppsFlyerRPCClient. This is the code path the Android id-echo bug slipped through.
+            Assert.DoesNotThrow(() => rpc.Execute("getSdkVersion"));
+        }
+
+        [Test]
+        public void ExecuteFire_EndToEnd_RealDefaultInstance_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() => rpc.ExecuteFire("start"));
+        }
+
         // --- onRPCEvent routing tests ---
 
         [Test]
@@ -210,6 +261,7 @@ namespace AppsFlyerSDK.Tests
     public class AppsFlyerRPCContractTests
     {
         private IAppsFlyerRPCClient mockRpc;
+        private readonly List<GameObject> _spawned = new List<GameObject>();
 
         [SetUp]
         public void SetUp()
@@ -222,6 +274,37 @@ namespace AppsFlyerSDK.Tests
         public void TearDown()
         {
             AppsFlyerRPCClient.instance = AppsFlyerRPCClient.DefaultInstance;
+            AppsFlyer.CallBackObjectName = null;
+            foreach (var go in _spawned) UnityEngine.Object.DestroyImmediate(go);
+            _spawned.Clear();
+        }
+
+        private InviteLinkCallbackRecorder NewCallbackTarget()
+        {
+            var go = new GameObject("InviteLinkCallbackTarget");
+            _spawned.Add(go);
+            AppsFlyer.CallBackObjectName = go.name;
+            return go.AddComponent<InviteLinkCallbackRecorder>();
+        }
+
+        private class InviteLinkCallbackRecorder : MonoBehaviour
+        {
+            public int GeneratedCallCount;
+            public int FailureCallCount;
+            public string ReceivedLink;
+            public string ReceivedFailure;
+
+            public void onInviteLinkGenerated(string link)
+            {
+                GeneratedCallCount++;
+                ReceivedLink = link;
+            }
+
+            public void onInviteLinkGeneratedFailure(string message)
+            {
+                FailureCallCount++;
+                ReceivedFailure = message;
+            }
         }
 
         // ── Init / lifecycle ───────────────────────────────────────────────────────
@@ -316,36 +399,74 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void GenerateInviteLink_SpreadsKeysTopLevel_NotNestedUnderParameters()
+        public async Task GenerateInviteLink_SpreadsKeysTopLevel_NotNestedUnderParameters()
         {
             var parameters = new Dictionary<string, string> { { "channel", "sms" }, { "campaign", "referral" } };
-            AppsFlyer.generateInviteLink(parameters);
-            mockRpc.Received(1).ExecuteFire("generateInviteLink",
+            await AppsFlyer.generateInviteLinkAsync(parameters);
+            mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["channel"] == "sms" && (string)d["campaign"] == "referral" && !d.ContainsKey("parameters")));
         }
 
 #if UNITY_ANDROID
         [Test]
-        public void GenerateInviteLink_Android_RemapsReferrerCustomerIdToCustomerId()
+        public async Task GenerateInviteLink_Android_RemapsReferrerCustomerIdToCustomerId()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
-            AppsFlyer.generateInviteLink(parameters);
+            await AppsFlyer.generateInviteLinkAsync(parameters);
             mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["customerId"] == "cust-1" && !d.ContainsKey("referrerCustomerId")));
         }
 #else
         [Test]
-        public void GenerateInviteLink_NonAndroid_PassesReferrerCustomerIdThrough()
+        public async Task GenerateInviteLink_NonAndroid_PassesReferrerCustomerIdThrough()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
-            AppsFlyer.generateInviteLink(parameters);
+            await AppsFlyer.generateInviteLinkAsync(parameters);
             mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["referrerCustomerId"] == "cust-1" && !d.ContainsKey("customerId")));
         }
 #endif
+
+        [Test]
+        public async Task GenerateInviteLink_Success_DeliversLinkViaOnInviteLinkGenerated()
+        {
+            var recorder = NewCallbackTarget();
+            mockRpc.Execute("generateInviteLink", Arg.Any<Dictionary<string, object>>())
+                .Returns("https://example.onelink.me/abc");
+
+            await AppsFlyer.DeliverInviteLinkAsync(new Dictionary<string, string>());
+
+            Assert.AreEqual(1, recorder.GeneratedCallCount);
+            Assert.AreEqual("https://example.onelink.me/abc", recorder.ReceivedLink);
+            Assert.AreEqual(0, recorder.FailureCallCount);
+        }
+
+        [Test]
+        public async Task GenerateInviteLink_RpcException_DeliversMessageViaOnInviteLinkGeneratedFailure()
+        {
+            var recorder = NewCallbackTarget();
+            mockRpc.Execute("generateInviteLink", Arg.Any<Dictionary<string, object>>())
+                .Returns(_ => throw new AppsFlyerRPCException(-1, "boom"));
+
+            await AppsFlyer.DeliverInviteLinkAsync(new Dictionary<string, string>());
+
+            Assert.AreEqual(1, recorder.FailureCallCount);
+            Assert.AreEqual("boom", recorder.ReceivedFailure);
+            Assert.AreEqual(0, recorder.GeneratedCallCount);
+        }
+
+        [Test]
+        public void GenerateInviteLink_NoMatchingCallbackObject_DoesNotThrow()
+        {
+            AppsFlyer.CallBackObjectName = "NoSuchInviteLinkCallbackObject";
+            mockRpc.Execute("generateInviteLink", Arg.Any<Dictionary<string, object>>())
+                .Returns("https://example.onelink.me/abc");
+
+            Assert.DoesNotThrowAsync(() => AppsFlyer.DeliverInviteLinkAsync(new Dictionary<string, string>()));
+        }
 
         [Test]
         public void RegisterConversionListener_FiresWithNoParams()
@@ -610,10 +731,32 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public async Task GetAppsFlyerUIDAsync_UsesExecute()
+        {
+            mockRpc.Execute("getAppsFlyerUID", Arg.Any<Dictionary<string, object>>()).Returns("uid-123");
+            string uid = await AppsFlyer.getAppsFlyerUIDAsync();
+            Assert.AreEqual("uid-123", uid);
+        }
+
+        [Test]
         public void GetSdkVersion_UsesSynchronousExecute()
         {
             mockRpc.Execute("getSdkVersion", Arg.Any<Dictionary<string, object>>()).Returns("7.0.1");
             Assert.AreEqual("7.0.1", AppsFlyer.getSdkVersion());
+        }
+
+        [Test]
+        public async Task GetSdkVersionAsync_UsesExecute()
+        {
+            mockRpc.Execute("getSdkVersion", Arg.Any<Dictionary<string, object>>()).Returns("7.0.1");
+            Assert.AreEqual("7.0.1", await AppsFlyer.getSdkVersionAsync());
+        }
+
+        [Test]
+        public async Task IsSessionReadyAsync_UsesExecute()
+        {
+            mockRpc.Execute("isSessionReady", Arg.Any<Dictionary<string, object>>()).Returns(true);
+            Assert.IsTrue(await AppsFlyer.isSessionReadyAsync());
         }
 
 #if UNITY_ANDROID
@@ -625,10 +768,24 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public async Task GetHostNameAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("getHostName", Arg.Any<Dictionary<string, object>>()).Returns("appsflyer.com");
+            Assert.AreEqual("appsflyer.com", await AppsFlyer.getHostNameAsync());
+        }
+
+        [Test]
         public void GetHostPrefix_Android_NetNew_UsesSynchronousExecute()
         {
             mockRpc.Execute("getHostPrefix", Arg.Any<Dictionary<string, object>>()).Returns("prefix");
             Assert.AreEqual("prefix", AppsFlyer.getHostPrefix());
+        }
+
+        [Test]
+        public async Task GetHostPrefixAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("getHostPrefix", Arg.Any<Dictionary<string, object>>()).Returns("prefix");
+            Assert.AreEqual("prefix", await AppsFlyer.getHostPrefixAsync());
         }
 
         [Test]
@@ -639,10 +796,24 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public async Task IsStoppedAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("isStopped", Arg.Any<Dictionary<string, object>>()).Returns(true);
+            Assert.IsTrue(await AppsFlyer.isStoppedAsync());
+        }
+
+        [Test]
         public void GetAttributionId_Android_UsesSynchronousExecute()
         {
             mockRpc.Execute("getAttributionId", Arg.Any<Dictionary<string, object>>()).Returns("attr-id");
             Assert.AreEqual("attr-id", AppsFlyer.getAttributionId());
+        }
+
+        [Test]
+        public async Task GetAttributionIdAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("getAttributionId", Arg.Any<Dictionary<string, object>>()).Returns("attr-id");
+            Assert.AreEqual("attr-id", await AppsFlyer.getAttributionIdAsync());
         }
 
         [Test]
@@ -653,6 +824,13 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public async Task GetOutOfStoreAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("getOutOfStore", Arg.Any<Dictionary<string, object>>()).Returns("google_play");
+            Assert.AreEqual("google_play", await AppsFlyer.getOutOfStoreAsync());
+        }
+
+        [Test]
         public void IsPreInstalledApp_Android_UsesSynchronousExecute()
         {
             mockRpc.Execute("isPreInstalledApp", Arg.Any<Dictionary<string, object>>()).Returns(true);
@@ -660,10 +838,24 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public async Task IsPreInstalledAppAsync_Android_UsesExecute()
+        {
+            mockRpc.Execute("isPreInstalledApp", Arg.Any<Dictionary<string, object>>()).Returns(true);
+            Assert.IsTrue(await AppsFlyer.isPreInstalledAppAsync());
+        }
+
+        [Test]
         public void RegisterDeepLinkListener_Android_SendsSubscribeForDeepLink()
         {
             AppsFlyer.registerDeepLinkListener();
             mockRpc.Received(1).ExecuteFire("subscribeForDeepLink", Arg.Any<Dictionary<string, object>>());
+        }
+
+        [Test]
+        public void CollectDataFromLauncherActivity_Android_SendsCollectDataFromLauncherActivity()
+        {
+            AppsFlyer.collectDataFromLauncherActivity();
+            mockRpc.Received(1).ExecuteFire("collectDataFromLauncherActivity", Arg.Any<Dictionary<string, object>>());
         }
 #endif
 

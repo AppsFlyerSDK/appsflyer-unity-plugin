@@ -21,6 +21,11 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 - iOS AppsFlyer SDK v6.17.9
 - iOS Purchase Connector 6.17.9
 ---
+## 📌 Minimum supported Unity version raised to 2023.1
+
+Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLinkAsync`, `getAppsFlyerUIDAsync`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.
+
+---
 ## 📌 Google Play Billing Library 8 (6.18.0+)
 
 From **v6.18.0** onward, the Unity plugin ships as a **single release line** with **Google Play Billing Library 8.0.0** on Android (Purchase Connector included in the main package). There is no separate v7 plugin variant for new 6.18.x releases.
@@ -38,6 +43,7 @@ Use the last **6.17.x** dual-line release: **`v6.17.90`** (Billing v7) or **`v6.
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
+- **Android + AGP 8**: `com.appsflyer:purchase-connector` and `com.appsflyer:af-android-sdk` share the same manifest package, which AGP 8's namespace-uniqueness check hard-fails on. Add `android.uniquePackageNames=false` to your project's `gradleTemplate.properties` to build.
 
 ---
 ## <a id="breaking-changes-6175">     ❗❗ Breaking changes when updating to 6.17.5 ❗❗

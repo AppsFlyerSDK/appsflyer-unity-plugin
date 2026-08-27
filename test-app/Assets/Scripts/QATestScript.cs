@@ -64,7 +64,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
 #if UNITY_ANDROID
         // Android: registerDeepLinkListener() before init() — the RPC bridge handler isn't
-        // wired until AppsFlyer.init() runs (AppsFlyerRPCClient.InitAndroidBridge ->
+        // wired until AppsFlyer.init() runs (AppsFlyerRPCClient.instance.InitBridge ->
         // AppsFlyerRPCBridge.init()), so this call no-ops natively until init() executes,
         // then the delegate is already in place once the bridge comes up.
         AppsFlyer.registerDeepLinkListener();
@@ -72,7 +72,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 #endif
 
         // init() must come first — on Android it's what wires up the native RPC bridge
-        // (AppsFlyerRPCClient.InitAndroidBridge -> AppsFlyerRPCBridge.init(), which creates the
+        // (AppsFlyerRPCClient.instance.InitBridge -> AppsFlyerRPCBridge.init(), which creates the
         // handler every other Fire()/Query() call needs). Any RPC call issued before this silently
         // no-ops on Android (the bridge's fireJson/executeJson just skip when the handler is null),
         // which is exactly what caused the native "SessionReadyListener is not registered!" warning

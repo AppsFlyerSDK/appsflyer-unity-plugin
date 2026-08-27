@@ -23,6 +23,11 @@ namespace AppsFlyerSDK
     {
         void ExecuteFire(string method, Dictionary<string, object> parameters = null);
         object Execute(string method, Dictionary<string, object> parameters = null);
+
+        // Wires up the native RPC bridge (Android AndroidJavaClass.init / iOS _setRPCEventHandler) so
+        // it knows which Unity GameObject to route onRPCEvent callbacks to. Each implementation owns its
+        // own platform #if split, instead of forcing callers to branch on UNITY_ANDROID/UNITY_IOS.
+        void InitBridge(string callbackObjectName);
     }
 
     public class AppsFlyerRPCClient : IAppsFlyerRPCClient
@@ -62,27 +67,30 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        public string Dispatch(string jsonRequest)
+        // jsonRequest/id: Dispatch is an opaque string->string transport (jsonRequest goes over the
+        // native bridge as-is); id is passed separately so the editor/no-bridge stub paths can echo it
+        // without re-parsing jsonRequest — Execute already has it from BuildRequest.
+        public string Dispatch(string jsonRequest, string id)
         {
 #if UNITY_IOS && !UNITY_EDITOR
             IntPtr responsePtr = _afExecuteJson(jsonRequest);
-            try { return Marshal.PtrToStringAnsi(responsePtr); }
+            // AppsFlyerRPCWrapper.swift's _afExecuteJson returns strdup() of a Swift String, which is
+            // NUL-terminated UTF-8 — PtrToStringAnsi decodes as Latin-1 and would corrupt non-ASCII content.
+            try { return Marshal.PtrToStringUTF8(responsePtr); }
             finally { _afFreeCString(responsePtr); }
 #elif UNITY_ANDROID && !UNITY_EDITOR
             if (_rpcBridge != null)
                 return _rpcBridge.CallStatic<string>("executeJson", jsonRequest);
-            return StubResponse(jsonRequest, "\"error\":{\"code\":503,\"message\":\"AppsFlyer Android RPC bridge failed to load\"}");
+            return StubResponse(id, "\"error\":{\"code\":503,\"message\":\"AppsFlyer Android RPC bridge failed to load\"}");
 #else
-            return StubResponse(jsonRequest, "\"result\":{\"data\":null}");
+            return StubResponse(id, "\"result\":{\"data\":null}");
 #endif
         }
 
 #if !UNITY_IOS || UNITY_EDITOR
         // Echoes the request's own id so stub responses still pass ParseResponse's id check.
-        private static string StubResponse(string jsonRequest, string payload)
+        private static string StubResponse(string id, string payload)
         {
-            var request = Json.Deserialize(jsonRequest) as Dictionary<string, object>;
-            string id = request != null && request.ContainsKey("id") ? (string)request["id"] : "stub";
             return "{\"id\":\"" + id + "\"," + payload + "}";
         }
 #endif
@@ -136,7 +144,7 @@ namespace AppsFlyerSDK
         public object Execute(string method, Dictionary<string, object> parameters = null)
         {
             string request = BuildRequest(method, parameters, out string id);
-            string response = Dispatch(request);
+            string response = Dispatch(request, id);
             return ParseResponse(response, id);
         }
 
@@ -162,16 +170,11 @@ namespace AppsFlyerSDK
         }
 #endif
 
-        public static void InitAndroidBridge(string callbackObjectName)
+        public void InitBridge(string callbackObjectName)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             _rpcBridge?.CallStatic("init", callbackObjectName ?? "");
-#endif
-        }
-
-        public static void InitIOSBridge(string callbackObjectName)
-        {
-#if UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && !UNITY_EDITOR
             _setRPCEventHandler(callbackObjectName ?? "");
 #endif
         }
