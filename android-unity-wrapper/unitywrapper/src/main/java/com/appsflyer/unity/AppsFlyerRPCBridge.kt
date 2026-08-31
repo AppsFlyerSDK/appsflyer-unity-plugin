@@ -60,7 +60,7 @@ object AppsFlyerRPCBridge {
     fun fireJson(jsonRequest: String) {
         val handler = sHandler
         if (handler == null) {
-            Log.w(TAG, "Dropped fire-and-forget RPC call, bridge not initialized — $jsonRequest")
+            Log.w(TAG, "Dropped fire-and-forget RPC call, bridge not initialized — method: ${extractMethod(jsonRequest)}")
             return
         }
         try {
@@ -101,6 +101,17 @@ object AppsFlyerRPCBridge {
         return try {
             val request = JSONObject(jsonRequest)
             if (request.has("id")) request.getString("id") else null
+        } catch (e: JSONException) {
+            null
+        }
+    }
+
+    // For log lines only — never log the full jsonRequest, since its "params" can carry PII/revenue
+    // data (setCustomerUserId, logEvent/logAdRevenue, setPhoneNumber, etc.).
+    internal fun extractMethod(jsonRequest: String): String? {
+        return try {
+            val request = JSONObject(jsonRequest)
+            if (request.has("method")) request.getString("method") else null
         } catch (e: JSONException) {
             null
         }

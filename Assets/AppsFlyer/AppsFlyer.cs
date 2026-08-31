@@ -23,14 +23,18 @@ namespace AppsFlyerSDK
 
         // Dispatches via ExecuteFire() on the calling thread, in place - no BackgroundThreadAsync hop -
         // so call-site ordering across multiple non-awaited calls is preserved exactly like the
-        // fire-and-forget Fire() this replaced. Unlike that helper, which caught and logged
-        // AppsFlyerRPCException internally, this method has no internal await before the work runs,
-        // so any exception is captured into the returned (already-completed-or-faulted) Awaitable
-        // rather than swallowed - visible to a caller who awaits it, silent (like an unobserved
-        // Task's exception) to one who doesn't.
+        // fire-and-forget Fire() this replaced. Catches and logs here (like that helper did) so a
+        // caller who doesn't await still gets the failure logged instead of an unobserved fault.
         private static async Awaitable FireAsync(string method, Dictionary<string, object> parameters = null)
         {
-            AppsFlyerRPCClient.instance.ExecuteFire(method, parameters);
+            try
+            {
+                AppsFlyerRPCClient.instance.ExecuteFire(method, parameters);
+            }
+            catch (Exception e)
+            {
+                AFLog(method, "RPC error: " + e.Message);
+            }
         }
 
         private static object Query(string method, Dictionary<string, object> parameters = null)
@@ -173,7 +177,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Gets AppsFlyer's unique device ID, via a synchronous RPC query.
-        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
+        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
+        /// bound exists on Android's executeJson, a known limitation); prefer
         /// <see cref="getAppsFlyerUIDAsync"/>.</summary>
         public static string getAppsFlyerUID()
         {
@@ -472,6 +478,8 @@ namespace AppsFlyerSDK
 #if UNITY_ANDROID
             await FireAsync("unregisterConversionListener");
 #endif
+            onConversionDataSuccessCallback = null;
+            onConversionDataFailCallback = null;
         }
 
         /// <summary>
@@ -496,6 +504,7 @@ namespace AppsFlyerSDK
 #if UNITY_ANDROID
             await FireAsync("unsubscribeForDeepLink");
 #endif
+            onDeepLinkListenerCallback = null;
         }
 
         public static async Awaitable registerSessionReadyListener()
@@ -598,7 +607,7 @@ namespace AppsFlyerSDK
         /// main thread via Awaitable.BackgroundThreadAsync(), instead of blocking Unity's player loop for
         /// the round trip.
         /// </summary>
-        public static async Awaitable<string> generateInviteLinkAsync(Dictionary<string, string> parameters)
+        public static async Awaitable<string> generateInviteLink(Dictionary<string, string> parameters)
         {
             var payload = BuildInviteLinkPayload(parameters);
             await Awaitable.BackgroundThreadAsync();
@@ -606,9 +615,14 @@ namespace AppsFlyerSDK
             {
                 return AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
             }
+            catch (AppsFlyerRPCException e)
+            {
+                AFLog("generateInviteLink", "Failed to generate invite link: " + e.Message + " (code " + e.Code + "): " + e.Details);
+                return null;
+            }
             catch (Exception e)
             {
-                AFLog("generateInviteLinkAsync", "Failed to generate invite link: " + e.Message);
+                AFLog("generateInviteLink", "Failed to generate invite link: " + e.Message);
                 return null;
             }
             finally
@@ -922,13 +936,7 @@ namespace AppsFlyerSDK
 
         // ── In-app purchase validation ────────────────────────────────────────────
 
-        private static string PurchaseTypeToAndroidString(AFPurchaseType t) =>
-            t == AFPurchaseType.Subscription ? "subscription" : "one_time_purchase";
-
-        private static string PurchaseTypeToIOSString(AFSDKPurchaseType t) =>
-            t == AFSDKPurchaseType.Subscription ? "subscription" : "oneTimePurchase";
-
-        private static async Awaitable<AFSDKValidateAndLogResult> QueryValidateAndLogAsync(Dictionary<string, object> payload)
+        private static async Awaitable<IAFValidateAndLogResult> QueryValidateAndLogAsync(Dictionary<string, object> payload)
         {
             await Awaitable.BackgroundThreadAsync();
             try
@@ -951,48 +959,21 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Validates an Android in-app purchase. Net-new RPC integration — the pre-migration
-        /// implementation had no RPC call for this at all (legacy bridge only).
-        /// Resolved: purchaseType casing ("subscription"/"one_time_purchase") matches the schema's
-        /// declared Android enum exactly. Recommend one on-device validation pass before final sign-off,
-        /// but this is no longer a blocking unknown.
+        /// Validates an in-app purchase and logs it to AppsFlyer. Net-new RPC integration on Android —
+        /// the pre-migration implementation had no RPC call for this at all (legacy bridge only); fixed
+        /// on iOS to nest the payload under product/transaction per schema (the pre-migration
+        /// implementation sent a flat, incorrectly-shaped payload).
+        /// <paramref name="details"/> is <see cref="AFPurchaseDetailsAndroid"/> on Android or
+        /// <see cref="AFSDKPurchaseDetailsIOS"/> on iOS/macOS — each builds its own RPC payload shape via
+        /// <see cref="IAFPurchaseDetails.ToRpcPayload"/>, so adding a platform means implementing the
+        /// interface once, not adding another overload here.
         /// </summary>
-        public static async Awaitable<AFSDKValidateAndLogResult> validateAndLogInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters)
+        public static async Awaitable<IAFValidateAndLogResult> validateAndLogInAppPurchase(IAFPurchaseDetails details, Dictionary<string, string> additionalParameters)
         {
-#if UNITY_ANDROID
-            return await QueryValidateAndLogAsync(new Dictionary<string, object>
-            {
-                { "purchaseType", details != null ? PurchaseTypeToAndroidString(details.purchaseType) : null },
-                { "purchaseToken", details?.purchaseToken },
-                { "productId", details?.productId },
-                { "additionalParameters", additionalParameters }
-            });
-#else
-            return null;
-#endif
-        }
-
-        /// <summary>
-        /// Validates an iOS in-app purchase. Fixed to nest under product/transaction per schema (the
-        /// pre-migration implementation sent a flat, incorrectly-shaped payload).
-        /// Resolved: purchaseType casing ("subscription"/"oneTimePurchase") matches the schema's declared
-        /// iOS enum exactly. Recommend one on-device validation pass before final sign-off, but this is
-        /// no longer a blocking unknown.
-        /// </summary>
-        public static async Awaitable<AFSDKValidateAndLogResult> validateAndLogInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> additionalParameters)
-        {
-#if UNITY_IOS || UNITY_STANDALONE_OSX
-            return await QueryValidateAndLogAsync(new Dictionary<string, object>
-            {
-                { "product", new Dictionary<string, object> { { "productId", details?.productId } } },
-                { "transaction", new Dictionary<string, object>
-                    {
-                        { "transactionId", details?.transactionId },
-                        { "purchaseType", details != null ? PurchaseTypeToIOSString(details.purchaseType) : null }
-                    }
-                },
-                { "additionalParameters", additionalParameters }
-            });
+#if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
+            var payload = details?.ToRpcPayload() ?? new Dictionary<string, object>();
+            payload["additionalParameters"] = additionalParameters;
+            return await QueryValidateAndLogAsync(payload);
 #else
             return null;
 #endif

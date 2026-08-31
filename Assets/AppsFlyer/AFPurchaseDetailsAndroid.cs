@@ -12,7 +12,7 @@ namespace AppsFlyerSDK
     /// <summary>
     /// Purchase details class matching Android SDK AFPurchaseDetails
     /// </summary>
-    public class AFPurchaseDetailsAndroid
+    public class AFPurchaseDetailsAndroid : IAFPurchaseDetails
     {
         public AFPurchaseType purchaseType { get; private set; }
         public string purchaseToken { get; private set; }
@@ -25,6 +25,15 @@ namespace AppsFlyerSDK
             this.productId = productId;
         }
 
+        public Dictionary<string, object> ToRpcPayload()
+        {
+            return new Dictionary<string, object>
+            {
+                { "purchaseType", purchaseType == AFPurchaseType.Subscription ? "subscription" : "one_time_purchase" },
+                { "purchaseToken", purchaseToken },
+                { "productId", productId }
+            };
+        }
     }
 
 }

@@ -452,7 +452,7 @@ namespace AppsFlyerSDK.Tests
         public async Task GenerateInviteLink_SpreadsKeysTopLevel_NotNestedUnderParameters()
         {
             var parameters = new Dictionary<string, string> { { "channel", "sms" }, { "campaign", "referral" } };
-            await AppsFlyer.generateInviteLinkAsync(parameters);
+            await AppsFlyer.generateInviteLink(parameters);
             mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["channel"] == "sms" && (string)d["campaign"] == "referral" && !d.ContainsKey("parameters")));
@@ -467,7 +467,7 @@ namespace AppsFlyerSDK.Tests
             // Awaitable that may never be observed by the caller.
             mockRpc.Execute("generateInviteLink", Arg.Any<Dictionary<string, object>>())
                 .Returns(_ => throw new AppsFlyerRPCException(422, "invalid channel"));
-            var result = await AppsFlyer.generateInviteLinkAsync(new Dictionary<string, string> { { "channel", "sms" } });
+            var result = await AppsFlyer.generateInviteLink(new Dictionary<string, string> { { "channel", "sms" } });
             Assert.IsNull(result);
         }
 
@@ -477,7 +477,7 @@ namespace AppsFlyerSDK.Tests
         public async Task GenerateInviteLink_Android_RemapsReferrerCustomerIdToCustomerId()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
-            await AppsFlyer.generateInviteLinkAsync(parameters);
+            await AppsFlyer.generateInviteLink(parameters);
             mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["customerId"] == "cust-1" && !d.ContainsKey("referrerCustomerId")));
@@ -488,7 +488,7 @@ namespace AppsFlyerSDK.Tests
         public async Task GenerateInviteLink_NonAndroid_PassesReferrerCustomerIdThrough()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
-            await AppsFlyer.generateInviteLinkAsync(parameters);
+            await AppsFlyer.generateInviteLink(parameters);
             mockRpc.Received(1).Execute("generateInviteLink",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["referrerCustomerId"] == "cust-1" && !d.ContainsKey("customerId")));

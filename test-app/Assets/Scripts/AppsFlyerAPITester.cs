@@ -157,8 +157,8 @@ public class AppsFlyerAPITester : MonoBehaviour
             en => AppsFlyer.appendParametersToDeepLinkingURL(P(en, 0), KV(P(en, 1))),
             Param.Str("contains", "example.onelink.me"), Param.Str("parameters (k=v,k=v)", "extra=1"));
 
-        Add("Deep linking", "generateInviteLinkAsync(parameters)",
-            async en => en.Result = await AppsFlyer.generateInviteLinkAsync(KV(P(en, 0))),
+        Add("Deep linking", "generateInviteLink(parameters)",
+            async en => en.Result = await AppsFlyer.generateInviteLink(KV(P(en, 0))),
             Param.Str("parameters (k=v,k=v)", "channel=sms"));
 
         Add("Deep linking", "setResolveDeepLinkURLs(urls)",
