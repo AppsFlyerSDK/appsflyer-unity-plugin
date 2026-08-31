@@ -137,7 +137,8 @@ public class AppsFlyerAPITester : MonoBehaviour
             en => AppsFlyer.performDeepLinking(P(en, 0), B(en, 1)),
             Param.Str("url", "https://example.onelink.me/abcd?deep_link_value=test"), Param.Flag("shouldTriggerSession"));
 
-        Add("Deep linking", "registerDeepLinkListener()", en => AppsFlyer.registerDeepLinkListener());
+        Add("Deep linking", "registerDeepLinkListener()", en => AppsFlyer.registerDeepLinkListener(
+            args => AFQALogger.Log("[AF_QA][TESTER] onDeepLinking -> " + (args?.getDeepLinkValue() ?? "received"))));
         Add("Deep linking", "unregisterDeeplinkListener()", en => AppsFlyer.unregisterDeeplinkListener());
 
         Add("Deep linking", "handleOpenUrl(url, options)",
@@ -156,8 +157,8 @@ public class AppsFlyerAPITester : MonoBehaviour
             en => AppsFlyer.appendParametersToDeepLinkingURL(P(en, 0), KV(P(en, 1))),
             Param.Str("contains", "example.onelink.me"), Param.Str("parameters (k=v,k=v)", "extra=1"));
 
-        Add("Deep linking", "generateInviteLink(parameters)",
-            en => AppsFlyer.generateInviteLink(KV(P(en, 0))),
+        Add("Deep linking", "generateInviteLinkAsync(parameters)",
+            async en => en.Result = await AppsFlyer.generateInviteLinkAsync(KV(P(en, 0))),
             Param.Str("parameters (k=v,k=v)", "channel=sms"));
 
         Add("Deep linking", "setResolveDeepLinkURLs(urls)",
@@ -177,7 +178,9 @@ public class AppsFlyerAPITester : MonoBehaviour
             Param.Str("oneLinkId", "abcd"));
 
         // Conversion / session
-        Add("Conversion & session", "registerConversionListener()", en => AppsFlyer.registerConversionListener());
+        Add("Conversion & session", "registerConversionListener()", en => AppsFlyer.registerConversionListener(
+            data => AFQALogger.Log("[AF_QA][TESTER] onConversionDataSuccess -> " + data),
+            error => AFQALogger.Log("[AF_QA][TESTER] onConversionDataFail -> " + error)));
         Add("Conversion & session", "unregisterConversionListener()", en => AppsFlyer.unregisterConversionListener());
         Add("Conversion & session", "registerSessionReadyListener()", en => AppsFlyer.registerSessionReadyListener());
         Add("Conversion & session", "unregisterSessionReadyListener()", en => AppsFlyer.unregisterSessionReadyListener());
@@ -347,17 +350,17 @@ public class AppsFlyerAPITester : MonoBehaviour
 
         // In-app purchase validation
         Add("Purchases", "validateAndLogInAppPurchase(details, additionalParameters) [Android]",
-            en => AppsFlyer.validateAndLogInAppPurchase(
+            async en => en.Result = (await AppsFlyer.validateAndLogInAppPurchase(
                 new AFPurchaseDetailsAndroid(Enum_(P(en, 0), AFPurchaseType.OneTimePurchase), P(en, 1), P(en, 2)),
-                KV(P(en, 3))),
+                KV(P(en, 3))))?.status.ToString(),
             Param.Str("purchaseType (Subscription/OneTimePurchase)", "OneTimePurchase"),
             Param.Str("purchaseToken", "af_tester_purchase_token"), Param.Str("productId", "product_1"),
             Param.Str("additionalParameters (k=v,k=v)"));
 
         Add("Purchases", "validateAndLogInAppPurchase(details, additionalParameters) [iOS]",
-            en => AppsFlyer.validateAndLogInAppPurchase(
+            async en => en.Result = (await AppsFlyer.validateAndLogInAppPurchase(
                 AFSDKPurchaseDetailsIOS.Init(P(en, 0), P(en, 1), Enum_(P(en, 2), AFSDKPurchaseType.OneTimePurchase)),
-                KV(P(en, 3))),
+                KV(P(en, 3))))?.status.ToString(),
             Param.Str("productId", "product_1"), Param.Str("transactionId", "txn_123"),
             Param.Str("purchaseType (Subscription/OneTimePurchase)", "OneTimePurchase"),
             Param.Str("additionalParameters (k=v,k=v)"));

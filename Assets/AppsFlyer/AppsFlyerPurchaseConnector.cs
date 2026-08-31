@@ -244,6 +244,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_ANDROID && !UNITY_EDITOR
         private static AndroidJavaClass appsFlyerAndroidConnector;
         private static bool _connectorUnavailableWarned;
+        private static bool _connectorLookupFailed;
 
         // purchase-connector is currently disabled in AppsFlyerDependencies.xml (AGP 8 namespace
         // collision with af-android-sdk - see review_processed.md #16), but AppsFlyerAndroidWrapper
@@ -253,6 +254,11 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
         // Connector are unaffected, and those who do get one clear logged warning instead of a crash.
         private static bool TryGetConnector(out AndroidJavaClass connector)
         {
+            if (_connectorLookupFailed)
+            {
+                connector = null;
+                return false;
+            }
             try
             {
                 if (appsFlyerAndroidConnector == null)
@@ -264,6 +270,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
             }
             catch (Exception e)
             {
+                _connectorLookupFailed = true;
                 WarnConnectorUnavailable(e);
                 connector = null;
                 return false;

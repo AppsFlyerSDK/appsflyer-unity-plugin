@@ -52,8 +52,14 @@ public func _setRPCEventHandler(_ objectName: UnsafePointer<CChar>?) {
 public func _afFireJson(_ jsonRequest: UnsafePointer<CChar>?) {
 #if canImport(AppsFlyerRPC)
     let requestStr = jsonRequest.map { String(cString: $0) } ?? "{}"
-    rpcQueue.sync {
-        AppsFlyerRPCBridge.shared.executeJson(requestStr) { _ in }
+    rpcQueue.async {
+        AppsFlyerRPCBridge.shared.executeJson(requestStr) { jsonResponse in
+#if DEBUG
+            if jsonResponse.contains("\"error\"") {
+                print("AppsFlyer: fire-and-forget RPC call returned an error: \(jsonResponse)")
+            }
+#endif
+        }
     }
 #endif
 }
@@ -74,18 +80,31 @@ public func _afExecuteJson(_ jsonRequest: UnsafePointer<CChar>?) -> UnsafeMutabl
 #if canImport(AppsFlyerRPC)
     let requestStr = jsonRequest.map { String(cString: $0) } ?? "{}"
     let semaphore = DispatchSemaphore(value: 0)
+    let lock = NSLock()
     var response: String?
 
-    rpcQueue.sync {
+    rpcQueue.async {
         AppsFlyerRPCBridge.shared.executeJson(requestStr) { jsonResponse in
+            lock.lock()
             response = jsonResponse
+            lock.unlock()
             semaphore.signal()
         }
     }
 
-    _ = semaphore.wait(timeout: .now() + 5)
+    let waitResult = semaphore.wait(timeout: .now() + 5)
+    if waitResult == .timedOut {
+        // Not a cancellation — the underlying executeJson call keeps running and will still write to
+        // `response` and signal `semaphore` whenever it eventually completes; both are simply
+        // orphaned at that point. Logged so a native-side latency spike is distinguishable from a
+        // genuine bridge failure instead of surfacing as an identical generic error to the caller.
+        print("AppsFlyer: RPC call timed out waiting for native response — \(requestStr)")
+    }
 
-    return strdup(response ?? "{\"id\":\"rpc-error\",\"error\":{\"code\":-1,\"message\":\"No response from AppsFlyerRPC\"}}")
+    lock.lock()
+    let result = response
+    lock.unlock()
+    return strdup(result ?? "{\"id\":\"rpc-error\",\"error\":{\"code\":-1,\"message\":\"No response from AppsFlyerRPC\"}}")
 #else
     return strdup("{\"id\":\"rpc-stub\",\"error\":{\"code\":-2,\"message\":\"AppsFlyerRPC framework not linked\"}}")
 #endif

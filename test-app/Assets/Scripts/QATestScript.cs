@@ -37,9 +37,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void OnDestroy()
     {
-        AppsFlyer.OnDeepLinkReceived -= OnDeepLinkReceived;
-        AppsFlyer.OnRequestResponse -= OnRequestResponse;
-        AppsFlyer.OnInAppResponse -= OnInAppResponse;
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
     }
 
@@ -52,8 +49,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         if (string.IsNullOrEmpty(_devKey))
             yield break;
 
-        AppsFlyer.OnRequestResponse += OnRequestResponse;
-        AppsFlyer.OnInAppResponse += OnInAppResponse;
         // Subscribed before registerSessionReadyListener() below so the event can't fire
         // before we're listening. start() is called from inside OnSessionReadyHandler,
         // matching the native contract: call start inside the session-ready block, not
@@ -67,7 +62,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // wired until AppsFlyer.init() runs (AppsFlyerRPCClient.instance.InitBridge ->
         // AppsFlyerRPCBridge.init()), so this call no-ops natively until init() executes,
         // then the delegate is already in place once the bridge comes up.
-        AppsFlyer.registerDeepLinkListener();
+        AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
 #endif
 
@@ -85,7 +80,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // natively before setDeepLinkDelegate: runs its one-shot resolve attempt, otherwise that
         // attempt fires with an empty devKey and is never retried (see AppsFlyerLib.m
         // setDeepLinkDelegate:'s dispatch_once).
-        AppsFlyer.registerDeepLinkListener();
+        AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
 #endif
 
@@ -104,7 +99,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         // SDK 7 flow: session readiness gates start().
         AppsFlyer.registerSessionReadyListener();
-        AppsFlyer.registerConversionListener();
+        AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
 
         RunPreStartApis();
 
@@ -408,21 +403,10 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AFQALogger.Log("[AF_QA][CALLBACK][onInstallConversionData] error: " + error);
     }
 
-    public void onAppOpenAttribution(string attributionData)
-    {
-        AFQALogger.Log("[AF_QA][CALLBACK][onAppOpenAttribution] " + attributionData);
-    }
-
-    public void onAppOpenAttributionFailure(string error)
-    {
-        AFQALogger.Log("[AF_QA][CALLBACK][onAppOpenAttribution] error: " + error);
-    }
-
     // ── Deep link callback ────────────────────────────────────────────────────
 
-    void OnDeepLinkReceived(object sender, EventArgs args)
+    void OnDeepLinkReceived(DeepLinkEventsArgs dlArgs)
     {
-        var dlArgs = args as DeepLinkEventsArgs;
         if (dlArgs == null)
         {
             AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: null args");
@@ -431,22 +415,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         string status = dlArgs.status.ToString();
         string deepLinkValue = dlArgs.getDeepLinkValue() ?? "";
         AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: status=" + status + ", deepLinkValue=" + deepLinkValue);
-    }
-
-    // ── Request / in-app response callbacks ──────────────────────────────────
-
-    void OnRequestResponse(object sender, EventArgs e)
-    {
-        var a = e as AppsFlyerRequestEventArgs;
-        if (a != null)
-            AFQALogger.Log("[AF_QA][RequestResponse] responseCode=" + a.statusCode + " desc=" + a.errorDescription);
-    }
-
-    void OnInAppResponse(object sender, EventArgs e)
-    {
-        var a = e as AppsFlyerRequestEventArgs;
-        if (a != null)
-            AFQALogger.Log("[AF_QA][InAppResponse] responseCode=" + a.statusCode + " desc=" + a.errorDescription);
     }
 
     // ── Utilities ─────────────────────────────────────────────────────────────

@@ -65,4 +65,17 @@ class AppsFlyerRPCBridgeTest {
     fun extractRequestId_malformedJson_returnsNull() {
         assertNull(AppsFlyerRPCBridge.extractRequestId("not json"))
     }
+
+    @Test
+    fun executeJson_notInitialized_returns503Error() {
+        val json = AppsFlyerRPCBridge.executeJson("{\"id\":\"req-5\",\"method\":\"getSdkVersion\",\"params\":{}}")
+        val root = JSONObject(json)
+        assertEquals("req-5", root.getString("id"))
+        assertEquals(503, root.getJSONObject("error").getInt("code"))
+    }
+
+    @Test
+    fun fireJson_notInitialized_doesNotThrow() {
+        AppsFlyerRPCBridge.fireJson("{\"id\":\"req-6\",\"method\":\"start\",\"params\":{}}")
+    }
 }

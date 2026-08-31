@@ -3,7 +3,6 @@ package com.appsflyer.unity
 import android.util.Log
 import com.appsflyer.api.PurchaseClient
 import com.unity3d.player.UnityPlayer
-import org.json.JSONException
 import org.json.JSONObject
 
 object PurchaseRevenueBridge {
@@ -31,8 +30,8 @@ object PurchaseRevenueBridge {
                     if (response != null) {
                         return@setInAppPurchaseEventDataSource jsonToMap(JSONObject(response))
                     }
-                } catch (e: JSONException) {
-                    Log.e(TAG, "Failed to parse additional params from Unity", e)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to get additional params from Unity", e)
                 }
                 emptyMap()
             }
@@ -43,8 +42,8 @@ object PurchaseRevenueBridge {
                     if (response != null) {
                         return@setSubscriptionPurchaseEventDataSource jsonToMap(JSONObject(response))
                     }
-                } catch (e: JSONException) {
-                    Log.e(TAG, "Failed to parse additional params from Unity", e)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to get additional params from Unity", e)
                 }
                 emptyMap()
             }

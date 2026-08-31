@@ -28,6 +28,8 @@ namespace AppsFlyerSDK
         // it knows which Unity GameObject to route onRPCEvent callbacks to. Each implementation owns its
         // own platform #if split, instead of forcing callers to branch on UNITY_ANDROID/UNITY_IOS.
         void InitBridge(string callbackObjectName);
+
+        bool IsBridgeAvailable { get; }
     }
 
     public class AppsFlyerRPCClient : IAppsFlyerRPCClient
@@ -69,7 +71,7 @@ namespace AppsFlyerSDK
             if (_rpcBridge != null)
                 _rpcBridge.CallStatic("fireJson", jsonRequest);
             else
-                Debug.LogWarning("AppsFlyer: dropped fire-and-forget call, RPC bridge failed to load — " + jsonRequest);
+                Debug.LogError("AppsFlyer: dropped fire-and-forget call, RPC bridge failed to load — " + jsonRequest);
 #endif
         }
 
@@ -183,6 +185,20 @@ namespace AppsFlyerSDK
 #elif UNITY_IOS && !UNITY_EDITOR
             _setRPCEventHandler(callbackObjectName ?? "");
 #endif
+        }
+
+        public bool IsBridgeAvailable
+        {
+            get
+            {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                return _rpcBridge != null;
+#else
+                // iOS's bridge is statically linked via DllImport("__Internal") — no runtime load-failure
+                // mode exists there, and the standalone/editor stub path always "succeeds" trivially.
+                return true;
+#endif
+            }
         }
     }
 }

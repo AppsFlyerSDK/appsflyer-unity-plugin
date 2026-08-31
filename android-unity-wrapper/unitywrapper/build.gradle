@@ -29,6 +29,14 @@ android {
         jvmTarget = "1.8"
     }
 
+    testOptions {
+        unitTests {
+            // android.jar's stub classes (e.g. android.util.Log) throw at runtime instead of
+            // no-op'ing; plain JVM unit tests here have no Robolectric/Mockito shim for them.
+            returnDefaultValues = true
+        }
+    }
+
 }
 
 repositories {
@@ -39,7 +47,8 @@ repositories {
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.12'
+    implementation "com.appsflyer:af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION"
+    compileOnly "com.appsflyer:af-android-sdk:$ANDROID_SDK_VERSION"
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly "com.appsflyer:purchase-connector:$ANDROID_PC_VERSION"
     compileOnly 'com.android.billingclient:billing:8.0.0'

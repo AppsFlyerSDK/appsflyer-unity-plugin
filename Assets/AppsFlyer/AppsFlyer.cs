@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using AFMiniJSON;
 
@@ -16,13 +15,13 @@ namespace AppsFlyerSDK
     {
         public static readonly string kAppsFlyerPluginVersion = "7.0.1";
         public static string CallBackObjectName = null;
-        private static EventHandler onRequestResponse;
-        private static EventHandler onInAppResponse;
-        private static EventHandler onDeepLinkReceived;
         private static EventHandler onSessionReady;
+        private static Action<string> onConversionDataSuccessCallback;
+        private static Action<string> onConversionDataFailCallback;
+        private static Action<DeepLinkEventsArgs> onDeepLinkListenerCallback;
         public delegate void unityCallBack(string message);
 
-        // Dispatches via Execute() on the calling thread, in place - no BackgroundThreadAsync hop -
+        // Dispatches via ExecuteFire() on the calling thread, in place - no BackgroundThreadAsync hop -
         // so call-site ordering across multiple non-awaited calls is preserved exactly like the
         // fire-and-forget Fire() this replaced. Unlike that helper, which caught and logged
         // AppsFlyerRPCException internally, this method has no internal await before the work runs,
@@ -31,22 +30,16 @@ namespace AppsFlyerSDK
         // Task's exception) to one who doesn't.
         private static async Awaitable FireAsync(string method, Dictionary<string, object> parameters = null)
         {
-            AppsFlyerRPCClient.instance.Execute(method, parameters);
+            AppsFlyerRPCClient.instance.ExecuteFire(method, parameters);
         }
 
         private static object Query(string method, Dictionary<string, object> parameters = null)
         {
             try { return AppsFlyerRPCClient.instance.Execute(method, parameters); }
             catch (AppsFlyerRPCException e) { AFLog(method, "RPC error: " + e.Message); return null; }
+            catch (Exception e) { AFLog(method, "Unexpected error dispatching RPC: " + e.Message); return null; }
         }
 
-        // Execute() blocks on _afExecuteJson's semaphore until native's completion handler fires.
-        // This no longer deadlocks when called from Unity's main thread on iOS — the Swift side
-        // (AppsFlyerRPCWrapper.swift) calls into the non-actor-isolated AppsFlyerRPCBridge directly,
-        // with no Task {@MainActor} hop competing for the main run loop. QueryAsync still hops to a
-        // background thread first (matching generateInviteLinkAsync), so the *Async getters below
-        // never block Unity's player loop for the RPC round trip, even though the synchronous
-        // getters are now also safe to call from the main thread.
         private static async Awaitable<object> QueryAsync(string method, Dictionary<string, object> parameters = null)
         {
             await Awaitable.BackgroundThreadAsync();
@@ -59,6 +52,11 @@ namespace AppsFlyerSDK
                 AFLog(method, "RPC error: " + e.Message);
                 return null;
             }
+            catch (Exception e)
+            {
+                AFLog(method, "Unexpected error dispatching RPC: " + e.Message);
+                return null;
+            }
             finally
             {
                 await Awaitable.MainThreadAsync();
@@ -66,6 +64,26 @@ namespace AppsFlyerSDK
         }
 
         // ── Initialization ──────────────────────────────────────────────────────
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void InitBridgeOnLoad()
+        {
+#if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
+            AppsFlyerRPCClient.instance.InitBridge(CallBackObjectName ?? "");
+#endif
+        }
+
+        /// <summary>
+        /// True unless the native RPC bridge failed to load (Android-only failure mode: the
+        /// AppsFlyerRPCBridge class isn't present in the built APK). Every fire-and-forget call
+        /// (the majority of the public API) completes its Awaitable "successfully" even when this is
+        /// false, since native never gets a chance to signal the failure back — assert on this during
+        /// smoke tests rather than relying on an awaitable completing.
+        /// </summary>
+        public static bool isRPCBridgeAvailable()
+        {
+            return AppsFlyerRPCClient.instance.IsBridgeAvailable;
+        }
 
         /// <summary>
         /// Initialize the AppsFlyer SDK. devKey is required on all platforms; appID is required for iOS
@@ -123,7 +141,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Synchronous RPC query — matches the schema's canonical isSessionReady contract.
-        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
+        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
+        /// bound exists on Android's executeJson, a known limitation); prefer
         /// <see cref="isSessionReadyAsync"/>.</summary>
         public static bool isSessionReady()
         {
@@ -137,7 +157,9 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Gets the AppsFlyer SDK version used by native, via a synchronous RPC query.
-        /// On iOS, calling this from Unity's main thread deadlocks (see QueryAsync); prefer
+        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
+        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
+        /// bound exists on Android's executeJson, a known limitation); prefer
         /// <see cref="getSdkVersionAsync"/>.</summary>
         public static string getSdkVersion()
         {
@@ -183,12 +205,36 @@ namespace AppsFlyerSDK
 #endif
         }
 
+        private static readonly Dictionary<MediationNetwork, string> MediationNetworkWireNames = new Dictionary<MediationNetwork, string>
+        {
+            { MediationNetwork.GoogleAdMob, "google_admob" },
+            { MediationNetwork.IronSource, "ironsource" },
+            { MediationNetwork.ApplovinMax, "applovin_max" },
+            { MediationNetwork.Fyber, "fyber" },
+            { MediationNetwork.Appodeal, "appodeal" },
+            { MediationNetwork.Admost, "admost" },
+            { MediationNetwork.Topon, "topon" },
+            { MediationNetwork.Tradplus, "tradplus" },
+            { MediationNetwork.Yandex, "yandex" },
+            { MediationNetwork.ChartBoost, "chartboost" },
+            { MediationNetwork.Unity, "unity" },
+            { MediationNetwork.ToponPte, "topon_pte" },
+            { MediationNetwork.Custom, "custom_mediation" },
+            { MediationNetwork.DirectMonetization, "direct_monetization_network" }
+        };
+
         public static async Awaitable logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
         {
+            string mediationNetworkWireName = "none";
+            if (adRevenueData != null && MediationNetworkWireNames.TryGetValue(adRevenueData.mediationNetwork, out var wireName))
+            {
+                mediationNetworkWireName = wireName;
+            }
+
             await FireAsync("logAdRevenue", new Dictionary<string, object>
             {
                 { "monetizationNetwork", adRevenueData?.monetizationNetwork },
-                { "mediationNetwork", adRevenueData != null ? adRevenueData.mediationNetwork.ToString() : null },
+                { "mediationNetwork", mediationNetworkWireName },
                 { "currencyIso4217Code", adRevenueData?.currencyIso4217Code },
                 { "revenue", adRevenueData?.eventRevenue },
                 { "additionalParameters", additionalParameters }
@@ -400,14 +446,19 @@ namespace AppsFlyerSDK
 
         /// <summary>
         /// Registers a conversion-data listener. Callback delivery is routed through the unified
-        /// onRPCEvent envelope to CallBackObjectName (set in init), not by an RPC parameter.
+        /// onRPCEvent envelope to CallBackObjectName (set in init), not by an RPC parameter — but the
+        /// register function itself is the API surface: it takes the listeners directly as parameters,
+        /// matching the long-lived/recurring-result register-function shape (see e.g. the Flutter
+        /// plugin's registerConversionListener), rather than a separate += event with a side effect.
         /// Resolved: schema declares zero params (maxProperties: 0) on both platforms. Confirmed there
         /// is no undeclared callbackObjectName side channel — AppsFlyerRPCBridge.init() (Android) and
         /// _setRPCEventHandler (iOS) each wire one generic event handler at SDK init that routes every
         /// RPC event, including conversion callbacks, through onRPCEvent to CallBackObjectName.
         /// </summary>
-        public static async Awaitable registerConversionListener()
+        public static async Awaitable registerConversionListener(Action<string> onConversionDataSuccess, Action<string> onConversionDataFail)
         {
+            onConversionDataSuccessCallback = onConversionDataSuccess;
+            onConversionDataFailCallback = onConversionDataFail;
 #if UNITY_WSA_10_0
             AppsFlyerWindows.GetConversionData("");
 #else
@@ -423,31 +474,17 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        private static bool _androidDeepLinkLoggerAttached = false;
-
         /// <summary>
         /// Subscribes for the unified deep-link event. Manual/advanced-integration escape hatch — native
         /// already resolves deep links automatically on both platforms (see performDeepLinking doc comment
-        /// for the same race-condition warning). This is called automatically from OnDeepLinkReceived's
-        /// add accessor.
+        /// for the same race-condition warning). The listener is supplied directly as a parameter here —
+        /// the register function is the API surface, not a += event with a side-effecting accessor.
         /// </summary>
-        public static async Awaitable registerDeepLinkListener()
+        public static async Awaitable registerDeepLinkListener(Action<DeepLinkEventsArgs> callback)
         {
+            onDeepLinkListenerCallback = callback;
 #if UNITY_ANDROID
             await FireAsync("subscribeForDeepLink");
-
-            // Guarantee onDeepLinking is observable even if the caller registers via
-            // registerDeepLinkListener() directly instead of OnDeepLinkReceived +=, since
-            // onDeepLinking() only invokes onDeepLinkReceived when it has a subscriber.
-            if (!_androidDeepLinkLoggerAttached)
-            {
-                onDeepLinkReceived += (sender, args) =>
-                {
-                    var dlArgs = args as DeepLinkEventsArgs;
-                    AFLog("onDeepLinking", dlArgs != null ? dlArgs.getDeepLinkValue() : "received");
-                };
-                _androidDeepLinkLoggerAttached = true;
-            }
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
             await FireAsync("registerDeeplinkListener");
 #endif
@@ -569,39 +606,14 @@ namespace AppsFlyerSDK
             {
                 return AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
             }
+            catch (Exception e)
+            {
+                AFLog("generateInviteLinkAsync", "Failed to generate invite link: " + e.Message);
+                return null;
+            }
             finally
             {
                 await Awaitable.MainThreadAsync();
-            }
-        }
-
-        /// <summary>
-        /// Builds and fires a OneLink user-invite request; delivers the outcome to CallBackObjectName via
-        /// the pre-RPC IAppsFlyerUserInvite callback names (onInviteLinkGenerated /
-        /// onInviteLinkGeneratedFailure), since onRPCEvent has no routing for this call. Thin wrapper
-        /// around <see cref="generateInviteLinkAsync"/>; prefer calling that directly to get the link
-        /// without going through CallBackObjectName.
-        /// Only <see cref="AppsFlyerRPCException"/> is caught and routed to onInviteLinkGeneratedFailure;
-        /// any other exception thrown by <see cref="generateInviteLinkAsync"/> propagates unhandled.
-        /// </summary>
-        public static async void generateInviteLink(Dictionary<string, string> parameters)
-        {
-            await DeliverInviteLinkAsync(parameters);
-        }
-
-        // Task-returning so tests can await the exact delivery logic generateInviteLink fires-and-forgets.
-        internal static async Task DeliverInviteLinkAsync(Dictionary<string, string> parameters)
-        {
-            var go = string.IsNullOrEmpty(CallBackObjectName) ? null : GameObject.Find(CallBackObjectName);
-            try
-            {
-                var link = await generateInviteLinkAsync(parameters);
-                go?.SendMessage("onInviteLinkGenerated", link, SendMessageOptions.DontRequireReceiver);
-            }
-            catch (AppsFlyerRPCException e)
-            {
-                AFLog("generateInviteLink", "RPC error: " + e.Message);
-                go?.SendMessage("onInviteLinkGeneratedFailure", e.Message, SendMessageOptions.DontRequireReceiver);
             }
         }
 
@@ -886,20 +898,6 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>
-        /// Unity engine callback, invoked automatically when the app is paused/resumed. Kept unchanged
-        /// from the pre-migration implementation — the native SDK documents this as the required
-        /// workaround for plugin bridges since Unity doesn't reliably deliver Android Activity
-        /// foreground/background transitions otherwise.
-        /// </summary>
-        async void OnApplicationPause(bool pauseStatus)
-        {
-#if UNITY_ANDROID
-            if (!pauseStatus) return;
-            await FireAsync("onPause");
-#endif
-        }
-
         // ── Server-side uninstall tracking ────────────────────────────────────────
 
         /// <summary>Android: pass the FCM token.</summary>
@@ -930,6 +928,28 @@ namespace AppsFlyerSDK
         private static string PurchaseTypeToIOSString(AFSDKPurchaseType t) =>
             t == AFSDKPurchaseType.Subscription ? "subscription" : "oneTimePurchase";
 
+        private static async Awaitable<AFSDKValidateAndLogResult> QueryValidateAndLogAsync(Dictionary<string, object> payload)
+        {
+            await Awaitable.BackgroundThreadAsync();
+            try
+            {
+                var result = AppsFlyerRPCClient.instance.Execute("validateAndLogInAppPurchase", payload) as Dictionary<string, object>;
+                return AFSDKValidateAndLogResult.Init(AFSDKValidateAndLogStatus.AFSDKValidateAndLogStatusSuccess, result, null, null);
+            }
+            catch (AppsFlyerRPCException e)
+            {
+                return AFSDKValidateAndLogResult.Init(AFSDKValidateAndLogStatus.AFSDKValidateAndLogStatusError, null, e.Details as Dictionary<string, object>, e.Message);
+            }
+            catch (Exception e)
+            {
+                return AFSDKValidateAndLogResult.Init(AFSDKValidateAndLogStatus.AFSDKValidateAndLogStatusError, null, null, e.Message);
+            }
+            finally
+            {
+                await Awaitable.MainThreadAsync();
+            }
+        }
+
         /// <summary>
         /// Validates an Android in-app purchase. Net-new RPC integration — the pre-migration
         /// implementation had no RPC call for this at all (legacy bridge only).
@@ -937,16 +957,18 @@ namespace AppsFlyerSDK
         /// declared Android enum exactly. Recommend one on-device validation pass before final sign-off,
         /// but this is no longer a blocking unknown.
         /// </summary>
-        public static async Awaitable validateAndLogInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters)
+        public static async Awaitable<AFSDKValidateAndLogResult> validateAndLogInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters)
         {
 #if UNITY_ANDROID
-            await FireAsync("validateAndLogInAppPurchase", new Dictionary<string, object>
+            return await QueryValidateAndLogAsync(new Dictionary<string, object>
             {
                 { "purchaseType", details != null ? PurchaseTypeToAndroidString(details.purchaseType) : null },
                 { "purchaseToken", details?.purchaseToken },
                 { "productId", details?.productId },
                 { "additionalParameters", additionalParameters }
             });
+#else
+            return null;
 #endif
         }
 
@@ -957,10 +979,10 @@ namespace AppsFlyerSDK
         /// iOS enum exactly. Recommend one on-device validation pass before final sign-off, but this is
         /// no longer a blocking unknown.
         /// </summary>
-        public static async Awaitable validateAndLogInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> additionalParameters)
+        public static async Awaitable<AFSDKValidateAndLogResult> validateAndLogInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> additionalParameters)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            await FireAsync("validateAndLogInAppPurchase", new Dictionary<string, object>
+            return await QueryValidateAndLogAsync(new Dictionary<string, object>
             {
                 { "product", new Dictionary<string, object> { { "productId", details?.productId } } },
                 { "transaction", new Dictionary<string, object>
@@ -971,43 +993,17 @@ namespace AppsFlyerSDK
                 },
                 { "additionalParameters", additionalParameters }
             });
+#else
+            return null;
 #endif
         }
 
-        // ── Callback plumbing (unchanged — already pure RPC/UnitySendMessage, no legacy bridge) ────────
-
-        public static event EventHandler OnRequestResponse
-        {
-            add { onRequestResponse += value; }
-            remove { onRequestResponse -= value; }
-        }
-
-        public static event EventHandler OnInAppResponse
-        {
-            add { onInAppResponse += value; }
-            remove { onInAppResponse -= value; }
-        }
-
-        public static event EventHandler OnDeepLinkReceived
-        {
-            add { onDeepLinkReceived += value; registerDeepLinkListener(); }
-            remove { onDeepLinkReceived -= value; }
-        }
+        // ── Callback plumbing ────────────────────────────────────────────────────
 
         public static event EventHandler OnSessionReady
         {
             add { onSessionReady += value; }
             remove { onSessionReady -= value; }
-        }
-
-        public void inAppResponseReceived(string response)
-        {
-            if (onInAppResponse != null) onInAppResponse.Invoke(null, parseRequestCallback(response));
-        }
-
-        public void requestResponseReceived(string response)
-        {
-            if (onRequestResponse != null) onRequestResponse.Invoke(null, parseRequestCallback(response));
         }
 
         public void onSessionReadyReceived(string response)
@@ -1018,7 +1014,7 @@ namespace AppsFlyerSDK
         public void onDeepLinking(string response)
         {
             DeepLinkEventsArgs args = new DeepLinkEventsArgs(response);
-            if (onDeepLinkReceived != null) onDeepLinkReceived.Invoke(null, args);
+            onDeepLinkListenerCallback?.Invoke(args);
         }
 
         /// <summary>
@@ -1038,22 +1034,15 @@ namespace AppsFlyerSDK
 
                 switch (eventType)
                 {
-                    case "start":
-                    case "onRequestResponse":
-                        requestResponseReceived(dataStr);
-                        break;
-                    case "logEvent":
-                    case "onInAppResponse":
-                        inAppResponseReceived(dataStr);
-                        break;
                     case "onDeepLinking":
                     case "onDeepLinkReceived":
                         onDeepLinking(dataStr);
                         break;
                     case "onConversionDataSuccess":
+                        onConversionDataSuccessCallback?.Invoke(dataStr);
+                        break;
                     case "onConversionDataFail":
-                        var go = GameObject.Find(CallBackObjectName);
-                        go?.SendMessage(eventType, dataStr, SendMessageOptions.DontRequireReceiver);
+                        onConversionDataFailCallback?.Invoke(dataStr);
                         break;
                     case "sessionReady":
                     case "onSessionReady":
@@ -1068,24 +1057,6 @@ namespace AppsFlyerSDK
             {
                 AFLog("onRPCEvent", "Exception: " + e.Message);
             }
-        }
-
-        private static AppsFlyerRequestEventArgs parseRequestCallback(string response)
-        {
-            int responseCode = 0;
-            string errorDescription = "";
-            try
-            {
-                Dictionary<string, object> dictionary = CallbackStringToDictionary(response);
-                var errorResponse = dictionary.ContainsKey("errorDescription") ? dictionary["errorDescription"] : "";
-                errorDescription = (string)errorResponse;
-                responseCode = (int)(long)dictionary["statusCode"];
-            }
-            catch (Exception e)
-            {
-                AFLog("parseRequestCallback", String.Format("{0} Exception caught.", e));
-            }
-            return new AppsFlyerRequestEventArgs(responseCode, errorDescription);
         }
 
         public static Dictionary<string, object> CallbackStringToDictionary(string str)

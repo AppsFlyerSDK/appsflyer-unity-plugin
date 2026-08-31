@@ -23,15 +23,15 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     {
         // These fields are set from the editor so do not modify!
         //******************************//
+        AppsFlyer.enableDebug(isDebug);
 #if UNITY_STANDALONE_OSX && !UNITY_EDITOR
         AppsFlyer.init(devKey, macOSAppID, this);
-#elif UNITY_WSA_10_0
+#elif UNITY_WSA_10_0 && !UNITY_EDITOR
         AppsFlyer.init(devKey, UWPAppID, this);
 #else
         AppsFlyer.init(devKey, appID, this);
 #endif
-        AppsFlyer.enableDebug(isDebug);
-        if (getConversionData) AppsFlyer.registerConversionListener();
+        if (getConversionData) AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
         //******************************/
 
         AppsFlyer.start();
@@ -54,18 +54,6 @@ public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
     public void onConversionDataFail(string error)
     {
         AppsFlyer.AFLog("didReceiveConversionDataWithError", error);
-    }
-
-    public void onAppOpenAttribution(string attributionData)
-    {
-        AppsFlyer.AFLog("onAppOpenAttribution", attributionData);
-        Dictionary<string, object> attributionDataDictionary = AppsFlyer.CallbackStringToDictionary(attributionData);
-        // add direct deeplink logic here
-    }
-
-    public void onAppOpenAttributionFailure(string error)
-    {
-        AppsFlyer.AFLog("onAppOpenAttributionFailure", error);
     }
 
 }
