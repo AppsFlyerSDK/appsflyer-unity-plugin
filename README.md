@@ -21,6 +21,19 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 - iOS AppsFlyer SDK v6.17.9
 - iOS Purchase Connector 6.17.9
 ---
+## 📌 RPC-schema-aligned plugin core + new async API surface
+
+The plugin's C#/native bridge was migrated to a JSON-RPC transport
+(`Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`), replacing the legacy per-method
+AndroidJavaClass/DllImport bridge. Alongside this, several previously synchronous getters
+(e.g. `getAppsFlyerUID`, `getSdkVersion`, `isSessionReady`) gained `*Async` twins
+(`getAppsFlyerUIDAsync`, etc.), matching the pattern already used by `generateInviteLinkAsync`,
+so none of them need to block Unity's main thread for the native round trip. iOS deep-link
+delivery (cold-start URL schemes and Universal Links) was also reworked — see
+[`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md)
+for the delivery-path rationale.
+
+---
 ## 📌 Minimum supported Unity version raised to 2023.1
 
 Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLinkAsync`, `getAppsFlyerUIDAsync`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.
@@ -43,7 +56,7 @@ Use the last **6.17.x** dual-line release: **`v6.17.90`** (Billing v7) or **`v6.
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
-- **Android + AGP 8**: `com.appsflyer:purchase-connector` and `com.appsflyer:af-android-sdk` share the same manifest package, which AGP 8's namespace-uniqueness check hard-fails on. Add `android.uniquePackageNames=false` to your project's `gradleTemplate.properties` to build.
+- **Android + AGP 8**: `com.appsflyer:purchase-connector:2.3.0` and `com.appsflyer:af-android-sdk:7.0.1` currently share the same manifest package (`com.appsflyer`), which AGP 8's mandatory namespace-uniqueness check hard-fails on. There is no known consumer-side Gradle property that resolves this (in particular, `android.uniquePackageNames` is an older, unrelated flag and does not fix it) — the fix has to happen upstream, in how these artifacts are published. Until that lands, `purchase-connector` cannot be built alongside `af-android-sdk` under AGP 8+; track the upstream issue with AppsFlyer support for status.
 
 ---
 ## <a id="breaking-changes-6175">     ❗❗ Breaking changes when updating to 6.17.5 ❗❗

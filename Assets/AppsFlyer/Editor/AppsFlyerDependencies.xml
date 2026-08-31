@@ -11,13 +11,13 @@
          the "gaidError" field of outgoing SDK requests. -->
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
     <!-- com.appsflyer:purchase-connector:2.3.0 shares the exact manifest package "com.appsflyer"
-         with com.appsflyer:af-android-sdk:7.0.1, which AGP 8's namespace-uniqueness check hard-fails
-         on. Mitigated via android.uniquePackageNames=false (see
-         test-app/Assets/Plugins/Android/gradleTemplate.properties) — the intended AGP 9.0 migration
-         path for this property; confirmed against the identical error in
-         googleads-mobile-unity#4212. Integrators must set the same property in their own
-         gradleTemplate.properties. -->
-    <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage>
+         with com.appsflyer:af-android-sdk:7.0.1, which AGP 8's mandatory namespace-uniqueness
+         check hard-fails on. There is no known consumer-side Gradle property that resolves this
+         (android.uniquePackageNames does NOT — it's an older, unrelated naming-convention flag).
+         The real fix requires AppsFlyer to publish these two artifacts with distinct AGP
+         namespaces upstream. Left disabled here until that lands; do not re-enable without
+         confirming the namespace collision has actually been resolved upstream. -->
+    <!-- <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage> -->
   </androidPackages>
 
   <iosPods>

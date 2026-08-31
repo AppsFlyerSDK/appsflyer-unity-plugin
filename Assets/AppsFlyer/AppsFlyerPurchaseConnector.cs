@@ -242,7 +242,56 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
         }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        private static AndroidJavaClass appsFlyerAndroidConnector = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
+        private static AndroidJavaClass appsFlyerAndroidConnector;
+        private static bool _connectorUnavailableWarned;
+
+        // purchase-connector is currently disabled in AppsFlyerDependencies.xml (AGP 8 namespace
+        // collision with af-android-sdk - see review_processed.md #16), but AppsFlyerAndroidWrapper
+        // still directly imports its types. That turns every Purchase Connector call below into an
+        // unguarded NoClassDefFoundError/ClassNotFoundException at the point of first use instead of
+        // a build-time failure. Resolve/call through here so integrators who don't use Purchase
+        // Connector are unaffected, and those who do get one clear logged warning instead of a crash.
+        private static bool TryGetConnector(out AndroidJavaClass connector)
+        {
+            try
+            {
+                if (appsFlyerAndroidConnector == null)
+                {
+                    appsFlyerAndroidConnector = new AndroidJavaClass("com.appsflyer.unity.AppsFlyerAndroidWrapper");
+                }
+                connector = appsFlyerAndroidConnector;
+                return true;
+            }
+            catch (Exception e)
+            {
+                WarnConnectorUnavailable(e);
+                connector = null;
+                return false;
+            }
+        }
+
+        private static void TryCallStatic(string method, params object[] args)
+        {
+            if (!TryGetConnector(out var connector)) return;
+            try
+            {
+                connector.CallStatic(method, args);
+            }
+            catch (Exception e)
+            {
+                WarnConnectorUnavailable(e);
+            }
+        }
+
+        private static void WarnConnectorUnavailable(Exception e)
+        {
+            if (_connectorUnavailableWarned) return;
+            _connectorUnavailableWarned = true;
+            Debug.LogWarning("[AppsFlyer] Purchase Connector is unavailable on Android (the " +
+                "purchase-connector dependency is currently disabled due to an AGP 8 namespace " +
+                "collision with af-android-sdk - see Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml). " +
+                "Purchase Connector calls will be no-ops until this is resolved upstream. " + e);
+        }
 #endif
 
         public static void init(MonoBehaviour unityObject, Store s) {
@@ -250,7 +299,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
                 _initPurchaseConnector(unityObject.name);
 #elif UNITY_ANDROID && !UNITY_EDITOR
                 int store = mapStoreToInt(s);
-                appsFlyerAndroidConnector.CallStatic("initPurchaseConnector", unityObject ? unityObject.name : null, store);
+                TryCallStatic("initPurchaseConnector", unityObject ? unityObject.name : null, store);
 #endif
         }
 
@@ -258,7 +307,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_IOS && !UNITY_EDITOR
         //not for iOS
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                appsFlyerAndroidConnector.CallStatic("build");
+                TryCallStatic("build");
 
 #else
 #endif
@@ -268,7 +317,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_IOS && !UNITY_EDITOR
                 _startObservingTransactions();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                appsFlyerAndroidConnector.CallStatic("startObservingTransactions");
+                TryCallStatic("startObservingTransactions");
 #else 
 #endif
         }
@@ -277,7 +326,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_IOS && !UNITY_EDITOR
                 _stopObservingTransactions();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                appsFlyerAndroidConnector.CallStatic("stopObservingTransactions");
+                TryCallStatic("stopObservingTransactions");
 #else
 #endif
         }
@@ -286,7 +335,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_IOS && !UNITY_EDITOR
                 _setIsSandbox(isSandbox);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                appsFlyerAndroidConnector.CallStatic("setIsSandbox", isSandbox);
+                TryCallStatic("setIsSandbox", isSandbox);
 #else
 #endif
         }
@@ -295,7 +344,7 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
 #if UNITY_IOS && !UNITY_EDITOR
                 _setPurchaseRevenueDelegate();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                appsFlyerAndroidConnector.CallStatic("setPurchaseRevenueValidationListeners", enableCallbacks);
+                TryCallStatic("setPurchaseRevenueValidationListeners", enableCallbacks);
 #else
 #endif
         }
@@ -316,10 +365,10 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
                                 case AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsDisabled:
                                         break;
                                 case AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsAutoRenewableSubscriptions:
-                                        appsFlyerAndroidConnector.CallStatic("setAutoLogSubscriptions", true);
+                                        TryCallStatic("setAutoLogSubscriptions", true);
                                         break;
                                 case AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsInAppPurchases:
-                                        appsFlyerAndroidConnector.CallStatic("setAutoLogInApps", true);
+                                        TryCallStatic("setAutoLogInApps", true);
                                         break;
                                 default:
                                         break;

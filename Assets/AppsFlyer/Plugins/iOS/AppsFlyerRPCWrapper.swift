@@ -16,6 +16,14 @@ import AppsFlyerRPC
 @_silgen_name("UnitySendMessage")
 private func UnitySendMessageC(_ obj: UnsafePointer<CChar>?, _ method: UnsafePointer<CChar>?, _ arg: UnsafePointer<CChar>?)
 
+// AppsFlyerRPCBridge's own thread-safety under concurrent calls is undocumented (it's a plain,
+// non-actor-isolated NSObject in the closed-source AppsFlyerRPC framework - see the comment on
+// _setRPCEventHandler below). Serializing all calls into it here restores the incidental
+// serialization that the old (deadlocking) `Task { @MainActor in ... }` wrapping used to provide,
+// without reintroducing the deadlock: this is a private queue, not the main run loop, so it's
+// never blocked waiting on Unity's main thread.
+private let rpcQueue = DispatchQueue(label: "com.appsflyer.rpcbridge")
+
 // Wires the RPC -> Unity event channel. Must be called during SDK init, before
 // registerSessionReadyListener/start, so the sessionReady/conversion-data callback can reach
 // Unity. AppsFlyerRPCBridge (verified against AppsFlyerRPC.xcframework's shipped
@@ -28,21 +36,25 @@ private func UnitySendMessageC(_ obj: UnsafePointer<CChar>?, _ method: UnsafePoi
 public func _setRPCEventHandler(_ objectName: UnsafePointer<CChar>?) {
 #if canImport(AppsFlyerRPC)
     let callbackObject = objectName.map { String(cString: $0) } ?? ""
-    AppsFlyerRPCBridge.shared.setEventHandler { jsonEvent in
-        if !callbackObject.isEmpty {
-            UnitySendMessageC(callbackObject, "onRPCEvent", jsonEvent)
+    rpcQueue.sync {
+        AppsFlyerRPCBridge.shared.setEventHandler { jsonEvent in
+            if !callbackObject.isEmpty {
+                UnitySendMessageC(callbackObject, "onRPCEvent", jsonEvent)
+            }
         }
     }
 #endif
 }
 
-// Fire-and-forget: used for setter methods that need no return value. AppsFlyerRPCBridge is not
-// actor-isolated (see _setRPCEventHandler), so no dispatch/hop is needed - call directly.
+// Fire-and-forget: used for setter methods that need no return value. Routed through rpcQueue to
+// serialize entry into AppsFlyerRPCBridge (see rpcQueue's declaration above).
 @_cdecl("_afFireJson")
 public func _afFireJson(_ jsonRequest: UnsafePointer<CChar>?) {
 #if canImport(AppsFlyerRPC)
     let requestStr = jsonRequest.map { String(cString: $0) } ?? "{}"
-    AppsFlyerRPCBridge.shared.executeJson(requestStr) { _ in }
+    rpcQueue.sync {
+        AppsFlyerRPCBridge.shared.executeJson(requestStr) { _ in }
+    }
 #endif
 }
 
@@ -53,7 +65,10 @@ public func _afFireJson(_ jsonRequest: UnsafePointer<CChar>?) {
 // sitting on the semaphore.wait() below instead), stalling for the full timeout. That MainActor
 // hop was never actually required: AppsFlyerRPCBridge.executeJson is not actor-isolated (see
 // _setRPCEventHandler), so it's safe to call directly, synchronously, from any thread including
-// Unity's main thread.
+// Unity's main thread. The call itself is routed through rpcQueue (see its declaration above) to
+// serialize concurrent entry into the bridge; only the executeJson call is queued, not the
+// semaphore.wait() below, so concurrent *Async getters queue briefly on entry but still wait on
+// their own thread, not each other's.
 @_cdecl("_afExecuteJson")
 public func _afExecuteJson(_ jsonRequest: UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>? {
 #if canImport(AppsFlyerRPC)
@@ -61,9 +76,11 @@ public func _afExecuteJson(_ jsonRequest: UnsafePointer<CChar>?) -> UnsafeMutabl
     let semaphore = DispatchSemaphore(value: 0)
     var response: String?
 
-    AppsFlyerRPCBridge.shared.executeJson(requestStr) { jsonResponse in
-        response = jsonResponse
-        semaphore.signal()
+    rpcQueue.sync {
+        AppsFlyerRPCBridge.shared.executeJson(requestStr) { jsonResponse in
+            response = jsonResponse
+            semaphore.signal()
+        }
     }
 
     _ = semaphore.wait(timeout: .now() + 5)

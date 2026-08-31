@@ -22,10 +22,16 @@ namespace AppsFlyerSDK
         private static EventHandler onSessionReady;
         public delegate void unityCallBack(string message);
 
-        private static void Fire(string method, Dictionary<string, object> parameters = null)
+        // Dispatches via Execute() on the calling thread, in place - no BackgroundThreadAsync hop -
+        // so call-site ordering across multiple non-awaited calls is preserved exactly like the
+        // fire-and-forget Fire() this replaced. Unlike that helper, which caught and logged
+        // AppsFlyerRPCException internally, this method has no internal await before the work runs,
+        // so any exception is captured into the returned (already-completed-or-faulted) Awaitable
+        // rather than swallowed - visible to a caller who awaits it, silent (like an unobserved
+        // Task's exception) to one who doesn't.
+        private static async Awaitable FireAsync(string method, Dictionary<string, object> parameters = null)
         {
-            try { AppsFlyerRPCClient.instance.ExecuteFire(method, parameters); }
-            catch (AppsFlyerRPCException e) { AFLog(method, "RPC error: " + e.Message); }
+            AppsFlyerRPCClient.instance.Execute(method, parameters);
         }
 
         private static object Query(string method, Dictionary<string, object> parameters = null)
@@ -34,10 +40,13 @@ namespace AppsFlyerSDK
             catch (AppsFlyerRPCException e) { AFLog(method, "RPC error: " + e.Message); return null; }
         }
 
-        // On iOS, Execute() blocks on _afExecuteJson's semaphore, which can only be signaled once
-        // the main thread is free — calling Query() directly from Unity's main thread deadlocks.
-        // QueryAsync hops to a background thread first (matching generateInviteLinkAsync), so every
-        // *Async getter below is safe to call from the main thread; the synchronous getters are not.
+        // Execute() blocks on _afExecuteJson's semaphore until native's completion handler fires.
+        // This no longer deadlocks when called from Unity's main thread on iOS — the Swift side
+        // (AppsFlyerRPCWrapper.swift) calls into the non-actor-isolated AppsFlyerRPCBridge directly,
+        // with no Task {@MainActor} hop competing for the main run loop. QueryAsync still hops to a
+        // background thread first (matching generateInviteLinkAsync), so the *Async getters below
+        // never block Unity's player loop for the RPC round trip, even though the synchronous
+        // getters are now also safe to call from the main thread.
         private static async Awaitable<object> QueryAsync(string method, Dictionary<string, object> parameters = null)
         {
             await Awaitable.BackgroundThreadAsync();
@@ -62,7 +71,7 @@ namespace AppsFlyerSDK
         /// Initialize the AppsFlyer SDK. devKey is required on all platforms; appID is required for iOS
         /// (pass null on Android-only apps).
         /// </summary>
-        public static void init(string devKey, string appID, MonoBehaviour gameObject = null)
+        public static async Awaitable init(string devKey, string appID, MonoBehaviour gameObject = null)
         {
             if (gameObject != null)
             {
@@ -75,7 +84,7 @@ namespace AppsFlyerSDK
 
 #if UNITY_ANDROID
             AppsFlyerRPCClient.instance.InitBridge(CallBackObjectName ?? "");
-            Fire("init", new Dictionary<string, object> { { "devKey", devKey } });
+            await FireAsync("init", new Dictionary<string, object> { { "devKey", devKey } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
             // Wire the RPC -> Unity event channel before initializing, so onRPCEvent (conversion
             // data, deep links, sessionReady) has somewhere to route to as soon as native starts
@@ -90,7 +99,7 @@ namespace AppsFlyerSDK
 #elif UNITY_WSA_10_0
             AppsFlyerWindows.InitSDK(devKey, appID, gameObject);
 #endif
-            Fire("setPluginInfo", new Dictionary<string, object>
+            await FireAsync("setPluginInfo", new Dictionary<string, object>
             {
                 { "plugin", "unity" },
                 { "pluginVersion", kAppsFlyerPluginVersion }
@@ -98,19 +107,19 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Starts the SDK. A session is sent immediately, and on every foreground transition.</summary>
-        public static void start()
+        public static async Awaitable start()
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.Start();
 #else
-            Fire("start");
+            await FireAsync("start");
 #endif
         }
 
         /// <summary>Stops/resumes all SDK activity.</summary>
-        public static void stop(bool shouldStop)
+        public static async Awaitable stop(bool shouldStop)
         {
-            Fire("stop", new Dictionary<string, object> { { "shouldStop", shouldStop } });
+            await FireAsync("stop", new Dictionary<string, object> { { "shouldStop", shouldStop } });
         }
 
         /// <summary>Synchronous RPC query — matches the schema's canonical isSessionReady contract.
@@ -165,18 +174,18 @@ namespace AppsFlyerSDK
 
         // ── Events ───────────────────────────────────────────────────────────────
 
-        public static void logEvent(string eventName, Dictionary<string, string> eventValues)
+        public static async Awaitable logEvent(string eventName, Dictionary<string, string> eventValues)
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.LogEvent(eventName, eventValues);
 #else
-            Fire("logEvent", new Dictionary<string, object> { { "eventName", eventName }, { "eventValues", eventValues } });
+            await FireAsync("logEvent", new Dictionary<string, object> { { "eventName", eventName }, { "eventValues", eventValues } });
 #endif
         }
 
-        public static void logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
+        public static async Awaitable logAdRevenue(AFAdRevenueData adRevenueData, Dictionary<string, string> additionalParameters)
         {
-            Fire("logAdRevenue", new Dictionary<string, object>
+            await FireAsync("logAdRevenue", new Dictionary<string, object>
             {
                 { "monetizationNetwork", adRevenueData?.monetizationNetwork },
                 { "mediationNetwork", adRevenueData != null ? adRevenueData.mediationNetwork.ToString() : null },
@@ -186,46 +195,46 @@ namespace AppsFlyerSDK
             });
         }
 
-        public static void logLocation(double latitude, double longitude)
+        public static async Awaitable logLocation(double latitude, double longitude)
         {
-            Fire("logLocation", new Dictionary<string, object> { { "latitude", latitude }, { "longitude", longitude } });
+            await FireAsync("logLocation", new Dictionary<string, object> { { "latitude", latitude }, { "longitude", longitude } });
         }
 
         /// <summary>Logs a store-open event and has native open the promoted app's store page.</summary>
-        public static void logAndOpenStore(string promotedAppId, string campaign, Dictionary<string, string> userParams)
+        public static async Awaitable logAndOpenStore(string promotedAppId, string campaign, Dictionary<string, string> userParams)
         {
-            Fire("logAndOpenStore", new Dictionary<string, object>
+            await FireAsync("logAndOpenStore", new Dictionary<string, object>
             {
                 { "promotedAppId", promotedAppId }, { "campaign", campaign }, { "userParams", userParams }
             });
         }
 
-        public static void logCrossPromoteImpression(string appId, string campaign, Dictionary<string, string> userParams)
+        public static async Awaitable logCrossPromoteImpression(string appId, string campaign, Dictionary<string, string> userParams)
         {
-            Fire("logCrossPromoteImpression", new Dictionary<string, object>
+            await FireAsync("logCrossPromoteImpression", new Dictionary<string, object>
             {
                 { "appId", appId }, { "campaign", campaign }, { "userParams", userParams }
             });
         }
 
-        public static void logInvite(string channel, Dictionary<string, string> eventParameters)
+        public static async Awaitable logInvite(string channel, Dictionary<string, string> eventParameters)
         {
-            Fire("logInvite", new Dictionary<string, object> { { "channel", channel }, { "eventParameters", eventParameters } });
+            await FireAsync("logInvite", new Dictionary<string, object> { { "channel", channel }, { "eventParameters", eventParameters } });
         }
 
         /// <summary>Manually records a session. Android only.</summary>
-        public static void logSession()
+        public static async Awaitable logSession()
         {
 #if UNITY_ANDROID
-            Fire("logSession");
+            await FireAsync("logSession");
 #endif
         }
 
         /// <summary>Collects attribution data from the launcher Activity. Android only.</summary>
-        public static void collectDataFromLauncherActivity()
+        public static async Awaitable collectDataFromLauncherActivity()
         {
 #if UNITY_ANDROID
-            Fire("collectDataFromLauncherActivity");
+            await FireAsync("collectDataFromLauncherActivity");
 #endif
         }
 
@@ -238,59 +247,59 @@ namespace AppsFlyerSDK
         /// <paramref name="shouldTriggerSession"/> is Android-only; iOS's native SDK has no
         /// equivalent capability, so this parameter has no effect on iOS/macOS.
         /// </summary>
-        public static void performDeepLinking(string url, bool shouldTriggerSession = false)
+        public static async Awaitable performDeepLinking(string url, bool shouldTriggerSession = false)
         {
 #if UNITY_ANDROID
-            Fire("performDeepLinking", new Dictionary<string, object> { { "url", url }, { "shouldTriggerSession", shouldTriggerSession } });
+            await FireAsync("performDeepLinking", new Dictionary<string, object> { { "url", url }, { "shouldTriggerSession", shouldTriggerSession } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("performDeepLinking", new Dictionary<string, object> { { "url", url } });
+            await FireAsync("performDeepLinking", new Dictionary<string, object> { { "url", url } });
 #endif
         }
 
         // ── Identity & configuration ──────────────────────────────────────────────
 
-        public static void setCustomerUserId(string customerId)
+        public static async Awaitable setCustomerUserId(string customerId)
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.SetCustomerUserId(customerId);
 #else
-            Fire("setCustomerUserId", new Dictionary<string, object> { { "customerId", customerId } });
+            await FireAsync("setCustomerUserId", new Dictionary<string, object> { { "customerId", customerId } });
 #endif
         }
 
-        public static void setAppInviteOneLink(string oneLinkId)
+        public static async Awaitable setAppInviteOneLink(string oneLinkId)
         {
-            Fire("setAppInviteOneLink", new Dictionary<string, object> { { "oneLinkId", oneLinkId } });
+            await FireAsync("setAppInviteOneLink", new Dictionary<string, object> { { "oneLinkId", oneLinkId } });
         }
 
-        public static void setDeepLinkTimeout(long timeout)
+        public static async Awaitable setDeepLinkTimeout(long timeout)
         {
-            Fire("setDeepLinkTimeout", new Dictionary<string, object> { { "timeout", timeout } });
+            await FireAsync("setDeepLinkTimeout", new Dictionary<string, object> { { "timeout", timeout } });
         }
 
-        public static void setAdditionalData(Dictionary<string, string> customData)
+        public static async Awaitable setAdditionalData(Dictionary<string, string> customData)
         {
-            Fire("setAdditionalData", new Dictionary<string, object> { { "customData", customData } });
+            await FireAsync("setAdditionalData", new Dictionary<string, object> { { "customData", customData } });
         }
 
-        public static void setResolveDeepLinkURLs(params string[] urls)
+        public static async Awaitable setResolveDeepLinkURLs(params string[] urls)
         {
-            Fire("setResolveDeepLinkURLs", new Dictionary<string, object> { { "urls", urls } });
+            await FireAsync("setResolveDeepLinkURLs", new Dictionary<string, object> { { "urls", urls } });
         }
 
-        public static void setOneLinkCustomDomain(params string[] domains)
+        public static async Awaitable setOneLinkCustomDomain(params string[] domains)
         {
-            Fire("setOneLinkCustomDomain", new Dictionary<string, object> { { "domains", domains } });
+            await FireAsync("setOneLinkCustomDomain", new Dictionary<string, object> { { "domains", domains } });
         }
 
-        public static void setCurrencyCode(string currencyCode)
+        public static async Awaitable setCurrencyCode(string currencyCode)
         {
-            Fire("setCurrencyCode", new Dictionary<string, object> { { "currencyCode", currencyCode } });
+            await FireAsync("setCurrencyCode", new Dictionary<string, object> { { "currencyCode", currencyCode } });
         }
 
-        public static void setConsentData(AppsFlyerConsent appsFlyerConsent)
+        public static async Awaitable setConsentData(AppsFlyerConsent appsFlyerConsent)
         {
-            Fire("setConsentData", new Dictionary<string, object>
+            await FireAsync("setConsentData", new Dictionary<string, object>
             {
                 { "isUserSubjectToGDPR", appsFlyerConsent?.isUserSubjectToGDPR },
                 { "hasConsentForDataUsage", appsFlyerConsent?.hasConsentForDataUsage },
@@ -299,91 +308,91 @@ namespace AppsFlyerSDK
             });
         }
 
-        public static void anonymizeUser(bool shouldAnonymizeUser)
+        public static async Awaitable anonymizeUser(bool shouldAnonymizeUser)
         {
-            Fire("anonymizeUser", new Dictionary<string, object> { { "shouldAnonymize", shouldAnonymizeUser } });
+            await FireAsync("anonymizeUser", new Dictionary<string, object> { { "shouldAnonymize", shouldAnonymizeUser } });
         }
 
-        public static void enableTCFDataCollection(bool shouldCollectTcfData)
+        public static async Awaitable enableTCFDataCollection(bool shouldCollectTcfData)
         {
-            Fire("enableTCFDataCollection", new Dictionary<string, object> { { "shouldCollect", shouldCollectTcfData } });
+            await FireAsync("enableTCFDataCollection", new Dictionary<string, object> { { "shouldCollect", shouldCollectTcfData } });
         }
 
-        public static void setMinTimeBetweenSessions(int seconds)
+        public static async Awaitable setMinTimeBetweenSessions(int seconds)
         {
-            Fire("setMinTimeBetweenSessions", new Dictionary<string, object> { { "seconds", seconds } });
+            await FireAsync("setMinTimeBetweenSessions", new Dictionary<string, object> { { "seconds", seconds } });
         }
 
-        public static void setHost(string hostPrefixName, string hostName)
+        public static async Awaitable setHost(string hostPrefixName, string hostName)
         {
-            Fire("setHost", new Dictionary<string, object> { { "hostPrefixName", hostPrefixName }, { "hostName", hostName } });
+            await FireAsync("setHost", new Dictionary<string, object> { { "hostPrefixName", hostPrefixName }, { "hostName", hostName } });
         }
 
-        public static void setInstallId(string installId)
+        public static async Awaitable setInstallId(string installId)
         {
-            Fire("setInstallId", new Dictionary<string, object> { { "installId", installId } });
+            await FireAsync("setInstallId", new Dictionary<string, object> { { "installId", installId } });
         }
 
         /// <summary>Enables SDK debug logs. Public name and parameter follow the schema's canonical
         /// "enableDebug(enabled)"; the wire RPC method both platforms actually implement is "isDebug".</summary>
-        public static void enableDebug(bool enabled)
+        public static async Awaitable enableDebug(bool enabled)
         {
-            Fire("isDebug", new Dictionary<string, object> { { "isDebug", enabled } });
+            await FireAsync("isDebug", new Dictionary<string, object> { { "isDebug", enabled } });
         }
 
-        public static void setPartnerData(string partnerId, Dictionary<string, string> data)
+        public static async Awaitable setPartnerData(string partnerId, Dictionary<string, string> data)
         {
-            Fire("setPartnerData", new Dictionary<string, object> { { "partnerId", partnerId }, { "data", data } });
+            await FireAsync("setPartnerData", new Dictionary<string, object> { { "partnerId", partnerId }, { "data", data } });
         }
 
-        public static void appendParametersToDeepLinkingURL(string contains, Dictionary<string, string> parameters)
+        public static async Awaitable appendParametersToDeepLinkingURL(string contains, Dictionary<string, string> parameters)
         {
-            Fire("appendParametersToDeepLinkingURL", new Dictionary<string, object> { { "contains", contains }, { "parameters", parameters } });
+            await FireAsync("appendParametersToDeepLinkingURL", new Dictionary<string, object> { { "contains", contains }, { "parameters", parameters } });
         }
 
-        public static void enableFacebookDeferredApplinks(bool isEnabled)
+        public static async Awaitable enableFacebookDeferredApplinks(bool isEnabled)
         {
-            Fire("enableFacebookDeferredApplinks", new Dictionary<string, object> { { "isEnabled", isEnabled } });
+            await FireAsync("enableFacebookDeferredApplinks", new Dictionary<string, object> { { "isEnabled", isEnabled } });
         }
 
         /// <summary>Sets the user's email (single address — the schema does not support multiple
         /// emails or a crypt-type parameter; those existed in the old off-schema "setUserEmails" call).</summary>
-        public static void setUserEmail(string email)
+        public static async Awaitable setUserEmail(string email)
         {
-            Fire("setUserEmail", new Dictionary<string, object> { { "email", email } });
+            await FireAsync("setUserEmail", new Dictionary<string, object> { { "email", email } });
         }
 
-        public static void setUserFirstName(string firstName)
+        public static async Awaitable setUserFirstName(string firstName)
         {
-            Fire("setUserFirstName", new Dictionary<string, object> { { "firstName", firstName } });
+            await FireAsync("setUserFirstName", new Dictionary<string, object> { { "firstName", firstName } });
         }
 
-        public static void setUserLastName(string lastName)
+        public static async Awaitable setUserLastName(string lastName)
         {
-            Fire("setUserLastName", new Dictionary<string, object> { { "lastName", lastName } });
+            await FireAsync("setUserLastName", new Dictionary<string, object> { { "lastName", lastName } });
         }
 
-        public static void setUserFbLoginId(long fbLoginId)
+        public static async Awaitable setUserFbLoginId(long fbLoginId)
         {
-            Fire("setUserFbLoginId", new Dictionary<string, object> { { "fbLoginId", fbLoginId } });
+            await FireAsync("setUserFbLoginId", new Dictionary<string, object> { { "fbLoginId", fbLoginId } });
         }
 
-        public static void setUserPhone(string countryCode, string phoneNumber)
+        public static async Awaitable setUserPhone(string countryCode, string phoneNumber)
         {
-            Fire("setUserPhone", new Dictionary<string, object> { { "countryCode", countryCode }, { "phoneNumber", phoneNumber } });
+            await FireAsync("setUserPhone", new Dictionary<string, object> { { "countryCode", countryCode }, { "phoneNumber", phoneNumber } });
         }
 
-        public static void clearUserPii()
+        public static async Awaitable clearUserPii()
         {
-            Fire("clearUserPii");
+            await FireAsync("clearUserPii");
         }
 
         /// <summary>Sets the SDK log level. Accepted values (case-insensitive): none/error/warning/info/debug/verbose.
         /// Android only.</summary>
-        public static void setLogLevel(string logLevel)
+        public static async Awaitable setLogLevel(string logLevel)
         {
 #if UNITY_ANDROID
-            Fire("setLogLevel", new Dictionary<string, object> { { "logLevel", logLevel?.ToUpperInvariant() } });
+            await FireAsync("setLogLevel", new Dictionary<string, object> { { "logLevel", logLevel?.ToUpperInvariant() } });
 #endif
         }
 
@@ -397,20 +406,20 @@ namespace AppsFlyerSDK
         /// _setRPCEventHandler (iOS) each wire one generic event handler at SDK init that routes every
         /// RPC event, including conversion callbacks, through onRPCEvent to CallBackObjectName.
         /// </summary>
-        public static void registerConversionListener()
+        public static async Awaitable registerConversionListener()
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.GetConversionData("");
 #else
-            Fire("registerConversionListener");
+            await FireAsync("registerConversionListener");
 #endif
         }
 
         /// <summary>Android only.</summary>
-        public static void unregisterConversionListener()
+        public static async Awaitable unregisterConversionListener()
         {
 #if UNITY_ANDROID
-            Fire("unregisterConversionListener");
+            await FireAsync("unregisterConversionListener");
 #endif
         }
 
@@ -422,10 +431,10 @@ namespace AppsFlyerSDK
         /// for the same race-condition warning). This is called automatically from OnDeepLinkReceived's
         /// add accessor.
         /// </summary>
-        public static void registerDeepLinkListener()
+        public static async Awaitable registerDeepLinkListener()
         {
 #if UNITY_ANDROID
-            Fire("subscribeForDeepLink");
+            await FireAsync("subscribeForDeepLink");
 
             // Guarantee onDeepLinking is observable even if the caller registers via
             // registerDeepLinkListener() directly instead of OnDeepLinkReceived +=, since
@@ -440,26 +449,26 @@ namespace AppsFlyerSDK
                 _androidDeepLinkLoggerAttached = true;
             }
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("registerDeeplinkListener");
+            await FireAsync("registerDeeplinkListener");
 #endif
         }
 
         /// <summary>Android only.</summary>
-        public static void unregisterDeeplinkListener()
+        public static async Awaitable unregisterDeeplinkListener()
         {
 #if UNITY_ANDROID
-            Fire("unsubscribeForDeepLink");
+            await FireAsync("unsubscribeForDeepLink");
 #endif
         }
 
-        public static void registerSessionReadyListener()
+        public static async Awaitable registerSessionReadyListener()
         {
-            Fire("registerSessionReadyListener");
+            await FireAsync("registerSessionReadyListener");
         }
 
-        public static void unregisterSessionReadyListener()
+        public static async Awaitable unregisterSessionReadyListener()
         {
-            Fire("unregisterSessionReadyListener");
+            await FireAsync("unregisterSessionReadyListener");
         }
 
         /// <summary>
@@ -468,56 +477,56 @@ namespace AppsFlyerSDK
         /// matching iOS's native UIApplicationOpenURLOptionsKey dictionary, which has no fixed shape
         /// either. An open Dictionary&lt;string, object&gt; is the correct signature, not a placeholder.
         /// </summary>
-        public static void handleOpenUrl(string url, Dictionary<string, object> options = null)
+        public static async Awaitable handleOpenUrl(string url, Dictionary<string, object> options = null)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("handleOpenUrl", new Dictionary<string, object> { { "url", url }, { "options", options } });
+            await FireAsync("handleOpenUrl", new Dictionary<string, object> { { "url", url }, { "options", options } });
 #endif
         }
 
         /// <summary>Passes launch options to the SDK for cold-start attribution. iOS only. Manual/advanced
         /// escape hatch — no native caller found for this capability anywhere in this repo; verify it's
         /// actually needed before relying on it.</summary>
-        public static void handleLaunchOptions(Dictionary<string, object> launchOptions)
+        public static async Awaitable handleLaunchOptions(Dictionary<string, object> launchOptions)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("handleLaunchOptions", new Dictionary<string, object> { { "launchOptions", launchOptions } });
+            await FireAsync("handleLaunchOptions", new Dictionary<string, object> { { "launchOptions", launchOptions } });
 #endif
         }
 
         /// <summary>Handles a Universal Link for deep-link attribution. iOS only. Manual/advanced
         /// escape hatch — native's AppDelegateListener/swizzle already forwards this automatically;
         /// do not call if relying on the default automatic integration.</summary>
-        public static void continueUserActivity(string url, string activityType = null)
+        public static async Awaitable continueUserActivity(string url, string activityType = null)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("continueUserActivity", new Dictionary<string, object> { { "url", url }, { "activityType", activityType } });
+            await FireAsync("continueUserActivity", new Dictionary<string, object> { { "url", url }, { "activityType", activityType } });
 #endif
         }
 
         /// <summary>Forwards a push payload to native for attribution. iOS only — the schema declares no
         /// Android RPC method for this; Android push handling happens natively without a Unity call.</summary>
-        public static void handlePushNotifications(Dictionary<string, object> pushPayload)
+        public static async Awaitable handlePushNotifications(Dictionary<string, object> pushPayload)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("handlePushNotification", new Dictionary<string, object> { { "pushPayload", pushPayload } });
+            await FireAsync("handlePushNotification", new Dictionary<string, object> { { "pushPayload", pushPayload } });
 #endif
         }
 
         /// <summary>Android only.</summary>
-        public static void sendPushNotificationData(string campaign, string pid, bool isRetargeting, Dictionary<string, string> additionalParameters = null)
+        public static async Awaitable sendPushNotificationData(string campaign, string pid, bool isRetargeting, Dictionary<string, string> additionalParameters = null)
         {
 #if UNITY_ANDROID
-            Fire("sendPushNotificationData", new Dictionary<string, object>
+            await FireAsync("sendPushNotificationData", new Dictionary<string, object>
             {
                 { "campaign", campaign }, { "pid", pid }, { "isRetargeting", isRetargeting }, { "additionalParameters", additionalParameters }
             });
 #endif
         }
 
-        public static void addPushNotificationDeepLinkPath(params string[] paths)
+        public static async Awaitable addPushNotificationDeepLinkPath(params string[] paths)
         {
-            Fire("addPushNotificationDeepLinkPath", new Dictionary<string, object> { { "deepLinkPath", paths } });
+            await FireAsync("addPushNotificationDeepLinkPath", new Dictionary<string, object> { { "deepLinkPath", paths } });
         }
 
         /// <summary>
@@ -572,6 +581,8 @@ namespace AppsFlyerSDK
         /// onInviteLinkGeneratedFailure), since onRPCEvent has no routing for this call. Thin wrapper
         /// around <see cref="generateInviteLinkAsync"/>; prefer calling that directly to get the link
         /// without going through CallBackObjectName.
+        /// Only <see cref="AppsFlyerRPCException"/> is caught and routed to onInviteLinkGeneratedFailure;
+        /// any other exception thrown by <see cref="generateInviteLinkAsync"/> propagates unhandled.
         /// </summary>
         public static async void generateInviteLink(Dictionary<string, string> parameters)
         {
@@ -598,98 +609,98 @@ namespace AppsFlyerSDK
 
         /// <summary>Android's RPC parameter key is "isDisable"; iOS's is "disable" — the schema declares
         /// different key names per platform for this capability.</summary>
-        public static void setDisableAdvertisingIdentifiers(bool disable)
+        public static async Awaitable setDisableAdvertisingIdentifiers(bool disable)
         {
 #if UNITY_ANDROID
-            Fire("setDisableAdvertisingIdentifiers", new Dictionary<string, object> { { "isDisable", disable } });
+            await FireAsync("setDisableAdvertisingIdentifiers", new Dictionary<string, object> { { "isDisable", disable } });
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setDisableAdvertisingIdentifiers", new Dictionary<string, object> { { "disable", disable } });
+            await FireAsync("setDisableAdvertisingIdentifiers", new Dictionary<string, object> { { "disable", disable } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setDisableAppleAdsAttribution(bool disable)
+        public static async Awaitable setDisableAppleAdsAttribution(bool disable)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setDisableAppleAdsAttribution", new Dictionary<string, object> { { "disable", disable } });
+            await FireAsync("setDisableAppleAdsAttribution", new Dictionary<string, object> { { "disable", disable } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setDisableCollectASA(bool disable)
+        public static async Awaitable setDisableCollectASA(bool disable)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setDisableCollectASA", new Dictionary<string, object> { { "disable", disable } });
+            await FireAsync("setDisableCollectASA", new Dictionary<string, object> { { "disable", disable } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setDisableIDFVCollection(bool disable)
+        public static async Awaitable setDisableIDFVCollection(bool disable)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setDisableIDFVCollection", new Dictionary<string, object> { { "disable", disable } });
+            await FireAsync("setDisableIDFVCollection", new Dictionary<string, object> { { "disable", disable } });
 #endif
         }
 
         /// <summary>Android only.</summary>
-        public static void setDisableNetworkData(bool isDisable)
+        public static async Awaitable setDisableNetworkData(bool isDisable)
         {
 #if UNITY_ANDROID
-            Fire("setDisableNetworkData", new Dictionary<string, object> { { "isDisable", isDisable } });
+            await FireAsync("setDisableNetworkData", new Dictionary<string, object> { { "isDisable", isDisable } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setDisableSKAdNetwork(bool disable)
+        public static async Awaitable setDisableSKAdNetwork(bool disable)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setDisableSKAdNetwork", new Dictionary<string, object> { { "disable", disable } });
+            await FireAsync("setDisableSKAdNetwork", new Dictionary<string, object> { { "disable", disable } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setFacebookDeferredAppLink(string url)
+        public static async Awaitable setFacebookDeferredAppLink(string url)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setFacebookDeferredAppLink", new Dictionary<string, object> { { "url", url } });
+            await FireAsync("setFacebookDeferredAppLink", new Dictionary<string, object> { { "url", url } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setShouldCollectDeviceName(bool collect)
+        public static async Awaitable setShouldCollectDeviceName(bool collect)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setShouldCollectDeviceName", new Dictionary<string, object> { { "collect", collect } });
+            await FireAsync("setShouldCollectDeviceName", new Dictionary<string, object> { { "collect", collect } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setUseReceiptValidationSandbox(bool sandbox)
+        public static async Awaitable setUseReceiptValidationSandbox(bool sandbox)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setUseReceiptValidationSandbox", new Dictionary<string, object> { { "sandbox", sandbox } });
+            await FireAsync("setUseReceiptValidationSandbox", new Dictionary<string, object> { { "sandbox", sandbox } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setUseUninstallSandbox(bool sandbox)
+        public static async Awaitable setUseUninstallSandbox(bool sandbox)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setUseUninstallSandbox", new Dictionary<string, object> { { "sandbox", sandbox } });
+            await FireAsync("setUseUninstallSandbox", new Dictionary<string, object> { { "sandbox", sandbox } });
 #endif
         }
 
         /// <summary>iOS only.</summary>
-        public static void setCurrentDeviceLanguage(string language)
+        public static async Awaitable setCurrentDeviceLanguage(string language)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("setCurrentDeviceLanguage", new Dictionary<string, object> { { "language", language } });
+            await FireAsync("setCurrentDeviceLanguage", new Dictionary<string, object> { { "language", language } });
 #endif
         }
 
-        public static void setSharingFilterForPartners(params string[] partners)
+        public static async Awaitable setSharingFilterForPartners(params string[] partners)
         {
-            Fire("setSharingFilterForPartners", new Dictionary<string, object> { { "partners", partners } });
+            await FireAsync("setSharingFilterForPartners", new Dictionary<string, object> { { "partners", partners } });
         }
 
         [Obsolete("Please use setSharingFilterForPartners")]
@@ -700,31 +711,31 @@ namespace AppsFlyerSDK
 
         // ── Android-only ─────────────────────────────────────────────────────────
 
-        public static void setAppId(string appId)
+        public static async Awaitable setAppId(string appId)
         {
 #if UNITY_ANDROID
-            Fire("setAppId", new Dictionary<string, object> { { "appId", appId } });
+            await FireAsync("setAppId", new Dictionary<string, object> { { "appId", appId } });
 #endif
         }
 
-        public static void setCollectAndroidID(bool isCollect)
+        public static async Awaitable setCollectAndroidID(bool isCollect)
         {
 #if UNITY_ANDROID
-            Fire("setCollectAndroidID", new Dictionary<string, object> { { "isCollect", isCollect } });
+            await FireAsync("setCollectAndroidID", new Dictionary<string, object> { { "isCollect", isCollect } });
 #endif
         }
 
-        public static void setIsUpdate(bool isUpdate)
+        public static async Awaitable setIsUpdate(bool isUpdate)
         {
 #if UNITY_ANDROID
-            Fire("setIsUpdate", new Dictionary<string, object> { { "isUpdate", isUpdate } });
+            await FireAsync("setIsUpdate", new Dictionary<string, object> { { "isUpdate", isUpdate } });
 #endif
         }
 
-        public static void setOutOfStore(string sourceName)
+        public static async Awaitable setOutOfStore(string sourceName)
         {
 #if UNITY_ANDROID
-            Fire("setOutOfStore", new Dictionary<string, object> { { "sourceName", sourceName } });
+            await FireAsync("setOutOfStore", new Dictionary<string, object> { { "sourceName", sourceName } });
 #endif
         }
 
@@ -749,10 +760,10 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        public static void setPreinstallAttribution(string mediaSource, string campaign, string siteId)
+        public static async Awaitable setPreinstallAttribution(string mediaSource, string campaign, string siteId)
         {
 #if UNITY_ANDROID
-            Fire("setPreinstallAttribution", new Dictionary<string, object>
+            await FireAsync("setPreinstallAttribution", new Dictionary<string, object>
             {
                 { "mediaSource", mediaSource }, { "campaign", campaign }, { "siteId", siteId }
             });
@@ -868,10 +879,10 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        public static void disableAppSetId()
+        public static async Awaitable disableAppSetId()
         {
 #if UNITY_ANDROID
-            Fire("disableAppSetId");
+            await FireAsync("disableAppSetId");
 #endif
         }
 
@@ -881,30 +892,30 @@ namespace AppsFlyerSDK
         /// workaround for plugin bridges since Unity doesn't reliably deliver Android Activity
         /// foreground/background transitions otherwise.
         /// </summary>
-        void OnApplicationPause(bool pauseStatus)
+        async void OnApplicationPause(bool pauseStatus)
         {
 #if UNITY_ANDROID
             if (!pauseStatus) return;
-            Fire("onPause");
+            await FireAsync("onPause");
 #endif
         }
 
         // ── Server-side uninstall tracking ────────────────────────────────────────
 
         /// <summary>Android: pass the FCM token.</summary>
-        public static void updateServerUninstallToken(string token)
+        public static async Awaitable updateServerUninstallToken(string token)
         {
 #if UNITY_ANDROID
-            Fire("updateServerUninstallToken", new Dictionary<string, object> { { "token", token } });
+            await FireAsync("updateServerUninstallToken", new Dictionary<string, object> { { "token", token } });
 #endif
         }
 
         /// <summary>iOS: pass the raw APNs device token bytes. Encoded as a hex string on the wire
         /// (schema requires deviceToken to match ^(?:[0-9A-Fa-f]{2})+$ — not Base64).</summary>
-        public static void updateServerUninstallToken(byte[] deviceToken)
+        public static async Awaitable updateServerUninstallToken(byte[] deviceToken)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("registerUninstall", new Dictionary<string, object>
+            await FireAsync("registerUninstall", new Dictionary<string, object>
             {
                 { "deviceToken", deviceToken != null ? BitConverter.ToString(deviceToken).Replace("-", "") : null }
             });
@@ -926,10 +937,10 @@ namespace AppsFlyerSDK
         /// declared Android enum exactly. Recommend one on-device validation pass before final sign-off,
         /// but this is no longer a blocking unknown.
         /// </summary>
-        public static void validateAndLogInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters)
+        public static async Awaitable validateAndLogInAppPurchase(AFPurchaseDetailsAndroid details, Dictionary<string, string> additionalParameters)
         {
 #if UNITY_ANDROID
-            Fire("validateAndLogInAppPurchase", new Dictionary<string, object>
+            await FireAsync("validateAndLogInAppPurchase", new Dictionary<string, object>
             {
                 { "purchaseType", details != null ? PurchaseTypeToAndroidString(details.purchaseType) : null },
                 { "purchaseToken", details?.purchaseToken },
@@ -946,10 +957,10 @@ namespace AppsFlyerSDK
         /// iOS enum exactly. Recommend one on-device validation pass before final sign-off, but this is
         /// no longer a blocking unknown.
         /// </summary>
-        public static void validateAndLogInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> additionalParameters)
+        public static async Awaitable validateAndLogInAppPurchase(AFSDKPurchaseDetailsIOS details, Dictionary<string, string> additionalParameters)
         {
 #if UNITY_IOS || UNITY_STANDALONE_OSX
-            Fire("validateAndLogInAppPurchase", new Dictionary<string, object>
+            await FireAsync("validateAndLogInAppPurchase", new Dictionary<string, object>
             {
                 { "product", new Dictionary<string, object> { { "productId", details?.productId } } },
                 { "transaction", new Dictionary<string, object>

@@ -310,95 +310,130 @@ namespace AppsFlyerSDK.Tests
         // ── Init / lifecycle ───────────────────────────────────────────────────────
 
         [Test]
-        public void Start_FiresStartWithNoParams()
+        [Timeout(10000)]
+        public async Task Start_FiresStartWithNoParams()
         {
-            AppsFlyer.start();
-            mockRpc.Received(1).ExecuteFire("start", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.start();
+            mockRpc.Received(1).Execute("start", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void Stop_FiresStopWithShouldStop()
+        [Timeout(10000)]
+        public async Task Stop_FiresStopWithShouldStop()
         {
-            AppsFlyer.stop(true);
-            mockRpc.Received(1).ExecuteFire("stop",
+            await AppsFlyer.stop(true);
+            mockRpc.Received(1).Execute("stop",
                 Arg.Is<Dictionary<string, object>>(d => (bool)d["shouldStop"] == true));
         }
 
         [Test]
-        public void LogEvent_FiresLogEventWithNameAndValues()
+        [Timeout(10000)]
+        public async Task LogEvent_FiresLogEventWithNameAndValues()
         {
             var values = new Dictionary<string, string> { { "key", "value" } };
-            AppsFlyer.logEvent("testevent", values);
-            mockRpc.Received(1).ExecuteFire("logEvent",
+            await AppsFlyer.logEvent("testevent", values);
+            mockRpc.Received(1).Execute("logEvent",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["eventName"] == "testevent" && d["eventValues"] == values));
         }
 
 #if UNITY_ANDROID
         [Test]
-        public void Init_Android_SendsInitWithDevKeyOnly()
+        [Timeout(10000)]
+        public async Task Init_Android_SendsInitWithDevKeyOnly()
         {
-            AppsFlyer.init("key123", "appId456");
-            mockRpc.Received(1).ExecuteFire("init",
+            await AppsFlyer.init("key123", "appId456");
+            mockRpc.Received(1).Execute("init",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["devKey"] == "key123" && !d.ContainsKey("appId")));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task Init_Android_CallsInitBridgeBeforeFiringInit()
+        {
+            await AppsFlyer.init("key123", "appId456");
+            Received.InOrder(() =>
+            {
+                mockRpc.InitBridge(Arg.Any<string>());
+                mockRpc.Execute("init", Arg.Any<Dictionary<string, object>>());
+            });
         }
 #endif
 
 #if (UNITY_IOS || UNITY_STANDALONE_OSX) && !UNITY_ANDROID
         [Test]
-        public void Init_iOS_SendsInitializeWithDevKeyAndAppId()
+        [Timeout(10000)]
+        public async Task Init_iOS_SendsInitializeWithDevKeyAndAppId()
         {
-            AppsFlyer.init("key123", "appId456");
+            await AppsFlyer.init("key123", "appId456");
             mockRpc.Received(1).Execute("initialize",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["devKey"] == "key123" && (string)d["appId"] == "appId456"));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task Init_iOS_CallsInitBridgeBeforeInitializeRpc()
+        {
+            await AppsFlyer.init("key123", "appId456");
+            Received.InOrder(() =>
+            {
+                mockRpc.InitBridge(Arg.Any<string>());
+                mockRpc.Execute("initialize", Arg.Any<Dictionary<string, object>>());
+            });
         }
 #endif
 
         // ── Renamed / fixed methods (Category B rewrites) ───────────────────────────
 
         [Test]
-        public void SetUserEmail_SendsSingularMethodWithEmailKey()
+        [Timeout(10000)]
+        public async Task SetUserEmail_SendsSingularMethodWithEmailKey()
         {
-            AppsFlyer.setUserEmail("a@b.com");
-            mockRpc.Received(1).ExecuteFire("setUserEmail",
+            await AppsFlyer.setUserEmail("a@b.com");
+            mockRpc.Received(1).Execute("setUserEmail",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["email"] == "a@b.com"));
-            mockRpc.DidNotReceive().ExecuteFire("setUserEmails", Arg.Any<Dictionary<string, object>>());
+            mockRpc.DidNotReceive().Execute("setUserEmails", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetUserPhone_SendsCountryCodeAndPhoneNumber()
+        [Timeout(10000)]
+        public async Task SetUserPhone_SendsCountryCodeAndPhoneNumber()
         {
-            AppsFlyer.setUserPhone("1", "0501234567");
-            mockRpc.Received(1).ExecuteFire("setUserPhone",
+            await AppsFlyer.setUserPhone("1", "0501234567");
+            mockRpc.Received(1).Execute("setUserPhone",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["countryCode"] == "1" && (string)d["phoneNumber"] == "0501234567"));
         }
 
         [Test]
-        public void LogAndOpenStore_SendsPromotedAppIdNotAppId()
+        [Timeout(10000)]
+        public async Task LogAndOpenStore_SendsPromotedAppIdNotAppId()
         {
-            AppsFlyer.logAndOpenStore("appid", "campaign", null);
-            mockRpc.Received(1).ExecuteFire("logAndOpenStore",
+            await AppsFlyer.logAndOpenStore("appid", "campaign", null);
+            mockRpc.Received(1).Execute("logAndOpenStore",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["promotedAppId"] == "appid" && !d.ContainsKey("appId")));
         }
 
         [Test]
-        public void LogCrossPromoteImpression_SendsAppId()
+        [Timeout(10000)]
+        public async Task LogCrossPromoteImpression_SendsAppId()
         {
-            AppsFlyer.logCrossPromoteImpression("appid", "campaign", null);
-            mockRpc.Received(1).ExecuteFire("logCrossPromoteImpression",
+            await AppsFlyer.logCrossPromoteImpression("appid", "campaign", null);
+            mockRpc.Received(1).Execute("logCrossPromoteImpression",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["appId"] == "appid"));
         }
 
         [Test]
-        public void LogAdRevenue_SendsMediationNetworkAsString_NotInt()
+        [Timeout(10000)]
+        public async Task LogAdRevenue_SendsMediationNetworkAsString_NotInt()
         {
             var adRevenue = new AFAdRevenueData("network", MediationNetwork.GoogleAdMob, "USD", 1.0);
-            AppsFlyer.logAdRevenue(adRevenue, null);
-            mockRpc.Received(1).ExecuteFire("logAdRevenue",
+            await AppsFlyer.logAdRevenue(adRevenue, null);
+            mockRpc.Received(1).Execute("logAdRevenue",
                 Arg.Is<Dictionary<string, object>>(d => d["mediationNetwork"] is string));
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GenerateInviteLink_SpreadsKeysTopLevel_NotNestedUnderParameters()
         {
             var parameters = new Dictionary<string, string> { { "channel", "sms" }, { "campaign", "referral" } };
@@ -410,6 +445,7 @@ namespace AppsFlyerSDK.Tests
 
 #if UNITY_ANDROID
         [Test]
+        [Timeout(10000)]
         public async Task GenerateInviteLink_Android_RemapsReferrerCustomerIdToCustomerId()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
@@ -420,6 +456,7 @@ namespace AppsFlyerSDK.Tests
         }
 #else
         [Test]
+        [Timeout(10000)]
         public async Task GenerateInviteLink_NonAndroid_PassesReferrerCustomerIdThrough()
         {
             var parameters = new Dictionary<string, string> { { "referrerCustomerId", "cust-1" } };
@@ -431,6 +468,7 @@ namespace AppsFlyerSDK.Tests
 #endif
 
         [Test]
+        [Timeout(10000)]
         public async Task GenerateInviteLink_Success_DeliversLinkViaOnInviteLinkGenerated()
         {
             var recorder = NewCallbackTarget();
@@ -445,6 +483,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GenerateInviteLink_RpcException_DeliversMessageViaOnInviteLinkGeneratedFailure()
         {
             var recorder = NewCallbackTarget();
@@ -459,25 +498,26 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void GenerateInviteLink_NoMatchingCallbackObject_DoesNotThrow()
+        [Timeout(10000)]
+        public async Task GenerateInviteLink_NoMatchingCallbackObject_DoesNotThrow()
         {
             AppsFlyer.CallBackObjectName = "NoSuchInviteLinkCallbackObject";
             mockRpc.Execute("generateInviteLink", Arg.Any<Dictionary<string, object>>())
                 .Returns("https://example.onelink.me/abc");
 
-            Assert.DoesNotThrowAsync(() => AppsFlyer.DeliverInviteLinkAsync(new Dictionary<string, string>()));
+            // An unhandled exception here fails the test on its own - no need for Assert.DoesNotThrowAsync.
+            await AppsFlyer.DeliverInviteLinkAsync(new Dictionary<string, string>());
         }
 
         [Test]
-        public void RegisterConversionListener_FiresWithNoParams()
+        [Timeout(10000)]
+        public async Task RegisterConversionListener_FiresWithNoParams()
         {
-            // Per schema: zero declared params on both platforms. TODO (blocking) — see Notion doc:
-            // native may depend on callbackObjectName via an undeclared side channel; revisit if
-            // conversion-data callbacks stop routing correctly.
-            AppsFlyer.registerConversionListener();
+            // Per schema: zero declared params on both platforms.
+            await AppsFlyer.registerConversionListener();
             // null and an empty dict are equivalent on the wire (BuildRequest normalizes null
             // params to "{}" — see BuildRequest_NullParams_ProducesEmptyParamsObject).
-            mockRpc.Received(1).ExecuteFire("registerConversionListener",
+            mockRpc.Received(1).Execute("registerConversionListener",
                 Arg.Is<Dictionary<string, object>>(d => d == null || d.Count == 0));
         }
 
@@ -487,24 +527,26 @@ namespace AppsFlyerSDK.Tests
             // waitForATTUserAuthorizationWithTimeoutInterval is deprecated (confirmed out of scope) —
             // removed entirely, no longer a public method. Nothing to call; this test documents the
             // decision so a future re-add doesn't silently reintroduce the invalid "waitForATT" RPC call.
-            mockRpc.DidNotReceive().ExecuteFire("waitForATT", Arg.Any<Dictionary<string, object>>());
+            mockRpc.DidNotReceive().Execute("waitForATT", Arg.Any<Dictionary<string, object>>());
         }
 
 #if UNITY_ANDROID
         [Test]
-        public void SetDisableAdvertisingIdentifiers_Android_SendsIsDisableKey()
+        [Timeout(10000)]
+        public async Task SetDisableAdvertisingIdentifiers_Android_SendsIsDisableKey()
         {
-            AppsFlyer.setDisableAdvertisingIdentifiers(true);
-            mockRpc.Received(1).ExecuteFire("setDisableAdvertisingIdentifiers",
+            await AppsFlyer.setDisableAdvertisingIdentifiers(true);
+            mockRpc.Received(1).Execute("setDisableAdvertisingIdentifiers",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("isDisable") && !d.ContainsKey("disable")));
         }
 
         [Test]
-        public void ValidateAndLogInAppPurchase_Android_FiresWithStringPurchaseType()
+        [Timeout(10000)]
+        public async Task ValidateAndLogInAppPurchase_Android_FiresWithStringPurchaseType()
         {
             var details = new AFPurchaseDetailsAndroid(AFPurchaseType.Subscription, "token123", "product1");
-            AppsFlyer.validateAndLogInAppPurchase(details, null);
-            mockRpc.Received(1).ExecuteFire("validateAndLogInAppPurchase",
+            await AppsFlyer.validateAndLogInAppPurchase(details, null);
+            mockRpc.Received(1).Execute("validateAndLogInAppPurchase",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (string)d["purchaseType"] == "subscription" &&
                     (string)d["purchaseToken"] == "token123" &&
@@ -512,36 +554,40 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void ClearUserPii_Android_Fires()
+        [Timeout(10000)]
+        public async Task ClearUserPii_Android_Fires()
         {
-            AppsFlyer.clearUserPii();
-            mockRpc.Received(1).ExecuteFire("clearUserPii", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.clearUserPii();
+            mockRpc.Received(1).Execute("clearUserPii", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void UpdateServerUninstallToken_Android_SendsTokenKey()
+        [Timeout(10000)]
+        public async Task UpdateServerUninstallToken_Android_SendsTokenKey()
         {
-            AppsFlyer.updateServerUninstallToken("fcmtoken");
-            mockRpc.Received(1).ExecuteFire("updateServerUninstallToken",
+            await AppsFlyer.updateServerUninstallToken("fcmtoken");
+            mockRpc.Received(1).Execute("updateServerUninstallToken",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["token"] == "fcmtoken"));
         }
 #endif
 
 #if (UNITY_IOS || UNITY_STANDALONE_OSX) && !UNITY_ANDROID
         [Test]
-        public void SetDisableAdvertisingIdentifiers_iOS_SendsDisableKey()
+        [Timeout(10000)]
+        public async Task SetDisableAdvertisingIdentifiers_iOS_SendsDisableKey()
         {
-            AppsFlyer.setDisableAdvertisingIdentifiers(true);
-            mockRpc.Received(1).ExecuteFire("setDisableAdvertisingIdentifiers",
+            await AppsFlyer.setDisableAdvertisingIdentifiers(true);
+            mockRpc.Received(1).Execute("setDisableAdvertisingIdentifiers",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("disable") && !d.ContainsKey("isDisable")));
         }
 
         [Test]
-        public void ValidateAndLogInAppPurchase_iOS_SendsNestedProductAndTransaction()
+        [Timeout(10000)]
+        public async Task ValidateAndLogInAppPurchase_iOS_SendsNestedProductAndTransaction()
         {
             var details = AFSDKPurchaseDetailsIOS.Init("product1", "txn123", AFSDKPurchaseType.OneTimePurchase);
-            AppsFlyer.validateAndLogInAppPurchase(details, null);
-            mockRpc.Received(1).ExecuteFire("validateAndLogInAppPurchase",
+            await AppsFlyer.validateAndLogInAppPurchase(details, null);
+            mockRpc.Received(1).Execute("validateAndLogInAppPurchase",
                 Arg.Is<Dictionary<string, object>>(d =>
                     (d["product"] as Dictionary<string, object>) != null &&
                     (string)(d["product"] as Dictionary<string, object>)["productId"] == "product1" &&
@@ -551,172 +597,193 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void UpdateServerUninstallToken_iOS_SendsDeviceTokenKey_NotToken()
+        [Timeout(10000)]
+        public async Task UpdateServerUninstallToken_iOS_SendsDeviceTokenKey_NotToken()
         {
             var token = System.Text.Encoding.UTF8.GetBytes("740f4707bebcf74f");
-            AppsFlyer.updateServerUninstallToken(token);
-            mockRpc.Received(1).ExecuteFire("registerUninstall",
+            await AppsFlyer.updateServerUninstallToken(token);
+            mockRpc.Received(1).Execute("registerUninstall",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("deviceToken") && !d.ContainsKey("token")));
         }
 
         [Test]
-        public void UpdateServerUninstallToken_iOS_EncodesBytesAsHexString()
+        [Timeout(10000)]
+        public async Task UpdateServerUninstallToken_iOS_EncodesBytesAsHexString()
         {
             var token = new byte[] { 0x74, 0x0F, 0x47, 0x07 };
-            AppsFlyer.updateServerUninstallToken(token);
-            mockRpc.Received(1).ExecuteFire("registerUninstall",
+            await AppsFlyer.updateServerUninstallToken(token);
+            mockRpc.Received(1).Execute("registerUninstall",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["deviceToken"] == "740F4707"));
         }
 
         [Test]
-        public void UpdateServerUninstallToken_iOS_NullToken_SendsNullDeviceToken()
+        [Timeout(10000)]
+        public async Task UpdateServerUninstallToken_iOS_NullToken_SendsNullDeviceToken()
         {
-            AppsFlyer.updateServerUninstallToken((byte[])null);
-            mockRpc.Received(1).ExecuteFire("registerUninstall",
+            await AppsFlyer.updateServerUninstallToken((byte[])null);
+            mockRpc.Received(1).Execute("registerUninstall",
                 Arg.Is<Dictionary<string, object>>(d => d["deviceToken"] == null));
         }
 
         [Test]
-        public void UpdateServerUninstallToken_iOS_EmptyToken_SendsEmptyDeviceTokenString()
+        [Timeout(10000)]
+        public async Task UpdateServerUninstallToken_iOS_EmptyToken_SendsEmptyDeviceTokenString()
         {
-            AppsFlyer.updateServerUninstallToken(new byte[0]);
-            mockRpc.Received(1).ExecuteFire("registerUninstall",
+            await AppsFlyer.updateServerUninstallToken(new byte[0]);
+            mockRpc.Received(1).Execute("registerUninstall",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["deviceToken"] == ""));
         }
 
         [Test]
-        public void HandlePushNotifications_iOS_SendsPushPayload()
+        [Timeout(10000)]
+        public async Task HandlePushNotifications_iOS_SendsPushPayload()
         {
             var payload = new Dictionary<string, object> { { "aps", new Dictionary<string, object>() } };
-            AppsFlyer.handlePushNotifications(payload);
-            mockRpc.Received(1).ExecuteFire("handlePushNotification",
+            await AppsFlyer.handlePushNotifications(payload);
+            mockRpc.Received(1).Execute("handlePushNotification",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("pushPayload")));
         }
 
         [Test]
-        public void ClearUserPii_iOS_NowFires()
+        [Timeout(10000)]
+        public async Task ClearUserPii_iOS_NowFires()
         {
             // Platform-gap fix: schema defines clearUserPii on both platforms; previously Android-only.
-            AppsFlyer.clearUserPii();
-            mockRpc.Received(1).ExecuteFire("clearUserPii", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.clearUserPii();
+            mockRpc.Received(1).Execute("clearUserPii", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetUserFirstName_iOS_NowFires()
+        [Timeout(10000)]
+        public async Task SetUserFirstName_iOS_NowFires()
         {
-            AppsFlyer.setUserFirstName("Jane");
-            mockRpc.Received(1).ExecuteFire("setUserFirstName",
+            await AppsFlyer.setUserFirstName("Jane");
+            mockRpc.Received(1).Execute("setUserFirstName",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["firstName"] == "Jane"));
         }
 
         [Test]
-        public void SetUserLastName_iOS_NowFires()
+        [Timeout(10000)]
+        public async Task SetUserLastName_iOS_NowFires()
         {
-            AppsFlyer.setUserLastName("Doe");
-            mockRpc.Received(1).ExecuteFire("setUserLastName",
+            await AppsFlyer.setUserLastName("Doe");
+            mockRpc.Received(1).Execute("setUserLastName",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["lastName"] == "Doe"));
         }
 
         [Test]
-        public void SetUserFbLoginId_iOS_NowFires()
+        [Timeout(10000)]
+        public async Task SetUserFbLoginId_iOS_NowFires()
         {
-            AppsFlyer.setUserFbLoginId(12345L);
-            mockRpc.Received(1).ExecuteFire("setUserFbLoginId",
+            await AppsFlyer.setUserFbLoginId(12345L);
+            mockRpc.Received(1).Execute("setUserFbLoginId",
                 Arg.Is<Dictionary<string, object>>(d => (long)d["fbLoginId"] == 12345L));
         }
 
         [Test]
-        public void SetUserPhone_iOS_NowFires()
+        [Timeout(10000)]
+        public async Task SetUserPhone_iOS_NowFires()
         {
-            AppsFlyer.setUserPhone("1", "0501234567");
-            mockRpc.Received(1).ExecuteFire("setUserPhone",
+            await AppsFlyer.setUserPhone("1", "0501234567");
+            mockRpc.Received(1).Execute("setUserPhone",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["phoneNumber"] == "0501234567"));
         }
 
         [Test]
-        public void HandleOpenUrl_iOS_SendsUrlAndOptions()
+        [Timeout(10000)]
+        public async Task HandleOpenUrl_iOS_SendsUrlAndOptions()
         {
             // TODO (blocking — see Notion doc): exact shape of `options` unconfirmed against native.
             var options = new Dictionary<string, object>();
-            AppsFlyer.handleOpenUrl("www.test.com", options);
-            mockRpc.Received(1).ExecuteFire("handleOpenUrl",
+            await AppsFlyer.handleOpenUrl("www.test.com", options);
+            mockRpc.Received(1).Execute("handleOpenUrl",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["url"] == "www.test.com" && d.ContainsKey("options")));
         }
 
         [Test]
-        public void ContinueUserActivity_iOS_Fires()
+        [Timeout(10000)]
+        public async Task ContinueUserActivity_iOS_Fires()
         {
-            AppsFlyer.continueUserActivity("www.test.com", "NSUserActivityTypeBrowsingWeb");
-            mockRpc.Received(1).ExecuteFire("continueUserActivity",
+            await AppsFlyer.continueUserActivity("www.test.com", "NSUserActivityTypeBrowsingWeb");
+            mockRpc.Received(1).Execute("continueUserActivity",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["url"] == "www.test.com"));
         }
 
         [Test]
-        public void SetDisableCollectASA_iOS_Fires()
+        [Timeout(10000)]
+        public async Task SetDisableCollectASA_iOS_Fires()
         {
-            AppsFlyer.setDisableCollectASA(true);
-            mockRpc.Received(1).ExecuteFire("setDisableCollectASA", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setDisableCollectASA(true);
+            mockRpc.Received(1).Execute("setDisableCollectASA", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetDisableAppleAdsAttribution_iOS_Fires()
+        [Timeout(10000)]
+        public async Task SetDisableAppleAdsAttribution_iOS_Fires()
         {
-            AppsFlyer.setDisableAppleAdsAttribution(true);
-            mockRpc.Received(1).ExecuteFire("setDisableAppleAdsAttribution", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setDisableAppleAdsAttribution(true);
+            mockRpc.Received(1).Execute("setDisableAppleAdsAttribution", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetDisableSKAdNetwork_iOS_Fires()
+        [Timeout(10000)]
+        public async Task SetDisableSKAdNetwork_iOS_Fires()
         {
-            AppsFlyer.setDisableSKAdNetwork(true);
-            mockRpc.Received(1).ExecuteFire("setDisableSKAdNetwork", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setDisableSKAdNetwork(true);
+            mockRpc.Received(1).Execute("setDisableSKAdNetwork", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetDisableIDFVCollection_iOS_Fires()
+        [Timeout(10000)]
+        public async Task SetDisableIDFVCollection_iOS_Fires()
         {
-            AppsFlyer.setDisableIDFVCollection(true);
-            mockRpc.Received(1).ExecuteFire("setDisableIDFVCollection", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setDisableIDFVCollection(true);
+            mockRpc.Received(1).Execute("setDisableIDFVCollection", Arg.Any<Dictionary<string, object>>());
         }
 #endif
 
         // ── Already-correct behavior carried over unchanged ─────────────────────────
 
         [Test]
-        public void AnonymizeUser_SendsAnonymizeUser()
+        [Timeout(10000)]
+        public async Task AnonymizeUser_SendsAnonymizeUser()
         {
-            AppsFlyer.anonymizeUser(true);
-            mockRpc.Received(1).ExecuteFire("anonymizeUser", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.anonymizeUser(true);
+            mockRpc.Received(1).Execute("anonymizeUser", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetAppInviteOneLink_SendsSetAppInviteOneLink()
+        [Timeout(10000)]
+        public async Task SetAppInviteOneLink_SendsSetAppInviteOneLink()
         {
-            AppsFlyer.setAppInviteOneLink("2f36");
-            mockRpc.Received(1).ExecuteFire("setAppInviteOneLink", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setAppInviteOneLink("2f36");
+            mockRpc.Received(1).Execute("setAppInviteOneLink", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetOneLinkCustomDomain_SendsSingularNotPlural()
+        [Timeout(10000)]
+        public async Task SetOneLinkCustomDomain_SendsSingularNotPlural()
         {
-            AppsFlyer.setOneLinkCustomDomain("domain1", "domain2");
-            mockRpc.Received(1).ExecuteFire("setOneLinkCustomDomain", Arg.Any<Dictionary<string, object>>());
-            mockRpc.DidNotReceive().ExecuteFire("setOneLinkCustomDomains", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.setOneLinkCustomDomain("domain1", "domain2");
+            mockRpc.Received(1).Execute("setOneLinkCustomDomain", Arg.Any<Dictionary<string, object>>());
+            mockRpc.DidNotReceive().Execute("setOneLinkCustomDomains", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void SetHost_UsesHostPrefixNameParam()
+        [Timeout(10000)]
+        public async Task SetHost_UsesHostPrefixNameParam()
         {
-            AppsFlyer.setHost("myprefix", "myhost");
-            mockRpc.Received(1).ExecuteFire("setHost",
+            await AppsFlyer.setHost("myprefix", "myhost");
+            mockRpc.Received(1).Execute("setHost",
                 Arg.Is<Dictionary<string, object>>(d => d.ContainsKey("hostPrefixName") && !d.ContainsKey("prefix")));
         }
 
         [Test]
-        public void EnableDebug_FiresIsDebugRPCMethod()
+        [Timeout(10000)]
+        public async Task EnableDebug_FiresIsDebugRPCMethod()
         {
-            AppsFlyer.enableDebug(true);
-            mockRpc.Received(1).ExecuteFire("isDebug",
+            await AppsFlyer.enableDebug(true);
+            mockRpc.Received(1).Execute("isDebug",
                 Arg.Is<Dictionary<string, object>>(d => (bool)d["isDebug"] == true));
         }
 
@@ -731,11 +798,24 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetAppsFlyerUIDAsync_UsesExecute()
         {
             mockRpc.Execute("getAppsFlyerUID", Arg.Any<Dictionary<string, object>>()).Returns("uid-123");
             string uid = await AppsFlyer.getAppsFlyerUIDAsync();
             Assert.AreEqual("uid-123", uid);
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task GetAppsFlyerUIDAsync_RpcException_ReturnsEmptyString()
+        {
+            mockRpc.Execute("getAppsFlyerUID", Arg.Any<Dictionary<string, object>>())
+                .Returns(_ => throw new AppsFlyerRPCException(-1, "boom"));
+            // getAppsFlyerUIDAsync never returns null (QueryAsync's null fallback is coalesced to
+            // string.Empty), matching the non-null-guarantee pattern used by the other getters.
+            string uid = await AppsFlyer.getAppsFlyerUIDAsync();
+            Assert.AreEqual(string.Empty, uid);
         }
 
         [Test]
@@ -746,6 +826,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetSdkVersionAsync_UsesExecute()
         {
             mockRpc.Execute("getSdkVersion", Arg.Any<Dictionary<string, object>>()).Returns("7.0.1");
@@ -753,6 +834,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task IsSessionReadyAsync_UsesExecute()
         {
             mockRpc.Execute("isSessionReady", Arg.Any<Dictionary<string, object>>()).Returns(true);
@@ -768,6 +850,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetHostNameAsync_Android_UsesExecute()
         {
             mockRpc.Execute("getHostName", Arg.Any<Dictionary<string, object>>()).Returns("appsflyer.com");
@@ -782,6 +865,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetHostPrefixAsync_Android_UsesExecute()
         {
             mockRpc.Execute("getHostPrefix", Arg.Any<Dictionary<string, object>>()).Returns("prefix");
@@ -796,6 +880,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task IsStoppedAsync_Android_UsesExecute()
         {
             mockRpc.Execute("isStopped", Arg.Any<Dictionary<string, object>>()).Returns(true);
@@ -810,6 +895,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetAttributionIdAsync_Android_UsesExecute()
         {
             mockRpc.Execute("getAttributionId", Arg.Any<Dictionary<string, object>>()).Returns("attr-id");
@@ -824,6 +910,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task GetOutOfStoreAsync_Android_UsesExecute()
         {
             mockRpc.Execute("getOutOfStore", Arg.Any<Dictionary<string, object>>()).Returns("google_play");
@@ -838,6 +925,7 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        [Timeout(10000)]
         public async Task IsPreInstalledAppAsync_Android_UsesExecute()
         {
             mockRpc.Execute("isPreInstalledApp", Arg.Any<Dictionary<string, object>>()).Returns(true);
@@ -845,26 +933,29 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void RegisterDeepLinkListener_Android_SendsSubscribeForDeepLink()
+        [Timeout(10000)]
+        public async Task RegisterDeepLinkListener_Android_SendsSubscribeForDeepLink()
         {
-            AppsFlyer.registerDeepLinkListener();
-            mockRpc.Received(1).ExecuteFire("subscribeForDeepLink", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.registerDeepLinkListener();
+            mockRpc.Received(1).Execute("subscribeForDeepLink", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
-        public void CollectDataFromLauncherActivity_Android_SendsCollectDataFromLauncherActivity()
+        [Timeout(10000)]
+        public async Task CollectDataFromLauncherActivity_Android_SendsCollectDataFromLauncherActivity()
         {
-            AppsFlyer.collectDataFromLauncherActivity();
-            mockRpc.Received(1).ExecuteFire("collectDataFromLauncherActivity", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.collectDataFromLauncherActivity();
+            mockRpc.Received(1).Execute("collectDataFromLauncherActivity", Arg.Any<Dictionary<string, object>>());
         }
 #endif
 
 #if (UNITY_IOS || UNITY_STANDALONE_OSX) && !UNITY_ANDROID
         [Test]
-        public void RegisterDeepLinkListener_iOS_SendsRegisterDeeplinkListener()
+        [Timeout(10000)]
+        public async Task RegisterDeepLinkListener_iOS_SendsRegisterDeeplinkListener()
         {
-            AppsFlyer.registerDeepLinkListener();
-            mockRpc.Received(1).ExecuteFire("registerDeeplinkListener", Arg.Any<Dictionary<string, object>>());
+            await AppsFlyer.registerDeepLinkListener();
+            mockRpc.Received(1).Execute("registerDeeplinkListener", Arg.Any<Dictionary<string, object>>());
         }
 #endif
     }

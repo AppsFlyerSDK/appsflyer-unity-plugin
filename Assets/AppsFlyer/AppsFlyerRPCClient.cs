@@ -36,6 +36,11 @@ namespace AppsFlyerSDK
         internal static IAppsFlyerRPCClient instance { get; set; } = DefaultInstance;
         private AppsFlyerRPCClient() { }
 
+        // Must match "schemaVersion" in Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json. Native
+        // RPC handlers don't validate this yet, so it's currently inert on the wire, but declaring
+        // it now future-proofs the envelope for when native adds schema-version validation.
+        private const string SchemaVersion = "1.0.6";
+
         private long _requestCounter = 0;
 
         public string BuildRequest(string method, Dictionary<string, object> parameters)
@@ -50,7 +55,8 @@ namespace AppsFlyerSDK
             {
                 { "id", id },
                 { "method", method },
-                { "params", parameters ?? new Dictionary<string, object>() }
+                { "params", parameters ?? new Dictionary<string, object>() },
+                { "schemaVersion", SchemaVersion }
             };
             return Json.Serialize(request);
         }

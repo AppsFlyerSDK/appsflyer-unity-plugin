@@ -82,7 +82,21 @@ BOOL __swizzled_didFinishLaunchingWithOptions(id self, SEL _cmd, UIApplication* 
     NSLog(@"swizzled didFinishLaunchingWithOptions");
     NSURL *url = launchOptions[UIApplicationLaunchOptionsURLKey];
     if (url != nil) {
-        [[AppsFlyerAttribution shared] handleOpenUrl:url options:launchOptions];
+        // handleOpenUrl:options: mirrors application:openURL:options:, which is keyed under the
+        // UIApplicationOpenURLOptions* namespace (UIApplicationOpenURLOptionsSourceApplicationKey,
+        // UIApplicationOpenURLOptionsAnnotationKey) - not the UIApplicationLaunchOptions* namespace
+        // launchOptions itself uses. Translate the overlapping keys so any sourceApplication/
+        // annotation lookup inside handleOpenUrl:options: finds them on this cold-start path too.
+        NSMutableDictionary *openURLOptions = [NSMutableDictionary dictionary];
+        id sourceApplication = launchOptions[UIApplicationLaunchOptionsSourceApplicationKey];
+        if (sourceApplication != nil) {
+            openURLOptions[UIApplicationOpenURLOptionsSourceApplicationKey] = sourceApplication;
+        }
+        id annotation = launchOptions[UIApplicationLaunchOptionsAnnotationKey];
+        if (annotation != nil) {
+            openURLOptions[UIApplicationOpenURLOptionsAnnotationKey] = annotation;
+        }
+        [[AppsFlyerAttribution shared] handleOpenUrl:url options:openURLOptions];
     }
 
     if(__original_didFinishLaunchingWithOptions_Imp){
