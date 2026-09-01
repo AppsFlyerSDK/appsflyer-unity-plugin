@@ -290,6 +290,13 @@ namespace AppsFlyerSDK.Tests
             _spawned.Clear();
         }
 
+        private AppsFlyer NewAppsFlyerComponent()
+        {
+            var go = new GameObject();
+            _spawned.Add(go);
+            return go.AddComponent<AppsFlyer>();
+        }
+
         // ── Init / lifecycle ───────────────────────────────────────────────────────
 
         [Test]

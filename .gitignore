@@ -4,6 +4,7 @@ Logs/
 Packages/
 Temp/
 test-app/Assets/StreamingAssets/.env
+test-app/.env
 Library/
 /*/outputs/
 

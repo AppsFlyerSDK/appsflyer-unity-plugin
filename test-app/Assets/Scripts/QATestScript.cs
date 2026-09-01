@@ -29,10 +29,19 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _iosAppId;
     private string _androidAppId;
     private bool _conversionDataReceived = false;
+    private bool _attDetermined = false;
 
     void Start()
     {
         StartCoroutine(InitAsync());
+    }
+
+    // Invoked by ATTPermissionRequest.mm via UnitySendMessage once the user has answered the
+    // ATT system prompt (or the OS reports it can't be shown at all, on iOS < 14).
+    void OnATTAuthorizationDetermined(string status)
+    {
+        _attDetermined = true;
+        AFQALogger.Log("[AF_QA][ATT] authorization determined status=" + status);
     }
 
     void OnDestroy()
@@ -146,8 +155,38 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     {
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
         AFQALogger.Log("[AF_QA][SESSION_READY] received");
+        StartCoroutine(RequestATTThenStart());
+    }
+
+    // Requests ATT authorization and waits for the user's decision (or a timeout) before
+    // calling start() — start() must not fire before the user has answered the tracking
+    // prompt, or the first session send can't carry IDFA even if they go on to grant it.
+    // This replaces waitForATTUserAuthorizationWithTimeoutInterval, which no longer exists in
+    // this plugin version (see Tests_Suite.cs) despite still being documented.
+    IEnumerator RequestATTThenStart()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+        // Safe to trigger now: AppsFlyer's own init flow has already fully run, so the
+        // resign/become-active cycle the ATT system prompt causes can't race it (see
+        // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
+        _afqaRequestTrackingAuthorization();
+        AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
+
+        float attTimeout = 60f;
+        while (!_attDetermined && attTimeout > 0f)
+        {
+            yield return new WaitForSeconds(1f);
+            attTimeout -= 1f;
+        }
+        if (!_attDetermined)
+            AFQALogger.Log("[AF_QA][ATT] timed out waiting for user response — proceeding with start()");
+#else
+        yield return null;
+#endif
+
         AppsFlyer.start();
         AFQALogger.Log("[AF_QA][start] result: SUCCESS");
+
         StartCoroutine(RunPostStartApis());
     }
 
