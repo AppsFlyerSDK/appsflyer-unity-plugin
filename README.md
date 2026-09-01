@@ -34,6 +34,32 @@ delivery (cold-start URL schemes and Universal Links) was also reworked — see
 for the delivery-path rationale.
 
 ---
+## <a id="breaking-changes-7xx">     ❗❗ Breaking changes when updating to 7.x.x ❗❗
+
+The RPC bridge migration (see above) renames several core APIs and makes most of the public
+surface `async Awaitable`/`Awaitable<T>`. There is no backward-compatible alias for the renamed
+methods — update call sites when you upgrade.
+
+| Old (synchronous) | New (`async Awaitable`) |
+|---|---|
+| `AppsFlyer.initSDK(devKey, appID, gameObject)` | `await AppsFlyer.init(devKey, appID, gameObject)` |
+| `AppsFlyer.startSDK()` | `await AppsFlyer.start()` |
+| `AppsFlyer.stopSDK(bool)` | `await AppsFlyer.stop(bool)` |
+| `AppsFlyer.isSDKStopped()` | `await AppsFlyer.isStoppedAsync()` |
+| `AppsFlyer.getAppsFlyerId()` | `await AppsFlyer.getAppsFlyerUIDAsync()` |
+
+**New:** a session-ready listener API — `AppsFlyer.OnSessionReady`,
+`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReady()` /
+`isSessionReadyAsync()` — lets you defer `start()` until the native SDK reports session
+readiness instead of calling it unconditionally right after `init()`. See
+[Session Ready Listener](/docs/BasicIntegration.md#session-ready-listener) and the
+[API reference](/docs/API.md#session-ready-listener).
+
+**Requirements:** Unity 2023.1+ (see below) and **EDM4U 1.2.187 or newer** — earlier 1.2.x
+releases mis-resolve the new iOS Swift Package Manager dependency (`AppsFlyerRPC`). See
+[Installation](/docs/Installation.md#requirements).
+
+---
 ## 📌 Minimum supported Unity version raised to 2023.1
 
 Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLinkAsync`, `getAppsFlyerUIDAsync`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.

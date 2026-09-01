@@ -8,11 +8,12 @@ hidden: false
 
 The list of available methods for this plugin is described below.
 - [Android, iOS and Windows API](#android-ios-and-windows-api)
-  - [initSDK](#initsdk)
-  - [startSDK](#startsdk)
+  - [init](#init)
+  - [start](#start)
+  - [Session Ready Listener](#session-ready-listener)
 - [Android and iOS API](#android-and-ios-api)
-  - [stopSDK](#stopsdk)
-  - [isSDKStopped](#issdkstopped)
+  - [stop](#stop)
+  - [isStopped](#isstopped)
   - [getSdkVersion](#getsdkversion)
   - [setIsDebug](#setisdebug)
   - [addPushNotificationDeepLinkPath](#addpushnotificationdeeplinkpath)
@@ -27,7 +28,7 @@ The list of available methods for this plugin is described below.
   - [setConsentData](#setconsentdata)
   - [recordLocation](#recordlocation)
   - [anonymizeUser](#anonymizeuser)
-  - [getAppsFlyerId](#getappsflyerid)
+  - [getAppsFlyerUID](#getappsflyeruid)
   - [setMinTimeBetweenSessions](#setmintimebetweensessions)
   - [setHost](#sethost)
   - [setUserEmails *Soon to be deprecated*](#setuseremails-soon-to-be-deprecated)
@@ -102,8 +103,21 @@ The list of available methods for this plugin is described below.
 
 ## Android, iOS and Windows API
 
-### initSDK 
-**`void initSDK(string devKey, string appID, MonoBehaviour gameObject)`**
+> **RPC bridge (7.0.x):** the C#/native bridge is now a JSON-RPC transport, and most APIs on
+> this page — including `init`/`start` below — are `async Awaitable`/`Awaitable<T>` methods.
+> Await them (or fire-and-forget with `_ = AppsFlyer.foo(...)`) instead of treating them as
+> blocking calls. A number of previously synchronous getters (`getSdkVersion`,
+> `getAppsFlyerUID`, `isSessionReady`, etc.) additionally have an `*Async` twin (e.g.
+> `getSdkVersionAsync`) that is safe to await from the main thread; the non-`Async` name still
+> exists as a synchronous RPC query for backward compatibility, but on iOS it can block the
+> calling thread up to 5s on native lag — prefer the `*Async` version in new code. This
+> requires **Unity 2023.1 or newer** (raised from 2019.4) for `Awaitable`/`Awaitable<T>`
+> support — see [Installation](/docs/Installation.md#requirements).
+
+### init
+**`async Awaitable init(string devKey, string appID, MonoBehaviour gameObject = null)`**
+
+*Renamed from `initSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
 Initialize the AppsFlyer SDK with the devKey and appID.
 The dev key is required for all apps and the appID is required only for iOS. 
@@ -119,69 +133,120 @@ If you app is for Android only pass null for the appID.
 *Example:*
 
 ```c#
-AppsFlyer.initSDK("dev_key", "app_id"); // without deeplinking
-AppsFlyer.initSDK("dev_key", "app_id", this); // with deeplinking
+await AppsFlyer.init("dev_key", "app_id"); // without deeplinking
+await AppsFlyer.init("dev_key", "app_id", this); // with deeplinking
 ```
 
 **Note :** You only need to implement the SDK **with deeplinking** if you are using the `IAppsFlyerConversionData` interface.
 
 ---
 
-### startSDK
-**`void startSDK()`**
-    
+### start
+**`async Awaitable start()`**
+
+*Renamed from `startSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
 Once this API is invoked the SDK will start,  sessions will be immediately sent, and all background foreground transitions will record a session.
+
+**Recommended:** call `start()` from inside an `OnSessionReady` handler rather than immediately
+after `init()`, so the native SDK has resolved any pending deep link / config state first — see
+[Session Ready Listener](#session-ready-listener) below.
 
 *Example:*
 
 ```c#
- AppsFlyer.startSDK();
+await AppsFlyer.start();
+```
+
+---
+
+### Session Ready Listener
+
+New in the RPC bridge (7.0.x). Lets you defer `start()` until the native SDK reports it has
+finished evaluating session-readiness conditions (config validity, any pending deep link), instead
+of racing `start()` against that evaluation.
+
+**`static event EventHandler OnSessionReady`**
+
+Subscribe **before** calling `registerSessionReadyListener()`, so the event can't fire before
+you're listening.
+
+**`async Awaitable registerSessionReadyListener()`**
+
+**`async Awaitable unregisterSessionReadyListener()`**
+
+**`bool isSessionReady()`** / **`async Awaitable<bool> isSessionReadyAsync()`**
+
+Synchronous query / awaitable twin for whether the SDK currently considers the session ready.
+Prefer the `Async` version — see the note at the top of this page.
+
+*Example:*
+
+```c#
+void OnSessionReadyHandler(object sender, EventArgs args)
+{
+    AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    AppsFlyer.start();
+}
+
+async Awaitable InitAsync()
+{
+    AppsFlyer.OnSessionReady += OnSessionReadyHandler;
+
+    await AppsFlyer.init(devKey, appId, this);
+    await AppsFlyer.registerSessionReadyListener();
+    // start() is called above, inside OnSessionReadyHandler, once the SDK signals it's ready.
+}
 ```
 
 ---
 
 ## Android and iOS API
 
-### stopSDK 
-**`void stopSDK(bool isSDKStopped)`**
+### stop
+**`async Awaitable stop(bool shouldStop)`**
 
-In some extreme cases you might want to shut down all SDK functions due to legal and privacy compliance. This can be achieved with the stopSDK API. Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
+*Renamed from `stopSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
+In some extreme cases you might want to shut down all SDK functions due to legal and privacy compliance. This can be achieved with the stop API. Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
 
 There are several different scenarios for user opt-out. We highly recommend following the exact instructions for the scenario, that is relevant for your app.
 
 In any event, the SDK can be reactivated by calling the same API, by passing false.
 
  **Important :**
-Do not call startSDK() if stopSDK() is set to true.
+Do not call start() if stop() is set to true.
 
 To restart SDK functions again, use the following API:
 
-`AppsFlyer.stopSDK(false);`
+`await AppsFlyer.stop(false);`
 
  **Warning**
-Use the stopSDK API only in cases where you want to fully ignore the user's SDK functions. Using this API SEVERELY impacts your attribution, data collection and deep linking mechanism.
+Use the stop API only in cases where you want to fully ignore the user's SDK functions. Using this API SEVERELY impacts your attribution, data collection and deep linking mechanism.
 
 | parameter       | type    | description                                          |
 | -------------   |---------|----------------------------                          |
-| `isSDKStopped`  | `bool`  | True if the SDK is stopped (default value is false). |
+| `shouldStop`    | `bool`  | True if the SDK is stopped (default value is false). |
 
 *Example:*
 
 ```c#
-AppsFlyer.stopSDK(true);
+await AppsFlyer.stop(true);
 ```
 
 ---
 
-### isSDKStopped
-**`bool isSDKStopped()`**
+### isStopped
+**`async Awaitable<bool> isStoppedAsync()`**
 
-Was the stopSDK(boolean) API set to `true`.
+*Renamed from `isSDKStopped` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
+Was the `stop(bool)` API set to `true`.
 
 *Example:*
 
 ```c#
-if (!AppsFlyer.isSDKStopped())
+if (!await AppsFlyer.isStoppedAsync())
 {
   
 }
@@ -190,14 +255,15 @@ if (!AppsFlyer.isSDKStopped())
 ---
 
 ### getSdkVersion 
-**`string getSdkVersion()`**
+**`string getSdkVersion()`** / **`async Awaitable<string> getSdkVersionAsync()`**
 
-Get the AppsFlyer SDK version used in the app.
+Get the AppsFlyer SDK version used in the app. Prefer the `Async` twin — see the note at the top
+of this page.
 
 *Example:*
 
 ```c#
-string version = AppsFlyer.getSdkVersion();
+string version = await AppsFlyer.getSdkVersionAsync();
 ```
 
 ---
@@ -473,15 +539,17 @@ AppsFlyer.anonymizeUser(true);
 
 ---
 
-### getAppsFlyerId 
-**`string getAppsFlyerId()`**
+### getAppsFlyerUID
+**`string getAppsFlyerUID()`** / **`async Awaitable<string> getAppsFlyerUIDAsync()`**
 
-AppsFlyer's unique device ID is created for every new install of an app. Use the following API to obtain AppsFlyer’s Unique ID.
+*Renamed from `getAppsFlyerId` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
+AppsFlyer's unique device ID is created for every new install of an app. Use the following API to obtain AppsFlyer’s Unique ID. Prefer the `Async` twin — see the note at the top of this page.
 
 *Example:*
 
 ```c#
-string uid = AppsFlyer.getAppsFlyerId(); 
+string uid = await AppsFlyer.getAppsFlyerUIDAsync();
 ```
 
 ---
@@ -1794,7 +1862,7 @@ The callback will return a JSON string which can be converted to dictionary. <br
 ```c#
 
     // First call init with devKey, appId and gameObject
-    AppsFlyer.initSDK(devKey, appID, this);
+    await AppsFlyer.init(devKey, appID, this);
 
 
     AppsFlyer.OnDeepLinkReceived += (sender, args) =>

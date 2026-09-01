@@ -8,6 +8,18 @@ hnameden: false
 
 # Adding appsflyer-unity-plugin to your project
 
+## Requirements
+
+- **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>`
+  support, which the RPC bridge's public API (`init`, `start`, and most other methods) relies on
+  — see [Breaking changes](/README.md#breaking-changes-7xx). If you're on an older Unity version,
+  stay on the last plugin release that supported Unity 2019.4.
+- **The External Dependency Manager for Unity (EDM4U) 1.2.187 or newer.** Earlier 1.2.x releases
+  (e.g. 1.2.183) are known to mis-resolve this plugin's iOS Swift Package Manager dependencies
+  (`AppsFlyerRPC`, introduced with the RPC bridge). If you're bundling EDM4U yourself rather than
+  via the `.unitypackage`, update to at least 1.2.187 from the
+  [unity-jar-resolver releases](https://github.com/googlesamples/unity-jar-resolver/releases).
+
 ## Adding the SDK to your project
 
 In order to add the plugin to your project, you can either add the *unitypackage* **or** use *Unity Package Manager*. 

@@ -1,5 +1,30 @@
 # Versions
 
+## v7.0.1
+* **RPC bridge migration:** the C#/native bridge was migrated from per-method
+  AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
+  `Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`).
+* **Breaking:** `initSDK`→`init`, `startSDK`→`start`, `stopSDK`→`stop`, `isSDKStopped`→`isStoppedAsync`,
+  `getAppsFlyerId`→`getAppsFlyerUID`/`getAppsFlyerUIDAsync`. Most of the public API is now
+  `async Awaitable`/`Awaitable<T>`. No backward-compatible aliases — see
+  [Breaking changes](/README.md#breaking-changes-7xx).
+* **New:** session-ready listener API — `OnSessionReady`, `registerSessionReadyListener()`,
+  `unregisterSessionReadyListener()`, `isSessionReady()`/`isSessionReadyAsync()` — to defer
+  `start()` until the native SDK reports session readiness.
+* **New:** `*Async` twins for previously-synchronous getters (`getSdkVersionAsync`,
+  `getAppsFlyerUIDAsync`, `isSessionReadyAsync`, `isStoppedAsync`, `getOutOfStoreAsync`,
+  `isPreInstalledAppAsync`, `getAttributionIdAsync`, `getHostNameAsync`, `getHostPrefixAsync`,
+  and others) so native round-trips don't block Unity's main thread.
+* **Minimum supported Unity version raised to 2023.1** (from 2019.4), required for
+  `Awaitable`/`Awaitable<T>`.
+* **EDM4U updated to 1.2.187** (from 1.2.183) — earlier 1.2.x releases mis-resolve the new iOS
+  Swift Package Manager dependency (`AppsFlyerRPC`).
+* Update Android SDK plugin bridge version - `af-android-plugin-bridge:7.0.12`
+* iOS deep-link delivery (cold-start URL schemes and Universal Links) reworked — see
+  [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md).
+* Unity plugin version - 7.0.1
+
+
 ## v6.17.900
 * Update Android SDK version - 6.17.6
 * Update iOS SDK version - 6.17.9
