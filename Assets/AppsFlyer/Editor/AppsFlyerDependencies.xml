@@ -3,7 +3,14 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.12"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.1"></androidPackage>
+    <!-- unity-wrapper intentionally omitted here: no published Maven version matches this
+         repo's current Kotlin AppsFlyerRPCBridge (android-unity-wrapper/unitywrapper) — every
+         published version (7.0.1, 7.0.13) still calls AppsFlyerRpcHandler's constructor with a
+         raw Context as the first arg, but af-android-plugin-bridge:7.0.12's AppsFlyerRpcHandler
+         now takes a Function0<Context> supplier there, causing a NoSuchMethodError at runtime.
+         Until a matching version is published, build android-unity-wrapper locally
+         (./gradlew :unitywrapper:assembleDebug) and drop the resulting .aar directly into
+         Assets/Plugins/Android/ instead of declaring it as a remote androidPackage. -->
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) — without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
@@ -19,6 +26,21 @@
          confirming the namespace collision has actually been resolved upstream. -->
     <!-- <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage> -->
   </androidPackages>
+
+  <!-- iOS dependencies via Swift Package Manager (EDM4U 1.2.187+). Each remoteSwiftPackage's
+       swiftPackage carries replacesPod so that when SPM is enabled (Assets > External Dependency
+       Manager > iOS Resolver > Settings > "Use Swift Package Manager for iOS Cocoapod
+       dependencies") EDM4U resolves the package and skips the matching iosPod below; with SPM
+       disabled it falls back to the iosPods entries unchanged, so the Podfile path still works. -->
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git" version="7.0.2">
+    <swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>
+  </remoteSwiftPackage>
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/appsflyer-apple-rpc.git" version="7.0.13">
+    <swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>
+  </remoteSwiftPackage>
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/PurchaseConnector-Dynamic.git" version="7.0.2">
+    <swiftPackage name="PurchaseConnector-Dynamic" replacesPod="PurchaseConnector"/>
+  </remoteSwiftPackage>
 
   <iosPods>
     <iosPod name="AppsFlyerFramework" version="7.0.2" minTargetSdk="13.0"></iosPod>

@@ -23,8 +23,10 @@ namespace AppsFlyerSDK
 
         // Dispatches via ExecuteFire() on the calling thread, in place - no BackgroundThreadAsync hop -
         // so call-site ordering across multiple non-awaited calls is preserved exactly like the
-        // fire-and-forget Fire() this replaced. Catches and logs here (like that helper did) so a
-        // caller who doesn't await still gets the failure logged instead of an unobserved fault.
+        // fire-and-forget Fire() this replaced. Logs here so a caller who doesn't await still gets
+        // the failure logged instead of an unobserved fault, then rethrows so a caller who does
+        // await still sees the exception - swallowing it unconditionally would silence failures for
+        // awaited callers too.
         private static async Awaitable FireAsync(string method, Dictionary<string, object> parameters = null)
         {
             try
@@ -34,6 +36,7 @@ namespace AppsFlyerSDK
             catch (Exception e)
             {
                 AFLog(method, "RPC error: " + e.Message);
+                throw;
             }
         }
 

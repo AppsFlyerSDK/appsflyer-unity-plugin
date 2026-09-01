@@ -5,16 +5,11 @@ apply from: '../shared/common.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.1'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
-    implementation 'com.android.installreferrer:installreferrer:2.1'
 // Android Resolver Dependencies Start
-    implementation 'com.android.installreferrer:installreferrer:2.1' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:7
-    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.1' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:5
-    // TEMPORARILY DISABLED — see AppsFlyerDependencies.xml comment: purchase-connector:2.3.0
-    // shares AGP-namespace "com.appsflyer" with af-android-sdk:7.0.1, hard-failing the manifest merge.
-    // implementation 'com.appsflyer:purchase-connector:2.3.0' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:8
-    implementation 'com.appsflyer:unity-wrapper:7.0.13' // Packages/appsflyer-unity-plugin/Editor/AppsFlyerDependencies.xml:6
+    implementation 'com.android.installreferrer:installreferrer:2.1' // Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml:14
+    implementation 'com.appsflyer:af-android-plugin-bridge:7.0.12' // Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml:5
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.3.0' // Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml:19
 // Android Resolver Dependencies End
 **DEPS**}
 

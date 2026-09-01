@@ -57,61 +57,34 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
 
-#if UNITY_ANDROID
-        // Android: registerDeepLinkListener() before init() — the RPC bridge handler isn't
-        // wired until AppsFlyer.init() runs (AppsFlyerRPCClient.instance.InitBridge ->
-        // AppsFlyerRPCBridge.init()), so this call no-ops natively until init() executes,
-        // then the delegate is already in place once the bridge comes up.
         AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
-        AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
-#endif
-
-        // init() must come first — on Android it's what wires up the native RPC bridge
-        // (AppsFlyerRPCClient.instance.InitBridge -> AppsFlyerRPCBridge.init(), which creates the
-        // handler every other Fire()/Query() call needs). Any RPC call issued before this silently
-        // no-ops on Android (the bridge's fireJson/executeJson just skip when the handler is null),
-        // which is exactly what caused the native "SessionReadyListener is not registered!" warning
-        // when registerSessionReadyListener() was called before init().
         AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
         AppsFlyer.enableDebug(true);
-
-#if UNITY_IOS
-        // iOS: registerDeepLinkListener() after init() — devKey/appleAppID must already be set
-        // natively before setDeepLinkDelegate: runs its one-shot resolve attempt, otherwise that
-        // attempt fires with an empty devKey and is never retried (see AppsFlyerLib.m
-        // setDeepLinkDelegate:'s dispatch_once).
-        AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
-#endif
-
-#if UNITY_IOS
-        // TEMP WORKAROUND (sample app only, pending a real fix in the RPC wrapper's init
-        // flow): AppsFlyer.init()'s blocking Query("initialize", ...) call runs on Unity's
-        // main thread, which deadlocks against AppsFlyerRPCBridge's @MainActor-isolated
-        // completion until the 5s semaphore timeout fires and frees the main thread — but
-        // by then this same call stack has already unwound back to Unity's main loop
-        // without giving the native run loop a tick to actually run the queued main-actor
-        // work that sets devKey/appleAppID. Yielding here lets that pending work run before
-        // we call registerSessionReadyListener(), avoiding the native
-        // "devKey and appleAppID must be set before calling registerSessionReadyListener:" crash.
-        yield return new WaitForSeconds(1f);
-#endif
 
         // SDK 7 flow: session readiness gates start().
         AppsFlyer.registerSessionReadyListener();
+
+#if UNITY_ANDROID
+        // AppsFlyerLib registers its own ActivityLifecycleCallbacks as a side effect of the
+        // init() call above, but that registration only happens once Unity's managed layer has
+        // booted - which is always after Android's real, launch-triggering onResume() already
+        // fired. Left alone, session readiness/start() would never be (re-)evaluated until the
+        // user backgrounds/foregrounds the app for real. This forces that missed resume signal
+        // via a momentary translucent Activity - no AppsFlyerLib/RPC call involved.
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        {
+            activity.Call("triggerLifecycleNudge");
+        }
+        AFQALogger.Log("[AF_QA][lifecycleNudge] triggered");
+#endif
+
         AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
 
         RunPreStartApis();
 
         AFQALogger.Log("[AF_QA][registerSessionReadyListener] registered");
-
-#if UNITY_IOS
-        // ATT popup disabled for now (see _afqaRequestTrackingAuthorization in ATTPermissionRequest.mm).
-        // Requested here, after init()/registerConversionListener(), so the ATT system prompt's
-        // resign/become-active cycle can't race AppsFlyer's own applicationDidBecomeActive:
-        // swizzle before devKey/appID are set natively.
-        // _afqaRequestTrackingAuthorization();
-#endif
     }
 
     // ── Config loading ────────────────────────────────────────────────────────
