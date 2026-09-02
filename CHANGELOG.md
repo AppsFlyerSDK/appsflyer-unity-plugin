@@ -8,6 +8,9 @@
   `getAppsFlyerId`→`getAppsFlyerUID`/`getAppsFlyerUIDAsync`. Most of the public API is now
   `async Awaitable`/`Awaitable<T>`. No backward-compatible aliases — see
   [Breaking changes](/README.md#breaking-changes-7xx).
+* **Breaking:** removed the obsolete `AppsFlyerConsent.ForGDPRUser(...)`/`ForNonGDPRUser()`
+  factory methods. Use `new AppsFlyerConsent(isUserSubjectToGDPR:, hasConsentForDataUsage:,
+  hasConsentForAdsPersonalization:, hasConsentForAdStorage:)` instead.
 * **New:** session-ready listener API — `OnSessionReady`, `registerSessionReadyListener()`,
   `unregisterSessionReadyListener()`, `isSessionReady()`/`isSessionReadyAsync()` — to defer
   `start()` until the native SDK reports session readiness.

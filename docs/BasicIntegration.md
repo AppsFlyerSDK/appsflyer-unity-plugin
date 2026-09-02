@@ -217,20 +217,24 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
         // or retrieve it from the storage
         ...
         // Set the consent data to the SDK:
-        AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(true, true);
+        AppsFlyerConsent consent = new AppsFlyerConsent(
+            isUserSubjectToGDPR: true,
+            hasConsentForDataUsage: true,
+            hasConsentForAdsPersonalization: true
+        );
         AppsFlyer.setConsentData(consent);
             
         await AppsFlyer.start();
     ```
 
 ### When GDPR does not apply to the user
-1. Create an AppsFlyerConsent object using the ForNonGDPRUser() initializer. This initializer doesn’t accept any parameters.
-2. Pass the empty AppsFlyerConsent object to setConsentData().
+1. Create an AppsFlyerConsent object with `isUserSubjectToGDPR` set to `false`. The other consent fields can be omitted.
+2. Pass the AppsFlyerConsent object to setConsentData().
 2. Call start().
     
     ```c#
         // If the user is not subject to GDPR:
-        AppsFlyerConsent consent = AppsFlyerConsent.ForNonGDPRUser();
+        AppsFlyerConsent consent = new AppsFlyerConsent(isUserSubjectToGDPR: false);
         AppsFlyer.setConsentData(consent);
             
         await AppsFlyer.start();

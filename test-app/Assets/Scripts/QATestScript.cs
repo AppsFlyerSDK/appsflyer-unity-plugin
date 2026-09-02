@@ -339,7 +339,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AppsFlyer.enableTCFDataCollection(true);
         AFQALogger.Log("[AF_QA][RPC_COVERAGE] enableTCFDataCollection enabled=true");
 
-        var consent = AppsFlyerConsent.ForGDPRUser(true, true);
+        var consent = new AppsFlyerConsent(isUserSubjectToGDPR: true, hasConsentForDataUsage: true, hasConsentForAdsPersonalization: true);
         AppsFlyer.setConsentData(consent);
         AFQALogger.Log("[AF_QA][RPC_COVERAGE] setConsentData gdpr=true hasConsent=true hasDataUsageConsent=true");
 
