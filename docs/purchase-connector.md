@@ -157,10 +157,10 @@ public class AppsFlyerInit : MonoBehaviour,
     public bool isDebug = true;
     public bool getConversionData = true;
     
-    void Start()
+    async void Start()
     {
         // 1. Initialize AppsFlyer SDK
-        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, appID, getConversionData ? this : null);
         AppsFlyer.setIsDebug(isDebug);
         
         // 2. Initialize Purchase Connector
@@ -174,7 +174,7 @@ public class AppsFlyerInit : MonoBehaviour,
         AppsFlyerPurchaseConnector.startObservingTransactions();
         
         // 5. Start AppsFlyer SDK
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
     }
     
     private void ConfigurePurchaseConnector()
@@ -220,10 +220,10 @@ public class AppsFlyerInit : MonoBehaviour,
     public bool isDebug = true;
     public bool getConversionData = true;
     
-    void Start()
+    async void Start()
     {
         // 1. Initialize AppsFlyer SDK
-        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, appID, getConversionData ? this : null);
         AppsFlyer.setIsDebug(isDebug);
         
         // 2. Initialize Purchase Connector (using AppsFlyerConnector namespace)
@@ -237,7 +237,7 @@ public class AppsFlyerInit : MonoBehaviour,
         AppsFlyerPurchaseConnector.startObservingTransactions();
         
         // 5. Start AppsFlyer SDK
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
     }
     
     private void ConfigurePurchaseConnector()
@@ -439,15 +439,15 @@ public class AppsFlyerInit : MonoBehaviour,
     public bool isDebug = true;
     public bool getConversionData = true;
 
-    void Start()
+    async void Start()
     {
         // 1. Initialize AppsFlyer SDK
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
-        AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, UWPAppID, getConversionData ? this : null);
 #elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
-        AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, macOSAppID, getConversionData ? this : null);
 #else
-        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, appID, getConversionData ? this : null);
 #endif
 
         AppsFlyer.setIsDebug(isDebug);
@@ -471,7 +471,7 @@ public class AppsFlyerInit : MonoBehaviour,
         AppsFlyerPurchaseConnector.startObservingTransactions();
 
         // 4. Start AppsFlyer SDK
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
         
         Debug.Log("AppsFlyer SDK + Purchase Connector initialized successfully");
     }
@@ -579,15 +579,15 @@ public class AppsFlyerInit : MonoBehaviour,
     public bool isDebug = true;
     public bool getConversionData = true;
 
-    void Start()
+    async void Start()
     {
         // 1. Initialize AppsFlyer SDK
 #if UNITY_WSA_10_0 && !UNITY_EDITOR
-        AppsFlyer.initSDK(devKey, UWPAppID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, UWPAppID, getConversionData ? this : null);
 #elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
-        AppsFlyer.initSDK(devKey, macOSAppID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, macOSAppID, getConversionData ? this : null);
 #else
-        AppsFlyer.initSDK(devKey, appID, getConversionData ? this : null);
+        await AppsFlyer.init(devKey, appID, getConversionData ? this : null);
 #endif
 
         AppsFlyer.setIsDebug(isDebug);
@@ -608,7 +608,7 @@ public class AppsFlyerInit : MonoBehaviour,
         AppsFlyerPurchaseConnector.startObservingTransactions();
 
         // 4. Start AppsFlyer SDK
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
         
         Debug.Log("AppsFlyer SDK + Purchase Connector (separate repository) initialized successfully");
     }

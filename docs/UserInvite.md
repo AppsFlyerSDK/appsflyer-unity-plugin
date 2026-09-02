@@ -17,13 +17,13 @@ Example:
 
 public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData, IAppsFlyerUserInvite {
 
-void Start()
+async void Start()
   {
     //...
 
-    AppsFlyer.initSDK("devkey", "appID");
+    await AppsFlyer.init("devkey", "appID");
     AppsFlyer.setAppInviteOneLinkID("XXXX"); //set up the one link ID for the user invite
-    AppsFlyer.startSDK();
+    await AppsFlyer.start();
   }
    
 

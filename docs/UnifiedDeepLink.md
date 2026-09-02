@@ -37,21 +37,21 @@ hidden: false
 * Does not support SRN campaigns.
 * For new users, the UDL method only returns parameters relevant to deferred deep linking: `deep_link_value` and `deep_link_sub1-10`. If you try to get any other parameters (media_source, campaign, af_sub1-5, etc.), they return `null`.
 * `onAppOpenAttribution` will not be called. All code should migrate to `OnDeepLink`.
-* `OnDeepLink` must be called **after** `initSDK`.
+* `OnDeepLink` must be called **after** `init`.
 * `AppsFlyer.cs` **must** be attached to the game object.
 
 # Implementation
 
 1. Attach the AppsFlyer init code to a game object (see [Manual integration](/docs/BasicIntegration.md#manual-integration)).
-2. Call initSDK with the `this` parameter in order for the `OnDeepLinkReceived` callback to be invoked:
+2. Call `init` with the `this` parameter in order for the `OnDeepLinkReceived` callback to be invoked:
     ```c#
-    AppsFlyer.initSDK("devkey", "appID", this);
+    await AppsFlyer.init("devkey", "appID", this);
     ```    
 3. Assign `OnDeepLink` to `AppsFlyer.OnDeepLinkReceived` in `Start()`
    ```c#
     AppsFlyer.OnDeepLinkReceived += OnDeepLink;
    ``` 
-4. After `initSDK()` implement `OnDeepLink`.
+4. After `init()` implement `OnDeepLink`.
 
 ## Example
 
@@ -60,11 +60,11 @@ using AppsFlyerSDK;
 
 public class AppsFlyerInit : MonoBehaviour
 {
-  void Start()
+  async void Start()
   {
-    AppsFlyer.initSDK("devkey", "appID", this);
+    await AppsFlyer.init("devkey", "appID", this);
     AppsFlyer.OnDeepLinkReceived += OnDeepLink;
-    AppsFlyer.startSDK();
+    await AppsFlyer.start();
   }
   
   void OnDeepLink(object sender, EventArgs args)

@@ -24,10 +24,10 @@ using Unity.Notifications.iOS;
 public class AppsFlyerInit : MonoBehaviour, IAppsFlyerConversionData
 {
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "appID", this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "appID", this);
+        await AppsFlyer.start();
 #if UNITY_IOS
   
         StartCoroutine(RequestAuthorization());

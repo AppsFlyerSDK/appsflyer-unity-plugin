@@ -128,10 +128,10 @@ public class AppsFlyerInit : MonoBehaviour, IAppsFlyerValidateAndLog
 
     public static string kProductIDConsumable = "com.test.cons";
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "appId");
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "appId");
+        await AppsFlyer.start();
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
@@ -227,10 +227,10 @@ public class AppsFlyerInit : MonoBehaviour, IStoreListener, IAppsFlyerValidateRe
 
     public static string kProductIDConsumable = "com.test.cons";
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "devKey");
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "devKey");
+        await AppsFlyer.start();
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
