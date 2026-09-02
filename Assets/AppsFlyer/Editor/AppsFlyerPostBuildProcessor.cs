@@ -1,5 +1,4 @@
 #if UNITY_IOS
-using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
@@ -72,14 +71,12 @@ namespace AppsFlyerSDK
         // phase - rather than referencing the SPM package product directly (productRef): the
         // package product's name doesn't match its built framework's binary name, so Xcode's
         // own build system cannot resolve a productRef-based copy step for these packages.
-        // AddFile()/AddFileToEmbedFrameworks() are idempotent about the underlying file
-        // reference, but not about avoiding duplicate copy-files entries, so this checks the
-        // raw project text first to stay a no-op on repeat builds.
+        // FindFileGuidByProjectPath()/AddFileToEmbedFrameworks() are each documented as
+        // returning null / no-oping when the file/embed entry already exists, so repeat
+        // builds stay idempotent without scanning the raw project text.
         private static void EmbedDynamicFrameworkDependencies(string buildPath)
         {
             string projPath = PBXProject.GetPBXProjectPath(buildPath);
-            string text = File.ReadAllText(projPath);
-
             PBXProject proj = new PBXProject();
             proj.ReadFromFile(projPath);
             string mainTarget = proj.GetUnityMainTargetGuid();
@@ -88,11 +85,15 @@ namespace AppsFlyerSDK
             bool changed = false;
             foreach (string frameworkFileName in DynamicFrameworksToEmbed)
             {
-                if (text.Contains("/* " + frameworkFileName + " in Embed Frameworks */")) continue;
+                string projectPath = "Frameworks/" + frameworkFileName;
+                string fileGuid = proj.FindFileGuidByProjectPath(projectPath);
+                if (fileGuid == null)
+                {
+                    fileGuid = proj.AddFile(frameworkFileName, projectPath, PBXSourceTree.Build);
+                    changed = true;
+                }
 
-                string fileGuid = proj.AddFile(frameworkFileName, "Frameworks/" + frameworkFileName, PBXSourceTree.Build);
                 proj.AddFileToEmbedFrameworks(mainTarget, fileGuid);
-                changed = true;
             }
 
             if (changed) proj.WriteToFile(projPath);
