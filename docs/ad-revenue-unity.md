@@ -69,7 +69,7 @@ Make sure to initialize the AppsFlyer SDK before initializing the connector.
 ```java
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour
+public class AppsFlyerInit : MonoBehaviour
 {
   void Start()
   {

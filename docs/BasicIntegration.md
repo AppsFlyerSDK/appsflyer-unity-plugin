@@ -6,9 +6,8 @@ order: 1
 hidden: false
 ---
 
-You can initialize the plugin by using the AppsFlyerObject prefab or manually.
+To initialize the plugin, create a game object and add an init script to it.
 
-- [Using the AppsFlyerObject.prefab](#using-the-appsflyerobjectprefab)
 - [Manual integration](#manual-integration)
 - [Session Ready Listener](#session-ready-listener)
 - [Collect IDFA with ATTrackingManager](#collect-idfa-with-attrackingmanager)
@@ -16,22 +15,6 @@ You can initialize the plugin by using the AppsFlyerObject prefab or manually.
 - [Sending SKAN postback to Appsflyer](#sending-skan-postback-to-appsflyer)
 - [MacOS initialization](#macos-initialization)
 - [Request Listeners (Optional)](#request-listeners-optional)
-
-## Using the AppsFlyerObject.prefab
-
-1. Go to Assets > AppsFlyer and drag AppsFlyerObject.prefab to your scene.
-<img src="assets/unity_add_object.png" width="650">
-<br/>
-2. Update the following fields:
-
-| Setting  | Description   |
-| -------- | ------------- |
-| **Dev Key**   |  AppsFlyer's [Dev Key](https://support.appsflyer.com/hc/en-us/articles/207032126-Android-SDK-integration-for-developers#integration-31-retrieving-your-dev-key), which is accessible from the AppsFlyer dashboard. |
-| **App ID**      | Your iTunes Application ID. (If your app is not for iOS the leave field empty)  |
-| **Get Conversion Data**    | Set this to true if your app is using AppsFlyer for deep linking.  |
-| **Is Debug**    | Set this to true to view the debug logs. (for development only!)  |
-
-3. Update the code in Assets > AppsFlyer > AppsFlyerObjectScript.cs with other available [API](/docs/api).
 
 ## Manual integration
 
@@ -45,7 +28,7 @@ Create a game object and add the following init code:
 using AppsFlyerSDK;
 using System;
 
-public class AppsFlyerObjectScript : MonoBehaviour
+public class AppsFlyerInit : MonoBehaviour
 {
   async void Start()
   {
@@ -255,14 +238,13 @@ More info on how to update the info.plist can be found [here](https://github.com
 --- 
 
 ## MacOS initialization
-1. Use the prefab `AppsFlyerObject`
-2. Add your MacOS app id
-3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
+1. Use the manual integration code above, passing your MacOS app ID.
+2. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
   
 ---
 ## Request Listeners (Optional)
     
-1. Attach the 'AppsFlyer.cs' script to the game object with the AppsFlyer init code. (AppsFlyerObject, ect)
+1. Add the following code to the game object with the AppsFlyer init code (see [Manual integration](#manual-integration)).
 2. Add the following code **before** start()
 
 Sessions response example:

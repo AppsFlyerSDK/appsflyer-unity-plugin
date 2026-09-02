@@ -48,6 +48,10 @@ methods — update call sites when you upgrade.
 | `AppsFlyer.isSDKStopped()` | `await AppsFlyer.isStoppedAsync()` |
 | `AppsFlyer.getAppsFlyerId()` | `await AppsFlyer.getAppsFlyerUIDAsync()` |
 
+**Breaking:** starting with 7.0.x, the `AppsFlyerObject.prefab` UI-based setup has been removed.
+Initialize the SDK manually instead — see
+[Manual integration](/docs/BasicIntegration.md#manual-integration).
+
 **New:** a session-ready listener API — `AppsFlyer.OnSessionReady`,
 `registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReady()` /
 `isSessionReadyAsync()` — lets you defer `start()` until the native SDK reports session

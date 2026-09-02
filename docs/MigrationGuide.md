@@ -82,7 +82,7 @@ With new init code:
 ```c#
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
+public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData
 {
     void Start()
     {

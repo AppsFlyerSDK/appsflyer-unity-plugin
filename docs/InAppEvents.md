@@ -123,7 +123,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 using AppsFlyerSDK;
 
-public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
+public class AppsFlyerInit : MonoBehaviour, IAppsFlyerValidateAndLog
 {
 
     public static string kProductIDConsumable = "com.test.cons";
@@ -222,7 +222,7 @@ AppsFlyer.validateReceipt(string publicKey, string purchaseData, string signatur
 using UnityEngine.Purchasing;
 using AppsFlyerSDK;
 
-public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidateReceipt
+public class AppsFlyerInit : MonoBehaviour, IStoreListener, IAppsFlyerValidateReceipt
 {
 
     public static string kProductIDConsumable = "com.test.cons";

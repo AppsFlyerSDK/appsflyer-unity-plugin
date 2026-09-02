@@ -21,7 +21,7 @@ Learn more about [what is conversion data](https://dev.appsflyer.com/hc/docs/con
 ```c#
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData{
+public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData{
     void Start()
     {
         /* AppsFlyer.setDebugLog(true); */

@@ -42,7 +42,7 @@ hidden: false
 
 # Implementation
 
-1. Attach `AppsFlyer.cs` script to the game object with the AppsFlyer init code. (AppsFlyerObject)
+1. Attach the AppsFlyer init code to a game object (see [Manual integration](/docs/BasicIntegration.md#manual-integration)).
 2. Call initSDK with the `this` parameter in order for the `OnDeepLinkReceived` callback to be invoked:
     ```c#
     AppsFlyer.initSDK("devkey", "appID", this);
@@ -58,7 +58,7 @@ hidden: false
 ```c#
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour
+public class AppsFlyerInit : MonoBehaviour
 {
   void Start()
   {

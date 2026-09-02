@@ -15,6 +15,9 @@
   replacement — request ATT authorization yourself and delay `start()` until it resolves; see
   `RequestATTThenStart()` in `test-app/Assets/Scripts/QATestScript.cs` for a reference
   implementation.
+* **Breaking:** starting with 7.0.x, the `AppsFlyerObject.prefab` UI-based setup (and its
+  `AppsFlyerObjectScript.cs`/`AppsFlyerObjectEditor.cs`) has been removed. Initialize the SDK
+  manually instead — see [Manual integration](/docs/BasicIntegration.md#manual-integration).
 * **New:** session-ready listener API — `OnSessionReady`, `registerSessionReadyListener()`,
   `unregisterSessionReadyListener()`, `isSessionReady()`/`isSessionReadyAsync()` — to defer
   `start()` until the native SDK reports session readiness.

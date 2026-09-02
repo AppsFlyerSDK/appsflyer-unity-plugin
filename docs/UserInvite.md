@@ -15,7 +15,7 @@ More information can be found [here](https://dev.appsflyer.com/hc/docs/dl_user_i
 Example:
 ```c#
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData, IAppsFlyerUserInvite {
+public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData, IAppsFlyerUserInvite {
 
 void Start()
   {

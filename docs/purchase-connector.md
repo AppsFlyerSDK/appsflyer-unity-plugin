@@ -113,7 +113,7 @@ Your MonoBehaviour class must implement the following interfaces:
 ```csharp
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,                    // For conversion data callbacks
     IAppsFlyerPurchaseValidation,               // For purchase validation callbacks  
     IAppsFlyerPurchaseRevenueDataSource,        // For StoreKit 1 additional parameters 
@@ -128,7 +128,7 @@ public class AppsFlyerObjectScript : MonoBehaviour,
 using AppsFlyerSDK;
 using AppsFlyerConnector; // Additional namespace for separate repository
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,                    // For conversion data callbacks
     IAppsFlyerPurchaseValidation,               // For purchase validation callbacks  
     IAppsFlyerPurchaseRevenueDataSource,        // For additional parameters (iOS)
@@ -145,7 +145,7 @@ public class AppsFlyerObjectScript : MonoBehaviour,
 using UnityEngine;
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,
     IAppsFlyerPurchaseValidation,
     IAppsFlyerPurchaseRevenueDataSource,
@@ -209,7 +209,7 @@ using UnityEngine;
 using AppsFlyerSDK;
 using AppsFlyerConnector;
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,
     IAppsFlyerPurchaseValidation,
     IAppsFlyerPurchaseRevenueDataSource
@@ -425,7 +425,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,
     IAppsFlyerPurchaseValidation,
     IAppsFlyerPurchaseRevenueDataSource,
@@ -565,7 +565,7 @@ using UnityEngine;
 using AppsFlyerSDK;
 using AppsFlyerConnector;
 
-public class AppsFlyerObjectScript : MonoBehaviour, 
+public class AppsFlyerInit : MonoBehaviour, 
     IAppsFlyerConversionData,
     IAppsFlyerPurchaseValidation,
     IAppsFlyerPurchaseRevenueDataSource,
