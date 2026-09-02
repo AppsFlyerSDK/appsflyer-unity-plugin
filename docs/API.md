@@ -75,7 +75,6 @@ The list of available methods for this plugin is described below.
   - [validateAndSendInAppPurchase (Legacy - Deprecated) {#validateandsendinapppurchase-legacy-1}](#validateandsendinapppurchase-legacy---deprecated-validateandsendinapppurchase-legacy-1)
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
-  - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
   - [disableSKAdNetwork](#disableskadnetwork)
   - [setLanguage](#setlanguage)
   - [disableIDFVCollection](#disableidfvcollection)
@@ -1491,24 +1490,6 @@ Register uninstall - you should register for remote notification and provide App
 #endif
 ```
 
----
-
-### waitForATTUserAuthorizationWithTimeoutInterval 
-**` void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)`**
-
-See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-X-integration-guide-for-developers#integration-33-configuring-app-tracking-transparency-att-support) for more info. 
-
-| parameter     | type       | description  |
-| -----------   |----------  |--------------|
-| `timeoutInterval`         | `int`   |      Time to wait for idfa        |
-
-*Example:*
-
-```c#
-#if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
-#endif
-```
 ---
 
 ### disableSKAdNetwork 

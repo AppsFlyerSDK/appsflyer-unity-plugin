@@ -11,6 +11,10 @@
 * **Breaking:** removed the obsolete `AppsFlyerConsent.ForGDPRUser(...)`/`ForNonGDPRUser()`
   factory methods. Use `new AppsFlyerConsent(isUserSubjectToGDPR:, hasConsentForDataUsage:,
   hasConsentForAdsPersonalization:, hasConsentForAdStorage:)` instead.
+* **Breaking:** removed `waitForATTUserAuthorizationWithTimeoutInterval`. There is no plugin
+  replacement — request ATT authorization yourself and delay `start()` until it resolves; see
+  `RequestATTThenStart()` in `test-app/Assets/Scripts/QATestScript.cs` for a reference
+  implementation.
 * **New:** session-ready listener API — `OnSessionReady`, `registerSessionReadyListener()`,
   `unregisterSessionReadyListener()`, `isSessionReady()`/`isSessionReadyAsync()` — to defer
   `start()` until the native SDK reports session readiness.

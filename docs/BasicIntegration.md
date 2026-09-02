@@ -132,27 +132,25 @@ If it’s important for you to associate the install event with the CUID, call `
     1. Add an entry to the list: Press +  next to `Information Property List`.
     2. Scroll down and select `Privacy - Tracking Usage Description`.
     3. Add as the value the wording you want to present to the user when asking for permission to collect the IDFA.
-3. Call the `waitForATTUserAuthorizationWithTimeoutInterval` api before `start()`
-    
-    ```c#
-    #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
-    #endif
-    ```
-        
-4. Request the tracking authorization where you wish to display the prompt: <br/>
-    You can use the following [package](https://github.com/Unity-Technologies/com.unity.ads.ios-support) or any other package that allows you to request the tracking authorization. 
+3. Request the tracking authorization before calling `start()`, and wait for the user's
+    decision (or a timeout) so the first session can carry IDFA if the user grants it.
+    There is no plugin API for this — request authorization yourself (e.g. via the
+    [com.unity.ads.ios-support](https://github.com/Unity-Technologies/com.unity.ads.ios-support)
+    package, or a small native call) and delay `start()` until the request completes.
+    See `RequestATTThenStart()` in the sample app's
+    [`QATestScript.cs`](/test-app/Assets/Scripts/QATestScript.cs) for a reference implementation.
     ```c#
 
     using Unity.Advertisement.IosSupport;
 
     /*  ... */
-  
+
     if (ATTrackingStatusBinding.GetAuthorizationTrackingStatus() 
          == ATTrackingStatusBinding.AuthorizationTrackingStatus.NOT_DETERMINED)
         {
             ATTrackingStatusBinding.RequestAuthorizationTracking();
         }
+    // Wait for the authorization decision, then call start().
      /*  ... */
   
 ### Customizing the ATT consent dialog
