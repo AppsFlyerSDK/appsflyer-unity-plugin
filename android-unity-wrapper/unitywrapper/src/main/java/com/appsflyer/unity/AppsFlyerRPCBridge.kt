@@ -37,11 +37,15 @@ object AppsFlyerRPCBridge {
         // first actual RPC execution, not at construction time - so the handler can be built here
         // immediately without needing UnityPlayer.currentActivity to be set yet. Re-querying
         // currentActivity inside the lambda (instead of resolving it once up front) also means we
-        // always read the current Activity's applicationContext rather than a value memoized
-        // before it existed; applicationContext (not currentActivity itself) avoids pinning a
-        // since-destroyed Activity for the life of this process-lifetime singleton.
+        // always read the current Activity rather than one memoized before it existed.
+        //
+        // Must return the Activity itself, not applicationContext: handleCollectDataFromLauncherActivity
+        // does `contextProvider() as? Activity`, so applicationContext here means collectDataFromLauncherActivity()
+        // always fails with "requires an Activity context" (422). This doesn't reintroduce an Activity leak for
+        // the cached path either - AppsFlyerRpcHandler's own lazy appContext already calls
+        // .applicationContext on whatever this provider returns before caching it.
         sHandler = AppsFlyerRpcHandler({
-            UnityPlayer.currentActivity?.applicationContext
+            UnityPlayer.currentActivity
                 ?: throw IllegalStateException("No active Activity available for RPC context")
         }, { eventJson ->
             val obj = sCallbackObjectName
