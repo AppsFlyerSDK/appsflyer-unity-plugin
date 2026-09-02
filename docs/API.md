@@ -237,11 +237,13 @@ await AppsFlyer.stop(true);
 ---
 
 ### isStopped
-**`async Awaitable<bool> isStoppedAsync()`**
+**`bool isStopped()`** / **`async Awaitable<bool> isStoppedAsync()`**
 
 *Renamed from `isSDKStopped` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
 Was the `stop(bool)` API set to `true`.
+
+**Android only** — always returns `false` on iOS.
 
 *Example:*
 
