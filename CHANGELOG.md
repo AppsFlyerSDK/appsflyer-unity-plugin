@@ -38,6 +38,7 @@
 * Update Android SDK plugin bridge version - `af-android-plugin-bridge:7.0.12`
 * iOS deep-link delivery (cold-start URL schemes and Universal Links) reworked — see
   [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md).
+* Update Android unity-wrapper version - 7.0.14
 * Unity plugin version - 7.0.2
 
 

@@ -3,14 +3,13 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.12"></androidPackage>
-    <!-- unity-wrapper intentionally omitted here: no published Maven version matches this
-         repo's current Kotlin AppsFlyerRPCBridge (android-unity-wrapper/unitywrapper) — every
-         published version (7.0.1, 7.0.13) still calls AppsFlyerRpcHandler's constructor with a
-         raw Context as the first arg, but af-android-plugin-bridge:7.0.12's AppsFlyerRpcHandler
-         now takes a Function0<Context> supplier there, causing a NoSuchMethodError at runtime.
-         Until a matching version is published, build android-unity-wrapper locally
-         (./gradlew :unitywrapper:assembleDebug) and drop the resulting .aar directly into
-         Assets/Plugins/Android/ instead of declaring it as a remote androidPackage. -->
+    <!-- unity-wrapper:7.0.14 is the first published version whose AppsFlyerRPCBridge.kt calls
+         AppsFlyerRpcHandler's constructor with a Function0<Context> supplier (see commit
+         8535569, "fix(android): pass Activity, not applicationContext, to AppsFlyerRpcHandler"),
+         matching af-android-plugin-bridge:7.0.12's current constructor signature. Earlier
+         published versions (7.0.1, 7.0.13) predate that fix and still pass a raw Context,
+         which throws NoSuchMethodError against af-android-plugin-bridge:7.0.12 at runtime. -->
+    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.14"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) — without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
