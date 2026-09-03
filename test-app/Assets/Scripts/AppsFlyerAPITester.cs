@@ -94,13 +94,6 @@ public class AppsFlyerAPITester : MonoBehaviour
         }
         string P(ApiEntry en, int i) => en.Params[i].Text;
         bool B(ApiEntry en, int i) => en.Params[i].Bool;
-        // Wraps a void-returning call so it fits the Func<ApiEntry, Awaitable> shape Call needs —
-        // only setSharingFilterForAllPartners()/setSharingFilter() are void; everything else in
-        // AppsFlyer.cs already returns an Awaitable. Genuinely has no await - runs synchronously
-        // by design, matching the void action it wraps.
-#pragma warning disable CS1998
-        async Awaitable AsAwaitable(Action action) { action(); }
-#pragma warning restore CS1998
 
         // Lifecycle
         Add("Lifecycle", "start()", en => AppsFlyer.start());
@@ -336,13 +329,6 @@ public class AppsFlyerAPITester : MonoBehaviour
         Add("Privacy", "setSharingFilterForPartners(partners)",
             en => AppsFlyer.setSharingFilterForPartners(CSV(P(en, 0))),
             Param.Str("partners (comma-separated)", "partner_a,partner_b"));
-        // Intentionally exercises the obsolete overloads too, for QA coverage.
-#pragma warning disable CS0618
-        Add("Privacy", "setSharingFilterForAllPartners()", en => AsAwaitable(() => AppsFlyer.setSharingFilterForAllPartners()));
-        Add("Privacy", "setSharingFilter(partners)",
-            en => AsAwaitable(() => AppsFlyer.setSharingFilter(CSV(P(en, 0)))),
-            Param.Str("partners (comma-separated)", "partner_a,partner_b"));
-#pragma warning restore CS0618
 
         // Push notifications
         Add("Push", "handlePushNotifications(pushPayload)",
@@ -570,10 +556,10 @@ public class AppsFlyerAPITester : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    // entry.Call always returns an Awaitable (even for sync/void APIs, via AsAwaitable()) so this
-    // await genuinely waits for async getters (getSdkVersion, etc.) to complete before the
-    // "OK" fallback and log line run — firing it without awaiting logged/displayed the fallback
-    // immediately, before the real result was ever assigned.
+    // entry.Call always returns an Awaitable, so this await genuinely waits for async getters
+    // (getSdkVersion, etc.) to complete before the "OK" fallback and log line run — firing it
+    // without awaiting logged/displayed the fallback immediately, before the real result was
+    // ever assigned.
     private async void InvokeEntry(ApiEntry entry)
     {
         try

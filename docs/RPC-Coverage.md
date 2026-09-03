@@ -37,8 +37,6 @@ Implemented in both the iOS RPC handler and the Android `plugin_bridge`.
 | `setHost` | `setHost` | |
 | `setUserEmails` | `setUserEmails` | |
 | `setPhoneNumber` | `setPhoneNumber` | |
-| `setSharingFilterForAllPartners` | `setSharingFilterForPartners` | Maps to same RPC method |
-| `setSharingFilter` | `setSharingFilterForPartners` | Maps to same RPC method |
 | `setSharingFilterForPartners` | `setSharingFilterForPartners` | |
 | `getConversionData` | `registerConversionListener` | |
 | `setShouldCollectDeviceName` | `setShouldCollectDeviceName` | |

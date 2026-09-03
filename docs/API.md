@@ -38,8 +38,6 @@ The list of available methods for this plugin is described below.
   - [logAdRevenue](#logadrevenue)
   - [recordCrossPromoteImpression](#recordcrosspromoteimpression)
   - [generateUserInviteLink](#generateuserinvitelink)
-  - [setSharingFilterForAllPartners *Deprecated*](#setsharingfilterforallpartners-deprecated)
-  - [setSharingFilter *Deprecated*](#setsharingfilter-deprecated)
   - [setSharingFilterForPartners](#setsharingfilterforpartners)
   - [setPartnerData](#setpartnerdata)
 - [Android Only API](#android-only-api)
@@ -752,41 +750,8 @@ AppsFlyer.generateUserInviteLink(params, this);
 
 ---
 
-### setSharingFilterForAllPartners *Deprecated*
-**`void setSharingFilterForAllPartners()`** 
-
-Used by advertisers to exclude all networks/integrated partners from getting data.
-
-*Example:*
-
-```c#
-AppsFlyer.setSharingFilterForAllPartners();
-```
-
----
-
-### setSharingFilter *Deprecated*
-**`void setSharingFilter(params string[] partners)`** 
-
-
- Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
-
-
-| parameter    | type                         | description                                         |
-| -----------  |----------------------------- |-----------------------------------------------------|
-| `partners` | `params string[] partners` | partners to exclude from getting data                                                    |
-
-
-*Example:*
-
-```c#
-AppsFlyer.setSharingFilter("googleadwords_int","snapchat_int","doubleclick_int");
-```
-
----
-
 ### setSharingFilterForPartners 
-**`void setSharingFilterForPartners(params string[] partners)`** 
+**`async Awaitable setSharingFilterForPartners(params string[] partners)`** 
 
 
  Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
@@ -799,11 +764,11 @@ AppsFlyer.setSharingFilter("googleadwords_int","snapchat_int","doubleclick_int")
 *Example:*
 
 ```c#
-AppsFlyer.setSharingFilterForPartners("partner1_int"); // Single partner
-AppsFlyer.setSharingFilterForPartners("partner1_int", "partner2_int"); // Multiple partners
-AppsFlyer.setSharingFilterForPartners("all"); // All partners
-AppsFlyer.setSharingFilterForPartners(""); // Reset list (default)
-AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
+await AppsFlyer.setSharingFilterForPartners("partner1_int"); // Single partner
+await AppsFlyer.setSharingFilterForPartners("partner1_int", "partner2_int"); // Multiple partners
+await AppsFlyer.setSharingFilterForPartners("all"); // All partners
+await AppsFlyer.setSharingFilterForPartners(""); // Reset list (default)
+await AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
 ```
 
 ---

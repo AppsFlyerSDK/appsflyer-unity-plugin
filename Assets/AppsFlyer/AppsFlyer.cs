@@ -717,12 +717,6 @@ namespace AppsFlyerSDK
             await FireAsync("setSharingFilterForPartners", new Dictionary<string, object> { { "partners", partners } });
         }
 
-        [Obsolete("Please use setSharingFilterForPartners")]
-        public static void setSharingFilterForAllPartners() => _ = setSharingFilterForPartners("all");
-
-        [Obsolete("Please use setSharingFilterForPartners")]
-        public static void setSharingFilter(params string[] partners) => _ = setSharingFilterForPartners(partners);
-
         // ── Android-only ─────────────────────────────────────────────────────────
 
         public static async Awaitable setAppId(string appId)
