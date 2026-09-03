@@ -852,14 +852,6 @@ namespace AppsFlyerSDK.Tests
         // ── Net-new / migrated getters (Category C) ─────────────────────────────────
 
         [Test]
-        public void GetAppsFlyerUID_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getAppsFlyerUID", Arg.Any<Dictionary<string, object>>()).Returns("uid-123");
-            string uid = AppsFlyer.getAppsFlyerUID();
-            Assert.AreEqual("uid-123", uid);
-        }
-
-        [Test]
         [Timeout(10000)]
         public async Task GetAppsFlyerUIDAsync_UsesExecute()
         {
@@ -878,13 +870,6 @@ namespace AppsFlyerSDK.Tests
             // string.Empty), matching the non-null-guarantee pattern used by the other getters.
             string uid = await AppsFlyer.getAppsFlyerUIDAsync();
             Assert.AreEqual(string.Empty, uid);
-        }
-
-        [Test]
-        public void GetSdkVersion_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getSdkVersion", Arg.Any<Dictionary<string, object>>()).Returns("7.0.1");
-            Assert.AreEqual("7.0.1", AppsFlyer.getSdkVersion());
         }
 
         [Test]
@@ -933,13 +918,6 @@ namespace AppsFlyerSDK.Tests
 
 #if UNITY_ANDROID
         [Test]
-        public void GetHostName_Android_NetNew_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getHostName", Arg.Any<Dictionary<string, object>>()).Returns("appsflyer.com");
-            Assert.AreEqual("appsflyer.com", AppsFlyer.getHostName());
-        }
-
-        [Test]
         [Timeout(10000)]
         public async Task GetHostNameAsync_Android_UsesExecute()
         {
@@ -954,13 +932,6 @@ namespace AppsFlyerSDK.Tests
             mockRpc.Execute("getHostName", Arg.Any<Dictionary<string, object>>())
                 .Returns(_ => throw new AppsFlyerRPCException(-1, "boom"));
             Assert.AreEqual(string.Empty, await AppsFlyer.getHostNameAsync());
-        }
-
-        [Test]
-        public void GetHostPrefix_Android_NetNew_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getHostPrefix", Arg.Any<Dictionary<string, object>>()).Returns("prefix");
-            Assert.AreEqual("prefix", AppsFlyer.getHostPrefix());
         }
 
         [Test]
@@ -981,13 +952,6 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void IsStopped_Android_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("isStopped", Arg.Any<Dictionary<string, object>>()).Returns(true);
-            Assert.IsTrue(AppsFlyer.isStopped());
-        }
-
-        [Test]
         [Timeout(10000)]
         public async Task IsStoppedAsync_Android_UsesExecute()
         {
@@ -1002,13 +966,6 @@ namespace AppsFlyerSDK.Tests
             mockRpc.Execute("isStopped", Arg.Any<Dictionary<string, object>>())
                 .Returns(_ => throw new AppsFlyerRPCException(-1, "boom"));
             Assert.IsFalse(await AppsFlyer.isStoppedAsync());
-        }
-
-        [Test]
-        public void GetAttributionId_Android_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getAttributionId", Arg.Any<Dictionary<string, object>>()).Returns("attr-id");
-            Assert.AreEqual("attr-id", AppsFlyer.getAttributionId());
         }
 
         [Test]
@@ -1029,13 +986,6 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
-        public void GetOutOfStore_Android_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("getOutOfStore", Arg.Any<Dictionary<string, object>>()).Returns("google_play");
-            Assert.AreEqual("google_play", AppsFlyer.getOutOfStore());
-        }
-
-        [Test]
         [Timeout(10000)]
         public async Task GetOutOfStoreAsync_Android_UsesExecute()
         {
@@ -1050,13 +1000,6 @@ namespace AppsFlyerSDK.Tests
             mockRpc.Execute("getOutOfStore", Arg.Any<Dictionary<string, object>>())
                 .Returns(_ => throw new AppsFlyerRPCException(-1, "boom"));
             Assert.AreEqual(string.Empty, await AppsFlyer.getOutOfStoreAsync());
-        }
-
-        [Test]
-        public void IsPreInstalledApp_Android_UsesSynchronousExecute()
-        {
-            mockRpc.Execute("isPreInstalledApp", Arg.Any<Dictionary<string, object>>()).Returns(true);
-            Assert.IsTrue(AppsFlyer.isPreInstalledApp());
         }
 
         [Test]

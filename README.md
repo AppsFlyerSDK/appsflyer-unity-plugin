@@ -25,10 +25,10 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 The plugin's C#/native bridge was migrated to a JSON-RPC transport
 (`Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`), replacing the legacy per-method
-AndroidJavaClass/DllImport bridge. Alongside this, several previously synchronous getters
-(e.g. `getAppsFlyerUID`, `getSdkVersion`, `isSessionReady`) gained `*Async` twins
-(`getAppsFlyerUIDAsync`, etc.), matching the pattern already used by `generateInviteLinkAsync`,
-so none of them need to block Unity's main thread for the native round trip. iOS deep-link
+AndroidJavaClass/DllImport bridge. Alongside this, getters that need a return value
+(e.g. `getAppsFlyerUIDAsync`, `getSdkVersionAsync`, `isSessionReadyAsync`) are `*Async`-only,
+matching the pattern already used by `generateInviteLinkAsync`, so none of them need to block
+Unity's main thread for the native round trip. iOS deep-link
 delivery (cold-start URL schemes and Universal Links) was also reworked — see
 [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md)
 for the delivery-path rationale.
@@ -53,8 +53,8 @@ Initialize the SDK manually instead — see
 [Manual integration](/docs/BasicIntegration.md#manual-integration).
 
 **New:** a session-ready listener API — `AppsFlyer.OnSessionReady`,
-`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReady()` /
-`isSessionReadyAsync()` — lets you defer `start()` until the native SDK reports session
+`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReadyAsync()`
+— lets you defer `start()` until the native SDK reports session
 readiness instead of calling it unconditionally right after `init()`. See
 [Session Ready Listener](/docs/BasicIntegration.md#session-ready-listener) and the
 [API reference](/docs/API.md#session-ready-listener).

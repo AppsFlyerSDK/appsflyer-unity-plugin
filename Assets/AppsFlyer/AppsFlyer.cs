@@ -147,53 +147,19 @@ namespace AppsFlyerSDK
             await FireAsync("stop", new Dictionary<string, object> { { "shouldStop", shouldStop } });
         }
 
-        /// <summary>Synchronous RPC query — matches the schema's canonical isSessionReady contract.
-        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
-        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
-        /// bound exists on Android's executeJson, a known limitation); prefer
-        /// <see cref="isSessionReadyAsync"/>.</summary>
-        public static bool isSessionReady()
-        {
-            return (Query("isSessionReady") as bool?) ?? false;
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="isSessionReady"/> — safe to call from the main thread.</summary>
+        /// <summary>Matches the schema's canonical isSessionReady contract. Safe to call from the main thread.</summary>
         public static async Awaitable<bool> isSessionReadyAsync()
         {
             return (await QueryAsync("isSessionReady") as bool?) ?? false;
         }
 
-        /// <summary>Gets the AppsFlyer SDK version used by native, via a synchronous RPC query.
-        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
-        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
-        /// bound exists on Android's executeJson, a known limitation); prefer
-        /// <see cref="getSdkVersionAsync"/>.</summary>
-        public static string getSdkVersion()
-        {
-            return Query("getSdkVersion") as string ?? string.Empty;
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getSdkVersion"/> — safe to call from the main thread.</summary>
+        /// <summary>Gets the AppsFlyer SDK version used by native. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getSdkVersionAsync()
         {
             return await QueryAsync("getSdkVersion") as string ?? string.Empty;
         }
 
-        /// <summary>Gets AppsFlyer's unique device ID, via a synchronous RPC query.
-        /// On iOS, calling this from Unity's main thread may block it up to 5s on native lag
-        /// (see AppsFlyerRPCWrapper.swift's _afExecuteJson bounded semaphore wait — no such
-        /// bound exists on Android's executeJson, a known limitation); prefer
-        /// <see cref="getAppsFlyerUIDAsync"/>.</summary>
-        public static string getAppsFlyerUID()
-        {
-#if UNITY_WSA_10_0
-            return AppsFlyerWindows.GetAppsFlyerId();
-#else
-            return Query("getAppsFlyerUID") as string ?? string.Empty;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getAppsFlyerUID"/> — safe to call from the main thread.</summary>
+        /// <summary>Gets AppsFlyer's unique device ID. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getAppsFlyerUIDAsync()
         {
 #if UNITY_WSA_10_0
@@ -768,18 +734,7 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="getOutOfStoreAsync"/> to avoid
-        /// blocking the calling thread.</summary>
-        public static string getOutOfStore()
-        {
-#if UNITY_ANDROID
-            return Query("getOutOfStore") as string ?? string.Empty;
-#else
-            return string.Empty;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getOutOfStore"/> — safe to call from the main thread.</summary>
+        /// <summary>Android only. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getOutOfStoreAsync()
         {
 #if UNITY_ANDROID
@@ -799,18 +754,7 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="isPreInstalledAppAsync"/> to
-        /// avoid blocking the calling thread.</summary>
-        public static bool isPreInstalledApp()
-        {
-#if UNITY_ANDROID
-            return (Query("isPreInstalledApp") as bool?) ?? false;
-#else
-            return false;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="isPreInstalledApp"/> — safe to call from the main thread.</summary>
+        /// <summary>Android only. Safe to call from the main thread.</summary>
         public static async Awaitable<bool> isPreInstalledAppAsync()
         {
 #if UNITY_ANDROID
@@ -820,18 +764,7 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Prefer <see cref="getAttributionIdAsync"/> to
-        /// avoid blocking the calling thread.</summary>
-        public static string getAttributionId()
-        {
-#if UNITY_ANDROID
-            return Query("getAttributionId") as string ?? string.Empty;
-#else
-            return string.Empty;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getAttributionId"/> — safe to call from the main thread.</summary>
+        /// <summary>Android only. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getAttributionIdAsync()
         {
 #if UNITY_ANDROID
@@ -841,18 +774,7 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.
-        /// Prefer <see cref="getHostNameAsync"/> to avoid blocking the calling thread.</summary>
-        public static string getHostName()
-        {
-#if UNITY_ANDROID
-            return Query("getHostName") as string ?? string.Empty;
-#else
-            return string.Empty;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getHostName"/> — safe to call from the main thread.</summary>
+        /// <summary>Android only. Net-new — not exposed prior to this migration. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getHostNameAsync()
         {
 #if UNITY_ANDROID
@@ -862,18 +784,7 @@ namespace AppsFlyerSDK
 #endif
         }
 
-        /// <summary>Synchronous RPC query. Android only. Net-new — not exposed prior to this migration.
-        /// Prefer <see cref="getHostPrefixAsync"/> to avoid blocking the calling thread.</summary>
-        public static string getHostPrefix()
-        {
-#if UNITY_ANDROID
-            return Query("getHostPrefix") as string ?? string.Empty;
-#else
-            return string.Empty;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="getHostPrefix"/> — safe to call from the main thread.</summary>
+        /// <summary>Android only. Net-new — not exposed prior to this migration. Safe to call from the main thread.</summary>
         public static async Awaitable<string> getHostPrefixAsync()
         {
 #if UNITY_ANDROID
@@ -884,21 +795,10 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>
-        /// Synchronous RPC query. Android only per the schema — note this is a capability reduction from
-        /// the old isSDKStopped(), which also worked on iOS via the legacy bridge (no iOS RPC method for
-        /// "isStopped" is declared in the schema). Prefer <see cref="isStoppedAsync"/> to avoid blocking
-        /// the calling thread.
+        /// Android only per the schema — note this is a capability reduction from the old isSDKStopped(),
+        /// which also worked on iOS via the legacy bridge (no iOS RPC method for "isStopped" is declared
+        /// in the schema). Safe to call from the main thread.
         /// </summary>
-        public static bool isStopped()
-        {
-#if UNITY_ANDROID
-            return (Query("isStopped") as bool?) ?? false;
-#else
-            return false;
-#endif
-        }
-
-        /// <summary>Awaitable counterpart of <see cref="isStopped"/> — safe to call from the main thread.</summary>
         public static async Awaitable<bool> isStoppedAsync()
         {
 #if UNITY_ANDROID

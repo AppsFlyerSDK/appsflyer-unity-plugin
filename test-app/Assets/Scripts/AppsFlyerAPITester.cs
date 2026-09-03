@@ -27,7 +27,7 @@ public class AppsFlyerAPITester : MonoBehaviour
         public string Category;
         public string Name;
         public List<Param> Params = new List<Param>();
-        public Action<ApiEntry> Call;
+        public Func<ApiEntry, Awaitable> Call;
         public string Result = "";
 
         // Cached on first access instead of recomputed every OnGUI() call (Layout + Repaint,
@@ -86,7 +86,7 @@ public class AppsFlyerAPITester : MonoBehaviour
     private List<ApiEntry> BuildEntries()
     {
         var e = new List<ApiEntry>();
-        void Add(string category, string name, Action<ApiEntry> call, params Param[] paramsList)
+        void Add(string category, string name, Func<ApiEntry, Awaitable> call, params Param[] paramsList)
         {
             var entry = new ApiEntry { Category = category, Name = name, Call = call };
             entry.Params.AddRange(paramsList);
@@ -94,13 +94,17 @@ public class AppsFlyerAPITester : MonoBehaviour
         }
         string P(ApiEntry en, int i) => en.Params[i].Text;
         bool B(ApiEntry en, int i) => en.Params[i].Bool;
+        // Wraps a void-returning call so it fits the Func<ApiEntry, Awaitable> shape Call needs —
+        // only setSharingFilterForAllPartners()/setSharingFilter() are void; everything else in
+        // AppsFlyer.cs already returns an Awaitable.
+        async Awaitable AsAwaitable(Action action) { action(); }
 
         // Lifecycle
         Add("Lifecycle", "start()", en => AppsFlyer.start());
         Add("Lifecycle", "stop(shouldStop)", en => AppsFlyer.stop(B(en, 0)), Param.Flag("shouldStop"));
-        Add("Lifecycle", "isSessionReady()", en => en.Result = AppsFlyer.isSessionReady().ToString());
-        Add("Lifecycle", "getSdkVersion()", en => en.Result = AppsFlyer.getSdkVersion());
-        Add("Lifecycle", "getAppsFlyerUID()", en => en.Result = AppsFlyer.getAppsFlyerUID());
+        Add("Lifecycle", "isSessionReady()", async en => en.Result = (await AppsFlyer.isSessionReadyAsync()).ToString());
+        Add("Lifecycle", "getSdkVersion()", async en => en.Result = await AppsFlyer.getSdkVersionAsync());
+        Add("Lifecycle", "getAppsFlyerUID()", async en => en.Result = await AppsFlyer.getAppsFlyerUIDAsync());
 
         // Events
         Add("Events", "logEvent(eventName, eventValues)",
@@ -285,17 +289,17 @@ public class AppsFlyerAPITester : MonoBehaviour
             en => AppsFlyer.setOutOfStore(P(en, 0)),
             Param.Str("sourceName", "my_store"));
 
-        Add("Configuration", "getOutOfStore()", en => en.Result = AppsFlyer.getOutOfStore());
+        Add("Configuration", "getOutOfStore()", async en => en.Result = await AppsFlyer.getOutOfStoreAsync());
 
         Add("Configuration", "setPreinstallAttribution(mediaSource, campaign, siteId)",
             en => AppsFlyer.setPreinstallAttribution(P(en, 0), P(en, 1), P(en, 2)),
             Param.Str("mediaSource", "preload"), Param.Str("campaign", "preinstall_campaign"), Param.Str("siteId", "site_1"));
 
-        Add("Configuration", "isPreInstalledApp()", en => en.Result = AppsFlyer.isPreInstalledApp().ToString());
-        Add("Configuration", "getAttributionId()", en => en.Result = AppsFlyer.getAttributionId());
-        Add("Configuration", "getHostName() [Android]", en => en.Result = AppsFlyer.getHostName());
-        Add("Configuration", "getHostPrefix() [Android]", en => en.Result = AppsFlyer.getHostPrefix());
-        Add("Configuration", "isStopped() [Android]", en => en.Result = AppsFlyer.isStopped().ToString());
+        Add("Configuration", "isPreInstalledApp()", async en => en.Result = (await AppsFlyer.isPreInstalledAppAsync()).ToString());
+        Add("Configuration", "getAttributionId()", async en => en.Result = await AppsFlyer.getAttributionIdAsync());
+        Add("Configuration", "getHostName() [Android]", async en => en.Result = await AppsFlyer.getHostNameAsync());
+        Add("Configuration", "getHostPrefix() [Android]", async en => en.Result = await AppsFlyer.getHostPrefixAsync());
+        Add("Configuration", "isStopped() [Android]", async en => en.Result = (await AppsFlyer.isStoppedAsync()).ToString());
         Add("Configuration", "disableAppSetId() [Android]", en => AppsFlyer.disableAppSetId());
 
         Add("Configuration", "updateServerUninstallToken(token) [Android]",
@@ -329,9 +333,9 @@ public class AppsFlyerAPITester : MonoBehaviour
         Add("Privacy", "setSharingFilterForPartners(partners)",
             en => AppsFlyer.setSharingFilterForPartners(CSV(P(en, 0))),
             Param.Str("partners (comma-separated)", "partner_a,partner_b"));
-        Add("Privacy", "setSharingFilterForAllPartners()", en => AppsFlyer.setSharingFilterForAllPartners());
+        Add("Privacy", "setSharingFilterForAllPartners()", en => AsAwaitable(() => AppsFlyer.setSharingFilterForAllPartners()));
         Add("Privacy", "setSharingFilter(partners)",
-            en => AppsFlyer.setSharingFilter(CSV(P(en, 0))),
+            en => AsAwaitable(() => AppsFlyer.setSharingFilter(CSV(P(en, 0)))),
             Param.Str("partners (comma-separated)", "partner_a,partner_b"));
 
         // Push notifications
@@ -533,18 +537,8 @@ public class AppsFlyerAPITester : MonoBehaviour
             GUILayout.Label(entry.DisplayName, _labelStyle);
             if (GUILayout.Button("Call", _buttonStyle))
             {
-                try
-                {
-                    entry.Result = "";
-                    entry.Call(entry);
-                    if (string.IsNullOrEmpty(entry.Result)) entry.Result = "OK";
-                    AFQALogger.Log("[AF_QA][TESTER] " + entry.Name + " -> " + entry.Result);
-                }
-                catch (Exception ex)
-                {
-                    entry.Result = "ERROR: " + ex.Message;
-                    AFQALogger.Log("[AF_QA][TESTER] " + entry.Name + " -> " + entry.Result);
-                }
+                entry.Result = "";
+                InvokeEntry(entry);
             }
 
             foreach (var param in entry.Params)
@@ -568,5 +562,24 @@ public class AppsFlyerAPITester : MonoBehaviour
 
         GUILayout.EndScrollView();
         GUILayout.EndArea();
+    }
+
+    // entry.Call always returns an Awaitable (even for sync/void APIs, via AsAwaitable()) so this
+    // await genuinely waits for async getters (getSdkVersionAsync, etc.) to complete before the
+    // "OK" fallback and log line run — firing it without awaiting logged/displayed the fallback
+    // immediately, before the real result was ever assigned.
+    private async void InvokeEntry(ApiEntry entry)
+    {
+        try
+        {
+            await entry.Call(entry);
+            if (string.IsNullOrEmpty(entry.Result)) entry.Result = "OK";
+            AFQALogger.Log("[AF_QA][TESTER] " + entry.Name + " -> " + entry.Result);
+        }
+        catch (Exception ex)
+        {
+            entry.Result = "ERROR: " + ex.Message;
+            AFQALogger.Log("[AF_QA][TESTER] " + entry.Name + " -> " + entry.Result);
+        }
     }
 }

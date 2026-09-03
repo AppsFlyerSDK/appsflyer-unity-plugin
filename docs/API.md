@@ -105,12 +105,11 @@ The list of available methods for this plugin is described below.
 > **RPC bridge (7.0.x):** the C#/native bridge is now a JSON-RPC transport, and most APIs on
 > this page — including `init`/`start` below — are `async Awaitable`/`Awaitable<T>` methods.
 > Await them (or fire-and-forget with `_ = AppsFlyer.foo(...)`) instead of treating them as
-> blocking calls. A number of previously synchronous getters (`getSdkVersion`,
-> `getAppsFlyerUID`, `isSessionReady`, etc.) additionally have an `*Async` twin (e.g.
-> `getSdkVersionAsync`) that is safe to await from the main thread; the non-`Async` name still
-> exists as a synchronous RPC query for backward compatibility, but on iOS it can block the
-> calling thread up to 5s on native lag — prefer the `*Async` version in new code. This
-> requires **Unity 2023.1 or newer** (raised from 2019.4) for `Awaitable`/`Awaitable<T>`
+> blocking calls. Getters that need a return value (`getSdkVersionAsync`, `getAppsFlyerUIDAsync`,
+> `isSessionReadyAsync`, etc.) are `*Async`-only — safe to await from the main thread. The old
+> synchronous (non-`Async`) getters have been removed: on iOS they could block the calling
+> thread up to 5s on native lag. This requires **Unity 2023.1 or newer** (raised from 2019.4)
+> for `Awaitable`/`Awaitable<T>`
 > support — see [Installation](/docs/Installation.md#requirements).
 
 ### init
@@ -236,7 +235,7 @@ await AppsFlyer.stop(true);
 ---
 
 ### isStopped
-**`bool isStopped()`** / **`async Awaitable<bool> isStoppedAsync()`**
+**`async Awaitable<bool> isStoppedAsync()`**
 
 *Renamed from `isSDKStopped` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
@@ -256,10 +255,9 @@ if (!await AppsFlyer.isStoppedAsync())
 ---
 
 ### getSdkVersion 
-**`string getSdkVersion()`** / **`async Awaitable<string> getSdkVersionAsync()`**
+**`async Awaitable<string> getSdkVersionAsync()`**
 
-Get the AppsFlyer SDK version used in the app. Prefer the `Async` twin — see the note at the top
-of this page.
+Get the AppsFlyer SDK version used in the app.
 
 *Example:*
 
@@ -541,11 +539,11 @@ AppsFlyer.anonymizeUser(true);
 ---
 
 ### getAppsFlyerUID
-**`string getAppsFlyerUID()`** / **`async Awaitable<string> getAppsFlyerUIDAsync()`**
+**`async Awaitable<string> getAppsFlyerUIDAsync()`**
 
 *Renamed from `getAppsFlyerId` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
-AppsFlyer's unique device ID is created for every new install of an app. Use the following API to obtain AppsFlyer’s Unique ID. Prefer the `Async` twin — see the note at the top of this page.
+AppsFlyer's unique device ID is created for every new install of an app. Use the following API to obtain AppsFlyer’s Unique ID.
 
 *Example:*
 
@@ -938,7 +936,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 ---
 
  ### getOutOfStore 
- **`string getOutOfStore()`**
+ **`async Awaitable<string> getOutOfStoreAsync()`**
  
  Get the current AF_STORE value.
 
@@ -946,7 +944,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string af_store = AppsFlyer.getOutOfStore();
+        string af_store = await AppsFlyer.getOutOfStoreAsync();
 #endif
 ```
 
@@ -1057,7 +1055,7 @@ Manually set that the application was updated.
 ---
 
  ### isPreInstalledApp
- **`bool isPreInstalledApp()`**
+ **`async Awaitable<bool> isPreInstalledAppAsync()`**
  
 Boolean indicator for preinstall by Manufacturer.
 
@@ -1065,7 +1063,7 @@ Boolean indicator for preinstall by Manufacturer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (AppsFlyer.isPreInstalledApp())
+        if (await AppsFlyer.isPreInstalledAppAsync())
         {
 
         }
@@ -1088,7 +1086,7 @@ AppsFlyer.handlePushNotifications();
 
 
 ### getAttributionId
-**`string getAttributionId()`**
+**`async Awaitable<string> getAttributionIdAsync()`**
  
 Get the Facebook attribution ID, if one exists.
 
@@ -1096,7 +1094,7 @@ Get the Facebook attribution ID, if one exists.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string attributionId = AppsFlyer.getAttributionId();
+        string attributionId = await AppsFlyer.getAttributionIdAsync();
 #endif
 ```
 

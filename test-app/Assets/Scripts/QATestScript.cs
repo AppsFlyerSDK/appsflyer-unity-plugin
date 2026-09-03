@@ -213,15 +213,24 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     // ── Post-start APIs ───────────────────────────────────────────────────────
 
+    async void LogSdkVersion()
+    {
+        string sdkVersion = await AppsFlyer.getSdkVersionAsync();
+        AFQALogger.Log("[AF_QA][getSDKVersion] result: " + sdkVersion);
+    }
+
+    async void LogAppsFlyerUid()
+    {
+        string uid = await AppsFlyer.getAppsFlyerUIDAsync();
+        AFQALogger.Log("[AF_QA][getAppsFlyerUID] result: " + uid);
+    }
+
     IEnumerator RunPostStartApis()
     {
         yield return new WaitForSeconds(1f);
 
-        string sdkVersion = AppsFlyer.getSdkVersion();
-        AFQALogger.Log("[AF_QA][getSDKVersion] result: " + sdkVersion);
-
-        string uid = AppsFlyer.getAppsFlyerUID();
-        AFQALogger.Log("[AF_QA][getAppsFlyerUID] result: " + uid);
+        LogSdkVersion();
+        LogAppsFlyerUid();
 
         // E2E-001: three standard events
         AppsFlyer.logEvent("af_demo_launch", null);
