@@ -15,7 +15,7 @@ namespace AppsFlyerSDK
     /// <summary>
     /// Purchase details class matching iOS SDK AFSDKPurchaseDetails
     /// </summary>
-    public class AFSDKPurchaseDetailsIOS
+    public class AFSDKPurchaseDetailsIOS : IAFPurchaseDetails
     {
         public string productId { get; private set; }
         public string transactionId { get; private set; }
@@ -31,6 +31,20 @@ namespace AppsFlyerSDK
         public static AFSDKPurchaseDetailsIOS Init(string productId, string transactionId, AFSDKPurchaseType purchaseType)
         {
             return new AFSDKPurchaseDetailsIOS(productId, transactionId, purchaseType);
+        }
+
+        public Dictionary<string, object> ToRpcPayload()
+        {
+            return new Dictionary<string, object>
+            {
+                { "product", new Dictionary<string, object> { { "productId", productId } } },
+                { "transaction", new Dictionary<string, object>
+                    {
+                        { "transactionId", transactionId },
+                        { "purchaseType", purchaseType == AFSDKPurchaseType.Subscription ? "subscription" : "oneTimePurchase" }
+                    }
+                }
+            };
         }
     }
 

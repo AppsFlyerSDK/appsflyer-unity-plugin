@@ -49,15 +49,9 @@ Assets/Plugins/iOS/libAppsFlyerLib.a
     
 1. Add the new .unitypackage, which can be found in the new plugin. 
     
-2. There are two main options of initialization: 
-   1. Remove all old init code and use the new .prefab object. 
-   2. Update your existing init code.
-   
-## 1. remove all old init code 
-To do this simpily remove the game object or all the appsflyer code in the game object where there sdk is being initalized.
-Then follow the init guide for the new plugin.
-    
-## 2. Update old init code with new code
+2. Remove all old init code and replace it with the [manual integration](/docs/BasicIntegration.md#manual-integration) code.
+
+## Update old init code with new code
 
 Replace old init code:
 
@@ -82,13 +76,13 @@ With new init code:
 ```c#
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData
+public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData
 {
-    void Start()
+    async void Start()
     {
         /* AppsFlyer.setDebugLog(true); */
-        AppsFlyer.init-sdk("devkey", "appID", this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devkey", "appID", this);
+        await AppsFlyer.start();
     }
     
  // .....   
@@ -162,10 +156,10 @@ AppsFlyer.init(string devKey);
 AppsFlyer.init(string devKey, string callbackObject);
 AppsFlyer.loadConversionData(string callbackObject);
 
-// New API's
-AppsFlyer.initSDK(string key, string app_id); // without deeplinking/conversion data
-AppsFlyer.initSDK(string key, string app_id, MonoBehaviour gameObject); // with deeplinking/conversion data
-AppsFlyer.startSDK();
+// New API's (renamed again since - see /docs/BasicIntegration.md#manual-integration)
+await AppsFlyer.init(string key, string app_id); // without deeplinking/conversion data
+await AppsFlyer.init(string key, string app_id, MonoBehaviour gameObject); // with deeplinking/conversion data
+await AppsFlyer.start();
 ```
 
 ## API that did not change
@@ -180,7 +174,7 @@ AppsFlyer.setUserEmails(EmailCryptType cryptType, params string[] userEmails);
 AppsFlyer.setResolveDeepLinkURLs(params string[] userEmails);
 AppsFlyer.setOneLinkCustomDomain(params string[] domains);
 AppsFlyer.setIsDebug(bool isDebug);
-AppsFlyer.getAppsFlyerId();
+await AppsFlyer.getAppsFlyerUID(); // renamed from getAppsFlyerId - see /README.md#breaking-changes-7xx
 AppsFlyer.setAppInviteOneLinkID(string oneLinkID);
 ```
 
@@ -188,13 +182,13 @@ AppsFlyer.setAppInviteOneLinkID(string oneLinkID);
 ```c#
 // old
 AppsFlyer.trackRichEvent(string eventName, Dictionary<string, string> eventValues);
-// new
-AppsFlyer.sendEvent(string eventName, Dictionary<string, string> eventValues);
+// new (renamed again since - see /docs/InAppEvents.md#send-event)
+await AppsFlyer.logEvent(string eventName, Dictionary<string, string> eventValues, bool awaitResponse = false);
 
 // old
 AppsFlyer.stopTracking(bool isStopTracking);
-// new
-AppsFlyer.stopSDK(bool isStopTracking);
+// new (renamed again since - see /README.md#breaking-changes-7xx)
+await AppsFlyer.stop(bool isStopTracking);
    
 // old   
 AppsFlyer.setDeviceTrackingDisabled(bool state);

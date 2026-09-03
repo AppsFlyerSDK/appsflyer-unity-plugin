@@ -151,12 +151,13 @@ namespace AppsFlyerSDK
                     error = dictionary["error"].ToString();
                 }
                 
-                if (dictionary.ContainsKey("deepLink") && dictionary["deepLink"] != null)
+                if (dictionary.TryGetValue("deepLink", out var deepLinkValue) && deepLinkValue is Dictionary<string, object> nestedDeepLink)
                 {
-                    this.deepLink = AppsFlyer.CallbackStringToDictionary(dictionary["deepLink"].ToString());
+                    this.deepLink = nestedDeepLink;
                 }
                 if (dictionary.ContainsKey("is_deferred"))
                 {
+                    this.deepLink ??= new Dictionary<string, object>();
                     this.deepLink["is_deferred"] = dictionary["is_deferred"];
                 }
 

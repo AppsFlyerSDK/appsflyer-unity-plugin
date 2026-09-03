@@ -149,6 +149,11 @@ jobs:
           disable-animations: true
           script: |
             adb wait-for-device
+            # Elevate to root so the scenario runner can read af_qa_logs.txt from
+            # /data/data/... and so adb logcat -G 32m works. google_apis emulators
+            # default to shell user which lacks both permissions.
+            adb root || true
+            adb wait-for-device
             adb install -r "$APK_PATH"
             adb shell am force-stop com.appsflyer.engagement
             chmod +x scripts/af-scenario-runner.sh

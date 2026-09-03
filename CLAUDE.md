@@ -61,9 +61,9 @@ When bumping SDK or plugin versions, these files must stay in sync:
 - `deploy/` `.unitypackage` files — must be regenerated on release
 
 ### SDK targets
-- Android: af-android-sdk v6.17.6 (two billing library variants: v7 and v8)
+- Android: `af-android-plugin-bridge:7.0.12` + `unity-wrapper:7.0.1`/`7.0.13` (see `Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml`)
 - iOS: AppsFlyerFramework v6.17.9
-- Unity: 2019.4+, Android API 16–34, Java/Kotlin 17
+- Unity: 2023.1+ (raised from 2019.4 for `Awaitable`/`Awaitable<T>` support, used by `generateInviteLinkAsync`), Android API 16–34, Java/Kotlin 17
 
 ### Billing library variants
 Two Gradle build variants exist for Google Play Billing migration (v7 → v8). Both must remain buildable and consistent after any Android wrapper change.

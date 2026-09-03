@@ -13,7 +13,7 @@ Learn more about [what is conversion data](https://dev.appsflyer.com/hc/docs/con
 ## Obtain AppsFlyer conversion data
 
 1. Implement the [`IAppsFlyerConversionData`](https://dev.appsflyer.com/hc/docs/api#iappsflyerconversiondata) class.
-2. Call the [`initSDK`](https://dev.appsflyer.com/hc/docs/api#initsdk) method with `this` as the last parameter.
+2. Call the [`init`](/docs/API.md#init) method with `this` as the last parameter.
 3. Use the [`onConversionDataSuccess`](https://dev.appsflyer.com/hc/docs/api#onconversiondatasuccess) method to redirect the user.
 
 ## Example
@@ -21,12 +21,12 @@ Learn more about [what is conversion data](https://dev.appsflyer.com/hc/docs/con
 ```c#
 using AppsFlyerSDK;
 
-public class AppsFlyerObjectScript : MonoBehaviour , IAppsFlyerConversionData{
-    void Start()
+public class AppsFlyerInit : MonoBehaviour , IAppsFlyerConversionData{
+    async void Start()
     {
         /* AppsFlyer.setDebugLog(true); */
-        AppsFlyer.initSDK("devkey", "appID", this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devkey", "appID", this);
+        await AppsFlyer.start();
     }
 
     public void onConversionDataSuccess(string conversionData)

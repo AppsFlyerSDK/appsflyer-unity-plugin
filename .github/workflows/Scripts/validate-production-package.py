@@ -51,10 +51,6 @@ def validate_common_surfaces(root, version):
         require_file(appsflyer_root, "AppsFlyer.cs"),
         f'kAppsFlyerPluginVersion = "{version}"',
     )
-    assert_contains(
-        require_file(appsflyer_root, "Plugins/iOS/AppsFlyeriOSWrapper.mm"),
-        f'pluginVersion:@"{version}"',
-    )
     assert_no_rc_metadata(appsflyer_root, version)
 
 

@@ -16,10 +16,58 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.18.1
+- Android AppsFlyer SDK v6.17.6
 - Android Purchase Connector 2.2.0
-- iOS AppsFlyer SDK v6.18.1
-- iOS Purchase Connector 6.18.2
+- iOS AppsFlyer SDK v6.17.9
+- iOS Purchase Connector 6.17.9
+---
+## 📌 RPC-schema-aligned plugin core + new async API surface
+
+The plugin's C#/native bridge was migrated to a JSON-RPC transport
+(`Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`), replacing the legacy per-method
+AndroidJavaClass/DllImport bridge. Alongside this, getters that need a return value
+(e.g. `getAppsFlyerUID`, `getSdkVersion`, `isSessionReady`) are `async Awaitable<T>` too,
+matching the pattern already used by `generateInviteLink`, so none of them need to block
+Unity's main thread for the native round trip. iOS deep-link
+delivery (cold-start URL schemes and Universal Links) was also reworked — see
+[`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md)
+for the delivery-path rationale.
+
+---
+## <a id="breaking-changes-7xx">     ❗❗ Breaking changes when updating to 7.x.x ❗❗
+
+The RPC bridge migration (see above) renames several core APIs and makes most of the public
+surface `async Awaitable`/`Awaitable<T>`. There is no backward-compatible alias for the renamed
+methods — update call sites when you upgrade.
+
+| Old (synchronous) | New (`async Awaitable`) |
+|---|---|
+| `AppsFlyer.initSDK(devKey, appID, gameObject)` | `await AppsFlyer.init(devKey, appID, gameObject)` |
+| `AppsFlyer.startSDK()` | `await AppsFlyer.start()` |
+| `AppsFlyer.stopSDK(bool)` | `await AppsFlyer.stop(bool)` |
+| `AppsFlyer.isSDKStopped()` | `await AppsFlyer.isStopped()` |
+| `AppsFlyer.getAppsFlyerId()` | `await AppsFlyer.getAppsFlyerUID()` |
+
+**Breaking:** starting with 7.0.x, the `AppsFlyerObject.prefab` UI-based setup has been removed.
+Initialize the SDK manually instead — see
+[Manual integration](/docs/BasicIntegration.md#manual-integration).
+
+**New:** a session-ready listener API — `AppsFlyer.OnSessionReady`,
+`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReady()`
+— lets you defer `start()` until the native SDK reports session
+readiness instead of calling it unconditionally right after `init()`. See
+[Session Ready Listener](/docs/BasicIntegration.md#session-ready-listener) and the
+[API reference](/docs/API.md#session-ready-listener).
+
+**Requirements:** Unity 2023.1+ (see below) and **EDM4U 1.2.187 or newer** — earlier 1.2.x
+releases mis-resolve the new iOS Swift Package Manager dependency (`AppsFlyerRPC`). See
+[Installation](/docs/Installation.md#requirements).
+
+---
+## 📌 Minimum supported Unity version raised to 2023.1
+
+Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLink`, `getAppsFlyerUID`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.
+
 ---
 ## 📌 Google Play Billing Library 8 (6.18.0+)
 
@@ -38,6 +86,7 @@ Use the last **6.17.x** dual-line release: **`v6.17.90`** (Billing v7) or **`v6.
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
+- **Android + AGP 8**: `com.appsflyer:purchase-connector:2.3.0` and `com.appsflyer:af-android-sdk:7.0.1` currently share the same manifest package (`com.appsflyer`), which AGP 8's mandatory namespace-uniqueness check hard-fails on. There is no known consumer-side Gradle property that resolves this (in particular, `android.uniquePackageNames` is an older, unrelated flag and does not fix it) — the fix has to happen upstream, in how these artifacts are published. Until that lands, `purchase-connector` cannot be built alongside `af-android-sdk` under AGP 8+; track the upstream issue with AppsFlyer support for status.
 
 ---
 ## <a id="breaking-changes-6175">     ❗❗ Breaking changes when updating to 6.17.5 ❗❗

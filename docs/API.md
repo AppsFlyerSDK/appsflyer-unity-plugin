@@ -8,11 +8,12 @@ hidden: false
 
 The list of available methods for this plugin is described below.
 - [Android, iOS and Windows API](#android-ios-and-windows-api)
-  - [initSDK](#initsdk)
-  - [startSDK](#startsdk)
+  - [init](#init)
+  - [start](#start)
+  - [Session Ready Listener](#session-ready-listener)
 - [Android and iOS API](#android-and-ios-api)
-  - [stopSDK](#stopsdk)
-  - [isSDKStopped](#issdkstopped)
+  - [stop](#stop)
+  - [isStopped](#isstopped)
   - [getSdkVersion](#getsdkversion)
   - [setIsDebug](#setisdebug)
   - [addPushNotificationDeepLinkPath](#addpushnotificationdeeplinkpath)
@@ -27,7 +28,7 @@ The list of available methods for this plugin is described below.
   - [setConsentData](#setconsentdata)
   - [recordLocation](#recordlocation)
   - [anonymizeUser](#anonymizeuser)
-  - [getAppsFlyerId](#getappsflyerid)
+  - [getAppsFlyerUID](#getappsflyeruid)
   - [setMinTimeBetweenSessions](#setmintimebetweensessions)
   - [setHost](#sethost)
   - [setUserEmails *Soon to be deprecated*](#setuseremails-soon-to-be-deprecated)
@@ -37,8 +38,6 @@ The list of available methods for this plugin is described below.
   - [logAdRevenue](#logadrevenue)
   - [recordCrossPromoteImpression](#recordcrosspromoteimpression)
   - [generateUserInviteLink](#generateuserinvitelink)
-  - [setSharingFilterForAllPartners *Deprecated*](#setsharingfilterforallpartners-deprecated)
-  - [setSharingFilter *Deprecated*](#setsharingfilter-deprecated)
   - [setSharingFilterForPartners](#setsharingfilterforpartners)
   - [setPartnerData](#setpartnerdata)
 - [Android Only API](#android-only-api)
@@ -74,7 +73,6 @@ The list of available methods for this plugin is described below.
   - [validateAndSendInAppPurchase (Legacy - Deprecated) {#validateandsendinapppurchase-legacy-1}](#validateandsendinapppurchase-legacy---deprecated-validateandsendinapppurchase-legacy-1)
   - [registerUninstall](#registeruninstall)
   - [handleOpenUrl](#handleopenurl)
-  - [waitForATTUserAuthorizationWithTimeoutInterval](#waitforattuserauthorizationwithtimeoutinterval)
   - [disableSKAdNetwork](#disableskadnetwork)
   - [setLanguage](#setlanguage)
   - [disableIDFVCollection](#disableidfvcollection)
@@ -102,8 +100,20 @@ The list of available methods for this plugin is described below.
 
 ## Android, iOS and Windows API
 
-### initSDK 
-**`void initSDK(string devKey, string appID, MonoBehaviour gameObject)`**
+> **RPC bridge (7.0.x):** the C#/native bridge is now a JSON-RPC transport, and most APIs on
+> this page — including `init`/`start` below — are `async Awaitable`/`Awaitable<T>` methods.
+> Await them (or fire-and-forget with `_ = AppsFlyer.foo(...)`) instead of treating them as
+> blocking calls, including getters that need a return value (`getSdkVersion`, `getAppsFlyerUID`,
+> `isSessionReady`, etc.) — they're `async Awaitable<T>` too, safe to await from the main thread.
+> A previous synchronous form of these getters existed briefly and blocked the calling thread
+> (up to 5s on iOS native lag); it has been removed. This requires **Unity 2023.1 or newer** (raised from 2019.4)
+> for `Awaitable`/`Awaitable<T>`
+> support — see [Installation](/docs/Installation.md#requirements).
+
+### init
+**`async Awaitable init(string devKey, string appID, MonoBehaviour gameObject = null)`**
+
+*Renamed from `initSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
 Initialize the AppsFlyer SDK with the devKey and appID.
 The dev key is required for all apps and the appID is required only for iOS. 
@@ -119,69 +129,126 @@ If you app is for Android only pass null for the appID.
 *Example:*
 
 ```c#
-AppsFlyer.initSDK("dev_key", "app_id"); // without deeplinking
-AppsFlyer.initSDK("dev_key", "app_id", this); // with deeplinking
+await AppsFlyer.init("dev_key", "app_id"); // without deeplinking
+await AppsFlyer.init("dev_key", "app_id", this); // with deeplinking
 ```
 
 **Note :** You only need to implement the SDK **with deeplinking** if you are using the `IAppsFlyerConversionData` interface.
 
 ---
 
-### startSDK
-**`void startSDK()`**
-    
+### start
+**`async Awaitable start(bool awaitResponse = false)`**
+
+*Renamed from `startSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
 Once this API is invoked the SDK will start,  sessions will be immediately sent, and all background foreground transitions will record a session.
+
+**Recommended:** call `start()` from inside an `OnSessionReady` handler rather than immediately
+after `init()`, so the native SDK has resolved any pending deep link / config state first — see
+[Session Ready Listener](#session-ready-listener) below.
+
+Pass `awaitResponse: true` to have the returned `Awaitable` complete only once the session
+request has actually round-tripped to the server, instead of resolving as soon as the call is
+dispatched to native.
 
 *Example:*
 
 ```c#
- AppsFlyer.startSDK();
+await AppsFlyer.start();
+await AppsFlyer.start(awaitResponse: true); // waits for the server round trip
+```
+
+---
+
+### Session Ready Listener
+
+New in the RPC bridge (7.0.x). Lets you defer `start()` until the native SDK reports it has
+finished evaluating session-readiness conditions (config validity, any pending deep link), instead
+of racing `start()` against that evaluation.
+
+**`static event EventHandler OnSessionReady`**
+
+Subscribe **before** calling `registerSessionReadyListener()`, so the event can't fire before
+you're listening.
+
+**`async Awaitable registerSessionReadyListener()`**
+
+**`async Awaitable unregisterSessionReadyListener()`**
+
+**`async Awaitable<bool> isSessionReady()`**
+
+Whether the SDK currently considers the session ready.
+
+*Example:*
+
+```c#
+void OnSessionReadyHandler(object sender, EventArgs args)
+{
+    AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    AppsFlyer.start();
+}
+
+async Awaitable InitSdk()
+{
+    AppsFlyer.OnSessionReady += OnSessionReadyHandler;
+
+    await AppsFlyer.init(devKey, appId, this);
+    await AppsFlyer.registerSessionReadyListener();
+    // start() is called above, inside OnSessionReadyHandler, once the SDK signals it's ready.
+}
 ```
 
 ---
 
 ## Android and iOS API
 
-### stopSDK 
-**`void stopSDK(bool isSDKStopped)`**
+### stop
+**`async Awaitable stop(bool shouldStop)`**
 
-In some extreme cases you might want to shut down all SDK functions due to legal and privacy compliance. This can be achieved with the stopSDK API. Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
+*Renamed from `stopSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
+In some extreme cases you might want to shut down all SDK functions due to legal and privacy compliance. This can be achieved with the stop API. Once this API is invoked, our SDK no longer communicates with our servers and stops functioning.
 
 There are several different scenarios for user opt-out. We highly recommend following the exact instructions for the scenario, that is relevant for your app.
 
 In any event, the SDK can be reactivated by calling the same API, by passing false.
 
  **Important :**
-Do not call startSDK() if stopSDK() is set to true.
+Do not call start() if stop() is set to true.
 
 To restart SDK functions again, use the following API:
 
-`AppsFlyer.stopSDK(false);`
+`await AppsFlyer.stop(false);`
 
  **Warning**
-Use the stopSDK API only in cases where you want to fully ignore the user's SDK functions. Using this API SEVERELY impacts your attribution, data collection and deep linking mechanism.
+Use the stop API only in cases where you want to fully ignore the user's SDK functions. Using this API SEVERELY impacts your attribution, data collection and deep linking mechanism.
 
 | parameter       | type    | description                                          |
 | -------------   |---------|----------------------------                          |
-| `isSDKStopped`  | `bool`  | True if the SDK is stopped (default value is false). |
+| `shouldStop`    | `bool`  | True if the SDK is stopped (default value is false). |
 
 *Example:*
 
 ```c#
-AppsFlyer.stopSDK(true);
+await AppsFlyer.stop(true);
 ```
 
 ---
 
-### isSDKStopped
-**`bool isSDKStopped()`**
+### isStopped
+**`async Awaitable<bool> isStopped()`**
 
-Was the stopSDK(boolean) API set to `true`.
+*Renamed from `isSDKStopped` — see [Breaking changes](/README.md#breaking-changes-7xx).*
+
+Was the `stop(bool)` API set to `true`.
+
+**Android only** — always returns `false` on iOS.
 
 *Example:*
 
 ```c#
-if (!AppsFlyer.isSDKStopped())
+if (!await AppsFlyer.isStopped())
 {
   
 }
@@ -190,14 +257,14 @@ if (!AppsFlyer.isSDKStopped())
 ---
 
 ### getSdkVersion 
-**`string getSdkVersion()`**
+**`async Awaitable<string> getSdkVersion()`**
 
 Get the AppsFlyer SDK version used in the app.
 
 *Example:*
 
 ```c#
-string version = AppsFlyer.getSdkVersion();
+string version = await AppsFlyer.getSdkVersion();
 ```
 
 ---
@@ -473,15 +540,17 @@ AppsFlyer.anonymizeUser(true);
 
 ---
 
-### getAppsFlyerId 
-**`string getAppsFlyerId()`**
+### getAppsFlyerUID
+**`async Awaitable<string> getAppsFlyerUID()`**
+
+*Renamed from `getAppsFlyerId` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
 AppsFlyer's unique device ID is created for every new install of an app. Use the following API to obtain AppsFlyer’s Unique ID.
 
 *Example:*
 
 ```c#
-string uid = AppsFlyer.getAppsFlyerId(); 
+string uid = await AppsFlyer.getAppsFlyerUID();
 ```
 
 ---
@@ -681,41 +750,8 @@ AppsFlyer.generateUserInviteLink(params, this);
 
 ---
 
-### setSharingFilterForAllPartners *Deprecated*
-**`void setSharingFilterForAllPartners()`** 
-
-Used by advertisers to exclude all networks/integrated partners from getting data.
-
-*Example:*
-
-```c#
-AppsFlyer.setSharingFilterForAllPartners();
-```
-
----
-
-### setSharingFilter *Deprecated*
-**`void setSharingFilter(params string[] partners)`** 
-
-
- Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
-
-
-| parameter    | type                         | description                                         |
-| -----------  |----------------------------- |-----------------------------------------------------|
-| `partners` | `params string[] partners` | partners to exclude from getting data                                                    |
-
-
-*Example:*
-
-```c#
-AppsFlyer.setSharingFilter("googleadwords_int","snapchat_int","doubleclick_int");
-```
-
----
-
 ### setSharingFilterForPartners 
-**`void setSharingFilterForPartners(params string[] partners)`** 
+**`async Awaitable setSharingFilterForPartners(params string[] partners)`** 
 
 
  Used by advertisers to set some (one or more) networks/integrated partners to exclude from getting data.
@@ -728,11 +764,11 @@ AppsFlyer.setSharingFilter("googleadwords_int","snapchat_int","doubleclick_int")
 *Example:*
 
 ```c#
-AppsFlyer.setSharingFilterForPartners("partner1_int"); // Single partner
-AppsFlyer.setSharingFilterForPartners("partner1_int", "partner2_int"); // Multiple partners
-AppsFlyer.setSharingFilterForPartners("all"); // All partners
-AppsFlyer.setSharingFilterForPartners(""); // Reset list (default)
-AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
+await AppsFlyer.setSharingFilterForPartners("partner1_int"); // Single partner
+await AppsFlyer.setSharingFilterForPartners("partner1_int", "partner2_int"); // Multiple partners
+await AppsFlyer.setSharingFilterForPartners("all"); // All partners
+await AppsFlyer.setSharingFilterForPartners(""); // Reset list (default)
+await AppsFlyer.setSharingFilterForPartners(); // Reset list (default)
 ```
 
 ---
@@ -869,7 +905,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 ---
 
  ### getOutOfStore 
- **`string getOutOfStore()`**
+ **`async Awaitable<string> getOutOfStore()`**
  
  Get the current AF_STORE value.
 
@@ -877,7 +913,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string af_store = AppsFlyer.getOutOfStore();
+        string af_store = await AppsFlyer.getOutOfStore();
 #endif
 ```
 
@@ -988,7 +1024,7 @@ Manually set that the application was updated.
 ---
 
  ### isPreInstalledApp
- **`bool isPreInstalledApp()`**
+ **`async Awaitable<bool> isPreInstalledApp()`**
  
 Boolean indicator for preinstall by Manufacturer.
 
@@ -996,7 +1032,7 @@ Boolean indicator for preinstall by Manufacturer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (AppsFlyer.isPreInstalledApp())
+        if (await AppsFlyer.isPreInstalledApp())
         {
 
         }
@@ -1019,7 +1055,7 @@ AppsFlyer.handlePushNotifications();
 
 
 ### getAttributionId
-**`string getAttributionId()`**
+**`async Awaitable<string> getAttributionId()`**
  
 Get the Facebook attribution ID, if one exists.
 
@@ -1027,7 +1063,7 @@ Get the Facebook attribution ID, if one exists.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string attributionId = AppsFlyer.getAttributionId();
+        string attributionId = await AppsFlyer.getAttributionId();
 #endif
 ```
 
@@ -1423,24 +1459,6 @@ Register uninstall - you should register for remote notification and provide App
 
 ---
 
-### waitForATTUserAuthorizationWithTimeoutInterval 
-**` void waitForATTUserAuthorizationWithTimeoutInterval(int timeoutInterval)`**
-
-See [here](https://support.appsflyer.com/hc/en-us/articles/207032066-iOS-SDK-V6-X-integration-guide-for-developers#integration-33-configuring-app-tracking-transparency-att-support) for more info. 
-
-| parameter     | type       | description  |
-| -----------   |----------  |--------------|
-| `timeoutInterval`         | `int`   |      Time to wait for idfa        |
-
-*Example:*
-
-```c#
-#if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
-#endif
-```
----
-
 ### disableSKAdNetwork 
 **` bools disableSKAdNetwork(bool isDisabled)`**
 
@@ -1794,7 +1812,7 @@ The callback will return a JSON string which can be converted to dictionary. <br
 ```c#
 
     // First call init with devKey, appId and gameObject
-    AppsFlyer.initSDK(devKey, appID, this);
+    await AppsFlyer.init(devKey, appID, this);
 
 
     AppsFlyer.OnDeepLinkReceived += (sender, args) =>

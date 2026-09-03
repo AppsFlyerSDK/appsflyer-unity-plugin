@@ -1,31 +1,34 @@
 package com.appsflyer.engagement;
 
 import android.content.Intent;
-import android.util.Log;
-import com.appsflyer.AppsFlyerLib;
-import com.unity3d.player.UnityPlayerActivity;
+import com.unity3d.player.UnityPlayerGameActivity;
 
 /**
- * Extends UnityPlayerActivity to forward onNewIntent to the AppsFlyer SDK
- * so that deep links opened while the app is already running (singleTask
- * bring-to-front) fire UDL onDeepLinking(FOUND).
+ * Extends UnityPlayerGameActivity so a new intent delivered while the app is
+ * already running (singleTask bring-to-front) is visible via getIntent().
  *
- * UnityPlayerActivity does not notify AppsFlyerLib. Calling
- * performOnDeepLinking here is the AF SDK v6 equivalent of the older
- * sendDeepLinkData. The explicit setIntent + ACTION_VIEW guard mirrors the
- * Capacitor QA app's stable Android E2E deep-link path.
+ * UnityPlayerGameActivity does not call setIntent() on its own, so without this
+ * override getIntent() would keep returning the original launch intent.
+ * Resolution itself is left to AppsFlyerLib's own Unified Deep Linking
+ * lifecycle hook (triggered on the following onResume()) — calling
+ * performDeepLinking() here as well used to race that automatic resolution
+ * and drop the callback.
  */
-public class AppsFlyerUnityActivity extends UnityPlayerActivity {
+public class AppsFlyerUnityActivity extends UnityPlayerGameActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (intent != null
-                && Intent.ACTION_VIEW.equals(intent.getAction())
-                && intent.getData() != null) {
-            Log.i("AF_QA", "[AF_QA][AndroidDeepLink] onNewIntent data=" + intent.getDataString());
-            AppsFlyerLib.getInstance().performOnDeepLinking(intent, getApplication());
-        }
+    }
+
+    /**
+     * Called from QATestScript.cs right after AppsFlyer.registerSessionReadyListener().
+     * Forces a synthetic pause/resume on this Activity via AppsFlyerLifecycleNudgeActivity
+     * — see that class for why. Pure Android lifecycle plumbing; no AppsFlyerLib/RPC call here.
+     */
+    public void triggerLifecycleNudge() {
+        startActivity(new Intent(this, AppsFlyerLifecycleNudgeActivity.class));
+        overridePendingTransition(0, 0);
     }
 }

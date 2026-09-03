@@ -4,6 +4,7 @@ Logs/
 Packages/
 Temp/
 test-app/Assets/StreamingAssets/.env
+test-app/.env
 Library/
 /*/outputs/
 
@@ -22,6 +23,24 @@ test-app/UserSettings/
 
 # build artifacts
 test-app/Build/
+test-app/*.apk
+test-app/ios-unity-sample-app/
+
+# Android Resolver / Gradle export side effects (regenerated on every build)
+test-app/Assets/Plugins/Android/*.backup*
+test-app/ProjectSettings/AndroidResolverDependencies.xml
+test-app/ProjectSettings/GvhProjectSettings.xml
+
+# Unity Editor recovery snapshots
+test-app/Assets/_Recovery/
+test-app/Assets/_Recovery.meta
+
+# code review working docs (not part of the plugin)
+.review/
+
+# editor / IDE project files
+.vscode/
+*.slnx
 
 
 #android studio

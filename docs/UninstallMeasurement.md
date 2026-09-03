@@ -21,13 +21,13 @@ UnityEngine.iOS.NotificationServices is now deprecated. Please use the "Mobile N
 using AppsFlyerSDK;
 using Unity.Notifications.iOS;
 
-public class AppsFlyerObjectScript : MonoBehaviour, IAppsFlyerConversionData
+public class AppsFlyerInit : MonoBehaviour, IAppsFlyerConversionData
 {
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "appID", this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "appID", this);
+        await AppsFlyer.start();
 #if UNITY_IOS
   
         StartCoroutine(RequestAuthorization());
