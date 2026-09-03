@@ -29,7 +29,12 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _iosAppId;
     private string _androidAppId;
     private bool _conversionDataReceived = false;
+
+    // Only read inside the `UNITY_IOS && !UNITY_EDITOR` branch of RequestATTThenStart() below,
+    // so builds that compile that branch out (Editor, Android) see it as assigned-but-unused.
+#pragma warning disable 0414
     private bool _attDetermined = false;
+#pragma warning restore 0414
 
     void Start()
     {

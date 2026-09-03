@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -16,11 +17,11 @@ public static class BuildScript
         string outputPath = GetBuildPath("Build/Android/com.appsflyer.engagement.apk");
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
-        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.appsflyer.engagement");
+        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.appsflyer.engagement");
         PlayerSettings.productName = "UnityQATest";
         PlayerSettings.Android.bundleVersionCode = 1;
         PlayerSettings.bundleVersion = "1.0";
-        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86_64 | AndroidArchitecture.ARM64;
+        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 
         var options = new BuildPlayerOptions
         {
@@ -48,7 +49,7 @@ public static class BuildScript
         string outputPath = GetBuildPath(simulator ? "Build/iOS-Simulator" : "Build/iOS");
         Directory.CreateDirectory(outputPath);
 
-        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.appsflyer.engagement");
+        PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, "com.appsflyer.engagement");
         PlayerSettings.productName = "UnityQATest";
         PlayerSettings.bundleVersion = "1.0";
         PlayerSettings.iOS.buildNumber = "1";
