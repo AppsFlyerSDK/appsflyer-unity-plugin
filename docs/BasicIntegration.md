@@ -74,7 +74,7 @@ void OnSessionReadyHandler(object sender, EventArgs args)
 ```
 
 Unregister with `AppsFlyer.unregisterSessionReadyListener()` if you no longer need the callback.
-`AppsFlyer.isSessionReadyAsync()` lets you poll the current state instead of subscribing to the
+`AppsFlyer.isSessionReady()` lets you poll the current state instead of subscribing to the
 event.
 
 > **Note (Android):** on a cold, post-install launch, the native SDK's own foreground-detection

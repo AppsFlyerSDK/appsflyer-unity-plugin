@@ -174,7 +174,7 @@ AppsFlyer.setUserEmails(EmailCryptType cryptType, params string[] userEmails);
 AppsFlyer.setResolveDeepLinkURLs(params string[] userEmails);
 AppsFlyer.setOneLinkCustomDomain(params string[] domains);
 AppsFlyer.setIsDebug(bool isDebug);
-await AppsFlyer.getAppsFlyerUIDAsync(); // renamed from getAppsFlyerId - see /README.md#breaking-changes-7xx
+await AppsFlyer.getAppsFlyerUID(); // renamed from getAppsFlyerId - see /README.md#breaking-changes-7xx
 AppsFlyer.setAppInviteOneLinkID(string oneLinkID);
 ```
 

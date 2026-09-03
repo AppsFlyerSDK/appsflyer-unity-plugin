@@ -215,13 +215,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     async void LogSdkVersion()
     {
-        string sdkVersion = await AppsFlyer.getSdkVersionAsync();
+        string sdkVersion = await AppsFlyer.getSdkVersion();
         AFQALogger.Log("[AF_QA][getSDKVersion] result: " + sdkVersion);
     }
 
     async void LogAppsFlyerUid()
     {
-        string uid = await AppsFlyer.getAppsFlyerUIDAsync();
+        string uid = await AppsFlyer.getAppsFlyerUID();
         AFQALogger.Log("[AF_QA][getAppsFlyerUID] result: " + uid);
     }
 

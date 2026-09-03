@@ -105,10 +105,10 @@ The list of available methods for this plugin is described below.
 > **RPC bridge (7.0.x):** the C#/native bridge is now a JSON-RPC transport, and most APIs on
 > this page — including `init`/`start` below — are `async Awaitable`/`Awaitable<T>` methods.
 > Await them (or fire-and-forget with `_ = AppsFlyer.foo(...)`) instead of treating them as
-> blocking calls. Getters that need a return value (`getSdkVersionAsync`, `getAppsFlyerUIDAsync`,
-> `isSessionReadyAsync`, etc.) are `*Async`-only — safe to await from the main thread. The old
-> synchronous (non-`Async`) getters have been removed: on iOS they could block the calling
-> thread up to 5s on native lag. This requires **Unity 2023.1 or newer** (raised from 2019.4)
+> blocking calls, including getters that need a return value (`getSdkVersion`, `getAppsFlyerUID`,
+> `isSessionReady`, etc.) — they're `async Awaitable<T>` too, safe to await from the main thread.
+> A previous synchronous form of these getters existed briefly and blocked the calling thread
+> (up to 5s on iOS native lag); it has been removed. This requires **Unity 2023.1 or newer** (raised from 2019.4)
 > for `Awaitable`/`Awaitable<T>`
 > support — see [Installation](/docs/Installation.md#requirements).
 
@@ -173,10 +173,9 @@ you're listening.
 
 **`async Awaitable unregisterSessionReadyListener()`**
 
-**`bool isSessionReady()`** / **`async Awaitable<bool> isSessionReadyAsync()`**
+**`async Awaitable<bool> isSessionReady()`**
 
-Synchronous query / awaitable twin for whether the SDK currently considers the session ready.
-Prefer the `Async` version — see the note at the top of this page.
+Whether the SDK currently considers the session ready.
 
 *Example:*
 
@@ -187,7 +186,7 @@ void OnSessionReadyHandler(object sender, EventArgs args)
     AppsFlyer.start();
 }
 
-async Awaitable InitAsync()
+async Awaitable InitSdk()
 {
     AppsFlyer.OnSessionReady += OnSessionReadyHandler;
 
@@ -235,7 +234,7 @@ await AppsFlyer.stop(true);
 ---
 
 ### isStopped
-**`async Awaitable<bool> isStoppedAsync()`**
+**`async Awaitable<bool> isStopped()`**
 
 *Renamed from `isSDKStopped` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
@@ -246,7 +245,7 @@ Was the `stop(bool)` API set to `true`.
 *Example:*
 
 ```c#
-if (!await AppsFlyer.isStoppedAsync())
+if (!await AppsFlyer.isStopped())
 {
   
 }
@@ -255,14 +254,14 @@ if (!await AppsFlyer.isStoppedAsync())
 ---
 
 ### getSdkVersion 
-**`async Awaitable<string> getSdkVersionAsync()`**
+**`async Awaitable<string> getSdkVersion()`**
 
 Get the AppsFlyer SDK version used in the app.
 
 *Example:*
 
 ```c#
-string version = await AppsFlyer.getSdkVersionAsync();
+string version = await AppsFlyer.getSdkVersion();
 ```
 
 ---
@@ -539,7 +538,7 @@ AppsFlyer.anonymizeUser(true);
 ---
 
 ### getAppsFlyerUID
-**`async Awaitable<string> getAppsFlyerUIDAsync()`**
+**`async Awaitable<string> getAppsFlyerUID()`**
 
 *Renamed from `getAppsFlyerId` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
@@ -548,7 +547,7 @@ AppsFlyer's unique device ID is created for every new install of an app. Use the
 *Example:*
 
 ```c#
-string uid = await AppsFlyer.getAppsFlyerUIDAsync();
+string uid = await AppsFlyer.getAppsFlyerUID();
 ```
 
 ---
@@ -936,7 +935,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 ---
 
  ### getOutOfStore 
- **`async Awaitable<string> getOutOfStoreAsync()`**
+ **`async Awaitable<string> getOutOfStore()`**
  
  Get the current AF_STORE value.
 
@@ -944,7 +943,7 @@ Use this API to provide the SDK with the relevant customer user id and trigger t
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string af_store = await AppsFlyer.getOutOfStoreAsync();
+        string af_store = await AppsFlyer.getOutOfStore();
 #endif
 ```
 
@@ -1055,7 +1054,7 @@ Manually set that the application was updated.
 ---
 
  ### isPreInstalledApp
- **`async Awaitable<bool> isPreInstalledAppAsync()`**
+ **`async Awaitable<bool> isPreInstalledApp()`**
  
 Boolean indicator for preinstall by Manufacturer.
 
@@ -1063,7 +1062,7 @@ Boolean indicator for preinstall by Manufacturer.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (await AppsFlyer.isPreInstalledAppAsync())
+        if (await AppsFlyer.isPreInstalledApp())
         {
 
         }
@@ -1086,7 +1085,7 @@ AppsFlyer.handlePushNotifications();
 
 
 ### getAttributionId
-**`async Awaitable<string> getAttributionIdAsync()`**
+**`async Awaitable<string> getAttributionId()`**
  
 Get the Facebook attribution ID, if one exists.
 
@@ -1094,7 +1093,7 @@ Get the Facebook attribution ID, if one exists.
 
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string attributionId = await AppsFlyer.getAttributionIdAsync();
+        string attributionId = await AppsFlyer.getAttributionId();
 #endif
 ```
 

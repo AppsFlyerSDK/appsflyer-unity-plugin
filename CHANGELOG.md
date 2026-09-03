@@ -4,10 +4,9 @@
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
   AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
   `Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`).
-* **Breaking:** `initSDK`→`init`, `startSDK`→`start`, `stopSDK`→`stop`, `isSDKStopped`→`isStoppedAsync`,
-  `getAppsFlyerId`→`getAppsFlyerUID`/`getAppsFlyerUIDAsync`. Most of the public API is now
-  `async Awaitable`/`Awaitable<T>`. No backward-compatible aliases — see
-  [Breaking changes](/README.md#breaking-changes-7xx).
+* **Breaking:** `initSDK`→`init`, `startSDK`→`start`, `stopSDK`→`stop`, `isSDKStopped`→`isStopped`,
+  `getAppsFlyerId`→`getAppsFlyerUID`. Most of the public API is now `async Awaitable`/`Awaitable<T>`.
+  No backward-compatible aliases — see [Breaking changes](/README.md#breaking-changes-7xx).
 * **Breaking:** removed the obsolete `AppsFlyerConsent.ForGDPRUser(...)`/`ForNonGDPRUser()`
   factory methods. Use `new AppsFlyerConsent(isUserSubjectToGDPR:, hasConsentForDataUsage:,
   hasConsentForAdsPersonalization:, hasConsentForAdStorage:)` instead.
@@ -19,12 +18,12 @@
   `AppsFlyerObjectScript.cs`/`AppsFlyerObjectEditor.cs`) has been removed. Initialize the SDK
   manually instead — see [Manual integration](/docs/BasicIntegration.md#manual-integration).
 * **New:** session-ready listener API — `OnSessionReady`, `registerSessionReadyListener()`,
-  `unregisterSessionReadyListener()`, `isSessionReady()`/`isSessionReadyAsync()` — to defer
-  `start()` until the native SDK reports session readiness.
-* **New:** `*Async` twins for previously-synchronous getters (`getSdkVersionAsync`,
-  `getAppsFlyerUIDAsync`, `isSessionReadyAsync`, `isStoppedAsync`, `getOutOfStoreAsync`,
-  `isPreInstalledAppAsync`, `getAttributionIdAsync`, `getHostNameAsync`, `getHostPrefixAsync`,
-  and others) so native round-trips don't block Unity's main thread.
+  `unregisterSessionReadyListener()`, `isSessionReady()` — to defer `start()` until the native
+  SDK reports session readiness.
+* **New:** getters that need a return value (`getSdkVersion`, `getAppsFlyerUID`, `isSessionReady`,
+  `isStopped`, `getOutOfStore`, `isPreInstalledApp`, `getAttributionId`, `getHostName`,
+  `getHostPrefix`, and others) are `async Awaitable<T>` so native round-trips don't block Unity's
+  main thread.
 * **Minimum supported Unity version raised to 2023.1** (from 2019.4), required for
   `Awaitable`/`Awaitable<T>`.
 * **EDM4U updated to 1.2.187** (from 1.2.183) — earlier 1.2.x releases mis-resolve the new iOS

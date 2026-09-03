@@ -102,9 +102,9 @@ public class AppsFlyerAPITester : MonoBehaviour
         // Lifecycle
         Add("Lifecycle", "start()", en => AppsFlyer.start());
         Add("Lifecycle", "stop(shouldStop)", en => AppsFlyer.stop(B(en, 0)), Param.Flag("shouldStop"));
-        Add("Lifecycle", "isSessionReady()", async en => en.Result = (await AppsFlyer.isSessionReadyAsync()).ToString());
-        Add("Lifecycle", "getSdkVersion()", async en => en.Result = await AppsFlyer.getSdkVersionAsync());
-        Add("Lifecycle", "getAppsFlyerUID()", async en => en.Result = await AppsFlyer.getAppsFlyerUIDAsync());
+        Add("Lifecycle", "isSessionReady()", async en => en.Result = (await AppsFlyer.isSessionReady()).ToString());
+        Add("Lifecycle", "getSdkVersion()", async en => en.Result = await AppsFlyer.getSdkVersion());
+        Add("Lifecycle", "getAppsFlyerUID()", async en => en.Result = await AppsFlyer.getAppsFlyerUID());
 
         // Events
         Add("Events", "logEvent(eventName, eventValues)",
@@ -289,17 +289,17 @@ public class AppsFlyerAPITester : MonoBehaviour
             en => AppsFlyer.setOutOfStore(P(en, 0)),
             Param.Str("sourceName", "my_store"));
 
-        Add("Configuration", "getOutOfStore()", async en => en.Result = await AppsFlyer.getOutOfStoreAsync());
+        Add("Configuration", "getOutOfStore()", async en => en.Result = await AppsFlyer.getOutOfStore());
 
         Add("Configuration", "setPreinstallAttribution(mediaSource, campaign, siteId)",
             en => AppsFlyer.setPreinstallAttribution(P(en, 0), P(en, 1), P(en, 2)),
             Param.Str("mediaSource", "preload"), Param.Str("campaign", "preinstall_campaign"), Param.Str("siteId", "site_1"));
 
-        Add("Configuration", "isPreInstalledApp()", async en => en.Result = (await AppsFlyer.isPreInstalledAppAsync()).ToString());
-        Add("Configuration", "getAttributionId()", async en => en.Result = await AppsFlyer.getAttributionIdAsync());
-        Add("Configuration", "getHostName() [Android]", async en => en.Result = await AppsFlyer.getHostNameAsync());
-        Add("Configuration", "getHostPrefix() [Android]", async en => en.Result = await AppsFlyer.getHostPrefixAsync());
-        Add("Configuration", "isStopped() [Android]", async en => en.Result = (await AppsFlyer.isStoppedAsync()).ToString());
+        Add("Configuration", "isPreInstalledApp()", async en => en.Result = (await AppsFlyer.isPreInstalledApp()).ToString());
+        Add("Configuration", "getAttributionId()", async en => en.Result = await AppsFlyer.getAttributionId());
+        Add("Configuration", "getHostName() [Android]", async en => en.Result = await AppsFlyer.getHostName());
+        Add("Configuration", "getHostPrefix() [Android]", async en => en.Result = await AppsFlyer.getHostPrefix());
+        Add("Configuration", "isStopped() [Android]", async en => en.Result = (await AppsFlyer.isStopped()).ToString());
         Add("Configuration", "disableAppSetId() [Android]", en => AppsFlyer.disableAppSetId());
 
         Add("Configuration", "updateServerUninstallToken(token) [Android]",
@@ -565,7 +565,7 @@ public class AppsFlyerAPITester : MonoBehaviour
     }
 
     // entry.Call always returns an Awaitable (even for sync/void APIs, via AsAwaitable()) so this
-    // await genuinely waits for async getters (getSdkVersionAsync, etc.) to complete before the
+    // await genuinely waits for async getters (getSdkVersion, etc.) to complete before the
     // "OK" fallback and log line run — firing it without awaiting logged/displayed the fallback
     // immediately, before the real result was ever assigned.
     private async void InvokeEntry(ApiEntry entry)

@@ -148,19 +148,19 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Matches the schema's canonical isSessionReady contract. Safe to call from the main thread.</summary>
-        public static async Awaitable<bool> isSessionReadyAsync()
+        public static async Awaitable<bool> isSessionReady()
         {
             return (await QueryAsync("isSessionReady") as bool?) ?? false;
         }
 
         /// <summary>Gets the AppsFlyer SDK version used by native. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getSdkVersionAsync()
+        public static async Awaitable<string> getSdkVersion()
         {
             return await QueryAsync("getSdkVersion") as string ?? string.Empty;
         }
 
         /// <summary>Gets AppsFlyer's unique device ID. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getAppsFlyerUIDAsync()
+        public static async Awaitable<string> getAppsFlyerUID()
         {
 #if UNITY_WSA_10_0
             return AppsFlyerWindows.GetAppsFlyerId();
@@ -735,7 +735,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Android only. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getOutOfStoreAsync()
+        public static async Awaitable<string> getOutOfStore()
         {
 #if UNITY_ANDROID
             return await QueryAsync("getOutOfStore") as string ?? string.Empty;
@@ -755,7 +755,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Android only. Safe to call from the main thread.</summary>
-        public static async Awaitable<bool> isPreInstalledAppAsync()
+        public static async Awaitable<bool> isPreInstalledApp()
         {
 #if UNITY_ANDROID
             return (await QueryAsync("isPreInstalledApp") as bool?) ?? false;
@@ -765,7 +765,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Android only. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getAttributionIdAsync()
+        public static async Awaitable<string> getAttributionId()
         {
 #if UNITY_ANDROID
             return await QueryAsync("getAttributionId") as string ?? string.Empty;
@@ -775,7 +775,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Android only. Net-new — not exposed prior to this migration. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getHostNameAsync()
+        public static async Awaitable<string> getHostName()
         {
 #if UNITY_ANDROID
             return await QueryAsync("getHostName") as string ?? string.Empty;
@@ -785,7 +785,7 @@ namespace AppsFlyerSDK
         }
 
         /// <summary>Android only. Net-new — not exposed prior to this migration. Safe to call from the main thread.</summary>
-        public static async Awaitable<string> getHostPrefixAsync()
+        public static async Awaitable<string> getHostPrefix()
         {
 #if UNITY_ANDROID
             return await QueryAsync("getHostPrefix") as string ?? string.Empty;
@@ -799,7 +799,7 @@ namespace AppsFlyerSDK
         /// which also worked on iOS via the legacy bridge (no iOS RPC method for "isStopped" is declared
         /// in the schema). Safe to call from the main thread.
         /// </summary>
-        public static async Awaitable<bool> isStoppedAsync()
+        public static async Awaitable<bool> isStopped()
         {
 #if UNITY_ANDROID
             return (await QueryAsync("isStopped") as bool?) ?? false;

@@ -26,8 +26,8 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 The plugin's C#/native bridge was migrated to a JSON-RPC transport
 (`Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`), replacing the legacy per-method
 AndroidJavaClass/DllImport bridge. Alongside this, getters that need a return value
-(e.g. `getAppsFlyerUIDAsync`, `getSdkVersionAsync`, `isSessionReadyAsync`) are `*Async`-only,
-matching the pattern already used by `generateInviteLinkAsync`, so none of them need to block
+(e.g. `getAppsFlyerUID`, `getSdkVersion`, `isSessionReady`) are `async Awaitable<T>` too,
+matching the pattern already used by `generateInviteLink`, so none of them need to block
 Unity's main thread for the native round trip. iOS deep-link
 delivery (cold-start URL schemes and Universal Links) was also reworked — see
 [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md)
@@ -45,15 +45,15 @@ methods — update call sites when you upgrade.
 | `AppsFlyer.initSDK(devKey, appID, gameObject)` | `await AppsFlyer.init(devKey, appID, gameObject)` |
 | `AppsFlyer.startSDK()` | `await AppsFlyer.start()` |
 | `AppsFlyer.stopSDK(bool)` | `await AppsFlyer.stop(bool)` |
-| `AppsFlyer.isSDKStopped()` | `await AppsFlyer.isStoppedAsync()` |
-| `AppsFlyer.getAppsFlyerId()` | `await AppsFlyer.getAppsFlyerUIDAsync()` |
+| `AppsFlyer.isSDKStopped()` | `await AppsFlyer.isStopped()` |
+| `AppsFlyer.getAppsFlyerId()` | `await AppsFlyer.getAppsFlyerUID()` |
 
 **Breaking:** starting with 7.0.x, the `AppsFlyerObject.prefab` UI-based setup has been removed.
 Initialize the SDK manually instead — see
 [Manual integration](/docs/BasicIntegration.md#manual-integration).
 
 **New:** a session-ready listener API — `AppsFlyer.OnSessionReady`,
-`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReadyAsync()`
+`registerSessionReadyListener()`, `unregisterSessionReadyListener()`, `isSessionReady()`
 — lets you defer `start()` until the native SDK reports session
 readiness instead of calling it unconditionally right after `init()`. See
 [Session Ready Listener](/docs/BasicIntegration.md#session-ready-listener) and the
@@ -66,7 +66,7 @@ releases mis-resolve the new iOS Swift Package Manager dependency (`AppsFlyerRPC
 ---
 ## 📌 Minimum supported Unity version raised to 2023.1
 
-Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLinkAsync`, `getAppsFlyerUIDAsync`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.
+Starting from this release, the plugin requires **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>` support, used by the new async APIs (e.g. `generateInviteLink`, `getAppsFlyerUID`). If you're on an older Unity version, stay on the last plugin release that supported Unity 2019.4.
 
 ---
 ## 📌 Google Play Billing Library 8 (6.18.0+)
