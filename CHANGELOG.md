@@ -1,6 +1,6 @@
 # Versions
 
-## v7.0.1
+## v7.0.2
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
   AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
   `Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`).
@@ -38,7 +38,7 @@
 * Update Android SDK plugin bridge version - `af-android-plugin-bridge:7.0.12`
 * iOS deep-link delivery (cold-start URL schemes and Universal Links) reworked — see
   [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md).
-* Unity plugin version - 7.0.1
+* Unity plugin version - 7.0.2
 
 
 ## v6.17.900
