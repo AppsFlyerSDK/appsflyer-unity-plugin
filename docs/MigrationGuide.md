@@ -182,8 +182,8 @@ AppsFlyer.setAppInviteOneLinkID(string oneLinkID);
 ```c#
 // old
 AppsFlyer.trackRichEvent(string eventName, Dictionary<string, string> eventValues);
-// new
-AppsFlyer.sendEvent(string eventName, Dictionary<string, string> eventValues);
+// new (renamed again since - see /docs/InAppEvents.md#send-event)
+await AppsFlyer.logEvent(string eventName, Dictionary<string, string> eventValues, bool awaitResponse = false);
 
 // old
 AppsFlyer.stopTracking(bool isStopTracking);

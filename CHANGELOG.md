@@ -24,6 +24,10 @@
   `isStopped`, `getOutOfStore`, `isPreInstalledApp`, `getAttributionId`, `getHostName`,
   `getHostPrefix`, and others) are `async Awaitable<T>` so native round-trips don't block Unity's
   main thread.
+* **New:** `start(bool awaitResponse = false)` and `logEvent(eventName, eventValues, bool
+  awaitResponse = false)` accept an optional `awaitResponse` flag — matching the schema's
+  `awaitResponse` RPC parameter — so the returned `Awaitable` can wait for the actual server
+  round trip instead of resolving as soon as the call is dispatched to native.
 * **Minimum supported Unity version raised to 2023.1** (from 2019.4), required for
   `Awaitable`/`Awaitable<T>`.
 * **EDM4U updated to 1.2.187** (from 1.2.183) — earlier 1.2.x releases mis-resolve the new iOS

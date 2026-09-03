@@ -140,7 +140,7 @@ await AppsFlyer.init("dev_key", "app_id", this); // with deeplinking
 ---
 
 ### start
-**`async Awaitable start()`**
+**`async Awaitable start(bool awaitResponse = false)`**
 
 *Renamed from `startSDK` — see [Breaking changes](/README.md#breaking-changes-7xx).*
 
@@ -150,10 +150,15 @@ Once this API is invoked the SDK will start,  sessions will be immediately sent,
 after `init()`, so the native SDK has resolved any pending deep link / config state first — see
 [Session Ready Listener](#session-ready-listener) below.
 
+Pass `awaitResponse: true` to have the returned `Awaitable` complete only once the session
+request has actually round-tripped to the server, instead of resolving as soon as the call is
+dispatched to native.
+
 *Example:*
 
 ```c#
 await AppsFlyer.start();
+await AppsFlyer.start(awaitResponse: true); // waits for the server round trip
 ```
 
 ---

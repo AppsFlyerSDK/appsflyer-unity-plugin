@@ -304,7 +304,18 @@ namespace AppsFlyerSDK.Tests
         public async Task Start_FiresStartWithNoParams()
         {
             await AppsFlyer.start();
-            mockRpc.Received(1).ExecuteFire("start", Arg.Any<Dictionary<string, object>>());
+            mockRpc.Received(1).ExecuteFire("start",
+                Arg.Is<Dictionary<string, object>>(d => (bool)d["awaitResponse"] == false));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task Start_AwaitResponse_UsesExecute()
+        {
+            await AppsFlyer.start(awaitResponse: true);
+            mockRpc.Received(1).Execute("start",
+                Arg.Is<Dictionary<string, object>>(d => (bool)d["awaitResponse"] == true));
+            mockRpc.DidNotReceive().ExecuteFire("start", Arg.Any<Dictionary<string, object>>());
         }
 
         [Test]
@@ -323,7 +334,20 @@ namespace AppsFlyerSDK.Tests
             var values = new Dictionary<string, string> { { "key", "value" } };
             await AppsFlyer.logEvent("testevent", values);
             mockRpc.Received(1).ExecuteFire("logEvent",
-                Arg.Is<Dictionary<string, object>>(d => (string)d["eventName"] == "testevent" && d["eventValues"] == values));
+                Arg.Is<Dictionary<string, object>>(d =>
+                    (string)d["eventName"] == "testevent" && d["eventValues"] == values && (bool)d["awaitResponse"] == false));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task LogEvent_AwaitResponse_UsesExecute()
+        {
+            var values = new Dictionary<string, string> { { "key", "value" } };
+            await AppsFlyer.logEvent("testevent", values, awaitResponse: true);
+            mockRpc.Received(1).Execute("logEvent",
+                Arg.Is<Dictionary<string, object>>(d =>
+                    (string)d["eventName"] == "testevent" && d["eventValues"] == values && (bool)d["awaitResponse"] == true));
+            mockRpc.DidNotReceive().ExecuteFire("logEvent", Arg.Any<Dictionary<string, object>>());
         }
 
 #if UNITY_ANDROID

@@ -11,6 +11,10 @@ namespace AppsFlyerSDK
     /// both platforms. Pure RPC — no legacy AndroidJavaClass/DllImport bridge involved at all.
     /// See plans/03-rpc-full-schema-alignment-testing.md for the migration/testing plan.
     /// </summary>
+    // CS1998: many methods below are platform-only (#if UNITY_ANDROID / UNITY_IOS) and their only
+    // `await` lives inside the guarded branch, so compiling for the other platform yields a body
+    // with no `await` at all. That's an intentional no-op, not a bug - suppressed for the whole class.
+#pragma warning disable CS1998
     public class AppsFlyer : MonoBehaviour
     {
         public static readonly string kAppsFlyerPluginVersion = "7.0.1";
@@ -131,13 +135,19 @@ namespace AppsFlyerSDK
             });
         }
 
-        /// <summary>Starts the SDK. A session is sent immediately, and on every foreground transition.</summary>
-        public static async Awaitable start()
+        /// <summary>Starts the SDK. A session is sent immediately, and on every foreground transition.
+        /// Pass <paramref name="awaitResponse"/> to wait for the server round trip (session request
+        /// completed) instead of just the fire-and-forget dispatch to native.</summary>
+        public static async Awaitable start(bool awaitResponse = false)
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.Start();
 #else
-            await FireAsync("start");
+            var parameters = new Dictionary<string, object> { { "awaitResponse", awaitResponse } };
+            if (awaitResponse)
+                await QueryAsync("start", parameters);
+            else
+                await FireAsync("start", parameters);
 #endif
         }
 
@@ -171,12 +181,21 @@ namespace AppsFlyerSDK
 
         // ── Events ───────────────────────────────────────────────────────────────
 
-        public static async Awaitable logEvent(string eventName, Dictionary<string, string> eventValues)
+        /// <summary>Logs an in-app event. Pass <paramref name="awaitResponse"/> to wait for the server
+        /// round trip (event request completed) instead of just the fire-and-forget dispatch to native.</summary>
+        public static async Awaitable logEvent(string eventName, Dictionary<string, string> eventValues, bool awaitResponse = false)
         {
 #if UNITY_WSA_10_0
             AppsFlyerWindows.LogEvent(eventName, eventValues);
 #else
-            await FireAsync("logEvent", new Dictionary<string, object> { { "eventName", eventName }, { "eventValues", eventValues } });
+            var parameters = new Dictionary<string, object>
+            {
+                { "eventName", eventName }, { "eventValues", eventValues }, { "awaitResponse", awaitResponse }
+            };
+            if (awaitResponse)
+                await QueryAsync("logEvent", parameters);
+            else
+                await FireAsync("logEvent", parameters);
 #endif
         }
 
@@ -699,10 +718,10 @@ namespace AppsFlyerSDK
         }
 
         [Obsolete("Please use setSharingFilterForPartners")]
-        public static void setSharingFilterForAllPartners() => setSharingFilterForPartners("all");
+        public static void setSharingFilterForAllPartners() => _ = setSharingFilterForPartners("all");
 
         [Obsolete("Please use setSharingFilterForPartners")]
-        public static void setSharingFilter(params string[] partners) => setSharingFilterForPartners(partners);
+        public static void setSharingFilter(params string[] partners) => _ = setSharingFilterForPartners(partners);
 
         // ── Android-only ─────────────────────────────────────────────────────────
 
@@ -953,4 +972,5 @@ namespace AppsFlyerSDK
             Debug.Log(string.Format("AppsFlyer_Unity_v{0} {1} called with {2}", kAppsFlyerPluginVersion, methodName, str));
         }
     }
+#pragma warning restore CS1998
 }
