@@ -66,7 +66,6 @@ mkdir -p "$OUTPUT_DIR"
 
 TEMP_DIR="$(mktemp -d)"
 DEPS_XML="$REPO_ROOT/Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
-IOS_WRAPPER="$REPO_ROOT/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm"
 TESTS_DIR="$REPO_ROOT/Assets/AppsFlyer/Tests"
 TESTS_META="$REPO_ROOT/Assets/AppsFlyer/Tests.meta"
 TESTS_BACKUP="$TEMP_DIR/Tests"
@@ -77,9 +76,6 @@ TESTS_META_MOVED=false
 cleanup() {
   if [[ -f "$TEMP_DIR/AppsFlyerDependencies.xml" ]]; then
     cp "$TEMP_DIR/AppsFlyerDependencies.xml" "$DEPS_XML"
-  fi
-  if [[ -f "$TEMP_DIR/AppsFlyeriOSWrapper.mm" ]]; then
-    cp "$TEMP_DIR/AppsFlyeriOSWrapper.mm" "$IOS_WRAPPER"
   fi
   if [[ "$TESTS_MOVED" == "true" && -d "$TESTS_BACKUP" ]]; then
     rm -rf "$TESTS_DIR"
@@ -102,17 +98,26 @@ trap cleanup EXIT
 echo "Start build for $PACKAGE_NAME"
 
 cp "$DEPS_XML" "$TEMP_DIR/AppsFlyerDependencies.xml"
-cp "$IOS_WRAPPER" "$TEMP_DIR/AppsFlyeriOSWrapper.mm"
 
-echo "Changing iOS pods to strict-mode variants."
-sed -i.bak 's|name="AppsFlyerFramework"|name="AppsFlyerFramework/Strict"|g' "$DEPS_XML"
+echo "Changing PurchaseConnector CocoaPod fallback to its strict-mode subspec."
+# PurchaseConnector has no Strict SPM product, so keep the CocoaPods subspec swap for its
+# iosPod fallback below, but drop its remoteSwiftPackage block entirely: EDM4U's
+# SwiftPackageManager.AddPackagesToProject() adds every declared remoteSwiftPackage
+# unconditionally, so leaving it in place would add the regular PurchaseConnector SPM
+# package alongside the PurchaseConnector/Strict CocoaPod.
 sed -i.bak 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
-rm -f "$DEPS_XML.bak"
+sed -i.bak '/<remoteSwiftPackage url="https:\/\/github.com\/AppsFlyerSDK\/PurchaseConnector-Dynamic.git"/,/<\/remoteSwiftPackage>/d' "$DEPS_XML"
 
-echo "Disabling IDFA/ATT calls for strict mode."
-sed -i.bak 's|^\([[:space:]]*\)\(\[AppsFlyerLib shared\]\.disableAdvertisingIdentifier\)|\1//\2|g' "$IOS_WRAPPER"
-sed -i.bak 's|^\([[:space:]]*\)\(\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];\)|\1//\2|g' "$IOS_WRAPPER"
-rm -f "$IOS_WRAPPER.bak"
+echo "Swapping AppsFlyerRPC and AppsFlyerFramework SPM packages to their strict-mode products."
+# The iosPod names for AppsFlyerRPC/AppsFlyerFramework are left unchanged so they keep
+# matching their remoteSwiftPackage's replacesPod value: EDM4U's podsToIgnore check
+# (IOSResolver.GenPodfile) is an exact string compare against the iosPod's current name,
+# so renaming the iosPod here (as PurchaseConnector's does) would break that match and
+# cause both the CocoaPod and the SPM package to be added.
+sed -i.bak 's|<swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>|<swiftPackage name="AppsFlyerRPCStrict" replacesPod="AppsFlyerRPC"/>|' "$DEPS_XML"
+sed -i.bak 's|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git"|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Strict.git"|' "$DEPS_XML"
+sed -i.bak 's|<swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>|<swiftPackage name="AppsFlyerLib" replacesPod="AppsFlyerFramework"/>|' "$DEPS_XML"
+rm -f "$DEPS_XML.bak"
 
 if [[ -d "$TESTS_DIR" ]]; then
   echo "Temporarily moving Tests folder to avoid NUnit compilation errors in batch mode."

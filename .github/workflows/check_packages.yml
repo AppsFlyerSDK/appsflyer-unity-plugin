@@ -102,18 +102,33 @@ jobs:
           echo "Removed Tests folder"
       - name: Modify for strict mode
         run: |
-          echo "Changing AppsFlyerFramework to Strict Mode"
-          grep -q "AppsFlyerFramework" Editor/AppsFlyerDependencies.xml
-          sed -i 's/AppsFlyerFramework/AppsFlyerFramework\/Strict/g' Editor/AppsFlyerDependencies.xml
+          DEPS_XML=Editor/AppsFlyerDependencies.xml
+
+          echo "Changing PurchaseConnector CocoaPod fallback to its strict-mode subspec"
+          # PurchaseConnector has no Strict SPM product, so keep the CocoaPods subspec swap for
+          # its iosPod fallback below, but drop its remoteSwiftPackage block entirely: EDM4U's
+          # SwiftPackageManager.AddPackagesToProject() adds every declared remoteSwiftPackage
+          # unconditionally, so leaving it in place would add the regular PurchaseConnector SPM
+          # package alongside the PurchaseConnector/Strict CocoaPod.
+          grep -q 'name="PurchaseConnector"' "$DEPS_XML"
+          sed -i 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
+          sed -i '/<remoteSwiftPackage url="https:\/\/github.com\/AppsFlyerSDK\/PurchaseConnector-Dynamic.git"/,/<\/remoteSwiftPackage>/d' "$DEPS_XML"
+
+          echo "Swapping AppsFlyerRPC and AppsFlyerFramework SPM packages to their strict-mode products"
+          # The iosPod names for AppsFlyerRPC/AppsFlyerFramework are left unchanged so they keep
+          # matching their remoteSwiftPackage's replacesPod value: EDM4U's podsToIgnore check
+          # (IOSResolver.GenPodfile) is an exact string compare against the iosPod's current
+          # name, so renaming the iosPod here (as PurchaseConnector's does) would break that
+          # match and cause both the CocoaPod and the SPM package to be added.
+          grep -q '<swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>' "$DEPS_XML"
+          sed -i 's|<swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>|<swiftPackage name="AppsFlyerRPCStrict" replacesPod="AppsFlyerRPC"/>|' "$DEPS_XML"
+          grep -q 'url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git"' "$DEPS_XML"
+          sed -i 's|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git"|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Strict.git"|' "$DEPS_XML"
+          sed -i 's|<swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>|<swiftPackage name="AppsFlyerLib" replacesPod="AppsFlyerFramework"/>|' "$DEPS_XML"
+
           echo "Changing package.json to Strict Mode"
           grep -q "AppsFlyer Unity plugin" ./package.json
           sed -i 's/AppsFlyer Unity plugin/AppsFlyer Unity plugin strict mode/g' ./package.json
-          echo "Commenting out disableAdvertisingIdentifier"
-          grep -q "\[AppsFlyerLib shared\].disableAdvertisingIdentifier" Plugins/iOS/AppsFlyeriOSWrapper.mm
-          sed -i 's/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/\/\/\[AppsFlyerLib shared\].disableAdvertisingIdentifier/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
-          echo "Commenting out waitForATTUserAuthorizationWithTimeoutInterval"
-          grep -q "\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];" Plugins/iOS/AppsFlyeriOSWrapper.mm
-          sed -i 's/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/\/\/\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];/g' Plugins/iOS/AppsFlyeriOSWrapper.mm
 
       - name: Commit changes and push
         env:
