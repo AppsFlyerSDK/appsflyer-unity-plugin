@@ -1,7 +1,6 @@
 .DS_Store
 *.log
 Logs/
-Packages/
 Temp/
 test-app/Assets/StreamingAssets/.env
 test-app/.env
