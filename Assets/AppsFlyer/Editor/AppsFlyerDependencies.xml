@@ -3,12 +3,12 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.12"></androidPackage>
-    <!-- unity-wrapper:7.0.14 is the first published version whose AppsFlyerRPCBridge.kt calls
+    <!-- unity-wrapper:7.0.14
          AppsFlyerRpcHandler's constructor with a Function0<Context> supplier (see commit
          8535569, "fix(android): pass Activity, not applicationContext, to AppsFlyerRpcHandler"),
-         matching af-android-plugin-bridge:7.0.12's current constructor signature. Earlier
+         matching af-android-plugin-bridge:7.0.12
          published versions (7.0.1, 7.0.13) predate that fix and still pass a raw Context,
-         which throws NoSuchMethodError against af-android-plugin-bridge:7.0.12 at runtime. -->
+         which throws NoSuchMethodError against af-android-plugin-bridge:7.0.12
     <androidPackage spec="com.appsflyer:unity-wrapper:7.0.14"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) — without it,
@@ -16,7 +16,7 @@
          itself is installed on the device, surfacing as a ClassNotFoundException in
          the "gaidError" field of outgoing SDK requests. -->
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
-    <!-- com.appsflyer:purchase-connector:2.3.0 shares the exact manifest package "com.appsflyer"
+    <!-- com.appsflyer:purchase-connector:2.3.0"com.appsflyer"
          with com.appsflyer:af-android-sdk:7.0.1, which AGP 8's mandatory namespace-uniqueness
          check hard-fails on. There is no known consumer-side Gradle property that resolves this
          (android.uniquePackageNames does NOT — it's an older, unrelated naming-convention flag).
