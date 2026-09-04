@@ -75,11 +75,3 @@ jobs:
         with:
           name: Test results - ${{ matrix.targetPlatform }}
           path: ${{ steps.tests.outputs.artifactsPath }}
-
-      - name: Return Unity license
-        if: always()
-        uses: game-ci/unity-return-license@v2
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
