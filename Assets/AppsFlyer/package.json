@@ -2,7 +2,7 @@
 	"name": "appsflyer-unity-plugin",
 	"displayName": "AppsFlyer",
 	"description": "AppsFlyer Unity plugin",
-	"version": "7.0.2",
+	"version": "7.0.2-rc5",
 	"unity": "2023.1",
 	"license": "MIT"
   }
