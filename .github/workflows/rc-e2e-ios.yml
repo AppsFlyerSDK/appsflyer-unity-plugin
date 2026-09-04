@@ -184,16 +184,18 @@ jobs:
           echo "=== unity-return.log ==="
           cat /tmp/unity-return.log || true
 
-      - name: Install iOS pods
+      - name: Patch SDKROOT for simulator build
         run: |
-          chmod +x scripts/ios-pod-install.sh
-          scripts/ios-pod-install.sh test-app/Build/iOS-Simulator
+          # Unity hardcodes SDKROOT = iphoneos at the target level, which overrides
+          # xcodebuild's -sdk flag below. Must run before xcodebuild for simulator builds.
+          sed -i '' 's/SDKROOT = iphoneos;//g' \
+            test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj/project.pbxproj
 
-      - name: Compile simulator .app from Xcode workspace
+      - name: Compile simulator .app from Xcode project
         run: |
-          XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
+          XCODE_PROJ=test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj
           xcodebuild \
-            -workspace "$XCODE_WS" \
+            -project   "$XCODE_PROJ" \
             -scheme    Unity-iPhone \
             -sdk       iphonesimulator \
             -configuration Debug \

@@ -57,34 +57,34 @@ echo ""
 
 # ── 1. Assets/AppsFlyer/package.json ─────────────────────────────────────────
 PKG_JSON="Assets/AppsFlyer/package.json"
-echo "[1/12] $PKG_JSON"
+echo "[1/11] $PKG_JSON"
 sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$PLUGIN_VERSION\"/" "$PKG_JSON"
 rm -f "${PKG_JSON}.bak"
 
 # ── 2. Assets/AppsFlyer/AppsFlyer.cs ─────────────────────────────────────────
 AF_CS="Assets/AppsFlyer/AppsFlyer.cs"
-echo "[2/12] $AF_CS"
+echo "[2/11] $AF_CS"
 sed -i.bak "s/kAppsFlyerPluginVersion = \"[^\"]*\"/kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"/" "$AF_CS"
 rm -f "${AF_CS}.bak"
 
 # ── 3-6. Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml ───────────────────
 DEPS_XML="Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
-echo "[3/12] $DEPS_XML — af-android-plugin-bridge"
+echo "[3/11] $DEPS_XML — af-android-plugin-bridge"
 sed -i.bak "s|af-android-plugin-bridge:[^\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$DEPS_XML"
 
-echo "[4/12] $DEPS_XML — unity-wrapper"
+echo "[4/11] $DEPS_XML — unity-wrapper"
 sed -i.bak "s|unity-wrapper:[^\"]*|unity-wrapper:$UNITY_WRAPPER_VERSION|" "$DEPS_XML"
 
-echo "[5/12] $DEPS_XML — AppsFlyerRPC"
+echo "[5/11] $DEPS_XML — AppsFlyerRPC"
 sed -i.bak "s|name=\"AppsFlyerRPC\" version=\"[^\"]*\"|name=\"AppsFlyerRPC\" version=\"$IOS_RPC_VERSION\"|" "$DEPS_XML"
 
 if [[ -n "$IOS_PC_VERSION" ]]; then
-  echo "[6/12] $DEPS_XML — PurchaseConnector (iOS) → $IOS_PC_VERSION"
+  echo "[6/11] $DEPS_XML — PurchaseConnector (iOS) → $IOS_PC_VERSION"
   sed -i.bak "s|name=\"PurchaseConnector\" version=\"[^\"]*\"|name=\"PurchaseConnector\" version=\"$IOS_PC_VERSION\"|" "$DEPS_XML"
 fi
 
 if [[ -n "$ANDROID_PC_VERSION" ]]; then
-  echo "[6b/12] $DEPS_XML — purchase-connector (Android)"
+  echo "[6b/11] $DEPS_XML — purchase-connector (Android)"
   sed -i.bak "s|purchase-connector:[^\"]*|purchase-connector:$ANDROID_PC_VERSION|" "$DEPS_XML"
 fi
 rm -f "${DEPS_XML}.bak"
@@ -92,7 +92,7 @@ rm -f "${DEPS_XML}.bak"
 # ── 7. android-unity-wrapper/gradle.properties ───────────────────────────────
 ANDROID_WRAPPER_PROPS="android-unity-wrapper/gradle.properties"
 if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
-  echo "[7/12] $ANDROID_WRAPPER_PROPS"
+  echo "[7/11] $ANDROID_WRAPPER_PROPS"
   current_version_code="$(grep '^VERSION_CODE=' "$ANDROID_WRAPPER_PROPS" | cut -d= -f2)"
   current_version_name="$(grep '^VERSION_NAME=' "$ANDROID_WRAPPER_PROPS" | cut -d= -f2)"
   if [[ "$current_version_name" != "$UNITY_WRAPPER_VERSION" ]]; then
@@ -116,11 +116,11 @@ fi
 # ── 8. android-unity-wrapper/unitywrapper/build.gradle ──────────────────────
 UNITYWRAPPER_BUILD="android-unity-wrapper/unitywrapper/build.gradle"
 if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
-  echo "[8/12] $UNITYWRAPPER_BUILD — af-android-plugin-bridge"
+  echo "[8/11] $UNITYWRAPPER_BUILD — af-android-plugin-bridge"
   sed -i.bak "s|af-android-plugin-bridge:[^'\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$UNITYWRAPPER_BUILD"
   rm -f "${UNITYWRAPPER_BUILD}.bak"
   if [[ -n "$ANDROID_BILLING_VERSION" ]]; then
-    echo "[8b/12] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
+    echo "[8b/11] $UNITYWRAPPER_BUILD — billingclient:billing → $ANDROID_BILLING_VERSION"
     sed -i.bak "s|billingclient:billing:[^'\"]*|billingclient:billing:$ANDROID_BILLING_VERSION|" "$UNITYWRAPPER_BUILD"
     rm -f "${UNITYWRAPPER_BUILD}.bak"
   fi
@@ -128,30 +128,22 @@ fi
 
 # ── 9. deploy/build_unity_package.sh ────────────────────────────────────────
 BUILD_SH="deploy/build_unity_package.sh"
-echo "[9/12] $BUILD_SH"
+echo "[9/11] $BUILD_SH"
 sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-${PLUGIN_VERSION}.unitypackage\"|" "$BUILD_SH"
 rm -f "${BUILD_SH}.bak"
 
 # ── 10. deploy/strict_mode_build_package.sh ──────────────────────────────────
 STRICT_SH="deploy/strict_mode_build_package.sh"
-echo "[10/12] $STRICT_SH"
+echo "[10/11] $STRICT_SH"
 sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage\"|" "$STRICT_SH"
 rm -f "${STRICT_SH}.bak"
 
 # ── 11. test-app/Assets/Plugins/Android/mainTemplate.gradle ──────────────────
 MAIN_GRADLE="test-app/Assets/Plugins/Android/mainTemplate.gradle"
 if [[ -f "$MAIN_GRADLE" ]]; then
-  echo "[11/12] $MAIN_GRADLE — af-android-plugin-bridge"
+  echo "[11/11] $MAIN_GRADLE — af-android-plugin-bridge"
   sed -i.bak "s|com.appsflyer:af-android-plugin-bridge:[^']*|com.appsflyer:af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$MAIN_GRADLE"
   rm -f "${MAIN_GRADLE}.bak"
-fi
-
-# ── 12. scripts/ios-pod-install.sh ───────────────────────────────────────────
-IOS_POD_SH="scripts/ios-pod-install.sh"
-if [[ -f "$IOS_POD_SH" ]]; then
-  echo "[12/12] $IOS_POD_SH — AppsFlyerRPC"
-  sed -i.bak "s|pod 'AppsFlyerRPC', '[^']*'|pod 'AppsFlyerRPC', '$IOS_RPC_VERSION'|g" "$IOS_POD_SH"
-  rm -f "${IOS_POD_SH}.bak"
 fi
 
 # ── CHANGELOG.md — update base version section (never RC-specific headers) ───
