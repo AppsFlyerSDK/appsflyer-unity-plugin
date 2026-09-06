@@ -117,9 +117,13 @@ if [[ ! -f "$APPSFLYER_CS" ]]; then
   echo "Error: AppsFlyer.cs not found at $APPSFLYER_CS" >&2
   exit 1
 fi
-if ! grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_BASE_VERSION\"" "$APPSFLYER_CS"; then
-  current_plugin_version="$(grep -Eo 'kAppsFlyerPluginVersion = "[^"]+"' "$APPSFLYER_CS" | sed -E 's/.*"([^"]+)"/\1/' || true)"
-  echo "Error: AppsFlyer.cs has kAppsFlyerPluginVersion=${current_plugin_version:-missing}, expected $PLUGIN_BASE_VERSION." >&2
+current_plugin_version="$(grep -Eo 'kAppsFlyerPluginVersion = "[^"]+"' "$APPSFLYER_CS" | sed -E 's/.*"([^"]+)"/\1/' || true)"
+# AppsFlyer.cs holds the RC-suffixed version (e.g. 7.0.2-rc10) throughout the RC pipeline;
+# strip-rc-version.sh doesn't strip it until promotion, which runs after this gate. Compare
+# base versions only, using the same "${VERSION%%-rc*}" convention as bump-version.sh/rc-release.yml.
+current_plugin_base_version="${current_plugin_version%%-rc*}"
+if [[ "$current_plugin_base_version" != "$PLUGIN_BASE_VERSION" ]]; then
+  echo "Error: AppsFlyer.cs has kAppsFlyerPluginVersion=${current_plugin_version:-missing} (base ${current_plugin_base_version:-missing}), expected base $PLUGIN_BASE_VERSION." >&2
   echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Unity plugin version." >&2
   exit 1
 fi
