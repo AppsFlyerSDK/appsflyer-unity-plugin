@@ -232,6 +232,14 @@ jobs:
           rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
           cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
 
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/xcode-build.log
+          retention-days: 3
+
       - name: Boot iOS simulator
         run: |
           UDID=$(xcrun simctl list devices available -j | \
