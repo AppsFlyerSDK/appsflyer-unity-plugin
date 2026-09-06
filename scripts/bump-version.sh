@@ -68,12 +68,17 @@ sed -i.bak "s/kAppsFlyerPluginVersion = \"[^\"]*\"/kAppsFlyerPluginVersion = \"$
 rm -f "${AF_CS}.bak"
 
 # ── 3-6. Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml ───────────────────
+# NOTE: every pattern below is anchored on both sides (spec="..." / version="...")
+# so it only ever matches inside an XML attribute value, never free-text comment
+# prose that happens to mention the same coordinate — a bare `af-android-plugin-bridge:[^"]*`
+# with no right anchor will greedily eat comment text up to the next unrelated
+# quote anywhere later in the file (see commit 00bdfd2 for the corruption that caused).
 DEPS_XML="Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
 echo "[3/11] $DEPS_XML — af-android-plugin-bridge"
-sed -i.bak "s|af-android-plugin-bridge:[^\"]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|" "$DEPS_XML"
+sed -i.bak "s|spec=\"com.appsflyer:af-android-plugin-bridge:[^\"]*\"|spec=\"com.appsflyer:af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION\"|" "$DEPS_XML"
 
 echo "[4/11] $DEPS_XML — unity-wrapper"
-sed -i.bak "s|unity-wrapper:[^\"]*|unity-wrapper:$UNITY_WRAPPER_VERSION|" "$DEPS_XML"
+sed -i.bak "s|spec=\"com.appsflyer:unity-wrapper:[^\"]*\"|spec=\"com.appsflyer:unity-wrapper:$UNITY_WRAPPER_VERSION\"|" "$DEPS_XML"
 
 echo "[5/11] $DEPS_XML — AppsFlyerRPC"
 sed -i.bak "s|name=\"AppsFlyerRPC\" version=\"[^\"]*\"|name=\"AppsFlyerRPC\" version=\"$IOS_RPC_VERSION\"|" "$DEPS_XML"
@@ -85,7 +90,7 @@ fi
 
 if [[ -n "$ANDROID_PC_VERSION" ]]; then
   echo "[6b/11] $DEPS_XML — purchase-connector (Android)"
-  sed -i.bak "s|purchase-connector:[^\"]*|purchase-connector:$ANDROID_PC_VERSION|" "$DEPS_XML"
+  sed -i.bak "s|spec=\"com.appsflyer:purchase-connector:[^\"]*\"|spec=\"com.appsflyer:purchase-connector:$ANDROID_PC_VERSION\"|" "$DEPS_XML"
 fi
 rm -f "${DEPS_XML}.bak"
 
