@@ -29,12 +29,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _iosAppId;
     private string _androidAppId;
     private bool _conversionDataReceived = false;
-
-    // Only read inside the `UNITY_IOS && !UNITY_EDITOR` branch of RequestATTThenStart() below,
-    // so builds that compile that branch out (Editor, Android) see it as assigned-but-unused.
-#pragma warning disable 0414
-    private bool _attDetermined = false;
-#pragma warning restore 0414
+    private bool _sessionReadySignaled = false;
 
     void Start()
     {
@@ -45,7 +40,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     // ATT system prompt (or the OS reports it can't be shown at all, on iOS < 14).
     void OnATTAuthorizationDetermined(string status)
     {
-        _attDetermined = true;
         AFQALogger.Log("[AF_QA][ATT] authorization determined status=" + status);
     }
 
@@ -77,7 +71,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
 
         // SDK 7 flow: session readiness gates start().
-        AppsFlyer.registerSessionReadyListener();
+        AwaitSessionReadyRegistration();
 
 #if UNITY_ANDROID
         // AppsFlyerLib registers its own ActivityLifecycleCallbacks as a side effect of the
@@ -158,16 +152,45 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void OnSessionReadyHandler(object sender, EventArgs args)
     {
+        HandleSessionReady("event");
+    }
+
+    // registerSessionReadyListener() streams a one-shot onSessionReady event to whichever
+    // listener is registered at the moment native's session becomes ready - it isn't replayed.
+    // Since registration is itself an async RPC round-trip, a fast session (e.g. warm cache)
+    // can become ready before that round-trip lands, and the stream event is then lost with no
+    // listener to catch it. isSessionReady() is a synchronous query API precisely for closing
+    // that race: once registration completes, poll current state once and fall through to the
+    // same session-ready path if it's already true.
+    async void AwaitSessionReadyRegistration()
+    {
+        await AppsFlyer.registerSessionReadyListener();
+
+        bool alreadyReady = await AppsFlyer.isSessionReady();
+        if (alreadyReady)
+            HandleSessionReady("query");
+    }
+
+    void HandleSessionReady(string source)
+    {
+        if (_sessionReadySignaled) return;
+        _sessionReadySignaled = true;
+
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
-        AFQALogger.Log("[AF_QA][SESSION_READY] received");
+        AFQALogger.Log("[AF_QA][SESSION_READY] received via " + source);
         StartCoroutine(RequestATTThenStart());
     }
 
-    // Requests ATT authorization and waits for the user's decision (or a timeout) before
-    // calling start() — start() must not fire before the user has answered the tracking
-    // prompt, or the first session send can't carry IDFA even if they go on to grant it.
-    // This replaces waitForATTUserAuthorizationWithTimeoutInterval, which no longer exists in
-    // this plugin version (see Tests_Suite.cs) despite still being documented.
+    // Triggers ATT authorization and calls start() right away, without waiting on the
+    // user's decision: AppsFlyer.start() doesn't gate on ATT at the SDK level (see
+    // Tests_Suite.cs's WaitForATT_NoLongerFiresAnyRPCCall, which asserts the old
+    // waitForATTUserAuthorizationWithTimeoutInterval API is gone), and a real device/
+    // simulator showing the system prompt suspends the app's player loop until the prompt
+    // is answered — any in-app coroutine timeout meant to rescue an unanswered prompt
+    // (WaitForSeconds- or Time.realtimeSinceStartup-based alike) never gets to run while
+    // suspended, so a wait-then-start ordering here can hang indefinitely with no fallback.
+    // ATT resolution (OnATTAuthorizationDetermined) still logs asynchronously whenever it
+    // eventually fires; it just no longer blocks start().
     IEnumerator RequestATTThenStart()
     {
 #if UNITY_IOS && !UNITY_EDITOR
@@ -176,18 +199,8 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
         _afqaRequestTrackingAuthorization();
         AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
-
-        float attTimeout = 60f;
-        while (!_attDetermined && attTimeout > 0f)
-        {
-            yield return new WaitForSeconds(1f);
-            attTimeout -= 1f;
-        }
-        if (!_attDetermined)
-            AFQALogger.Log("[AF_QA][ATT] timed out waiting for user response — proceeding with start()");
-#else
-        yield return null;
 #endif
+        yield return null;
 
         AppsFlyer.start();
         AFQALogger.Log("[AF_QA][start] result: SUCCESS");

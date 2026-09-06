@@ -34,9 +34,9 @@
       "checks": [
         {
           "id": "sdk_started",
-          "description": "startSDK returns SUCCESS",
+          "description": "start returns SUCCESS",
           "type": "log_contains",
-          "pattern": "[AF_QA][startSDK] result: SUCCESS",
+          "pattern": "[AF_QA][start] result: SUCCESS",
           "fail_action": "abort"
         },
         {
@@ -115,7 +115,7 @@
           "id": "no_fatal_errors",
           "description": "No fatal exceptions or SDK start errors in logs",
           "type": "absent",
-          "patterns": ["Fatal Exception", "FATAL", "[AF_QA][startSDK] error:", "response code:4", "response code:5"],
+          "patterns": ["Fatal Exception", "FATAL", "[AF_QA][start] error:", "response code:4", "response code:5"],
           "fail_action": "fail"
         }
       ]
@@ -182,9 +182,9 @@
       "checks": [
         {
           "id": "sdk_started",
-          "description": "startSDK returns SUCCESS on fresh install",
+          "description": "start returns SUCCESS on fresh install",
           "type": "log_contains",
-          "pattern": "[AF_QA][startSDK] result: SUCCESS",
+          "pattern": "[AF_QA][start] result: SUCCESS",
           "fail_action": "abort"
         },
         {
