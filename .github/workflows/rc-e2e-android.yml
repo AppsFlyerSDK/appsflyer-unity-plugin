@@ -70,6 +70,7 @@ jobs:
 
       - name: Write .env from secret
         run: |
+          mkdir -p test-app/Assets/StreamingAssets
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
       - name: Cache Unity Library
