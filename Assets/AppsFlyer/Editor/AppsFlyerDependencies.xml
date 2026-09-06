@@ -11,7 +11,7 @@
          which throws NoSuchMethodError against af-android-plugin-bridge:7.0.12 at runtime. -->
     <androidPackage spec="com.appsflyer:unity-wrapper:7.0.14"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
-    <!-- Required for the SDK to read the Google Advertising ID (GAID) — without it,
+    <!-- Required for the SDK to read the Google Advertising ID (GAID) - without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
          itself is installed on the device, surfacing as a ClassNotFoundException in
          the "gaidError" field of outgoing SDK requests. -->
@@ -19,7 +19,7 @@
     <!-- com.appsflyer:purchase-connector:2.3.0 shares the exact manifest package "com.appsflyer"
          with com.appsflyer:af-android-sdk:7.0.1, which AGP 8's mandatory namespace-uniqueness
          check hard-fails on. There is no known consumer-side Gradle property that resolves this
-         (android.uniquePackageNames does NOT — it's an older, unrelated naming-convention flag).
+         (android.uniquePackageNames does NOT - it's an older, unrelated naming-convention flag).
          The real fix requires AppsFlyer to publish these two artifacts with distinct AGP
          namespaces upstream. Left disabled here until that lands; do not re-enable without
          confirming the namespace collision has actually been resolved upstream. -->
