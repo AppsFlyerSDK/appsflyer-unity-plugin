@@ -107,15 +107,20 @@ if [[ ! -f "$UNITYWRAPPER_BUILD" ]]; then
   echo "Error: unity wrapper build.gradle not found at $UNITYWRAPPER_BUILD" >&2
   exit 1
 fi
-UNITYWRAPPER_JAVA="$ANDROID_WRAPPER_DIR/unitywrapper/src/main/java/com/appsflyer/unity/AppsFlyerAndroidWrapper.java"
-if [[ ! -f "$UNITYWRAPPER_JAVA" ]]; then
-  echo "Error: unity wrapper Java bridge not found at $UNITYWRAPPER_JAVA" >&2
+# Source of truth for the Unity plugin version is kAppsFlyerPluginVersion in AppsFlyer.cs, not a
+# constant in the Android wrapper: PluginInfo is now reported at runtime via the "setPluginInfo"
+# RPC method (see appsflyer-plugins-rpc-schema.json), dispatched through the shared
+# com.appsflyer.pluginbridge.handler.AppsFlyerRpcHandler (af-android-plugin-bridge), not hardcoded
+# in AppsFlyerAndroidWrapper.java. bump-version.sh only ever updates AppsFlyer.cs for this value.
+APPSFLYER_CS="$REPO_ROOT/Assets/AppsFlyer/AppsFlyer.cs"
+if [[ ! -f "$APPSFLYER_CS" ]]; then
+  echo "Error: AppsFlyer.cs not found at $APPSFLYER_CS" >&2
   exit 1
 fi
-if ! grep -q "PLUGIN_VERSION = \"$PLUGIN_BASE_VERSION\"" "$UNITYWRAPPER_JAVA"; then
-  current_plugin_version="$(grep -Eo 'PLUGIN_VERSION = "[^"]+"' "$UNITYWRAPPER_JAVA" | sed -E 's/.*"([^"]+)"/\1/' || true)"
-  echo "Error: AppsFlyerAndroidWrapper.java has PLUGIN_VERSION=${current_plugin_version:-missing}, expected $PLUGIN_BASE_VERSION." >&2
-  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Unity PluginInfo version." >&2
+if ! grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_BASE_VERSION\"" "$APPSFLYER_CS"; then
+  current_plugin_version="$(grep -Eo 'kAppsFlyerPluginVersion = "[^"]+"' "$APPSFLYER_CS" | sed -E 's/.*"([^"]+)"/\1/' || true)"
+  echo "Error: AppsFlyer.cs has kAppsFlyerPluginVersion=${current_plugin_version:-missing}, expected $PLUGIN_BASE_VERSION." >&2
+  echo "Refusing to publish com.appsflyer:unity-wrapper:$VERSION to Sonatype with a mismatched Unity plugin version." >&2
   exit 1
 fi
 if [[ "$SKIP_IF_EXISTS" == true ]]; then
