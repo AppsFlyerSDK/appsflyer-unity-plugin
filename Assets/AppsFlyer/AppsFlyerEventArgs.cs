@@ -169,7 +169,7 @@ namespace AppsFlyerSDK
                     this.deepLink["is_deferred"] = dictionary["is_deferred"];
                 }
 
-                switch (status)
+                switch (status?.ToUpperInvariant())
                 {
                     case "FOUND":
                         this.status = DeepLinkStatus.FOUND;
@@ -182,7 +182,7 @@ namespace AppsFlyerSDK
                         break;
                 }
                 
-                switch (error)
+                switch (error?.ToUpperInvariant())
                 {
                     case "TIMEOUT":
                         this.error = DeepLinkError.TIMEOUT;
