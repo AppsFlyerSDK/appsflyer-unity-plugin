@@ -159,9 +159,19 @@ namespace AppsFlyerSDK
                     error = dictionary["error"].ToString();
                 }
                 
-                if (dictionary.TryGetValue("deepLink", out var deepLinkValue) && deepLinkValue is Dictionary<string, object> nestedDeepLink)
+                // iOS's native RPC layer sends "deepLink" as an already-nested JSON object, but
+                // Android's sends it as a JSON-encoded string within the envelope — handle both
+                // shapes rather than assuming one platform's wire format for the other.
+                if (dictionary.TryGetValue("deepLink", out var deepLinkValue) && deepLinkValue != null)
                 {
-                    this.deepLink = nestedDeepLink;
+                    if (deepLinkValue is Dictionary<string, object> nestedDeepLink)
+                    {
+                        this.deepLink = nestedDeepLink;
+                    }
+                    else if (deepLinkValue is string deepLinkString)
+                    {
+                        this.deepLink = AppsFlyer.CallbackStringToDictionary(deepLinkString);
+                    }
                 }
                 if (dictionary.ContainsKey("is_deferred"))
                 {
