@@ -84,3 +84,15 @@
     }
 }
 @end
+
+// Called from AppsFlyerRPCWrapper.swift's _afFireJson/_afExecuteJson when the "start" RPC method
+// is dispatched. Restores the isBridgeReady=YES + AF_BRIDGE_SET notification that the old,
+// pre-RPC-migration Obj-C++ _startSDK used to fire synchronously as its first statement, before
+// calling startWithCompletionHandler - lost when that function was deleted and never carried over
+// into the Swift wrapper, which silently dropped every iOS deep link (handleOpenUrl:/
+// continueUserActivity: above stayed gated on isBridgeReady forever). Plain C linkage (no
+// extern "C" needed in Objective-C) so Swift can call it directly via @_silgen_name.
+void _afMarkBridgeReady(void) {
+    [AppsFlyerAttribution shared].isBridgeReady = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:AF_BRIDGE_SET object:[AppsFlyerAttribution shared]];
+}
