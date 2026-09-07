@@ -49,6 +49,13 @@ namespace AppsFlyerSDK
         /// DeepLink status: FOUND, NOT_FOUND, ERROR
         /// </summary>
         public DeepLinkStatus status { get; }
+
+        /// <summary>
+        /// The raw, unmapped "status" string exactly as received from native. status above collapses
+        /// anything other than a literal "FOUND"/"NOT_FOUND" match to DeepLinkStatus.ERROR, so this is
+        /// the only way to see what native actually sent when diagnosing an unexpected ERROR result.
+        /// </summary>
+        public string rawStatus { get; }
         
         /// <summary>
         /// DeepLink error: TIMEOUT, NETWORK, HTTP_STATUS_CODE, UNEXPECTED
@@ -145,6 +152,7 @@ namespace AppsFlyerSDK
                 {
                     status = dictionary["status"].ToString();
                 }
+                this.rawStatus = status;
                 
                 if (dictionary.ContainsKey("error") && dictionary["error"] != null)
                 {

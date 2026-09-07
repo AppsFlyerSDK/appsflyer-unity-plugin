@@ -469,7 +469,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         }
         string status = dlArgs.status.ToString();
         string deepLinkValue = dlArgs.getDeepLinkValue() ?? "";
-        AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: status=" + status + ", deepLinkValue=" + deepLinkValue);
+        AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: status=" + status + ", deepLinkValue=" + deepLinkValue + ", rawStatus=" + dlArgs.rawStatus);
     }
 
     // ── Utilities ─────────────────────────────────────────────────────────────
