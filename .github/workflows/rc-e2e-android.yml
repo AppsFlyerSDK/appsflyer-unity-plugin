@@ -40,15 +40,10 @@ on:
         required: true
 
 jobs:
-  build-android:
-    # Unity 6 dropped x86_64 Android build support (BuildScript.BuildAndroid targets ARM64
-    # only), and the custom `unity-android` GHCR image is a plain single-arch mirror of
-    # unityci/editor pulled on an amd64 runner (see push-unity-to-ghcr.yml) — so this job
-    # must stay on amd64. The emulator that installs/runs the resulting ARM64-only APK runs
-    # in the separate e2e-android job below, on an arm64 runner instead.
-    name: Build Android APK — ${{ inputs.plugin_version }}
+  e2e-android:
+    name: E2E Android — ${{ inputs.plugin_version }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
       packages: read
@@ -115,49 +110,14 @@ jobs:
           path: /tmp/unity-build.log
           retention-days: 3
 
-      - name: Locate and stage APK
+      - name: Locate APK
         run: |
           APK=$(find test-app/Build -name "*.apk" | head -1)
           if [[ -z "$APK" ]]; then
             echo "::error::APK not found after Unity build"
             exit 1
           fi
-          mkdir -p .af-artifacts/android-apk
-          cp "$APK" .af-artifacts/android-apk/app.apk
-
-      - name: Upload built APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk-${{ inputs.plugin_version }}
-          path: .af-artifacts/android-apk/app.apk
-          retention-days: 3
-
-  e2e-android:
-    name: E2E Android — ${{ inputs.plugin_version }}
-    needs: build-android
-    # arm64 runner to match the ARM64-only APK from build-android (Unity 6 no longer builds
-    # x86_64 Android) with hardware-accelerated (KVM) emulation rather than slow arm64-under-
-    # QEMU-on-amd64 emulation.
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 90
-    permissions:
-      contents: read
-      packages: read
-
-    steps:
-      - name: Checkout release branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_branch }}
-
-      - name: Download built APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk-${{ inputs.plugin_version }}
-          path: .af-artifacts/android-apk
-
-      - name: Set APK path
-        run: echo "APK_PATH=.af-artifacts/android-apk/app.apk" >> "$GITHUB_ENV"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Install jq
         run: sudo apt-get install -y jq
@@ -181,8 +141,17 @@ jobs:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
           api-level: 33
-          arch: arm64-v8a
-          target: google_apis
+          arch: x86_64
+          # BuildScript.BuildAndroid is ARM64-only (Unity 6 dropped x86_64 Android build
+          # support), so a plain x86_64 image can't install it (INSTALL_FAILED_NO_MATCHING_ABIS).
+          # google_apis_playstore x86_64 images bundle ARM64→x86_64 native-library translation
+          # (houdini_7_z), letting the ARM64 APK run here without needing ARM64 hardware —
+          # GitHub-hosted ARM64 runners (Linux and Apple Silicon macOS alike) don't support
+          # nested virtualization, so hardware-accelerated native ARM64 emulation isn't
+          # actually available on GitHub Actions today. The tradeoff: Play Store images can't
+          # be adb-rooted, but af-scenario-runner.sh already has a working non-root fallback
+          # (relies on logcat directly when the run-as/root read of af_qa_logs.txt fails).
+          target: google_apis_playstore
           profile: pixel_6
           cores: 4
           ram-size: 4096M
@@ -200,8 +169,10 @@ jobs:
 
             adb wait-for-device
             # Elevate to root so the scenario runner can read af_qa_logs.txt from
-            # /data/data/... and so adb logcat -G 32m works. google_apis emulators
-            # default to shell user which lacks both permissions.
+            # /data/data/... and so adb logcat -G 32m works. Play Store images never
+            # allow root at all (unlike plain google_apis images, where it's just
+            # unavailable by default) — af-scenario-runner.sh falls back to relying
+            # on logcat alone in either case.
             adb root || true
             adb wait-for-device
 
