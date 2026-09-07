@@ -66,6 +66,10 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
 
         AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
+        // Must be set before init(): registerConversionListener assigns the local delegate
+        // synchronously before its own RPC round trip, but native can fire onInstallConversionData
+        // as soon as init()'s "initialize" RPC call lands - registering after init() left a window
+        // where the event arrived with no delegate to route to and was silently dropped.
         AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
         AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
         AppsFlyer.enableDebug(true);
@@ -88,8 +92,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         }
         AFQALogger.Log("[AF_QA][lifecycleNudge] triggered");
 #endif
-
-        AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
 
         RunPreStartApis();
 
