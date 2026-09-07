@@ -66,6 +66,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
 
         AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
+        AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
         AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
         AppsFlyer.enableDebug(true);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
