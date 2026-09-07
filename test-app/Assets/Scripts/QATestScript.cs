@@ -28,6 +28,11 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _devKey;
     private string _iosAppId;
     private string _androidAppId;
+    // Defaults to skipping the ATT system prompt: CI simulators have no one to answer it, and
+    // once it's shown the whole app - including AppsFlyer's own network requests - is suspended
+    // at the OS level until it's dismissed, which it never is. Opt in via .env (REQUEST_ATT=true)
+    // to exercise the real ATT flow on a real device/manual run.
+    private bool _requestATT = false;
     private bool _conversionDataReceived = false;
     private bool _sessionReadySignaled = false;
 
@@ -140,6 +145,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
             if (trimmed.StartsWith("DEV_KEY="))             _devKey       = trimmed.Substring("DEV_KEY=".Length);
             else if (trimmed.StartsWith("IOS_APP_ID="))     _iosAppId     = trimmed.Substring("IOS_APP_ID=".Length);
             else if (trimmed.StartsWith("ANDROID_APP_ID=")) _androidAppId = trimmed.Substring("ANDROID_APP_ID=".Length);
+            else if (trimmed.StartsWith("REQUEST_ATT="))    _requestATT   = trimmed.Substring("REQUEST_ATT=".Length).Trim().ToLowerInvariant() == "true";
         }
 
         if (string.IsNullOrEmpty(_devKey))
@@ -197,11 +203,18 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     IEnumerator RequestATTThenStart()
     {
 #if UNITY_IOS && !UNITY_EDITOR
-        // Safe to trigger now: AppsFlyer's own init flow has already fully run, so the
-        // resign/become-active cycle the ATT system prompt causes can't race it (see
-        // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
-        _afqaRequestTrackingAuthorization();
-        AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
+        if (_requestATT)
+        {
+            // Safe to trigger now: AppsFlyer's own init flow has already fully run, so the
+            // resign/become-active cycle the ATT system prompt causes can't race it (see
+            // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
+            _afqaRequestTrackingAuthorization();
+            AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
+        }
+        else
+        {
+            AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization skipped (REQUEST_ATT not set)");
+        }
 #endif
         yield return null;
 
