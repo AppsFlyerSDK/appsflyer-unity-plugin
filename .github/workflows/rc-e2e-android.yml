@@ -189,16 +189,50 @@ jobs:
           emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect -accel on
           disable-animations: true
           script: |
+            # The default -e means the first failing command (e.g. adb install)
+            # would abort the whole step before any log is ever written, leaving
+            # the "Upload E2E report" step with nothing to upload. Disable it so
+            # a failure anywhere below still leaves a real, non-empty artifact —
+            # explicit exit-code handling below preserves the actual pass/fail
+            # result instead of silently swallowing it.
+            set +e
+            mkdir -p .af-e2e/reports .af-smoke/reports
+
             adb wait-for-device
             # Elevate to root so the scenario runner can read af_qa_logs.txt from
             # /data/data/... and so adb logcat -G 32m works. google_apis emulators
             # default to shell user which lacks both permissions.
             adb root || true
             adb wait-for-device
-            adb install -r "$APK_PATH"
-            adb shell am force-stop com.appsflyer.engagement
-            chmod +x scripts/af-scenario-runner.sh
-            scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose
+
+            # Capture the full, unfiltered device log for the whole run, starting
+            # before install — this is what actually diagnoses install/launch
+            # failures (e.g. INSTALL_FAILED_NO_MATCHING_ABIS) that happen before
+            # af-scenario-runner.sh ever gets to write its own phase logs.
+            adb logcat -c
+            adb logcat > .af-e2e/reports/device-logcat-full.txt 2>&1 &
+            LOGCAT_PID=$!
+
+            {
+              echo "=== adb install -r \"$APK_PATH\" ==="
+              adb install -r "$APK_PATH"
+            } > .af-e2e/reports/adb-install.log 2>&1
+            INSTALL_EXIT=$?
+            cat .af-e2e/reports/adb-install.log
+
+            if [[ $INSTALL_EXIT -ne 0 ]]; then
+              echo "::error::adb install failed with exit $INSTALL_EXIT — see adb-install.log and device-logcat-full.txt in the uploaded report artifact"
+              RUNNER_EXIT=$INSTALL_EXIT
+            else
+              adb shell am force-stop com.appsflyer.engagement
+              chmod +x scripts/af-scenario-runner.sh
+              scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose
+              RUNNER_EXIT=$?
+            fi
+
+            kill "$LOGCAT_PID" 2>/dev/null
+            wait "$LOGCAT_PID" 2>/dev/null
+            exit $RUNNER_EXIT
 
       - name: Upload E2E report
         if: always()
