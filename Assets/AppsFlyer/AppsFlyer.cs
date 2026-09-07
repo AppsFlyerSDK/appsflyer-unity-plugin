@@ -53,7 +53,16 @@ namespace AppsFlyerSDK
 
         private static async Awaitable<object> QueryAsync(string method, Dictionary<string, object> parameters = null)
         {
+#if UNITY_IOS && !UNITY_EDITOR
+            // iOS only: Execute() blocks on _afExecuteJson's semaphore, which can only be signaled
+            // once the main thread is free - calling it directly from Unity's main thread deadlocks.
+            // Hop off first so the main thread stays free to signal it, then hop back so callers can
+            // safely touch Unity APIs afterward. Android's Execute() is a plain synchronous JNI call
+            // with no such risk - dispatching it from a background thread pool worker instead risks an
+            // unattached/unreliable JNI environment (see the CI "Empty response from native" failures
+            // under headless Run In Background), so it stays on the calling thread there.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
                 return AppsFlyerRPCClient.instance.Execute(method, parameters);
@@ -68,10 +77,12 @@ namespace AppsFlyerSDK
                 AFLog(method, "Unexpected error dispatching RPC: " + e.Message);
                 return null;
             }
+#if UNITY_IOS && !UNITY_EDITOR
             finally
             {
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         // ── Initialization ──────────────────────────────────────────────────────
@@ -598,7 +609,10 @@ namespace AppsFlyerSDK
         public static async Awaitable<string> generateInviteLink(Dictionary<string, string> parameters)
         {
             var payload = BuildInviteLinkPayload(parameters);
+#if UNITY_IOS && !UNITY_EDITOR
+            // See QueryAsync for why this hop is iOS-only.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
                 return AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
@@ -613,10 +627,12 @@ namespace AppsFlyerSDK
                 AFLog("generateInviteLink", "Failed to generate invite link: " + e.Message);
                 return null;
             }
+#if UNITY_IOS && !UNITY_EDITOR
             finally
             {
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         // ── Advertising identifiers & privacy ─────────────────────────────────────
@@ -854,7 +870,10 @@ namespace AppsFlyerSDK
 
         private static async Awaitable<IAFValidateAndLogResult> QueryValidateAndLogAsync(Dictionary<string, object> payload)
         {
+#if UNITY_IOS && !UNITY_EDITOR
+            // See QueryAsync for why this hop is iOS-only.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
                 var result = AppsFlyerRPCClient.instance.Execute("validateAndLogInAppPurchase", payload) as Dictionary<string, object>;
@@ -868,10 +887,12 @@ namespace AppsFlyerSDK
             {
                 return AFSDKValidateAndLogResult.Init(AFSDKValidateAndLogStatus.AFSDKValidateAndLogStatusError, null, null, e.Message);
             }
+#if UNITY_IOS && !UNITY_EDITOR
             finally
             {
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         /// <summary>
