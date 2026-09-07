@@ -140,19 +140,21 @@ jobs:
         env:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
-          api-level: 33
-          arch: x86_64
           # BuildScript.BuildAndroid is ARM64-only (Unity 6 dropped x86_64 Android build
           # support), so a plain x86_64 image can't install it (INSTALL_FAILED_NO_MATCHING_ABIS).
-          # google_apis_playstore x86_64 images bundle ARM64→x86_64 native-library translation
-          # (houdini_7_z), letting the ARM64 APK run here without needing ARM64 hardware —
+          # api-level 33's google_apis_playstore x86_64 image still hit
+          # INSTALL_FAILED_NO_MATCHING_ABIS/res=-113 — its houdini translation doesn't cover
+          # this APK. API 35 system images ship Google's newer ABI-translation support that
+          # actually lets ARM64-only APKs install and run on an x86_64 image (see
+          # https://github.com/ReactiveCircus/android-emulator-runner/issues/458), so bump to
+          # api-level 35 + the plain google_apis target rather than google_apis_playstore —
           # GitHub-hosted ARM64 runners (Linux and Apple Silicon macOS alike) don't support
           # nested virtualization, so hardware-accelerated native ARM64 emulation isn't
-          # actually available on GitHub Actions today. The tradeoff: Play Store images can't
-          # be adb-rooted, but af-scenario-runner.sh already has a working non-root fallback
-          # (relies on logcat directly when the run-as/root read of af_qa_logs.txt fails).
-          target: google_apis_playstore
-          profile: pixel_6
+          # actually available on GitHub Actions today.
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_5
           cores: 4
           ram-size: 4096M
           emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect -accel on
