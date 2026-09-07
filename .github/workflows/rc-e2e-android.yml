@@ -40,10 +40,15 @@ on:
         required: true
 
 jobs:
-  e2e-android:
-    name: E2E Android — ${{ inputs.plugin_version }}
+  build-android:
+    # Unity 6 dropped x86_64 Android build support (BuildScript.BuildAndroid targets ARM64
+    # only), and the custom `unity-android` GHCR image is a plain single-arch mirror of
+    # unityci/editor pulled on an amd64 runner (see push-unity-to-ghcr.yml) — so this job
+    # must stay on amd64. The emulator that installs/runs the resulting ARM64-only APK runs
+    # in the separate e2e-android job below, on an arm64 runner instead.
+    name: Build Android APK — ${{ inputs.plugin_version }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: read
@@ -110,14 +115,49 @@ jobs:
           path: /tmp/unity-build.log
           retention-days: 3
 
-      - name: Locate APK
+      - name: Locate and stage APK
         run: |
           APK=$(find test-app/Build -name "*.apk" | head -1)
           if [[ -z "$APK" ]]; then
             echo "::error::APK not found after Unity build"
             exit 1
           fi
-          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+          mkdir -p .af-artifacts/android-apk
+          cp "$APK" .af-artifacts/android-apk/app.apk
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/android-apk/app.apk
+          retention-days: 3
+
+  e2e-android:
+    name: E2E Android — ${{ inputs.plugin_version }}
+    needs: build-android
+    # arm64 runner to match the ARM64-only APK from build-android (Unity 6 no longer builds
+    # x86_64 Android) with hardware-accelerated (KVM) emulation rather than slow arm64-under-
+    # QEMU-on-amd64 emulation.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/android-apk
+
+      - name: Set APK path
+        run: echo "APK_PATH=.af-artifacts/android-apk/app.apk" >> "$GITHUB_ENV"
 
       - name: Install jq
         run: sudo apt-get install -y jq
@@ -141,7 +181,7 @@ jobs:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
           api-level: 33
-          arch: x86_64
+          arch: arm64-v8a
           target: google_apis
           profile: pixel_6
           cores: 4
