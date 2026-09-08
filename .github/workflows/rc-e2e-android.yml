@@ -178,13 +178,7 @@ jobs:
             adb wait-for-device
             adb root || true
             adb wait-for-device
-            # google_apis_playstore AVDs keep self-updating Play Store/GMS for a while after
-            # boot (observed as com.android.vending/com.google.android.gms PACKAGE_REPLACED
-            # broadcasts landing inside our own app process mid-test) - installing and launching
-            # the app before that settles races AppsFlyer's Install-Referrer-based GCD lookup,
-            # which then silently never fires onInstallConversionData (is_first_launch_true FAIL)
-            # even though start()/onSessionReady/onDeepLinking all succeed. Wait for boot_completed
-            # plus Play Store's process actually being up, best-effort, before installing.
+            # Wait for Play Store to be up before installing - avoids racing its post-boot self-update.
             timeout 120 sh -c 'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = "1" ] && adb shell pidof com.android.vending >/dev/null 2>&1; do sleep 3; done' || echo "::warning::Play Store did not report ready within 120s; proceeding anyway"
             sleep 15
             adb logcat -c
