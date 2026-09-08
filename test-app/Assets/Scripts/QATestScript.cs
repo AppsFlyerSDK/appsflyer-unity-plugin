@@ -50,7 +50,19 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void OnDestroy()
     {
+        // [REPRO] if this fires mid-run, RequestATTThenStart's StartCoroutine silently dies with
+        // it - MonoBehaviour.OnDestroy stops all of that component's running coroutines with no
+        // exception, which would explain "[AF_QA][start]" never appearing with no error anywhere.
+        AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDestroy t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    }
+
+    void OnDisable()
+    {
+        // [REPRO] a disabled MonoBehaviour also stops its coroutines silently (resumes them if
+        // re-enabled, but a coroutine mid-yield across a disable/enable can misbehave depending
+        // on Unity version) - distinguishes "destroyed" from "merely disabled".
+        AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDisable t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
     }
 
     // ── Initialisation ────────────────────────────────────────────────────────
@@ -187,7 +199,23 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
         AFQALogger.Log("[AF_QA][SESSION_READY] received via " + source);
+        // [REPRO] pin down the exact clock/frame this fired on the main thread, so a delayed
+        // "[AF_QA][start]" can be attributed to time elapsed vs. frames elapsed (a stalled
+        // player loop advances neither; a merely slow coroutine still advances frames).
+        AFQALogger.Log($"[AF_QA][REPRO] HandleSessionReady t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         StartCoroutine(RequestATTThenStart());
+    }
+
+    // [REPRO] Correlates Activity background/foreground blips (e.g. from triggerLifecycleNudge)
+    // with any stall in the RequestATTThenStart coroutine below.
+    void OnApplicationPause(bool pause)
+    {
+        AFQALogger.Log($"[AF_QA][REPRO] OnApplicationPause({pause}) t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
+    }
+
+    void OnApplicationFocus(bool focus)
+    {
+        AFQALogger.Log($"[AF_QA][REPRO] OnApplicationFocus({focus}) t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
     }
 
     // Triggers ATT authorization and calls start() right away, without waiting on the
@@ -202,6 +230,9 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     // eventually fires; it just no longer blocks start().
     IEnumerator RequestATTThenStart()
     {
+        // [REPRO] entry marker: proves the coroutine was scheduled at all, before whatever
+        // follows (yield/ATT) has a chance to stall it.
+        AFQALogger.Log($"[AF_QA][REPRO] RequestATTThenStart entered t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 #if UNITY_IOS && !UNITY_EDITOR
         if (_requestATT)
         {
@@ -217,6 +248,11 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         }
 #endif
         yield return null;
+
+        // [REPRO] if this is late relative to the entry marker above, the stall is between
+        // yielding and resuming - i.e. the player loop itself paused (matches an Activity
+        // transition), not something inside AppsFlyer.start().
+        AFQALogger.Log($"[AF_QA][REPRO] RequestATTThenStart resumed t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 
         AppsFlyer.start();
         AFQALogger.Log("[AF_QA][start] result: SUCCESS");
@@ -261,7 +297,11 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     IEnumerator RunPostStartApis()
     {
+        // [REPRO] proves the coroutine was scheduled at all, before the WaitForSeconds below
+        // has a chance to stall it — see RequestATTThenStart's matching entry/resumed markers.
+        AFQALogger.Log($"[AF_QA][REPRO] RunPostStartApis entered t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         yield return new WaitForSeconds(1f);
+        AFQALogger.Log($"[AF_QA][REPRO] RunPostStartApis resumed t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 
         LogSdkVersion();
         LogAppsFlyerUid();
