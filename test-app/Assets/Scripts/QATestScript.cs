@@ -45,7 +45,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // targetFrameRate gives it an independent timer to pace off instead (requires vSyncCount
         // == 0 in QualitySettings, set for Android's quality level).
         Application.targetFrameRate = 60;
-        StartCoroutine(InitAsync());
+        InitAsync();
     }
 
     // Invoked by ATTPermissionRequest.mm via UnitySendMessage once the user has answered the
@@ -57,29 +57,30 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void OnDestroy()
     {
-        // [REPRO] if this fires mid-run, RequestATTThenStart's StartCoroutine silently dies with
-        // it - MonoBehaviour.OnDestroy stops all of that component's running coroutines with no
-        // exception, which would explain "[AF_QA][start]" never appearing with no error anywhere.
+        // [REPRO] InitAsync/RequestATTThenStart are async Awaitable methods, not coroutines -
+        // unlike StartCoroutine, Unity does NOT cancel an in-flight async Awaitable when this
+        // component is destroyed, so this marker firing mid-run no longer explains a silently
+        // abandoned start() the way it did when these ran as coroutines. Kept as a timing marker
+        // for RunPostStartApis/RunRPCCoverageApis, which are still coroutines and ARE killed here.
         AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDestroy t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
     }
 
     void OnDisable()
     {
-        // [REPRO] a disabled MonoBehaviour also stops its coroutines silently (resumes them if
-        // re-enabled, but a coroutine mid-yield across a disable/enable can misbehave depending
-        // on Unity version) - distinguishes "destroyed" from "merely disabled".
+        // [REPRO] same caveat as OnDestroy above: only affects the still-coroutine-based
+        // RunPostStartApis/RunRPCCoverageApis, not the async Awaitable init/start chain.
         AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDisable t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
     }
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
-    IEnumerator InitAsync()
+    async Awaitable InitAsync()
     {
-        yield return StartCoroutine(LoadConfig());
+        await LoadConfig();
 
         if (string.IsNullOrEmpty(_devKey))
-            yield break;
+            return;
 
         // Subscribed before registerSessionReadyListener() below so the event can't fire
         // before we're listening. start() is called from inside OnSessionReadyHandler,
@@ -89,14 +90,18 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
 
-        AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
+        // Awaited (rather than fired-and-forgotten) so each RPC's native round trip actually
+        // completes, in order, before the next one is dispatched - narrowed to this init
+        // sequence since it's the one the CI GCD-timing investigation cares about; the bulk
+        // RPC-coverage calls further down stay fire-and-forget.
+        await AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
         // Must be set before init(): registerConversionListener assigns the local delegate
         // synchronously before its own RPC round trip, but native can fire onInstallConversionData
         // as soon as init()'s "initialize" RPC call lands - registering after init() left a window
         // where the event arrived with no delegate to route to and was silently dropped.
-        AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
-        AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
-        AppsFlyer.enableDebug(true);
+        await AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
+        await AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
+        await AppsFlyer.enableDebug(true);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
 
         // SDK 7 flow: session readiness gates start().
@@ -124,7 +129,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     // ── Config loading ────────────────────────────────────────────────────────
 
-    IEnumerator LoadConfig()
+    async Awaitable LoadConfig()
     {
         string content = null;
 
@@ -133,7 +138,9 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // The CI workflow bakes .env into StreamingAssets before calling unity-builder.
         string url = Path.Combine(Application.streamingAssetsPath, ".env");
         using var req = UnityWebRequest.Get(url);
-        yield return req.SendWebRequest();
+        var op = req.SendWebRequest();
+        while (!op.isDone)
+            await Awaitable.NextFrameAsync();
         if (req.result == UnityWebRequest.Result.Success)
             content = req.downloadHandler.text;
         else
@@ -149,13 +156,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
             if (File.Exists(editorEnv))
                 content = File.ReadAllText(editorEnv);
         }
-        yield return null;
+        await Awaitable.NextFrameAsync();
 #endif
 
         if (string.IsNullOrEmpty(content))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            yield break;
+            return;
         }
 
         foreach (var line in content.Split('\n'))
@@ -170,7 +177,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         if (string.IsNullOrEmpty(_devKey))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            yield break;
+            return;
         }
 
         AFQALogger.Log("[AF_QA][CONFIG] loaded");
@@ -210,7 +217,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // "[AF_QA][start]" can be attributed to time elapsed vs. frames elapsed (a stalled
         // player loop advances neither; a merely slow coroutine still advances frames).
         AFQALogger.Log($"[AF_QA][REPRO] HandleSessionReady t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
-        StartCoroutine(RequestATTThenStart());
+        RequestATTThenStart();
     }
 
     // [REPRO] Correlates Activity background/foreground blips (e.g. from triggerLifecycleNudge)
@@ -235,7 +242,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     // suspended, so a wait-then-start ordering here can hang indefinitely with no fallback.
     // ATT resolution (OnATTAuthorizationDetermined) still logs asynchronously whenever it
     // eventually fires; it just no longer blocks start().
-    IEnumerator RequestATTThenStart()
+    async Awaitable RequestATTThenStart()
     {
         // [REPRO] entry marker: proves the coroutine was scheduled at all, before whatever
         // follows (yield/ATT) has a chance to stall it.
@@ -254,14 +261,16 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
             AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization skipped (REQUEST_ATT not set)");
         }
 #endif
-        yield return null;
+        await Awaitable.NextFrameAsync();
 
         // [REPRO] if this is late relative to the entry marker above, the stall is between
         // yielding and resuming - i.e. the player loop itself paused (matches an Activity
         // transition), not something inside AppsFlyer.start().
         AFQALogger.Log($"[AF_QA][REPRO] RequestATTThenStart resumed t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 
-        AppsFlyer.start();
+        // Awaited (see InitAsync) so "[AF_QA][start] result: SUCCESS" only logs once native has
+        // actually acknowledged the start() RPC, not merely dispatched it.
+        await AppsFlyer.start();
         AFQALogger.Log("[AF_QA][start] result: SUCCESS");
 
         StartCoroutine(RunPostStartApis());
