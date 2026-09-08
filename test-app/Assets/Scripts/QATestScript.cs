@@ -38,6 +38,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void Start()
     {
+        // CI's headless Android emulator (-gpu swiftshader_indirect, -no-window) has been seen
+        // disabling its Choreographer callback after an Activity pause/resume (e.g. from
+        // triggerLifecycleNudge) and never re-enabling it - with vSyncCount>0, Choreographer is
+        // the engine's only frame clock, so the player loop stalls permanently when that happens.
+        // targetFrameRate gives it an independent timer to pace off instead (requires vSyncCount
+        // == 0 in QualitySettings, set for Android's quality level).
+        Application.targetFrameRate = 60;
         StartCoroutine(InitAsync());
     }
 
