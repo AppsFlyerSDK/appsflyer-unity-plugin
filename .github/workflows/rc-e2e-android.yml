@@ -178,6 +178,15 @@ jobs:
             adb wait-for-device
             adb root || true
             adb wait-for-device
+            # google_apis_playstore AVDs keep self-updating Play Store/GMS for a while after
+            # boot (observed as com.android.vending/com.google.android.gms PACKAGE_REPLACED
+            # broadcasts landing inside our own app process mid-test) - installing and launching
+            # the app before that settles races AppsFlyer's Install-Referrer-based GCD lookup,
+            # which then silently never fires onInstallConversionData (is_first_launch_true FAIL)
+            # even though start()/onSessionReady/onDeepLinking all succeed. Wait for boot_completed
+            # plus Play Store's process actually being up, best-effort, before installing.
+            timeout 120 sh -c 'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = "1" ] && adb shell pidof com.android.vending >/dev/null 2>&1; do sleep 3; done' || echo "::warning::Play Store did not report ready within 120s; proceeding anyway"
+            sleep 15
             adb logcat -c
             nohup adb logcat > .af-e2e/reports/device-logcat-full.txt 2>&1 &
             { echo "=== adb install -r \"$APK_PATH\" ==="; adb install -r "$APK_PATH"; } > .af-e2e/reports/adb-install.log 2>&1; INSTALL_EXIT=$?; cat .af-e2e/reports/adb-install.log; if [ $INSTALL_EXIT -ne 0 ]; then echo "::error::adb install failed with exit $INSTALL_EXIT — see adb-install.log and device-logcat-full.txt in the uploaded report artifact"; RUNNER_EXIT=$INSTALL_EXIT; else adb shell am force-stop com.appsflyer.engagement; chmod +x scripts/af-scenario-runner.sh; scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose; RUNNER_EXIT=$?; fi; pkill -f "adb .*logcat" >/dev/null 2>&1; exit $RUNNER_EXIT
