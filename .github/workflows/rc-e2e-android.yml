@@ -40,10 +40,10 @@ on:
         required: true
 
 jobs:
-  e2e-android:
-    name: E2E Android — ${{ inputs.plugin_version }}
+  build-apk:
+    name: Build Android APK — ${{ inputs.plugin_version }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: read
@@ -117,16 +117,49 @@ jobs:
             echo "::error::APK not found after Unity build"
             exit 1
           fi
+          mkdir -p .af-artifacts/apk
+          cp "$APK" .af-artifacts/apk/app.apk
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/apk/app.apk
+          retention-days: 3
+
+  e2e-android:
+    name: E2E Android — ${{ inputs.plugin_version }}
+    needs: build-apk
+    # Runs on the local Apple Silicon self-hosted runner so the emulator matches local dev
+    # conditions natively (arm64-v8a, HVF-accelerated) instead of GH-hosted x86_64 + ABI
+    # translation, which was implicated in the intermittent start()/conversion-callback
+    # failures seen on GH-hosted runners.
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: built-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/apk
+
+      - name: Locate APK
+        run: |
+          APK=".af-artifacts/apk/app.apk"
+          if [[ ! -f "$APK" ]]; then
+            echo "::error::APK not found in downloaded artifact"
+            exit 1
+          fi
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
-      - name: Enable KVM for hardware-accelerated emulator
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+      - name: Ensure jq is available
+        run: command -v jq >/dev/null 2>&1 || brew install jq
 
       - name: Pin AppsFlyer-host DNS resolution
         run: |
@@ -140,29 +173,14 @@ jobs:
         env:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
-          # BuildScript.BuildAndroid is ARM64-only (Unity 6 dropped x86_64 Android build
-          # support), so a plain x86_64 image can't install it (INSTALL_FAILED_NO_MATCHING_ABIS).
-          # api-level 33's google_apis_playstore x86_64 image still hit
-          # INSTALL_FAILED_NO_MATCHING_ABIS/res=-113 — its houdini translation doesn't cover
-          # this APK. API 35 system images ship Google's newer ABI-translation support that
-          # actually lets ARM64-only APKs install and run on an x86_64 image (see
-          # https://github.com/ReactiveCircus/android-emulator-runner/issues/458).
-          # GitHub-hosted ARM64 runners (Linux and Apple Silicon macOS alike) don't support
-          # nested virtualization, so hardware-accelerated native ARM64 emulation isn't
-          # actually available on GitHub Actions today — CI has to go through this x86_64
-          # ABI-translation path even though local ARM64 hardware/emulators never do.
-          # Switched back to google_apis_playstore (google_apis has no Play Store app, so
-          # no Play Install Referrer — native's GCD/onInstallConversionData flow silently
-          # never fires, failing is_first_launch_true with no error). Google's system-image
-          # repo confirms system-images;android-35;google_apis_playstore;x86_64 exists; only
-          # api-level 33's variant was ever confirmed broken, not this one.
-          api-level: 35
-          arch: x86_64
+          # Matches the local Pixel 9 Pro AVD (arm64-v8a, google_apis_playstore, API 36) now that
+          # this job runs on Apple Silicon hardware with native HVF acceleration — no x86_64/ABI
+          # translation layer, unlike the GH-hosted runner this job replaced for E2E.
+          api-level: 36
+          arch: arm64-v8a
           target: google_apis_playstore
-          profile: pixel_5
-          cores: 4
-          ram-size: 4096M
-          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect -accel on
+          profile: pixel_9_pro
+          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -accel on
           disable-animations: true
           script: |
             # IMPORTANT: this action runs EACH LINE of `script:` as its own
