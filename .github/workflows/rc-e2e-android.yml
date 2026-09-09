@@ -187,7 +187,12 @@ jobs:
           arch: arm64-v8a
           target: google_apis_playstore
           profile: pixel_9_pro
-          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -accel on
+          # No -no-window: this job now runs on an interactive self-hosted Mac session (not a
+          # headless service), and -no-window was implicated in triggerLifecycleNudge's Activity
+          # transition (Surface recreation) leaving Unity's frame loop stalled post-resume -
+          # Android's own APP_CMD_RESUME fired, but OnApplicationPause(false) never reached script
+          # land. A real windowed emulator has an actual compositor backing the Surface.
+          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-snapshot -no-boot-anim -accel on
           disable-animations: true
           script: |
             # IMPORTANT: this action runs EACH LINE of `script:` as its own
