@@ -156,6 +156,13 @@ jobs:
             echo "::error::APK not found in downloaded artifact"
             exit 1
           fi
+          # af-scenario-runner.sh reads config.android.apk_path from the plan JSON
+          # (test-app/Build/Android/com.appsflyer.engagement.apk, shared with local dev
+          # runs and .af-smoke/rc-test-plan.json) rather than $APK_PATH — place the
+          # downloaded artifact there too so requires_fresh_install's re-install inside
+          # run_phase() finds it instead of failing with "APK not found".
+          mkdir -p test-app/Build/Android
+          cp "$APK" test-app/Build/Android/com.appsflyer.engagement.apk
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Ensure jq is available
