@@ -49,6 +49,12 @@
 * Unity plugin version - 7.0.2
 
 
+* Update af-android-plugin-bridge version - 7.0.13
+* Update AppsFlyerRPC version - 7.0.13
+* Update Android unity-wrapper version - 7.0.15
+* Update iOS Purchase Connector version - 7.0.2
+* Update Android Purchase Connector version - 2.3.0
+* Unity plugin version - 7.0.2-rc3
 ## v6.17.900
 * Update Android SDK version - 6.17.6
 * Update iOS SDK version - 6.17.9
