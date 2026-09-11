@@ -19,7 +19,7 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 - Android AppsFlyer SDK v6.17.6
 - Android Purchase Connector 2.2.0
 - iOS AppsFlyer SDK v6.17.9
-- iOS Purchase Connector 6.17.9
+- iOS Purchase Connector 7.0.2
 ---
 ## 📌 RPC-schema-aligned plugin core + new async API surface
 
