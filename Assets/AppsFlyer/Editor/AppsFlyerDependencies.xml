@@ -2,8 +2,12 @@
 <dependencies>
 
   <androidPackages>
-    <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.12"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.14"></androidPackage>
+    <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.13"></androidPackage>
+    <!-- unity-wrapper temporarily provided as a local .aar (test-app/Assets/Plugins/Android/libs/unitywrapper.aar,
+         built locally from android-unity-wrapper against af-android-plugin-bridge 7.0.13) instead of via Maven,
+         to test the registerConversionListener-before-init fix before unity-wrapper 7.0.15 is actually released.
+         Restore this line once it's published for real. -->
+    <!-- <androidPackage spec="com.appsflyer:unity-wrapper:7.0.15"></androidPackage> -->
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) - without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
