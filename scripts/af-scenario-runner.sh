@@ -206,6 +206,11 @@ android_launch() {
   # google_apis emulators run adb as shell user; root is needed for both the
   # logcat buffer resize and direct cat of /data/data/.../af_qa_logs.txt.
   adb root 2>/dev/null || true
+  # adb root restarts adbd on the device, which drops and re-establishes the
+  # transport connection. Without waiting here, the logcat/am commands below
+  # can race that restart and silently fail (stderr is suppressed), which can
+  # fall through to the monkey launch fallback or skip the buffer resize/clear.
+  adb wait-for-device 2>/dev/null || true
   # Increase ring buffer so 240s of Unity output (~100-200 lines/sec) does not
   # overflow it before log collection runs. The emulator runner sets it to 2M
   # which holds only ~10-20s at typical Unity rates.
@@ -262,6 +267,18 @@ android_collect_logs() {
   # the [AF_QA] lines (written in the first ~4s) would be outside the window
   # after a 240s wait. The grep filter keeps the output file small.
   adb logcat -d 2>&1 | grep -E "${LOG_TAG}|AppsFlyer|response code:|preparing data:" >> "$log_file" || true
+
+  # Best-effort screenshot for failure triage (mirrors ios_collect_logs), so a
+  # failed/errored phase leaves a visual artifact alongside the text log, not
+  # just log lines. No-op (and no leftover empty file) if no device is attached
+  # or the capture otherwise fails - `adb exec-out` redirected to a file still
+  # creates an empty file on failure, so we explicitly clean that up.
+  local shot_dir="${log_file%/*}"
+  local shot_file="${shot_dir}/${log_file##*/}.png"
+  shot_file="${shot_file%_logs.txt.png}_screen.png"
+  if ! adb exec-out screencap -p > "$shot_file" 2>/dev/null || [[ ! -s "$shot_file" ]]; then
+    rm -f "$shot_file"
+  fi
 }
 
 android_background_app() {

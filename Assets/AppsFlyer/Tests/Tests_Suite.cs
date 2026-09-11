@@ -643,6 +643,33 @@ namespace AppsFlyerSDK.Tests
             mockRpc.Received(1).ExecuteFire("updateServerUninstallToken",
                 Arg.Is<Dictionary<string, object>>(d => (string)d["token"] == "fcmtoken"));
         }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task SetImeiData_Android_SendsImeiKey()
+        {
+            await AppsFlyer.setImeiData("imei123");
+            mockRpc.Received(1).ExecuteFire("setImeiData",
+                Arg.Is<Dictionary<string, object>>(d => (string)d["imei"] == "imei123"));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task SetOaidData_Android_SendsOaidKey()
+        {
+            await AppsFlyer.setOaidData("oaid123");
+            mockRpc.Received(1).ExecuteFire("setOaidData",
+                Arg.Is<Dictionary<string, object>>(d => (string)d["oaid"] == "oaid123"));
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task SetAndroidIdData_Android_SendsAndroidIdKey()
+        {
+            await AppsFlyer.setAndroidIdData("androidId123");
+            mockRpc.Received(1).ExecuteFire("setAndroidIdData",
+                Arg.Is<Dictionary<string, object>>(d => (string)d["androidId"] == "androidId123"));
+        }
 #endif
 
 #if (UNITY_IOS || UNITY_STANDALONE_OSX) && !UNITY_ANDROID

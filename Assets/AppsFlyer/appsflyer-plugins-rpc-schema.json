@@ -1,6 +1,6 @@
 {
     "$schema": "https://schemas.appsflyer.com/plugins/plugin-api.schema.json",
-    "schemaVersion": "1.0.6",
+    "schemaVersion": "1.2.0",
     "methods": [
       {
         "name": "addPushNotificationDeepLinkPath",
@@ -1530,6 +1530,24 @@
                 },
                 "mediationNetwork": {
                   "type": "string",
+                  "enum": [
+                    "ironsource",
+                    "applovin_max",
+                    "google_admob",
+                    "fyber",
+                    "appodeal",
+                    "admost",
+                    "topon",
+                    "tradplus",
+                    "yandex",
+                    "chartboost",
+                    "unity",
+                    "topon_pte",
+                    "custom_mediation",
+                    "direct_monetization_network",
+                    "googleAdManager",
+                    "cloudX"
+                  ],
                   "minLength": 1
                 },
                 "currencyIso4217Code": {
@@ -1571,6 +1589,24 @@
                 },
                 "mediationNetwork": {
                   "type": "string",
+                  "enum": [
+                    "ironsource",
+                    "applovin_max",
+                    "google_admob",
+                    "fyber",
+                    "appodeal",
+                    "admost",
+                    "topon",
+                    "tradplus",
+                    "yandex",
+                    "chartboost",
+                    "unity",
+                    "topon_pte",
+                    "custom",
+                    "directmonetization",
+                    "googleAdManager",
+                    "cloudX"
+                  ],
                   "default": "custom"
                 },
                 "currencyIso4217Code": {
@@ -1609,7 +1645,25 @@
                 "type": "string"
               },
               "mediationNetwork": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "ironSource",
+                  "applovinMax",
+                  "googleAdMob",
+                  "fyber",
+                  "appodeal",
+                  "admost",
+                  "topon",
+                  "tradplus",
+                  "yandex",
+                  "chartboost",
+                  "unity",
+                  "toponPte",
+                  "customMediation",
+                  "directMonetizationNetwork",
+                  "googleAdManager",
+                  "cloudX"
+                ]
               },
               "currencyIso4217Code": {
                 "type": "string"
@@ -1644,7 +1698,24 @@
             "/mediationNetwork": {
               "from": "mediationNetwork",
               "transform": "androidMediationNetwork",
-              "valueMap": {}
+              "valueMap": {
+                "ironSource": "ironsource",
+                "applovinMax": "applovin_max",
+                "googleAdMob": "google_admob",
+                "fyber": "fyber",
+                "appodeal": "appodeal",
+                "admost": "admost",
+                "topon": "topon",
+                "tradplus": "tradplus",
+                "yandex": "yandex",
+                "chartboost": "chartboost",
+                "unity": "unity",
+                "toponPte": "topon_pte",
+                "customMediation": "custom_mediation",
+                "directMonetizationNetwork": "direct_monetization_network",
+                "googleAdManager": "googleAdManager",
+                "cloudX": "cloudX"
+              }
             },
             "/currencyIso4217Code": {
               "from": "currencyIso4217Code"
@@ -1664,8 +1735,22 @@
               "from": "mediationNetwork",
               "transform": "iosMediationNetwork",
               "valueMap": {
-                "custom_mediation": "custom",
-                "direct_monetization_network": "directmonetization"
+                "ironSource": "ironsource",
+                "applovinMax": "applovin_max",
+                "googleAdMob": "google_admob",
+                "fyber": "fyber",
+                "appodeal": "appodeal",
+                "admost": "admost",
+                "topon": "topon",
+                "tradplus": "tradplus",
+                "yandex": "yandex",
+                "chartboost": "chartboost",
+                "unity": "unity",
+                "toponPte": "topon_pte",
+                "customMediation": "custom",
+                "directMonetizationNetwork": "directmonetization",
+                "googleAdManager": "googleAdManager",
+                "cloudX": "cloudX"
               }
             },
             "/currencyIso4217Code": {
@@ -4332,6 +4417,156 @@
           "android": {
             "/sourceName": {
               "from": "sourceName"
+            }
+          }
+        }
+      },
+      {
+        "name": "setImeiData",
+        "rpc": {
+          "android": {
+            "method": "setImeiData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "imei": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "imei"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "imei": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "imei"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/imei": {
+              "from": "imei"
+            }
+          }
+        }
+      },
+      {
+        "name": "setOaidData",
+        "rpc": {
+          "android": {
+            "method": "setOaidData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "oaid": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "oaid"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "oaid": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "oaid"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/oaid": {
+              "from": "oaid"
+            }
+          }
+        }
+      },
+      {
+        "name": "setAndroidIdData",
+        "rpc": {
+          "android": {
+            "method": "setAndroidIdData",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "androidId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "androidId"
+              ]
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "ios": null
+        },
+        "publicApi": {
+          "delivery": "awaitable",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "androidId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "androidId"
+            ]
+          },
+          "result": {
+            "type": "null"
+          }
+        },
+        "mappings": {
+          "android": {
+            "/androidId": {
+              "from": "androidId"
             }
           }
         }

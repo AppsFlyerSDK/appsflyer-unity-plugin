@@ -23,6 +23,16 @@ namespace AppsFlyerSDK
         private static Action<string> onConversionDataSuccessCallback;
         private static Action<string> onConversionDataFailCallback;
         private static Action<DeepLinkEventsArgs> onDeepLinkListenerCallback;
+        // Android only: af-android-plugin-bridge's AppsFlyerRpcHandler shares a single
+        // conversionListener field between handleInit and handleRegisterConversionListener - if
+        // registerConversionListener()'s RPC reaches native before init()'s does, native ends up
+        // calling AppsFlyerLib.registerConversionListener() on a not-yet-init()'d AppsFlyerLib
+        // singleton, which breaks conversion data delivery. Deferring the RPC here makes the
+        // public API order-independent without touching that vendored dependency. iOS's RPC
+        // handler is closed-source (SPM package, not vendored in this repo) and has been
+        // confirmed working regardless of call order, so this guard is Android-only.
+        private static bool _initDispatched = false;
+        private static bool _conversionListenerRegistrationPending = false;
         public delegate void unityCallBack(string message);
 
         // Dispatches via ExecuteFire() on the calling thread, in place - no BackgroundThreadAsync hop -
@@ -113,6 +123,7 @@ namespace AppsFlyerSDK
         /// </summary>
         public static async Awaitable init(string devKey, string appID, MonoBehaviour gameObject = null)
         {
+            AFLog("init", "*** Init method is called");
             if (gameObject != null)
             {
 #if UNITY_STANDALONE_OSX
@@ -144,6 +155,16 @@ namespace AppsFlyerSDK
                 { "plugin", "unity" },
                 { "pluginVersion", kAppsFlyerPluginVersion }
             });
+
+#if UNITY_ANDROID
+            _initDispatched = true;
+            if (_conversionListenerRegistrationPending)
+            {
+                _conversionListenerRegistrationPending = false;
+                AFLog("init", "Flushing deferred registerConversionListener RPC now that init has completed");
+                await FireAsync("registerConversionListener");
+            }
+#endif
         }
 
         /// <summary>Starts the SDK. A session is sent immediately, and on every foreground transition.
@@ -384,6 +405,27 @@ namespace AppsFlyerSDK
             await FireAsync("setInstallId", new Dictionary<string, object> { { "installId", installId } });
         }
 
+        public static async Awaitable setImeiData(string imei)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setImeiData", new Dictionary<string, object> { { "imei", imei } });
+#endif
+        }
+
+        public static async Awaitable setOaidData(string oaid)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setOaidData", new Dictionary<string, object> { { "oaid", oaid } });
+#endif
+        }
+
+        public static async Awaitable setAndroidIdData(string androidId)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setAndroidIdData", new Dictionary<string, object> { { "androidId", androidId } });
+#endif
+        }
+
         /// <summary>Enables SDK debug logs. Public name and parameter follow the schema's canonical
         /// "enableDebug(enabled)"; the wire RPC method both platforms actually implement is "isDebug".</summary>
         public static async Awaitable enableDebug(bool enabled)
@@ -462,8 +504,23 @@ namespace AppsFlyerSDK
         /// </summary>
         public static async Awaitable registerConversionListener(Action<string> onConversionDataSuccess, Action<string> onConversionDataFail)
         {
+
+            AFLog("registerConversionListener", "Register conversion listener is called");
+
             onConversionDataSuccessCallback = onConversionDataSuccess;
             onConversionDataFailCallback = onConversionDataFail;
+#if UNITY_ANDROID
+            if (!_initDispatched)
+            {
+                // Deferred: sending this RPC before init()'s own RPC would make native register
+                // the conversion listener on a not-yet-init()'d AppsFlyerLib singleton. init()
+                // flushes this once its own RPC completes, so callers can call this before or
+                // after init() safely.
+                AFLog("registerConversionListener", "init() not dispatched yet - deferring RPC until init() completes");
+                _conversionListenerRegistrationPending = true;
+                return;
+            }
+#endif
 #if UNITY_WSA_10_0
             AppsFlyerWindows.GetConversionData("");
 #else
@@ -475,7 +532,17 @@ namespace AppsFlyerSDK
         public static async Awaitable unregisterConversionListener()
         {
 #if UNITY_ANDROID
-            await FireAsync("unregisterConversionListener");
+            if (_conversionListenerRegistrationPending)
+            {
+                // Registration was deferred (init() hasn't dispatched yet) and never reached
+                // native, so there's nothing to unregister there yet - just cancel the deferral
+                // instead of firing an unregister RPC for a registration native never saw.
+                _conversionListenerRegistrationPending = false;
+            }
+            else
+            {
+                await FireAsync("unregisterConversionListener");
+            }
 #endif
             onConversionDataSuccessCallback = null;
             onConversionDataFailCallback = null;
@@ -941,6 +1008,7 @@ namespace AppsFlyerSDK
         /// </summary>
         public void onRPCEvent(string jsonEvent)
         {
+            AFLog("onRPCEvent", "incoming event" + jsonEvent);
             try
             {
                 var envelope = CallbackStringToDictionary(jsonEvent);
@@ -949,7 +1017,7 @@ namespace AppsFlyerSDK
                 string eventType = envelope["event"] as string;
                 var data = envelope.ContainsKey("data") ? envelope["data"] : null;
                 string dataStr = data != null ? Json.Serialize(data) : jsonEvent;
-
+                
                 switch (eventType)
                 {
                     case "onDeepLinking":
