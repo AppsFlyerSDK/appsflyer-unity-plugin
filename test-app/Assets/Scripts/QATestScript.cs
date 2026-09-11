@@ -28,12 +28,24 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     private string _devKey;
     private string _iosAppId;
     private string _androidAppId;
+    // Defaults to skipping the ATT system prompt: CI simulators have no one to answer it, and
+    // once it's shown the whole app - including AppsFlyer's own network requests - is suspended
+    // at the OS level until it's dismissed, which it never is. Opt in via .env (REQUEST_ATT=true)
+    // to exercise the real ATT flow on a real device/manual run.
+    private bool _requestATT = false;
     private bool _conversionDataReceived = false;
     private bool _sessionReadySignaled = false;
 
     void Start()
     {
-        StartCoroutine(InitAsync());
+        // CI's headless Android emulator (-gpu swiftshader_indirect, -no-window) has been seen
+        // disabling its Choreographer callback after an Activity pause/resume (e.g. from
+        // triggerLifecycleNudge) and never re-enabling it - with vSyncCount>0, Choreographer is
+        // the engine's only frame clock, so the player loop stalls permanently when that happens.
+        // targetFrameRate gives it an independent timer to pace off instead (requires vSyncCount
+        // == 0 in QualitySettings, set for Android's quality level).
+        Application.targetFrameRate = 60;
+        InitAsync();
     }
 
     // Invoked by ATTPermissionRequest.mm via UnitySendMessage once the user has answered the
@@ -45,17 +57,30 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     void OnDestroy()
     {
+        // [REPRO] InitAsync/RequestATTThenStart are async Awaitable methods, not coroutines -
+        // unlike StartCoroutine, Unity does NOT cancel an in-flight async Awaitable when this
+        // component is destroyed, so this marker firing mid-run no longer explains a silently
+        // abandoned start() the way it did when these ran as coroutines. Kept as a timing marker
+        // for RunPostStartApis/RunRPCCoverageApis, which are still coroutines and ARE killed here.
+        AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDestroy t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    }
+
+    void OnDisable()
+    {
+        // [REPRO] same caveat as OnDestroy above: only affects the still-coroutine-based
+        // RunPostStartApis/RunRPCCoverageApis, not the async Awaitable init/start chain.
+        AFQALogger.Log($"[AF_QA][REPRO] QATestScript.OnDisable t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
     }
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
-    IEnumerator InitAsync()
+    async Awaitable InitAsync()
     {
-        yield return StartCoroutine(LoadConfig());
+        await LoadConfig();
 
         if (string.IsNullOrEmpty(_devKey))
-            yield break;
+            return;
 
         // Subscribed before registerSessionReadyListener() below so the event can't fire
         // before we're listening. start() is called from inside OnSessionReadyHandler,
@@ -65,9 +90,18 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         string appId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
 
-        AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
-        AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
-        AppsFlyer.enableDebug(true);
+        // Awaited (rather than fired-and-forgotten) so each RPC's native round trip actually
+        // completes, in order, before the next one is dispatched - narrowed to this init
+        // sequence since it's the one the CI GCD-timing investigation cares about; the bulk
+        // RPC-coverage calls further down stay fire-and-forget.
+        await AppsFlyer.registerDeepLinkListener(OnDeepLinkReceived);
+        // Must be set before init(): registerConversionListener assigns the local delegate
+        // synchronously before its own RPC round trip, but native can fire onInstallConversionData
+        // as soon as init()'s "initialize" RPC call lands - registering after init() left a window
+        // where the event arrived with no delegate to route to and was silently dropped.
+        await AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
+        await AppsFlyer.init(_devKey, appId, GetComponent<AppsFlyer>() ?? this as MonoBehaviour);
+        await AppsFlyer.enableDebug(true);
         AFQALogger.Log("[AF_QA][registerDeepLinkListener] registered");
 
         // SDK 7 flow: session readiness gates start().
@@ -88,8 +122,6 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AFQALogger.Log("[AF_QA][lifecycleNudge] triggered");
 #endif
 
-        AppsFlyer.registerConversionListener(onConversionDataSuccess, onConversionDataFail);
-
         RunPreStartApis();
 
         AFQALogger.Log("[AF_QA][registerSessionReadyListener] registered");
@@ -97,7 +129,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     // ── Config loading ────────────────────────────────────────────────────────
 
-    IEnumerator LoadConfig()
+    async Awaitable LoadConfig()
     {
         string content = null;
 
@@ -106,7 +138,9 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         // The CI workflow bakes .env into StreamingAssets before calling unity-builder.
         string url = Path.Combine(Application.streamingAssetsPath, ".env");
         using var req = UnityWebRequest.Get(url);
-        yield return req.SendWebRequest();
+        var op = req.SendWebRequest();
+        while (!op.isDone)
+            await Awaitable.NextFrameAsync();
         if (req.result == UnityWebRequest.Result.Success)
             content = req.downloadHandler.text;
         else
@@ -122,13 +156,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
             if (File.Exists(editorEnv))
                 content = File.ReadAllText(editorEnv);
         }
-        yield return null;
+        await Awaitable.NextFrameAsync();
 #endif
 
         if (string.IsNullOrEmpty(content))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            yield break;
+            return;
         }
 
         foreach (var line in content.Split('\n'))
@@ -137,12 +171,13 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
             if (trimmed.StartsWith("DEV_KEY="))             _devKey       = trimmed.Substring("DEV_KEY=".Length);
             else if (trimmed.StartsWith("IOS_APP_ID="))     _iosAppId     = trimmed.Substring("IOS_APP_ID=".Length);
             else if (trimmed.StartsWith("ANDROID_APP_ID=")) _androidAppId = trimmed.Substring("ANDROID_APP_ID=".Length);
+            else if (trimmed.StartsWith("REQUEST_ATT="))    _requestATT   = trimmed.Substring("REQUEST_ATT=".Length).Trim().ToLowerInvariant() == "true";
         }
 
         if (string.IsNullOrEmpty(_devKey))
         {
             AFQALogger.Log("[AF_QA][CONFIG] DEV_KEY missing");
-            yield break;
+            return;
         }
 
         AFQALogger.Log("[AF_QA][CONFIG] loaded");
@@ -178,7 +213,23 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
         AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
         AFQALogger.Log("[AF_QA][SESSION_READY] received via " + source);
-        StartCoroutine(RequestATTThenStart());
+        // [REPRO] pin down the exact clock/frame this fired on the main thread, so a delayed
+        // "[AF_QA][start]" can be attributed to time elapsed vs. frames elapsed (a stalled
+        // player loop advances neither; a merely slow coroutine still advances frames).
+        AFQALogger.Log($"[AF_QA][REPRO] HandleSessionReady t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
+        RequestATTThenStart();
+    }
+
+    // [REPRO] Correlates Activity background/foreground blips (e.g. from triggerLifecycleNudge)
+    // with any stall in the RequestATTThenStart coroutine below.
+    void OnApplicationPause(bool pause)
+    {
+        AFQALogger.Log($"[AF_QA][REPRO] OnApplicationPause({pause}) t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
+    }
+
+    void OnApplicationFocus(bool focus)
+    {
+        AFQALogger.Log($"[AF_QA][REPRO] OnApplicationFocus({focus}) t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
     }
 
     // Triggers ATT authorization and calls start() right away, without waiting on the
@@ -191,18 +242,35 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
     // suspended, so a wait-then-start ordering here can hang indefinitely with no fallback.
     // ATT resolution (OnATTAuthorizationDetermined) still logs asynchronously whenever it
     // eventually fires; it just no longer blocks start().
-    IEnumerator RequestATTThenStart()
+    async Awaitable RequestATTThenStart()
     {
+        // [REPRO] entry marker: proves the coroutine was scheduled at all, before whatever
+        // follows (yield/ATT) has a chance to stall it.
+        AFQALogger.Log($"[AF_QA][REPRO] RequestATTThenStart entered t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 #if UNITY_IOS && !UNITY_EDITOR
-        // Safe to trigger now: AppsFlyer's own init flow has already fully run, so the
-        // resign/become-active cycle the ATT system prompt causes can't race it (see
-        // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
-        _afqaRequestTrackingAuthorization();
-        AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
+        if (_requestATT)
+        {
+            // Safe to trigger now: AppsFlyer's own init flow has already fully run, so the
+            // resign/become-active cycle the ATT system prompt causes can't race it (see
+            // ATTPermissionRequest.mm for why any earlier hook point is unsafe).
+            _afqaRequestTrackingAuthorization();
+            AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization triggered");
+        }
+        else
+        {
+            AFQALogger.Log("[AF_QA][ATT] requestTrackingAuthorization skipped (REQUEST_ATT not set)");
+        }
 #endif
-        yield return null;
+        await Awaitable.NextFrameAsync();
 
-        AppsFlyer.start();
+        // [REPRO] if this is late relative to the entry marker above, the stall is between
+        // yielding and resuming - i.e. the player loop itself paused (matches an Activity
+        // transition), not something inside AppsFlyer.start().
+        AFQALogger.Log($"[AF_QA][REPRO] RequestATTThenStart resumed t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
+
+        // Awaited (see InitAsync) so "[AF_QA][start] result: SUCCESS" only logs once native has
+        // actually acknowledged the start() RPC, not merely dispatched it.
+        await AppsFlyer.start();
         AFQALogger.Log("[AF_QA][start] result: SUCCESS");
 
         StartCoroutine(RunPostStartApis());
@@ -245,7 +313,11 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
 
     IEnumerator RunPostStartApis()
     {
+        // [REPRO] proves the coroutine was scheduled at all, before the WaitForSeconds below
+        // has a chance to stall it — see RequestATTThenStart's matching entry/resumed markers.
+        AFQALogger.Log($"[AF_QA][REPRO] RunPostStartApis entered t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
         yield return new WaitForSeconds(1f);
+        AFQALogger.Log($"[AF_QA][REPRO] RunPostStartApis resumed t={Time.realtimeSinceStartup:F3} frame={Time.frameCount}");
 
         LogSdkVersion();
         LogAppsFlyerUid();
@@ -453,7 +525,7 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         }
         string status = dlArgs.status.ToString();
         string deepLinkValue = dlArgs.getDeepLinkValue() ?? "";
-        AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: status=" + status + ", deepLinkValue=" + deepLinkValue);
+        AFQALogger.Log("[AF_QA][CALLBACK][onDeepLinking] received: status=" + status + ", deepLinkValue=" + deepLinkValue + ", rawStatus=" + dlArgs.rawStatus);
     }
 
     // ── Utilities ─────────────────────────────────────────────────────────────

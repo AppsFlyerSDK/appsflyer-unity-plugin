@@ -38,6 +38,13 @@
 * Update Android SDK plugin bridge version - `af-android-plugin-bridge:7.0.12`
 * iOS deep-link delivery (cold-start URL schemes and Universal Links) reworked — see
   [`docs/adr/0001-ios-deep-link-delivery-architecture.md`](/docs/adr/0001-ios-deep-link-delivery-architecture.md).
+* **New (Android only):** `setImeiData(imei)`, `setOaidData(oaid)`, `setAndroidIdData(androidId)` —
+  explicitly send device IMEI/OAID/Android ID to AppsFlyer. Added alongside the
+  `af-android-plugin-bridge:7.0.13` bump, which fixes a regression where these three RPC methods
+  were missing from the plugin bridge's RPC schema. See
+  [`docs/API.md`](/docs/API.md#setimeidata) and [`Android-RPC-Mapping.md`](/Android-RPC-Mapping.md).
+* RPC schema (`Assets/AppsFlyer/appsflyer-plugins-rpc-schema.json`) updated to `1.2.0` (from
+  `1.0.6`).
 * Update Android unity-wrapper version - 7.0.14
 * Unity plugin version - 7.0.2
 

@@ -49,6 +49,13 @@ namespace AppsFlyerSDK
         /// DeepLink status: FOUND, NOT_FOUND, ERROR
         /// </summary>
         public DeepLinkStatus status { get; }
+
+        /// <summary>
+        /// The raw, unmapped "status" string exactly as received from native. status above collapses
+        /// anything other than a literal "FOUND"/"NOT_FOUND" match to DeepLinkStatus.ERROR, so this is
+        /// the only way to see what native actually sent when diagnosing an unexpected ERROR result.
+        /// </summary>
+        public string rawStatus { get; }
         
         /// <summary>
         /// DeepLink error: TIMEOUT, NETWORK, HTTP_STATUS_CODE, UNEXPECTED
@@ -145,15 +152,26 @@ namespace AppsFlyerSDK
                 {
                     status = dictionary["status"].ToString();
                 }
+                this.rawStatus = status;
                 
                 if (dictionary.ContainsKey("error") && dictionary["error"] != null)
                 {
                     error = dictionary["error"].ToString();
                 }
                 
-                if (dictionary.TryGetValue("deepLink", out var deepLinkValue) && deepLinkValue is Dictionary<string, object> nestedDeepLink)
+                // iOS's native RPC layer sends "deepLink" as an already-nested JSON object, but
+                // Android's sends it as a JSON-encoded string within the envelope — handle both
+                // shapes rather than assuming one platform's wire format for the other.
+                if (dictionary.TryGetValue("deepLink", out var deepLinkValue) && deepLinkValue != null)
                 {
-                    this.deepLink = nestedDeepLink;
+                    if (deepLinkValue is Dictionary<string, object> nestedDeepLink)
+                    {
+                        this.deepLink = nestedDeepLink;
+                    }
+                    else if (deepLinkValue is string deepLinkString)
+                    {
+                        this.deepLink = AppsFlyer.CallbackStringToDictionary(deepLinkString);
+                    }
                 }
                 if (dictionary.ContainsKey("is_deferred"))
                 {
@@ -161,7 +179,7 @@ namespace AppsFlyerSDK
                     this.deepLink["is_deferred"] = dictionary["is_deferred"];
                 }
 
-                switch (status)
+                switch (status?.ToUpperInvariant())
                 {
                     case "FOUND":
                         this.status = DeepLinkStatus.FOUND;
@@ -174,7 +192,7 @@ namespace AppsFlyerSDK
                         break;
                 }
                 
-                switch (error)
+                switch (error?.ToUpperInvariant())
                 {
                     case "TIMEOUT":
                         this.error = DeepLinkError.TIMEOUT;

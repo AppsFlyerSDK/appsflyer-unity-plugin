@@ -28,7 +28,9 @@ test-app/ios-unity-sample-app/
 # Android Resolver / Gradle export side effects (regenerated on every build)
 test-app/Assets/Plugins/Android/*.backup*
 test-app/ProjectSettings/AndroidResolverDependencies.xml
-test-app/ProjectSettings/GvhProjectSettings.xml
+# NOTE: GvhProjectSettings.xml is NOT purely regenerated output - it persists the
+# EDM4U iOS Resolver setting SwiftPackageManagerEnabled=True, which every fresh CI
+# checkout needs. It's tracked intentionally; do not re-add it here.
 
 # Unity Editor recovery snapshots
 test-app/Assets/_Recovery/
