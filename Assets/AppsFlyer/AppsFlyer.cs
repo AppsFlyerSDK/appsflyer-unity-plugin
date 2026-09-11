@@ -384,6 +384,27 @@ namespace AppsFlyerSDK
             await FireAsync("setInstallId", new Dictionary<string, object> { { "installId", installId } });
         }
 
+        public static async Awaitable setImeiData(string imei)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setImeiData", new Dictionary<string, object> { { "imei", imei } });
+#endif
+        }
+
+        public static async Awaitable setOaidData(string oaid)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setOaidData", new Dictionary<string, object> { { "oaid", oaid } });
+#endif
+        }
+
+        public static async Awaitable setAndroidIdData(string androidId)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setAndroidIdData", new Dictionary<string, object> { { "androidId", androidId } });
+#endif
+        }
+
         /// <summary>Enables SDK debug logs. Public name and parameter follow the schema's canonical
         /// "enableDebug(enabled)"; the wire RPC method both platforms actually implement is "isDebug".</summary>
         public static async Awaitable enableDebug(bool enabled)

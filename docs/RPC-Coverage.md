@@ -94,11 +94,7 @@ The Android `plugin_bridge` (`JsonRpcRequestParser.kt`) handles these methods bu
 | `onPause` | Lifecycle signal |
 | `performDeepLinking` | Manual deep link re-trigger |
 | `sendPushNotificationData` | Forward push payload to SDK |
-| `setAppId` | Override app ID |
-| `setCollectAndroidID` | Android ID collection toggle |
 | `setDisableNetworkData` | Disable network data collection |
-| `setInstallId` | Set custom install ID |
-| `setIsUpdate` | Mark app as update vs fresh install |
 | `setLogLevel` | SDK log verbosity |
 | `setPluginInfo` | Plugin metadata (set automatically by wrapper) |
 | `setPreinstallAttribution` | Preinstall attribution params |
@@ -107,6 +103,22 @@ The Android `plugin_bridge` (`JsonRpcRequestParser.kt`) handles these methods bu
 | `unregisterConversionListener` | Remove conversion data listener |
 | `updateServerUninstallToken` | Update FCM token for uninstall tracking |
 | `validateAndLogInAppPurchase` | Android in-app purchase validation (via `plugin_bridge`, no PurchaseConnector) |
+
+---
+
+## Android-Only Methods (wired in C#)
+
+Implemented in the Android `plugin_bridge` and wired in `AppsFlyer.cs`. No iOS counterpart (`"ios": null` in the RPC schema).
+
+| C# method (AppsFlyer.cs) | RPC method name | Notes |
+|---|---|---|
+| `setAppId` | `setAppId` | Override app ID |
+| `setCollectAndroidID` | `setCollectAndroidID` | Android ID collection toggle |
+| `setInstallId` | `setInstallId` | Set custom install ID |
+| `setIsUpdate` | `setIsUpdate` | Mark app as update vs fresh install |
+| `setImeiData` | `setImeiData` | Explicitly send device IMEI to AppsFlyer |
+| `setOaidData` | `setOaidData` | Explicitly send device OAID to AppsFlyer |
+| `setAndroidIdData` | `setAndroidIdData` | Explicitly send device Android ID to AppsFlyer |
 
 ---
 

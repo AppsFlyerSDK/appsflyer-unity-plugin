@@ -43,6 +43,7 @@ The list of available methods for this plugin is described below.
 - [Android Only API](#android-only-api)
   - [updateServerUninstallToken](#updateserveruninstalltoken)
   - [setImeiData](#setimeidata)
+  - [setOaidData](#setoaiddata)
   - [setAndroidIdData](#setandroididdata)
   - [waitForCustomerUserId](#waitforcustomeruserid)
   - [setCustomerIdAndStartSDK](#setcustomeridandstartsdk)
@@ -834,6 +835,28 @@ Use this API to explicitly send IMEI to AppsFlyer.
 ```c#
 #if UNITY_ANDROID && !UNITY_EDITOR
         AppsFlyer.setImeiData("imei");
+#endif
+```
+
+---
+
+### setOaidData
+**`void setOaidData(string oaid)`**
+
+Use this API to explicitly send the device's OAID (Open Anonymous Device Identifier) to AppsFlyer.
+OAID is a GAID alternative used on Chinese OEM devices/ROMs that don't ship Google Play Services;
+the SDK cannot retrieve it on its own, so it must be supplied via the app's own OAID library
+integration (e.g. MSA OAID SDK).
+
+| parameter   | type     | description   |
+| ----------- |----------|-------------- |
+| `oaid`      | `string` | device's OAID |
+
+*Example:*
+
+```c#
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AppsFlyer.setOaidData("oaid");
 #endif
 ```
 
