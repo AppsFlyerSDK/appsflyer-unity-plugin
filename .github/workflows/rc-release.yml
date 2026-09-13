@@ -185,6 +185,23 @@ jobs:
           [[ -n "$IOS_PC_VERSION" ]] && grep -q "PurchaseConnector\" version=\"$IOS_PC_VERSION\"" Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml
           grep -q "kAppsFlyerPluginVersion = \"$PLUGIN_VERSION\"" Assets/AppsFlyer/AppsFlyer.cs
           grep -q "^VERSION_NAME=$WRAPPER_VERSION" android-unity-wrapper/gradle.properties
+
+          # test-app/Assets/Plugins/Android/mainTemplate.gradle is a *generated* file - the
+          # Android Resolver only regenerates it when run inside the Editor UI, never during
+          # CI's batch-mode builds. If bump-version.sh's patch of this file falls behind (or
+          # someone hand-edits AppsFlyerDependencies.xml without re-running the script), CI
+          # silently ships an APK built against stale af-android-plugin-bridge/unity-wrapper
+          # AARs - see commit 45df2922 for the ClassNotFoundException/dropped-RPC-call failure
+          # mode this produces. Fail fast here instead.
+          MAIN_GRADLE="test-app/Assets/Plugins/Android/mainTemplate.gradle"
+          if ! grep -q "com.appsflyer:af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION" "$MAIN_GRADLE"; then
+            echo "::error::$MAIN_GRADLE still references a stale af-android-plugin-bridge version (expected $ANDROID_PLUGIN_BRIDGE_VERSION). Regenerate it via the Editor's Android Resolver and commit the result."
+            exit 1
+          fi
+          if ! grep -q "com.appsflyer:unity-wrapper:$WRAPPER_VERSION" "$MAIN_GRADLE"; then
+            echo "::error::$MAIN_GRADLE still references a stale unity-wrapper version (expected $WRAPPER_VERSION). Regenerate it via the Editor's Android Resolver and commit the result."
+            exit 1
+          fi
           BASE_WRAPPER_VERSION=$(git show "origin/$BASE_BRANCH:android-unity-wrapper/gradle.properties" | grep '^VERSION_NAME=' | cut -d= -f2)
           BASE_VERSION_CODE=$(git show "origin/$BASE_BRANCH:android-unity-wrapper/gradle.properties" | grep '^VERSION_CODE=' | cut -d= -f2)
           CURRENT_VERSION_CODE=$(grep '^VERSION_CODE=' android-unity-wrapper/gradle.properties | cut -d= -f2)
