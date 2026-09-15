@@ -29,6 +29,11 @@ on:
         required: false
         default: e2e
         type: string
+      clean_build:
+        description: Force a fully clean Android build (skip restoring the cached Unity Library, guaranteeing no stale imports/artifacts)
+        required: false
+        default: true
+        type: boolean
     secrets:
       UNITY_EMAIL:
         required: true
@@ -74,6 +79,7 @@ jobs:
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
       - name: Cache Unity Library
+        if: ${{ !inputs.clean_build }}
         uses: actions/cache@v4
         with:
           path: test-app/Library
@@ -119,6 +125,30 @@ jobs:
           fi
           mkdir -p .af-artifacts/apk
           cp "$APK" .af-artifacts/apk/app.apk
+
+      - name: Verify APK contents (SDK classes, embedded artifact coordinates)
+        run: |
+          APK=.af-artifacts/apk/app.apk
+          WORKDIR=$(mktemp -d)
+          unzip -q "$APK" -d "$WORKDIR"
+          echo "--- classes*.dex files ---"
+          ls -la "$WORKDIR"/classes*.dex
+          echo "--- AppsFlyerLib class present in dex? ---"
+          if strings "$WORKDIR"/classes*.dex | grep -q 'Lcom/appsflyer/AppsFlyerLib;'; then
+            echo "FOUND"
+          else
+            echo "::error::AppsFlyerLib class missing from built APK"
+            exit 1
+          fi
+          echo "--- AppsFlyerRpcHandler class present in dex? ---"
+          if strings "$WORKDIR"/classes*.dex | grep -q 'Lcom/appsflyer/pluginbridge/handler/AppsFlyerRpcHandler;'; then
+            echo "FOUND"
+          else
+            echo "::error::AppsFlyerRpcHandler class missing from built APK (af-android-plugin-bridge dependency likely dropped from mainTemplate.gradle)"
+            exit 1
+          fi
+          echo "--- distinct com.appsflyer.* package roots baked into dex ---"
+          strings "$WORKDIR"/classes*.dex | grep -oE '^Lcom/appsflyer/[a-zA-Z_]+' | sort -u
 
       - name: Upload built APK
         uses: actions/upload-artifact@v4
