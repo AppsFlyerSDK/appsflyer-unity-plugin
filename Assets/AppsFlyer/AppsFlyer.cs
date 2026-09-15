@@ -57,15 +57,25 @@ namespace AppsFlyerSDK
             // iOS only: Execute() blocks on _afExecuteJson's semaphore, which can only be signaled
             // once the main thread is free - calling it directly from Unity's main thread deadlocks.
             // Hop off first so the main thread stays free to signal it, then hop back so callers can
-            // safely touch Unity APIs afterward. Android's Execute() is a plain synchronous JNI call
-            // with no such risk - dispatching it from a background thread pool worker instead risks an
-            // unattached/unreliable JNI environment (see the CI "Empty response from native" failures
-            // under headless Run In Background), so it stays on the calling thread there.
+            // safely touch Unity APIs afterward.
             await Awaitable.BackgroundThreadAsync();
 #endif
             try
             {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                // Android's Execute() is a plain synchronous JNI call, but it can block for a real
+                // server round trip (awaitResponse: true) - running it on whatever thread called us
+                // (usually Unity's main game-loop thread) risks freezing Update()/rendering long
+                // enough to ANR. Awaitable.BackgroundThreadAsync() isn't a safe fix here: its
+                // transient thread-pool workers aren't guaranteed to have an attached JNI
+                // environment, which caused "Empty response from native" failures under headless
+                // Run In Background. AppsFlyerJniWorker uses one dedicated, permanently-attached
+                // background thread instead, sidestepping both risks without touching the native
+                // bridge/protocol.
+                return await AppsFlyerJniWorker.EnqueueExecute(() => AppsFlyerRPCClient.instance.Execute(method, parameters));
+#else
                 return AppsFlyerRPCClient.instance.Execute(method, parameters);
+#endif
             }
             catch (AppsFlyerRPCException e)
             {
@@ -77,9 +87,10 @@ namespace AppsFlyerSDK
                 AFLog(method, "Unexpected error dispatching RPC: " + e.Message);
                 return null;
             }
-#if UNITY_IOS && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             finally
             {
+                // Land back on the main thread so callers can safely touch Unity APIs afterward.
                 await Awaitable.MainThreadAsync();
             }
 #endif
