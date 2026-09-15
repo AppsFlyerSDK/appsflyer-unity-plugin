@@ -17,7 +17,7 @@ namespace AppsFlyerSDK
 #pragma warning disable CS1998
     public class AppsFlyer : MonoBehaviour
     {
-        public static readonly string kAppsFlyerPluginVersion = "7.0.2";
+        public static readonly string kAppsFlyerPluginVersion = "7.0.2-rc8";
         public static string CallBackObjectName = null;
         private static EventHandler onSessionReady;
         private static Action<string> onConversionDataSuccessCallback;
