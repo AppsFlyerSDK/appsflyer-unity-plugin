@@ -472,11 +472,12 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AppsFlyer.logLocation(37.7749, -122.4194);
         AFQALogger.Log("[AF_QA][RPC_COVERAGE] logLocation lat=37.7749 lon=-122.4194");
 
-        AppsFlyer.logCrossPromoteImpression("rpc_app_id", "rpc_campaign", new Dictionary<string, string> { { "rpc_imp_key", "rpc_imp_val" } });
-        AFQALogger.Log("[AF_QA][RPC_COVERAGE] logCrossPromoteImpression appId=rpc_app_id campaign=rpc_campaign key=rpc_imp_key val=rpc_imp_val");
+        string crossPromoteAppId = Application.platform == RuntimePlatform.IPhonePlayer ? _iosAppId : _androidAppId;
+        AppsFlyer.logCrossPromoteImpression(crossPromoteAppId, "rpc_campaign", new Dictionary<string, string> { { "rpc_imp_key", "rpc_imp_val" } });
+        AFQALogger.Log($"[AF_QA][RPC_COVERAGE] logCrossPromoteImpression appId={crossPromoteAppId} campaign=rpc_campaign key=rpc_imp_key val=rpc_imp_val");
 
-        AppsFlyer.logAndOpenStore("rpc_store_app", "rpc_store_campaign", new Dictionary<string, string> { { "rpc_store_key", "rpc_store_val" } });
-        AFQALogger.Log("[AF_QA][RPC_COVERAGE] logAndOpenStore appId=rpc_store_app campaign=rpc_store_campaign key=rpc_store_key val=rpc_store_val");
+        AppsFlyer.logAndOpenStore(crossPromoteAppId, "rpc_store_campaign", new Dictionary<string, string> { { "rpc_store_key", "rpc_store_val" } });
+        AFQALogger.Log($"[AF_QA][RPC_COVERAGE] logAndOpenStore appId={crossPromoteAppId} campaign=rpc_store_campaign key=rpc_store_key val=rpc_store_val");
 
         // Push / deeplink paths
         AppsFlyer.addPushNotificationDeepLinkPath("rpc_path_root", "rpc_path_child");
