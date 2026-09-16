@@ -8,7 +8,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEPLOY_PATH="$SCRIPT_DIR/outputs"
 PACKAGE_NAME="appsflyer-unity-plugin-6.17.900.unitypackage"
 UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
-EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
 OUTPUT_DIR="$DEPLOY_PATH"
 PRODUCTION=false
 
@@ -52,11 +51,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ ! -f "$EDM_PACKAGE" ]]; then
-  echo "External Dependency Manager package not found: $EDM_PACKAGE" >&2
-  exit 1
-fi
-
 if [[ ! -x "$UNITY_BIN" ]]; then
   echo "Unity executable not found or not executable: $UNITY_BIN" >&2
   exit 1
@@ -82,10 +76,6 @@ cleanup() {
     mv "$TESTS_META_BACKUP" "$TESTS_META"
   fi
 
-  rm -rf "$REPO_ROOT/Assets/ExternalDependencyManager"
-  rm -rf "$REPO_ROOT/Assets/PlayServicesResolver"
-  rm -f "$REPO_ROOT/Assets/ExternalDependencyManager.meta"
-  rm -f "$REPO_ROOT/Assets/PlayServicesResolver.meta"
   rm -rf "$REPO_ROOT/Library" "$REPO_ROOT/Logs" "$REPO_ROOT/Packages"
   rm -rf "$TEMP_DIR"
 }
@@ -107,7 +97,6 @@ fi
 "$UNITY_BIN" \
   -gvh_disable \
   -batchmode \
-  -importPackage "$EDM_PACKAGE" \
   -nographics \
   -logFile "$SCRIPT_DIR/create_unity_core.log" \
   -projectPath "$REPO_ROOT" \
