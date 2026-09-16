@@ -39,6 +39,8 @@ In order to add the plugin to your project, you can either add the *unitypackage
 
 **Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-without-unity-jar-resolver).
 
+**Note:** Unlike the regular plugin, the Strict Mode package resolves its iOS dependencies via **CocoaPods only** — it does not declare any Swift Package Manager package. Make sure "Use Swift Package Manager for iOS Cocoapod dependencies" is left disabled (Assets > External Dependency Manager > iOS Resolver > Settings) when integrating the Strict Mode package, so EDM4U generates a Podfile instead.
+
 ## Using Unity Package Manager
 
 1. Follow Google's [guide](https://developers.google.com/unity/instructions) in order to integrate UPM (Unity Package Manager).

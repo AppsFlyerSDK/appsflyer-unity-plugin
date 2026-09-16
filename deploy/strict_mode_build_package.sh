@@ -95,24 +95,26 @@ echo "Start build for $PACKAGE_NAME"
 
 cp "$DEPS_XML" "$TEMP_DIR/AppsFlyerDependencies.xml"
 
-echo "Changing PurchaseConnector CocoaPod fallback to its strict-mode subspec."
-# PurchaseConnector has no Strict SPM product, so keep the CocoaPods subspec swap for its
-# iosPod fallback below, but drop its remoteSwiftPackage block entirely: EDM4U's
-# SwiftPackageManager.AddPackagesToProject() adds every declared remoteSwiftPackage
-# unconditionally, so leaving it in place would add the regular PurchaseConnector SPM
-# package alongside the PurchaseConnector/Strict CocoaPod.
-sed -i.bak 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
-sed -i.bak '/<remoteSwiftPackage url="https:\/\/github.com\/AppsFlyerSDK\/PurchaseConnector-Dynamic.git"/,/<\/remoteSwiftPackage>/d' "$DEPS_XML"
+echo "Removing all remoteSwiftPackage (SPM) blocks so strict mode resolves exclusively via CocoaPods."
+# Strict-mode pods (AppsFlyerFramework/Strict, PurchaseConnector/Strict) have no SPM
+# equivalents, so any remoteSwiftPackage block left in place would still be added by
+# EDM4U's SwiftPackageManager.AddPackagesToProject(), which applies every declared
+# remoteSwiftPackage unconditionally regardless of the iosPods block. That would pull
+# in the regular (non-strict) SPM packages alongside the strict CocoaPods below.
+sed -i.bak '/<remoteSwiftPackage /,/<\/remoteSwiftPackage>/d' "$DEPS_XML"
+# Drop the now-stale comment (from the non-strict XML) that documents the SPM/iosPod
+# fallback behavior, since strict mode no longer declares any remoteSwiftPackage.
+sed -i.bak '/<!-- iOS dependencies via Swift Package Manager/,/disabled it falls back to the iosPods entries unchanged, so the Podfile path still works. -->/d' "$DEPS_XML"
 
-echo "Swapping AppsFlyerRPC and AppsFlyerFramework SPM packages to their strict-mode products."
-# The iosPod names for AppsFlyerRPC/AppsFlyerFramework are left unchanged so they keep
-# matching their remoteSwiftPackage's replacesPod value: EDM4U's podsToIgnore check
-# (IOSResolver.GenPodfile) is an exact string compare against the iosPod's current name,
-# so renaming the iosPod here (as PurchaseConnector's does) would break that match and
-# cause both the CocoaPod and the SPM package to be added.
-sed -i.bak 's|<swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>|<swiftPackage name="AppsFlyerRPCStrict" replacesPod="AppsFlyerRPC"/>|' "$DEPS_XML"
-sed -i.bak 's|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git"|url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Strict.git"|' "$DEPS_XML"
-sed -i.bak 's|<swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>|<swiftPackage name="AppsFlyerLib" replacesPod="AppsFlyerFramework"/>|' "$DEPS_XML"
+echo "Swapping AppsFlyerFramework, AppsFlyerRPC, and PurchaseConnector iosPods to their strict-mode subspecs."
+# AppsFlyerRPC's default ("Main") subspec depends on the plain AppsFlyerFramework pod, not
+# AppsFlyerFramework/Strict, so it must also be pinned to its own Strict subspec here —
+# otherwise CocoaPods pulls in both AppsFlyerFramework subspecs for the same target, each
+# vendoring an xcframework product named AppsFlyerLib.xcframework, causing pod install to
+# fail with "conflicting names: appsflyerlib.xcframework".
+sed -i.bak 's|name="AppsFlyerFramework"|name="AppsFlyerFramework/Strict"|' "$DEPS_XML"
+sed -i.bak 's|name="AppsFlyerRPC"|name="AppsFlyerRPC/Strict"|' "$DEPS_XML"
+sed -i.bak 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
 rm -f "$DEPS_XML.bak"
 
 if [[ -d "$TESTS_DIR" ]]; then
