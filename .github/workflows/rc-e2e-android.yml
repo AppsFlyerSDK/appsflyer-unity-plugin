@@ -29,6 +29,11 @@ on:
         required: false
         default: e2e
         type: string
+      clean_build:
+        description: Force a fully clean Android build (skip restoring the cached Unity Library, guaranteeing no stale imports/artifacts)
+        required: false
+        default: true
+        type: boolean
     secrets:
       UNITY_EMAIL:
         required: true
@@ -40,10 +45,10 @@ on:
         required: true
 
 jobs:
-  e2e-android:
-    name: E2E Android — ${{ inputs.plugin_version }}
+  build-apk:
+    name: Build Android APK — ${{ inputs.plugin_version }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: read
@@ -74,6 +79,7 @@ jobs:
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
       - name: Cache Unity Library
+        if: ${{ !inputs.clean_build }}
         uses: actions/cache@v4
         with:
           path: test-app/Library
@@ -117,16 +123,80 @@ jobs:
             echo "::error::APK not found after Unity build"
             exit 1
           fi
+          mkdir -p .af-artifacts/apk
+          cp "$APK" .af-artifacts/apk/app.apk
+
+      - name: Verify APK contents (SDK classes, embedded artifact coordinates)
+        run: |
+          APK=.af-artifacts/apk/app.apk
+          WORKDIR=$(mktemp -d)
+          unzip -q "$APK" -d "$WORKDIR"
+          echo "--- classes*.dex files ---"
+          ls -la "$WORKDIR"/classes*.dex
+          echo "--- AppsFlyerLib class present in dex? ---"
+          if strings "$WORKDIR"/classes*.dex | grep -q 'Lcom/appsflyer/AppsFlyerLib;'; then
+            echo "FOUND"
+          else
+            echo "::error::AppsFlyerLib class missing from built APK"
+            exit 1
+          fi
+          echo "--- AppsFlyerRpcHandler class present in dex? ---"
+          if strings "$WORKDIR"/classes*.dex | grep -q 'Lcom/appsflyer/pluginbridge/handler/AppsFlyerRpcHandler;'; then
+            echo "FOUND"
+          else
+            echo "::error::AppsFlyerRpcHandler class missing from built APK (af-android-plugin-bridge dependency likely dropped from mainTemplate.gradle)"
+            exit 1
+          fi
+          echo "--- distinct com.appsflyer.* package roots baked into dex ---"
+          strings "$WORKDIR"/classes*.dex | grep -oE '^Lcom/appsflyer/[a-zA-Z_]+' | sort -u
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/apk/app.apk
+          retention-days: 3
+
+  e2e-android:
+    name: E2E Android — ${{ inputs.plugin_version }}
+    needs: build-apk
+    # Runs on the local Apple Silicon self-hosted runner so the emulator matches local dev
+    # conditions natively (arm64-v8a, HVF-accelerated) instead of GH-hosted x86_64 + ABI
+    # translation, which was implicated in the intermittent start()/conversion-callback
+    # failures seen on GH-hosted runners.
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_branch }}
+
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: built-apk-${{ inputs.plugin_version }}
+          path: .af-artifacts/apk
+
+      - name: Locate APK
+        run: |
+          APK=".af-artifacts/apk/app.apk"
+          if [[ ! -f "$APK" ]]; then
+            echo "::error::APK not found in downloaded artifact"
+            exit 1
+          fi
+          # af-scenario-runner.sh reads config.android.apk_path from the plan JSON
+          # (test-app/Build/Android/com.appsflyer.engagement.apk, shared with local dev
+          # runs and .af-smoke/rc-test-plan.json) rather than $APK_PATH — place the
+          # downloaded artifact there too so requires_fresh_install's re-install inside
+          # run_phase() finds it instead of failing with "APK not found".
+          mkdir -p test-app/Build/Android
+          cp "$APK" test-app/Build/Android/com.appsflyer.engagement.apk
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
-      - name: Enable KVM for hardware-accelerated emulator
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+      - name: Ensure jq is available
+        run: command -v jq >/dev/null 2>&1 || brew install jq
 
       - name: Pin AppsFlyer-host DNS resolution
         run: |
@@ -140,25 +210,40 @@ jobs:
         env:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
-          api-level: 33
-          arch: x86_64
-          target: google_apis
-          profile: pixel_6
-          cores: 4
-          ram-size: 4096M
-          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect -accel on
+          # Matches the local Pixel 9 Pro AVD (arm64-v8a, google_apis_playstore, API 36) now that
+          # this job runs on Apple Silicon hardware with native HVF acceleration — no x86_64/ABI
+          # translation layer, unlike the GH-hosted runner this job replaced for E2E.
+          api-level: 36
+          arch: arm64-v8a
+          target: google_apis_playstore
+          profile: pixel_9_pro
+          # No -no-window: this job now runs on an interactive self-hosted Mac session (not a
+          # headless service), and -no-window was implicated in triggerLifecycleNudge's Activity
+          # transition (Surface recreation) leaving Unity's frame loop stalled post-resume -
+          # Android's own APP_CMD_RESUME fired, but OnApplicationPause(false) never reached script
+          # land. A real windowed emulator has an actual compositor backing the Surface.
+          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-snapshot -no-boot-anim -accel on
           disable-animations: true
           script: |
+            # IMPORTANT: this action runs EACH LINE of `script:` as its own
+            # separate `sh -c` invocation, not as one continuous shell script.
+            # That means multi-line constructs (brace groups, if/else spanning
+            # lines) and cross-line shell variables (e.g. `$!` captured on one
+            # line and read on the next) silently don't work — every line
+            # after the first is a brand-new process with no memory of the
+            # previous line's shell state. Each line below is written to be a
+            # fully self-contained statement for that reason.
+            set +e
+            mkdir -p .af-e2e/reports .af-smoke/reports
             adb wait-for-device
-            # Elevate to root so the scenario runner can read af_qa_logs.txt from
-            # /data/data/... and so adb logcat -G 32m works. google_apis emulators
-            # default to shell user which lacks both permissions.
             adb root || true
             adb wait-for-device
-            adb install -r "$APK_PATH"
-            adb shell am force-stop com.appsflyer.engagement
-            chmod +x scripts/af-scenario-runner.sh
-            scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose
+            # Wait for Play Store to be up before installing - avoids racing its post-boot self-update.
+            timeout 120 sh -c 'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = "1" ] && adb shell pidof com.android.vending >/dev/null 2>&1; do sleep 3; done' || echo "::warning::Play Store did not report ready within 120s; proceeding anyway"
+            sleep 15
+            adb logcat -c
+            nohup adb logcat > .af-e2e/reports/device-logcat-full.txt 2>&1 &
+            { echo "=== adb install -r \"$APK_PATH\" ==="; adb install -r "$APK_PATH"; } > .af-e2e/reports/adb-install.log 2>&1; INSTALL_EXIT=$?; cat .af-e2e/reports/adb-install.log; if [ $INSTALL_EXIT -ne 0 ]; then echo "::error::adb install failed with exit $INSTALL_EXIT — see adb-install.log and device-logcat-full.txt in the uploaded report artifact"; RUNNER_EXIT=$INSTALL_EXIT; else adb shell am force-stop com.appsflyer.engagement; chmod +x scripts/af-scenario-runner.sh; scripts/af-scenario-runner.sh --platform android --plan "${{ inputs.plan_path }}" --verbose; RUNNER_EXIT=$?; fi; pkill -f "adb .*logcat" >/dev/null 2>&1; exit $RUNNER_EXIT
 
       - name: Upload E2E report
         if: always()

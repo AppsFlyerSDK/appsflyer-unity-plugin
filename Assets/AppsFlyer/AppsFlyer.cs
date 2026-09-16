@@ -53,10 +53,29 @@ namespace AppsFlyerSDK
 
         private static async Awaitable<object> QueryAsync(string method, Dictionary<string, object> parameters = null)
         {
+#if UNITY_IOS && !UNITY_EDITOR
+            // iOS only: Execute() blocks on _afExecuteJson's semaphore, which can only be signaled
+            // once the main thread is free - calling it directly from Unity's main thread deadlocks.
+            // Hop off first so the main thread stays free to signal it, then hop back so callers can
+            // safely touch Unity APIs afterward.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                // Android's Execute() is a plain synchronous JNI call, but it can block for a real
+                // server round trip (awaitResponse: true) - running it on whatever thread called us
+                // (usually Unity's main game-loop thread) risks freezing Update()/rendering long
+                // enough to ANR. Awaitable.BackgroundThreadAsync() isn't a safe fix here: its
+                // transient thread-pool workers aren't guaranteed to have an attached JNI
+                // environment, which caused "Empty response from native" failures under headless
+                // Run In Background. AppsFlyerJniWorker uses one dedicated, permanently-attached
+                // background thread instead, sidestepping both risks without touching the native
+                // bridge/protocol.
+                return await AppsFlyerJniWorker.EnqueueExecute(() => AppsFlyerRPCClient.instance.Execute(method, parameters));
+#else
                 return AppsFlyerRPCClient.instance.Execute(method, parameters);
+#endif
             }
             catch (AppsFlyerRPCException e)
             {
@@ -68,10 +87,13 @@ namespace AppsFlyerSDK
                 AFLog(method, "Unexpected error dispatching RPC: " + e.Message);
                 return null;
             }
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             finally
             {
+                // Land back on the main thread so callers can safely touch Unity APIs afterward.
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         // ── Initialization ──────────────────────────────────────────────────────
@@ -373,6 +395,27 @@ namespace AppsFlyerSDK
             await FireAsync("setInstallId", new Dictionary<string, object> { { "installId", installId } });
         }
 
+        public static async Awaitable setImeiData(string imei)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setImeiData", new Dictionary<string, object> { { "imei", imei } });
+#endif
+        }
+
+        public static async Awaitable setOaidData(string oaid)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setOaidData", new Dictionary<string, object> { { "oaid", oaid } });
+#endif
+        }
+
+        public static async Awaitable setAndroidIdData(string androidId)
+        {
+#if UNITY_ANDROID
+            await FireAsync("setAndroidIdData", new Dictionary<string, object> { { "androidId", androidId } });
+#endif
+        }
+
         /// <summary>Enables SDK debug logs. Public name and parameter follow the schema's canonical
         /// "enableDebug(enabled)"; the wire RPC method both platforms actually implement is "isDebug".</summary>
         public static async Awaitable enableDebug(bool enabled)
@@ -598,7 +641,10 @@ namespace AppsFlyerSDK
         public static async Awaitable<string> generateInviteLink(Dictionary<string, string> parameters)
         {
             var payload = BuildInviteLinkPayload(parameters);
+#if UNITY_IOS && !UNITY_EDITOR
+            // See QueryAsync for why this hop is iOS-only.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
                 return AppsFlyerRPCClient.instance.Execute("generateInviteLink", payload) as string;
@@ -613,10 +659,12 @@ namespace AppsFlyerSDK
                 AFLog("generateInviteLink", "Failed to generate invite link: " + e.Message);
                 return null;
             }
+#if UNITY_IOS && !UNITY_EDITOR
             finally
             {
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         // ── Advertising identifiers & privacy ─────────────────────────────────────
@@ -854,7 +902,10 @@ namespace AppsFlyerSDK
 
         private static async Awaitable<IAFValidateAndLogResult> QueryValidateAndLogAsync(Dictionary<string, object> payload)
         {
+#if UNITY_IOS && !UNITY_EDITOR
+            // See QueryAsync for why this hop is iOS-only.
             await Awaitable.BackgroundThreadAsync();
+#endif
             try
             {
                 var result = AppsFlyerRPCClient.instance.Execute("validateAndLogInAppPurchase", payload) as Dictionary<string, object>;
@@ -868,10 +919,12 @@ namespace AppsFlyerSDK
             {
                 return AFSDKValidateAndLogResult.Init(AFSDKValidateAndLogStatus.AFSDKValidateAndLogStatusError, null, null, e.Message);
             }
+#if UNITY_IOS && !UNITY_EDITOR
             finally
             {
                 await Awaitable.MainThreadAsync();
             }
+#endif
         }
 
         /// <summary>

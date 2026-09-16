@@ -938,7 +938,7 @@ main() {
   local run_end
   run_end=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   local start_epoch end_epoch duration_sec
-  start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$RUN_START" +%s 2>/dev/null || date -d "$RUN_START" +%s 2>/dev/null || echo "0")
+  start_epoch=$(date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$RUN_START" +%s 2>/dev/null || date -d "$RUN_START" +%s 2>/dev/null || echo "0")
   end_epoch=$(date +%s)
   duration_sec=$(( end_epoch - start_epoch ))
 

@@ -24,6 +24,22 @@ private func UnitySendMessageC(_ obj: UnsafePointer<CChar>?, _ method: UnsafePoi
 // never blocked waiting on Unity's main thread.
 private let rpcQueue = DispatchQueue(label: "com.appsflyer.rpcbridge")
 
+// Defined in AppsFlyerAttribution.m. Sets isBridgeReady=YES and posts AF_BRIDGE_SET, restoring
+// behavior dropped when the old Obj-C++ _startSDK (which did this synchronously as its first
+// statement, before calling startWithCompletionHandler) was replaced by this generic RPC
+// transport: AppsFlyerAttribution.isBridgeReady gates handleOpenUrl/continueUserActivity (see
+// AppsFlyerAttribution.m) and was left permanently NO after the migration, silently dropping
+// every iOS deep link.
+@_silgen_name("_afMarkBridgeReady")
+private func _afMarkBridgeReady()
+
+// "start" is matched by a raw substring check on the request JSON (mirrors the "error" substring
+// check on responses in _afFireJson below) since this transport has no per-method JSON decoding.
+private func notifyBridgeReadyIfStart(_ jsonRequest: String) {
+    guard jsonRequest.contains("\"method\":\"start\"") else { return }
+    _afMarkBridgeReady()
+}
+
 // Wires the RPC -> Unity event channel. Must be called during SDK init, before
 // registerSessionReadyListener/start, so the sessionReady/conversion-data callback can reach
 // Unity. AppsFlyerRPCBridge (verified against AppsFlyerRPC.xcframework's shipped
@@ -52,6 +68,7 @@ public func _setRPCEventHandler(_ objectName: UnsafePointer<CChar>?) {
 public func _afFireJson(_ jsonRequest: UnsafePointer<CChar>?) {
 #if canImport(AppsFlyerRPC)
     let requestStr = jsonRequest.map { String(cString: $0) } ?? "{}"
+    notifyBridgeReadyIfStart(requestStr)
     rpcQueue.async {
         AppsFlyerRPCBridge.shared.executeJson(requestStr) { jsonResponse in
 #if DEBUG
@@ -79,6 +96,7 @@ public func _afFireJson(_ jsonRequest: UnsafePointer<CChar>?) {
 public func _afExecuteJson(_ jsonRequest: UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>? {
 #if canImport(AppsFlyerRPC)
     let requestStr = jsonRequest.map { String(cString: $0) } ?? "{}"
+    notifyBridgeReadyIfStart(requestStr)
     let semaphore = DispatchSemaphore(value: 0)
     let lock = NSLock()
     var response: String?

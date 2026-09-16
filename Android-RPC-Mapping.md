@@ -95,6 +95,9 @@ notifier until explicitly unregistered. Failing to unregister leaks the listener
 | `setIsUpdate` | `isUpdate` | `AppsFlyerLib.setIsUpdate(isUpdate)` |
 | `setAppId` | `appId` | `AppsFlyerLib.setAppId(appId)` |
 | `setInstallId` | `installId` | `AppsFlyerLib.setInstallId(installId)` |
+| `setImeiData` | `imei` | `AppsFlyerLib.setImeiData(imei)` |
+| `setOaidData` | `oaid` | `AppsFlyerLib.setOaidData(oaid)` |
+| `setAndroidIdData` | `androidId` | `AppsFlyerLib.setAndroidIdData(androidId)` |
 | `anonymizeUser` | `shouldAnonymize` | `AppsFlyerLib.anonymizeUser(shouldAnonymize)` |
 | `getAppsFlyerUID` | — | `AppsFlyerLib.getAppsFlyerUID(context)` → String |
 | `getSdkVersion` | — | `AppsFlyerLib.sdkVersion` → String |
@@ -315,6 +318,21 @@ Valid values: `NONE`, `ERROR`, `WARNING`, `INFO`, `DEBUG`, `VERBOSE` (case-insen
 #### `setInstallId`
 ```json
 { "method": "setInstallId", "params": { "installId": "custom-install-id-001" } }
+```
+
+#### `setImeiData`
+```json
+{ "method": "setImeiData", "params": { "imei": "device-imei-001" } }
+```
+
+#### `setOaidData`
+```json
+{ "method": "setOaidData", "params": { "oaid": "device-oaid-001" } }
+```
+
+#### `setAndroidIdData`
+```json
+{ "method": "setAndroidIdData", "params": { "androidId": "device-android-id-001" } }
 ```
 
 #### `anonymizeUser`

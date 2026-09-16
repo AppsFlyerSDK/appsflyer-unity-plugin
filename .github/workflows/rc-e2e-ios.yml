@@ -200,6 +200,40 @@ jobs:
           sed -i '' 's/SDKROOT = iphoneos;//g' \
             test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj/project.pbxproj
 
+      - name: Resolve Swift Package dependencies
+        run: |
+          set -o pipefail
+          # SPM-resolved packages (e.g. AppsFlyerLib-Dynamic's binary xcframework) are
+          # fetched over the network. When that fetch flakes in CI, `xcodebuild build`
+          # doesn't fail here — it silently proceeds to build with whatever partial
+          # package artifacts it has, surfacing later as a confusing "header not found"
+          # deep in a compile step. Resolve explicitly first, with retries, so a real
+          # network flake fails loudly and recovers instead of masquerading as a code bug.
+          XCODE_PROJ=test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj
+          for attempt in 1 2 3; do
+            echo "Resolve attempt $attempt..."
+            if xcodebuild -resolvePackageDependencies \
+                 -project "$XCODE_PROJ" \
+                 -scheme  Unity-iPhone \
+                 -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
+                 2>&1 | tee /tmp/xcode-resolve.log; then
+              echo "Package resolution succeeded on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::Package resolution attempt $attempt failed, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Package resolution failed after 3 attempts"
+          exit 1
+
+      - name: Upload package resolution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-resolve-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/xcode-resolve.log
+          retention-days: 3
+
       - name: Compile simulator .app from Xcode project
         run: |
           XCODE_PROJ=test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj
@@ -231,6 +265,14 @@ jobs:
           fi
           rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
           cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
+
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/xcode-build.log
+          retention-days: 3
 
       - name: Boot iOS simulator
         run: |

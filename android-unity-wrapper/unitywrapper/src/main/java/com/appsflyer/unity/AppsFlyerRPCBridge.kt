@@ -26,13 +26,22 @@ object AppsFlyerRPCBridge {
     private var sCallbackObjectName: String? = null
 
     /**
-     * Initializes the bridge. Must be called once during SDK setup, before any RPC calls.
+     * Initializes the bridge. Idempotent by design: AppsFlyer.cs's own BeforeSceneLoad bootstrap
+     * calls this once with an empty callback name before any scene/GameObject exists, and
+     * AppsFlyer.init() calls it again with the real one once it does - both calls are expected,
+     * not a misuse. Only the first call builds sHandler; later calls just repoint
+     * sCallbackObjectName. Rebuilding sHandler on every call used to discard whatever the
+     * previous instance had already set up - in particular, registerConversionListener/
+     * registerDeepLinkListener are fired (deliberately) before AppsFlyer.init() to avoid missing
+     * early native events, so they always ran against the throwaway first instance and were
+     * silently orphaned the moment the real init() call replaced it.
      *
      * @param callbackObjectName Unity GameObject name that receives "onRPCEvent" messages.
      */
     @JvmStatic
     fun init(callbackObjectName: String) {
         sCallbackObjectName = callbackObjectName
+        if (sHandler != null) return
         // AppsFlyerRpcHandler wraps this provider in its own `by lazy` and only calls it on the
         // first actual RPC execution, not at construction time - so the handler can be built here
         // immediately without needing UnityPlayer.currentActivity to be set yet. Re-querying
