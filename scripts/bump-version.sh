@@ -23,6 +23,8 @@ UNITY_WRAPPER_VERSION=""
 ANDROID_PC_VERSION=""
 IOS_PC_VERSION=""
 ANDROID_BILLING_VERSION=""
+ANDROID_SDK_VERSION=""
+IOS_SDK_VERSION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -33,6 +35,8 @@ while [[ $# -gt 0 ]]; do
     --android-pc-version) ANDROID_PC_VERSION="$2"; shift 2 ;;
     --ios-pc-version) IOS_PC_VERSION="$2"; shift 2 ;;
     --android-billing-version) ANDROID_BILLING_VERSION="$2"; shift 2 ;;
+    --android-sdk-version) ANDROID_SDK_VERSION="$2"; shift 2 ;;
+    --ios-sdk-version) IOS_SDK_VERSION="$2"; shift 2 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -53,6 +57,8 @@ echo "  unity-wrapper:           $UNITY_WRAPPER_VERSION"
 echo "  ios-pc:                  ${IOS_PC_VERSION:-"(unchanged)"}"
 echo "  android-pc:              ${ANDROID_PC_VERSION:-"(unchanged)"}"
 echo "  android-billing:         ${ANDROID_BILLING_VERSION:-"(unchanged)"}"
+echo "  android-sdk (native):    ${ANDROID_SDK_VERSION:-"(unchanged)"}"
+echo "  ios-sdk (native):        ${IOS_SDK_VERSION:-"(unchanged)"}"
 echo ""
 
 # ── 1. Assets/AppsFlyer/package.json ─────────────────────────────────────────
@@ -92,6 +98,12 @@ if [[ -n "$ANDROID_PC_VERSION" ]]; then
   echo "[6b/11] $DEPS_XML — purchase-connector (Android)"
   sed -i.bak "s|spec=\"com.appsflyer:purchase-connector:[^\"]*\"|spec=\"com.appsflyer:purchase-connector:$ANDROID_PC_VERSION\"|" "$DEPS_XML"
 fi
+
+if [[ -n "$IOS_SDK_VERSION" ]]; then
+  echo "[6c/11] $DEPS_XML — native iOS AppsFlyer SDK (AppsFlyerFramework-Dynamic / AppsFlyerFramework pod) → $IOS_SDK_VERSION"
+  sed -i.bak "s|url=\"https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git\" version=\"[^\"]*\"|url=\"https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git\" version=\"$IOS_SDK_VERSION\"|" "$DEPS_XML"
+  sed -i.bak "s|name=\"AppsFlyerFramework\" version=\"[^\"]*\"|name=\"AppsFlyerFramework\" version=\"$IOS_SDK_VERSION\"|" "$DEPS_XML"
+fi
 rm -f "${DEPS_XML}.bak"
 
 # ── 7. android-unity-wrapper/gradle.properties ───────────────────────────────
@@ -115,6 +127,14 @@ if [[ -f "$ANDROID_WRAPPER_PROPS" ]]; then
       echo "ANDROID_PC_VERSION=$ANDROID_PC_VERSION" >> "$ANDROID_WRAPPER_PROPS"
     fi
   fi
+  if [[ -n "$ANDROID_SDK_VERSION" ]]; then
+    echo "  ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION (native af-android-sdk)"
+    if grep -q "^ANDROID_SDK_VERSION=" "$ANDROID_WRAPPER_PROPS"; then
+      sed -i.bak "s|^ANDROID_SDK_VERSION=.*|ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION|" "$ANDROID_WRAPPER_PROPS"
+    else
+      echo "ANDROID_SDK_VERSION=$ANDROID_SDK_VERSION" >> "$ANDROID_WRAPPER_PROPS"
+    fi
+  fi
   rm -f "${ANDROID_WRAPPER_PROPS}.bak"
 fi
 
@@ -132,15 +152,20 @@ if [[ -f "$UNITYWRAPPER_BUILD" ]]; then
 fi
 
 # ── 9. deploy/build_unity_package.sh ────────────────────────────────────────
+# Only touch the top-of-file fallback default. The --version case branch builds
+# PACKAGE_NAME from $2 at runtime and must never be overwritten with a literal —
+# that's exactly the bug (--version silently ignored) fixed in that script; a
+# blind s|| here would clobber the fix back in on every future version bump.
 BUILD_SH="deploy/build_unity_package.sh"
 echo "[9/11] $BUILD_SH"
-sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-${PLUGIN_VERSION}.unitypackage\"|" "$BUILD_SH"
+sed -i.bak "/PACKAGE_NAME=\"appsflyer-unity-plugin-\$2/!s|PACKAGE_NAME=\"appsflyer-unity-plugin-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-${PLUGIN_VERSION}.unitypackage\"|" "$BUILD_SH"
 rm -f "${BUILD_SH}.bak"
 
 # ── 10. deploy/strict_mode_build_package.sh ──────────────────────────────────
+# Same reasoning as step 9 — skip the --version case branch's $2-derived line.
 STRICT_SH="deploy/strict_mode_build_package.sh"
 echo "[10/11] $STRICT_SH"
-sed -i.bak "s|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage\"|" "$STRICT_SH"
+sed -i.bak "/PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-\$2/!s|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-[^\"]*\.unitypackage\"|PACKAGE_NAME=\"appsflyer-unity-plugin-strict-mode-${PLUGIN_VERSION}.unitypackage\"|" "$STRICT_SH"
 rm -f "${STRICT_SH}.bak"
 
 # ── 11. test-app/Assets/Plugins/Android/mainTemplate.gradle ──────────────────
@@ -269,12 +294,19 @@ if [[ -f "$CHANGELOG" ]]; then
   rm -f "$BULLETS_FILE"
 fi
 
-# ── README.md / docs — native SDK and Purchase Connector version surfaces ─────
+# ── README.md / docs — "This plugin is built for" native SDK / PC version block ──
+# These lines report the *native* Android/iOS AppsFlyer SDK versions (the values the
+# production release Slack notification also reads straight from this file — see
+# release_production_workflow.yml's "Read native SDK and Purchase Connector versions
+# from README" step), not the af-android-plugin-bridge/AppsFlyerRPC bridge versions.
+# Only update what we were actually given; leave the rest unchanged so this never
+# clobbers a version that wasn't part of this bump.
 update_doc_rpc_versions() {
   local file="$1"
   [[ -f "$file" ]] || return 0
-  sed -i.bak "s|- af-android-plugin-bridge [0-9][0-9.]*|- af-android-plugin-bridge $ANDROID_PLUGIN_BRIDGE_VERSION|" "$file"
-  sed -i.bak "s|- AppsFlyerRPC [0-9][0-9.]*|- AppsFlyerRPC $IOS_RPC_VERSION|" "$file"
+  [[ -n "$ANDROID_SDK_VERSION" ]] && sed -i.bak "s|- Android AppsFlyer SDK v[0-9][0-9.]*|- Android AppsFlyer SDK v$ANDROID_SDK_VERSION|" "$file"
+  [[ -n "$IOS_SDK_VERSION" ]] && sed -i.bak "s|- iOS AppsFlyer SDK v[0-9][0-9.]*|- iOS AppsFlyer SDK v$IOS_SDK_VERSION|" "$file"
+  [[ -n "$ANDROID_PC_VERSION" ]] && sed -i.bak "s|- Android Purchase Connector [0-9][0-9.]*|- Android Purchase Connector $ANDROID_PC_VERSION|" "$file"
   [[ -n "$IOS_PC_VERSION" ]] && sed -i.bak "s|- iOS Purchase Connector [0-9][0-9.]*|- iOS Purchase Connector $IOS_PC_VERSION|" "$file"
   rm -f "${file}.bak"
 }
@@ -285,7 +317,7 @@ if [[ -f "$README" ]]; then
   sed -i.bak "s|af-android-plugin-bridge:[0-9][0-9.]*|af-android-plugin-bridge:$ANDROID_PLUGIN_BRIDGE_VERSION|g" "$README"
   sed -i.bak "s|AppsFlyerRPC', '[0-9][0-9.]*|AppsFlyerRPC', '$IOS_RPC_VERSION|g" "$README"
   rm -f "${README}.bak"
-  echo "[+] README.md — updated RPC bridge version references"
+  echo "[+] README.md — updated RPC bridge and native SDK version references"
 fi
 
 INTRO="docs/Introduction.md"
