@@ -32,27 +32,29 @@ require_version() {
   fi
 }
 
-ANDROID_SDK_VERSION="$(read_android_package_version "af-android-sdk")"
+# af-android-plugin-bridge is what AppsFlyerDependencies.xml actually declares; af-android-sdk
+# is only pulled in transitively (see af-android-plugin-bridge's own POM) and is no longer
+# pinned anywhere in this repo, so its version can't be derived here. The manual "AppsFlyer
+# Android SDK" download link in docs/Installation.md (under "Installation without
+# unity-jar-resolver") stays hand-maintained rather than auto-rewritten to avoid silently
+# pointing it at the plugin-bridge wrapper AAR, which isn't a valid standalone drag-and-drop
+# replacement (it needs af-android-sdk, af-android-sdk-base, and kotlin-stdlib on the classpath).
+ANDROID_PLUGIN_BRIDGE_VERSION="$(read_android_package_version "af-android-plugin-bridge")"
 UNITY_WRAPPER_VERSION="$(read_android_package_version "unity-wrapper")"
 IOS_SDK_VERSION="$(read_ios_pod_version "AppsFlyerFramework")"
 
-require_version "Android SDK version" "$ANDROID_SDK_VERSION"
+require_version "Android plugin bridge version" "$ANDROID_PLUGIN_BRIDGE_VERSION"
 require_version "Unity wrapper version" "$UNITY_WRAPPER_VERSION"
 require_version "iOS SDK version" "$IOS_SDK_VERSION"
 
 IOS_MAJOR_VERSION="${IOS_SDK_VERSION%%.*}"
 IOS_MINOR_VERSION="${IOS_SDK_VERSION%.*}"
 
-export ANDROID_SDK_VERSION
+export ANDROID_PLUGIN_BRIDGE_VERSION
 export UNITY_WRAPPER_VERSION
 export IOS_SDK_VERSION
 export IOS_MAJOR_VERSION
 export IOS_MINOR_VERSION
-
-perl -0pi -e '
-  my $version = $ENV{"ANDROID_SDK_VERSION"};
-  s#https://repo1\.maven\.org/maven2/com/appsflyer/af-android-sdk/[0-9]+(?:\.[0-9]+)+/af-android-sdk-[0-9]+(?:\.[0-9]+)+\.aar#https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/$version/af-android-sdk-$version.aar#g;
-' "$INSTALLATION_MD"
 
 perl -0pi -e '
   my $version = $ENV{"UNITY_WRAPPER_VERSION"};
@@ -68,6 +70,6 @@ perl -0pi -e '
 ' "$INSTALLATION_MD"
 
 echo "Updated installation links:"
-echo "  Android SDK: $ANDROID_SDK_VERSION"
+echo "  Android plugin bridge: $ANDROID_PLUGIN_BRIDGE_VERSION"
 echo "  Unity wrapper: $UNITY_WRAPPER_VERSION"
 echo "  iOS SDK: $IOS_SDK_VERSION"
