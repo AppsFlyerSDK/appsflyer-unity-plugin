@@ -15,19 +15,20 @@ hidden: false
 
 In-App Events provide insight on what is happening in your app. It is recommended to take the time and define the events you want to measure to allow you to measure *ROI* (Return on Investment) and *LTV* (Lifetime Value).
 
-Recording in-app events is performed by calling `sendEvent` with event name and value parameters. See In-App Events [documentation](https://support.appsflyer.com/hc/en-us/articles/115005544169-Rich-in-app-events-for-Android-and-iOS#introduction-predefined-and-custom-events) for more details.
+Recording in-app events is performed by calling `logEvent` with event name and value parameters. See In-App Events [documentation](https://support.appsflyer.com/hc/en-us/articles/115005544169-Rich-in-app-events-for-Android-and-iOS#introduction-predefined-and-custom-events) for more details.
 
 Find more info about recording events [here](https://dev.appsflyer.com/hc/docs/in-app-events-sdk).
 
 ## Send Event
 
-`void sendEvent(string eventName, Dictionary<string, string> eventValues)`
+`async Awaitable logEvent(string eventName, Dictionary<string, string> eventValues, bool awaitResponse = false)`
 
 
-| parameter      | type                         | description                                   |
-| -----------    |----------------------------- |------------------------------------------     |
-| `eventName`    | `string`                     | The name of the event                         |
-| `eventValues`  | `Dictionary<string, string>` | The event values that are sent with the event |
+| parameter       | type                         | description                                                                                          |
+| --------------- |----------------------------- |------------------------------------------------------------------------------------------------------ |
+| `eventName`     | `string`                     | The name of the event                                                                                 |
+| `eventValues`   | `Dictionary<string, string>` | The event values that are sent with the event                                                        |
+| `awaitResponse` | `bool`                       | When `true`, the returned `Awaitable` completes only once the event has round-tripped to the server, instead of resolving as soon as it's dispatched to native. Defaults to `false`. |
 
 
 *Example:*
@@ -37,7 +38,8 @@ Dictionary<string, string> eventValues = new Dictionary<string, string>();
 eventValues.Add(AFInAppEvents.CURRENCY, "USD");
 eventValues.Add(AFInAppEvents.REVENUE, "0.99");
 eventValues.Add("af_quantity", "1");
-AppsFlyer.sendEvent(AFInAppEvents.PURCHASE, eventValues);
+await AppsFlyer.logEvent(AFInAppEvents.PURCHASE, eventValues);
+await AppsFlyer.logEvent(AFInAppEvents.PURCHASE, eventValues, awaitResponse: true); // waits for the server round trip
 ```
 ***
 
@@ -73,7 +75,7 @@ purchaseEvent.Add(AFInAppEvents.CURRENCY, "EUR");
 purchaseEvent.Add(AFInAppEvents.REVENUE, "200.12");
 purchaseEvent.Add(AFInAppEvents.QUANTITY, "1");
 purchaseEvent.Add(AFInAppEvents.CONTENT_TYPE, "category_a",);
-AppsFlyer.sendEvent ("af_purchase", purchaseEvent);
+await AppsFlyer.logEvent("af_purchase", purchaseEvent);
 ```
 
 > 📘 Note
@@ -94,7 +96,7 @@ purchaseEvent.Add(AFInAppEvents.CURRENCY, "USD");
 purchaseEvent.Add(AFInAppEvents.REVENUE, "-200");
 purchaseEvent.Add(AFInAppEvents.QUANTITY, "1");
 purchaseEvent.Add(AFInAppEvents.CONTENT_TYPE, "category_a");
-AppsFlyer.sendEvent ("cancel_purchase", purchaseEvent);
+await AppsFlyer.logEvent("cancel_purchase", purchaseEvent);
 ```
 
 ## In-app purchase validation (V2)
@@ -123,15 +125,15 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 using AppsFlyerSDK;
 
-public class AppsFlyerObject : MonoBehaviour, IAppsFlyerValidateAndLog
+public class AppsFlyerInit : MonoBehaviour, IAppsFlyerValidateAndLog
 {
 
     public static string kProductIDConsumable = "com.test.cons";
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "appId");
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "appId");
+        await AppsFlyer.start();
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
@@ -222,15 +224,15 @@ AppsFlyer.validateReceipt(string publicKey, string purchaseData, string signatur
 using UnityEngine.Purchasing;
 using AppsFlyerSDK;
 
-public class AppsFlyerObject : MonoBehaviour, IStoreListener, IAppsFlyerValidateReceipt
+public class AppsFlyerInit : MonoBehaviour, IStoreListener, IAppsFlyerValidateReceipt
 {
 
     public static string kProductIDConsumable = "com.test.cons";
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK("devKey", "devKey");
-        AppsFlyer.startSDK();
+        await AppsFlyer.init("devKey", "devKey");
+        await AppsFlyer.start();
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)

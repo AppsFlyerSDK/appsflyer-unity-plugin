@@ -6,9 +6,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 DEPLOY_PATH="$SCRIPT_DIR/outputs"
-PACKAGE_NAME="appsflyer-unity-plugin-6.17.900.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-7.0.2.unitypackage"
 UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
-EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
+EDM_PACKAGE="$REPO_ROOT/Assets/ExternalDependencyManager/Editor/external-dependency-manager-1.2.187.unitypackage"
 OUTPUT_DIR="$DEPLOY_PATH"
 PRODUCTION=false
 
@@ -29,7 +29,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
-      PACKAGE_NAME="appsflyer-unity-plugin-6.17.900.unitypackage"
+      PACKAGE_NAME="appsflyer-unity-plugin-7.0.2.unitypackage"
       shift 2
       ;;
     --output-dir)
@@ -82,10 +82,6 @@ cleanup() {
     mv "$TESTS_META_BACKUP" "$TESTS_META"
   fi
 
-  rm -rf "$REPO_ROOT/Assets/ExternalDependencyManager"
-  rm -rf "$REPO_ROOT/Assets/PlayServicesResolver"
-  rm -f "$REPO_ROOT/Assets/ExternalDependencyManager.meta"
-  rm -f "$REPO_ROOT/Assets/PlayServicesResolver.meta"
   rm -rf "$REPO_ROOT/Library" "$REPO_ROOT/Logs" "$REPO_ROOT/Packages"
   rm -rf "$TEMP_DIR"
 }

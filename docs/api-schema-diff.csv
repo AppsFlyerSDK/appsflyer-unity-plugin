@@ -1,0 +1,79 @@
+API,Unity API,RN API,Mismatched vs schema
+init,"init(devKey, appID, gameObject=null)","init(devKey, appId)",None
+start,start(),start(),None
+stop,stop(shouldStop),stop(shouldStop),None
+isSessionReady,isSessionReady() - live RPC query (fixed),isSessionReady() - live query,None
+getSdkVersion,getSdkVersion(),getSdkVersion(),None
+getAppsFlyerUID,getAppsFlyerUID(),getAppsFlyerUID(),None
+logEvent,"logEvent(eventName, eventValues)","logEvent(eventName, eventValues, awaitResponse?)",RN
+logAdRevenue,"logAdRevenue(AFAdRevenueData, Dictionary<string,string>)",logAdRevenue(data),None
+logLocation,"logLocation(latitude, longitude)","logLocation(longitude, latitude)",RN
+logAndOpenStore,"logAndOpenStore(promotedAppId, campaign, userParams)","logAndOpenStore(promotedAppId, campaign, userParams)",None
+logCrossPromoteImpression,"logCrossPromoteImpression(appId, campaign, userParams)","logCrossPromoteImpression(appId, campaign, userParams)",None
+logInvite,"logInvite(channel, eventParameters)","logInvite(channel, eventParameters)",None
+logSession,logSession(),logSession(),None
+performDeepLinking,"performDeepLinking(url, shouldTriggerSession) - Android+iOS","performDeepLinking(url, shouldTriggerSession) - docs say Android-only",RN
+setCustomerUserId,setCustomerUserId(customerId),setCustomerUserId(customerId),None
+setAppInviteOneLink,setAppInviteOneLink(oneLinkId),setAppInviteOneLink(oneLinkId),None
+setDeepLinkTimeout,setDeepLinkTimeout(timeout),setDeepLinkTimeout(timeout),None
+setAdditionalData,setAdditionalData(Dictionary<string,string>),setAdditionalData(customData),None
+setResolveDeepLinkURLs,setResolveDeepLinkURLs(urls),setResolveDeepLinkURLs(urls),None
+setOneLinkCustomDomain,setOneLinkCustomDomain(domains),setOneLinkCustomDomain(domains),None
+setCurrencyCode,setCurrencyCode(currencyCode),setCurrencyCode(currencyCode),None
+setConsentData,setConsentData(AppsFlyerConsent),setConsentData(consent),None
+anonymizeUser,anonymizeUser(shouldAnonymizeUser),anonymizeUser(shouldAnonymize),None
+enableTCFDataCollection,enableTCFDataCollection(shouldCollectTcfData),enableTCFDataCollection(shouldCollect),None
+setMinTimeBetweenSessions,setMinTimeBetweenSessions(seconds),setMinTimeBetweenSessions(seconds),None
+setHost,"setHost(hostPrefixName, hostName)","setHost(hostPrefixName, hostName)",None
+setInstallId,setInstallId(installId),setInstallId(installId),None
+enableDebug,enableDebug(enabled) - fixed,enableDebug(enabled),None
+setPartnerData,"setPartnerData(partnerId, Dictionary<string,string>)","setPartnerData(partnerId, data)",None
+appendParametersToDeepLinkingURL,"appendParametersToDeepLinkingURL(contains, parameters)","appendParametersToDeepLinkingURL(contains, parameters)",None
+enableFacebookDeferredApplinks,enableFacebookDeferredApplinks(isEnabled),enableFacebookDeferredApplinks(isEnabled),None
+setUserEmail,setUserEmail(email),setUserEmail(email),None
+setUserFirstName,setUserFirstName(firstName),setUserFirstName(firstName),None
+setUserLastName,setUserLastName(lastName),setUserLastName(lastName),None
+setUserFbLoginId,setUserFbLoginId(long fbLoginId),"setUserFbLoginId({fbLoginId: string|number})",RN (deviates from schema's integer-only contract)
+setUserPhone,"setUserPhone(countryCode, phoneNumber)","setUserPhone(countryCode, phoneNumber)",None
+clearUserPii,clearUserPii(),clearUserPii(),None
+setLogLevel,setLogLevel(logLevel) - accepts lowercase case-insensitively transforms to uppercase (fixed),setLogLevel(logLevel) - not independently confirmed,None
+registerConversionListener,registerConversionListener(),"registerConversionListener(onSuccess, onFail)",None
+unregisterConversionListener,unregisterConversionListener(),unregisterConversionListener(),None
+registerDeepLinkListener,registerDeepLinkListener(),registerDeepLinkListener(callback),None
+unregisterDeeplinkListener,unregisterDeeplinkListener(),unregisterForDeepLink(),RN
+registerSessionReadyListener,registerSessionReadyListener(),registerSessionReadyListener(callback),None
+unregisterSessionReadyListener,unregisterSessionReadyListener(),unregisterSessionReadyListener(),None
+handleOpenUrl,"handleOpenUrl(url, options) - public",not exposed as JS API,None (intentionally kept public - see project memory)
+handleOpenURL,not implemented,not exposed as JS API,None (intentionally out of scope - see project memory)
+handleLaunchOptions,handleLaunchOptions(launchOptions) - public,not exposed as JS API,None (intentionally kept public - see project memory)
+continueUserActivity,"continueUserActivity(url, activityType) - public",not exposed as JS API,None (intentionally kept public - see project memory)
+handlePushNotification,handlePushNotifications(pushPayload),folded into sendPushNotificationData,RN
+sendPushNotificationData,"sendPushNotificationData(campaign, pid, isRetargeting, additionalParameters)","sendPushNotificationData(pushPayload, androidCampaignData?)",RN
+addPushNotificationDeepLinkPath,addPushNotificationDeepLinkPath(paths[]),addPushNotificationDeepLinkPath(path),unconfirmed
+generateInviteLink,generateInviteLink(Dictionary<string,string>) - referrerCustomerId remapped to Android's customerId internally (fixed),generateInviteLink(parameters),None
+setDisableAdvertisingIdentifiers,setDisableAdvertisingIdentifiers(disable),setDisableAdvertisingIdentifiers(disable),None
+setDisableAppleAdsAttribution,setDisableAppleAdsAttribution(disable),setDisableAppleAdsAttribution(disable),None
+setDisableCollectASA,setDisableCollectASA(disable),setDisableCollectASA(disable),None
+setDisableIDFVCollection,setDisableIDFVCollection(disable),setDisableIDFVCollection(disable),None
+setDisableNetworkData,setDisableNetworkData(isDisable) - fixed,setDisableNetworkData(isDisable),None
+setDisableSKAdNetwork,setDisableSKAdNetwork(disable),setDisableSKAdNetwork(disable),None
+setFacebookDeferredAppLink,setFacebookDeferredAppLink(url),setFacebookDeferredAppLink(options),RN
+setShouldCollectDeviceName,setShouldCollectDeviceName(collect),setShouldCollectDeviceName(collect),None
+setUseReceiptValidationSandbox,setUseReceiptValidationSandbox(sandbox),setUseReceiptValidationSandbox(sandbox),None
+setUseUninstallSandbox,setUseUninstallSandbox(sandbox),setUseUninstallSandbox(sandbox),None
+setCurrentDeviceLanguage,setCurrentDeviceLanguage(language),setCurrentDeviceLanguage(language),None
+setSharingFilterForPartners,setSharingFilterForPartners(partners),setSharingFilterForPartners(partners),None
+setAppId,setAppId(appId),setAppId(appId),None
+setCollectAndroidID,setCollectAndroidID(isCollect),setCollectAndroidID(isCollect),None
+setIsUpdate,setIsUpdate(isUpdate),setIsUpdate(isUpdate),None
+setOutOfStore / getOutOfStore,setOutOfStore(sourceName) / getOutOfStore(),same,None
+setPreinstallAttribution,"setPreinstallAttribution(mediaSource, campaign, siteId)",same,None
+isPreInstalledApp,isPreInstalledApp(),same,None
+getAttributionId,getAttributionId(),same,None
+getHostName,getHostName(),same,None
+getHostPrefix,getHostPrefix(),same,None
+isStopped,isStopped(),same,None
+disableAppSetId,disableAppSetId(),same,None
+updateServerUninstallToken (Android),updateServerUninstallToken(string token),updateServerUninstallToken(token),None
+updateServerUninstallToken (iOS),updateServerUninstallToken(byte[]) - hex-encoded via BitConverter (fixed),not confirmed from docs,None
+validateAndLogInAppPurchase,two typed overloads (Android/iOS),"one method, AFPurchaseType enum appears snake_case-only",RN (unconfirmed - needs js-core-plugin source)

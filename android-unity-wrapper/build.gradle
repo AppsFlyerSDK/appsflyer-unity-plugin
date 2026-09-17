@@ -1,21 +1,23 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     ext {
         agp_version = '8.5.0'
         agp_version1 = '7.4.2'
         agp_version2 = '7.1.0'
         agp_version3 = '3.6.1'
         agp_version4 = '8.10.1'
+        kotlin_version = '1.9.24'
     }
     repositories {
         google()
         mavenCentral()
-        
+
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$agp_version4"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

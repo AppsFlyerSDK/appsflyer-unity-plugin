@@ -6,9 +6,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 DEPLOY_PATH="$SCRIPT_DIR/outputs"
-PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.17.900.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-7.0.2.unitypackage"
 UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
-EDM_PACKAGE="$SCRIPT_DIR/external-dependency-manager-1.2.183.unitypackage"
+EDM_PACKAGE="$REPO_ROOT/Assets/ExternalDependencyManager/Editor/external-dependency-manager-1.2.187.unitypackage"
 OUTPUT_DIR="$DEPLOY_PATH"
 PRODUCTION=false
 
@@ -29,7 +29,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
-      PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-6.17.900.unitypackage"
+      PACKAGE_NAME="appsflyer-unity-plugin-strict-mode-7.0.2.unitypackage"
       shift 2
       ;;
     --output-dir)
@@ -66,7 +66,6 @@ mkdir -p "$OUTPUT_DIR"
 
 TEMP_DIR="$(mktemp -d)"
 DEPS_XML="$REPO_ROOT/Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml"
-IOS_WRAPPER="$REPO_ROOT/Assets/AppsFlyer/Plugins/iOS/AppsFlyeriOSWrapper.mm"
 TESTS_DIR="$REPO_ROOT/Assets/AppsFlyer/Tests"
 TESTS_META="$REPO_ROOT/Assets/AppsFlyer/Tests.meta"
 TESTS_BACKUP="$TEMP_DIR/Tests"
@@ -78,9 +77,6 @@ cleanup() {
   if [[ -f "$TEMP_DIR/AppsFlyerDependencies.xml" ]]; then
     cp "$TEMP_DIR/AppsFlyerDependencies.xml" "$DEPS_XML"
   fi
-  if [[ -f "$TEMP_DIR/AppsFlyeriOSWrapper.mm" ]]; then
-    cp "$TEMP_DIR/AppsFlyeriOSWrapper.mm" "$IOS_WRAPPER"
-  fi
   if [[ "$TESTS_MOVED" == "true" && -d "$TESTS_BACKUP" ]]; then
     rm -rf "$TESTS_DIR"
     mv "$TESTS_BACKUP" "$TESTS_DIR"
@@ -90,10 +86,6 @@ cleanup() {
     mv "$TESTS_META_BACKUP" "$TESTS_META"
   fi
 
-  rm -rf "$REPO_ROOT/Assets/ExternalDependencyManager"
-  rm -rf "$REPO_ROOT/Assets/PlayServicesResolver"
-  rm -f "$REPO_ROOT/Assets/ExternalDependencyManager.meta"
-  rm -f "$REPO_ROOT/Assets/PlayServicesResolver.meta"
   rm -rf "$REPO_ROOT/Library" "$REPO_ROOT/Logs" "$REPO_ROOT/Packages"
   rm -rf "$TEMP_DIR"
 }
@@ -102,17 +94,28 @@ trap cleanup EXIT
 echo "Start build for $PACKAGE_NAME"
 
 cp "$DEPS_XML" "$TEMP_DIR/AppsFlyerDependencies.xml"
-cp "$IOS_WRAPPER" "$TEMP_DIR/AppsFlyeriOSWrapper.mm"
 
-echo "Changing iOS pods to strict-mode variants."
-sed -i.bak 's|name="AppsFlyerFramework"|name="AppsFlyerFramework/Strict"|g' "$DEPS_XML"
+echo "Removing all remoteSwiftPackage (SPM) blocks so strict mode resolves exclusively via CocoaPods."
+# Strict-mode pods (AppsFlyerFramework/Strict, PurchaseConnector/Strict) have no SPM
+# equivalents, so any remoteSwiftPackage block left in place would still be added by
+# EDM4U's SwiftPackageManager.AddPackagesToProject(), which applies every declared
+# remoteSwiftPackage unconditionally regardless of the iosPods block. That would pull
+# in the regular (non-strict) SPM packages alongside the strict CocoaPods below.
+sed -i.bak '/<remoteSwiftPackage /,/<\/remoteSwiftPackage>/d' "$DEPS_XML"
+# Drop the now-stale comment (from the non-strict XML) that documents the SPM/iosPod
+# fallback behavior, since strict mode no longer declares any remoteSwiftPackage.
+sed -i.bak '/<!-- iOS dependencies via Swift Package Manager/,/disabled it falls back to the iosPods entries unchanged, so the Podfile path still works. -->/d' "$DEPS_XML"
+
+echo "Swapping AppsFlyerFramework, AppsFlyerRPC, and PurchaseConnector iosPods to their strict-mode subspecs."
+# AppsFlyerRPC's default ("Main") subspec depends on the plain AppsFlyerFramework pod, not
+# AppsFlyerFramework/Strict, so it must also be pinned to its own Strict subspec here —
+# otherwise CocoaPods pulls in both AppsFlyerFramework subspecs for the same target, each
+# vendoring an xcframework product named AppsFlyerLib.xcframework, causing pod install to
+# fail with "conflicting names: appsflyerlib.xcframework".
+sed -i.bak 's|name="AppsFlyerFramework"|name="AppsFlyerFramework/Strict"|' "$DEPS_XML"
+sed -i.bak 's|name="AppsFlyerRPC"|name="AppsFlyerRPC/Strict"|' "$DEPS_XML"
 sed -i.bak 's|name="PurchaseConnector"|name="PurchaseConnector/Strict"|g' "$DEPS_XML"
 rm -f "$DEPS_XML.bak"
-
-echo "Disabling IDFA/ATT calls for strict mode."
-sed -i.bak 's|^\([[:space:]]*\)\(\[AppsFlyerLib shared\]\.disableAdvertisingIdentifier\)|\1//\2|g' "$IOS_WRAPPER"
-sed -i.bak 's|^\([[:space:]]*\)\(\[\[AppsFlyerLib shared\] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval\];\)|\1//\2|g' "$IOS_WRAPPER"
-rm -f "$IOS_WRAPPER.bak"
 
 if [[ -d "$TESTS_DIR" ]]; then
   echo "Temporarily moving Tests folder to avoid NUnit compilation errors in batch mode."

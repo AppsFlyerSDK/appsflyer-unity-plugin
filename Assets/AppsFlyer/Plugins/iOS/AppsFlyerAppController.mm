@@ -6,126 +6,60 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "UnityAppController.h"
-#import "AppDelegateListener.h"
-#import "AppsFlyeriOSWrapper.h"
+#import "AppsFlyerAttribution.h"
 #if __has_include(<AppsFlyerLib/AppsFlyerLib.h>)
 #import <AppsFlyerLib/AppsFlyerLib.h>
 #else
 #import "AppsFlyerLib.h"
 #endif
-#import <objc/message.h>
 
-/**
- Note if you would like to use method swizzeling see AppsFlyer+AppController.m
- If you are using swizzeling then comment out the method that is being swizzeled in AppsFlyerAppController.mm
- Only use swizzeling if there are conflicts with other plugins that needs to be resolved.
-*/
+// Unity posts kUnityOnOpenURL/kUnityDidReceiveRemoteNotification via NSNotificationCenter for both
+// classic AppDelegate methods and Scene-lifecycle equivalents (scene:openURLContexts:,
+// scene:continueUserActivity: for Universal Links) - see UnityAppController.mm/UnityScene.mm.
+// Observing them directly needs no UnityAppController subclassing/swizzling, so this works under
+// Unity's Swift Xcode project type too, where subclassing UnityAppController isn't supported.
+// Guarded on AppDelegateListener.h since that's where kUnityOnOpenURL/kUnityDidReceiveRemoteNotification
+// are declared; if a Unity export doesn't ship it, this observer simply doesn't compile in - it does
+// not fall back to guessing an equivalent API there.
+#if __has_include("AppDelegateListener.h")
+#import "AppDelegateListener.h"
 
-
-@interface AppsFlyerAppController : UnityAppController <AppDelegateListener>
-{
-    BOOL didEnteredBackGround;
-}
+// Classic (AppDelegate-style) UnityAppController swallows continueUserActivity without posting any
+// notification (see UnityAppController.mm) - that one case is handled by the narrow, separately
+// guarded swizzle in AppsFlyer+AppController.m instead.
+@interface AppsFlyerDeepLinkObserver : NSObject
 @end
 
-@implementation AppsFlyerAppController
+@implementation AppsFlyerDeepLinkObserver
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        
-        id swizzleFlag = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"AppsFlyerShouldSwizzle"];
-        BOOL shouldSwizzle = swizzleFlag ? [swizzleFlag boolValue] : NO;
-        
-        if(!shouldSwizzle){
-            UnityRegisterAppDelegateListener(self);
-        }
-    }
-    return self;
++ (void)load {
+    static AppsFlyerDeepLinkObserver *observer;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        observer = [[AppsFlyerDeepLinkObserver alloc] init];
+        [[NSNotificationCenter defaultCenter] addObserver:observer
+                                                  selector:@selector(onOpenURL:)
+                                                      name:kUnityOnOpenURL
+                                                    object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:observer
+                                                  selector:@selector(onDidReceiveRemoteNotification:)
+                                                      name:kUnityDidReceiveRemoteNotification
+                                                    object:nil];
+    });
 }
 
-- (void)didFinishLaunching:(NSNotification*)notification {
-    NSLog(@"got didFinishLaunching = %@",notification.userInfo);
-
-
-    if (_AppsFlyerdelegate == nil) {
-        _AppsFlyerdelegate = [[AppsFlyeriOSWarpper alloc] init];
-    }
-    [[AppsFlyerLib shared] setDelegate:_AppsFlyerdelegate];
-
-    if (notification.userInfo[@"url"]) {
-        [self onOpenURL:notification];
-    }
-}
-
--(void)didBecomeActive:(NSNotification*)notification {
-    NSLog(@"got didBecomeActive(out) = %@", notification.userInfo);
-    if (didEnteredBackGround == YES && AppsFlyeriOSWarpper.didCallStart == YES) {
-        [[AppsFlyerLib shared] start];
-        didEnteredBackGround = NO;
-    }
-}
-
-- (void)didEnterBackground:(NSNotification*)notification {
-    NSLog(@"got didEnterBackground = %@", notification.userInfo);
-    didEnteredBackGround = YES;
-}
-
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray *))restorationHandler {
-    [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
-    return YES;
-}
-
-
-- (void)onOpenURL:(NSNotification*)notification {
-    NSLog(@"got onOpenURL = %@", notification.userInfo);
+- (void)onOpenURL:(NSNotification *)notification {
     NSURL *url = notification.userInfo[@"url"];
-    NSString *sourceApplication = notification.userInfo[@"sourceApplication"];
-    
-    if (sourceApplication == nil) {
-        sourceApplication = @"";
-    }
-    
-    if (url != nil) {
-        [[AppsFlyerAttribution shared] handleOpenUrl:url sourceApplication:sourceApplication annotation:nil];
-    }
-    
+    if (url == nil) return;
+
+    NSString *sourceApplication = notification.userInfo[@"sourceApplication"] ?: @"";
+    [[AppsFlyerAttribution shared] handleOpenUrl:url sourceApplication:sourceApplication annotation:notification.userInfo[@"annotation"]];
 }
 
-- (void)didReceiveRemoteNotification:(NSNotification*)notification {
-    NSLog(@"got didReceiveRemoteNotification = %@", notification.userInfo);
+- (void)onDidReceiveRemoteNotification:(NSNotification *)notification {
     [[AppsFlyerLib shared] handlePushNotification:notification.userInfo];
 }
 
 @end
 
-#if !(AFSDK_SHOULD_SWIZZLE)
-
-IMPL_APP_CONTROLLER_SUBCLASS(AppsFlyerAppController)
-
 #endif
-/**
-Note if you would not like to use IMPL_APP_CONTROLLER_SUBCLASS you can replace it with the code below.
- <code>
- +(void)load
- {
- [AppsFlyerAppController plugin];
- }
- 
- // Singleton accessor.
- + (AppsFlyerAppController *)plugin
- {
- static AppsFlyerAppController *sharedInstance = nil;
- static dispatch_once_t onceToken;
- 
- dispatch_once(&onceToken, ^{
- 
- sharedInstance = [[AppsFlyerAppController alloc] init];
- });
- 
- return sharedInstance;
- }
-</code>
- **/

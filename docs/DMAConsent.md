@@ -30,7 +30,7 @@ A CMP compatible with **TCF v2.2/2.3** persists the consent strings on-device (N
 3. Use your CMP to decide if the consent dialog is needed in the current session.  
 4. If needed, **show the consent dialog** to capture the user’s decision; otherwise skip to step 6.  
 5. After the CMP confirms the user made a decision and the TCF data is stored, proceed.  
-6. Call `AppsFlyer.startSDK()`.
+6. Call `await AppsFlyer.start()`.
 
 ### Unity (C#) example
 
@@ -43,22 +43,22 @@ public class DMAConsentCmpFlow : MonoBehaviour
     [SerializeField] string devKey = "AF_DEV_KEY";
     [SerializeField] string appId  = "com.example.app"; // empty on Android
 
-    void Start()
+    async void Start()
     {
-        AppsFlyer.initSDK(devKey, appId);
+        await AppsFlyer.init(devKey, appId);
         AppsFlyer.enableTCFDataCollection(true); // collect TCF strings from device
 
         // Pseudocode for your CMP flow:
         if (CmpManager.HasConsentReady())
         {
-            AppsFlyer.startSDK();
+            await AppsFlyer.start();
         }
         else
         {
-            CmpManager.ShowDialog(onUserDecided: () =>
+            CmpManager.ShowDialog(onUserDecided: async () =>
             {
                 // CMP indicates consent data now stored in device prefs
-                AppsFlyer.startSDK();
+                await AppsFlyer.start();
             });
         }
     }
@@ -82,7 +82,7 @@ If your app **does not** use a TCF v2.2/2.3-compatible CMP, provide the consent 
    - `hasConsentForAdsPersonalization` – consent for personalized ads.  
    - `hasConsentForAdStorage` – consent to store/access information on the device.  
 5. If GDPR **does not apply**, set `isUserSubjectToGDPR = false` and **the rest to `null`**.  
-6. Call `AppsFlyer.startSDK()`.
+6. Call `await AppsFlyer.start()`.
 
 ### Unity (C#) examples
 
@@ -97,7 +97,7 @@ var consent = new AppsFlyerConsent(
 );
 
 AppsFlyer.setConsentData(consent);
-AppsFlyer.startSDK();
+await AppsFlyer.start();
 ```
 
 **GDPR does NOT apply:**
@@ -110,7 +110,7 @@ var nonGdpr = new AppsFlyerConsent(
 );
 
 AppsFlyer.setConsentData(nonGdpr);
-AppsFlyer.startSDK();
+await AppsFlyer.start();
 ```
 
 > **Note**  
@@ -137,7 +137,7 @@ Example patterns from Android/iOS logs (your Unity build will emit analogous pay
 ## Quick API reference (Unity)
 
 - **Collect TCF strings automatically:**  
-  `AppsFlyer.enableTCFDataCollection(true|false)` — call **before** `startSDK()`.
+  `AppsFlyer.enableTCFDataCollection(true|false)` — call **before** `start()`.
 
 - **Send manual consent:**  
   `AppsFlyer.setConsentData(AppsFlyerConsent consent)` with:  
@@ -147,5 +147,5 @@ Example patterns from Android/iOS logs (your Unity build will emit analogous pay
 
 ### Notes & best practices
 
-- Set consent **before** `startSDK()` so the first session includes the correct signals.  
+- Set consent **before** `start()` so the first session includes the correct signals.  
 - If the user changes their choice later, rebuild `AppsFlyerConsent` with the new values and call `setConsentData` again.

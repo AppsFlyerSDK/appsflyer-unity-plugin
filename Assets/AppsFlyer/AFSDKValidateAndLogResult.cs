@@ -14,7 +14,7 @@ namespace AppsFlyerSDK
     /// <summary>
     // 
     /// </summary>
-    public class AFSDKValidateAndLogResult
+    public class AFSDKValidateAndLogResult : IAFValidateAndLogResult
     {
         public AFSDKValidateAndLogStatus status { get; private set; }
         public Dictionary<string, object> result { get; private set; }

@@ -13,7 +13,7 @@ This is the recommended method for implementing push notification measurement in
 
 **To integrate AppsFlyer with Android push notifications:**
 
-1. In your `AppsFlyerObjectScript.cs`, call `addPushNotificationDeepLinkPath` **before** calling `start`:
+1. In your AppsFlyer init script (see [Manual integration](/docs/BasicIntegration.md#manual-integration)), call `addPushNotificationDeepLinkPath` **before** calling `start`:
 
 ```csharp
 AppsFlyer.addPushNotificationDeepLinkPath("af_push_link");

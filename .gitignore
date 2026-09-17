@@ -1,9 +1,9 @@
 .DS_Store
 *.log
 Logs/
-Packages/
 Temp/
 test-app/Assets/StreamingAssets/.env
+test-app/.env
 Library/
 /*/outputs/
 
@@ -22,6 +22,35 @@ test-app/UserSettings/
 
 # build artifacts
 test-app/Build/
+test-app/*.apk
+test-app/ios-unity-sample-app/
+
+# Android Resolver / Gradle export side effects (regenerated on every build)
+test-app/Assets/Plugins/Android/*.backup*
+test-app/ProjectSettings/AndroidResolverDependencies.xml
+# Android Resolver drops resolved AARs/JARs here; Unity auto-imports anything found in this
+# folder as its own library dependency, so leftovers here cause duplicate-class Gradle
+# failures independent of mainTemplate.gradle (see the checkDebugDuplicateClasses fix).
+test-app/Assets/Plugins/Android/libs/
+test-app/Assets/Plugins/Android/libs.meta
+# Android Studio auto-generates Android.iml when the exported Gradle project is opened;
+# *.iml is already ignored above but its Unity .meta sidecar has a different extension
+# and isn't covered by that pattern.
+*.iml.meta
+# NOTE: GvhProjectSettings.xml is NOT purely regenerated output - it persists the
+# EDM4U iOS Resolver setting SwiftPackageManagerEnabled=True, which every fresh CI
+# checkout needs. It's tracked intentionally; do not re-add it here.
+
+# Unity Editor recovery snapshots
+test-app/Assets/_Recovery/
+test-app/Assets/_Recovery.meta
+
+# code review working docs (not part of the plugin)
+.review/
+
+# editor / IDE project files
+.vscode/
+*.slnx
 
 
 #android studio

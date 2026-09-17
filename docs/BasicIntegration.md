@@ -6,45 +6,46 @@ order: 1
 hidden: false
 ---
 
-You can initialize the plugin by using the AppsFlyerObject prefab or manually.
+To initialize the plugin, create a game object and add an init script to it.
 
-- [Using the AppsFlyerObject.prefab](#using-the-appsflyerobjectprefab)
 - [Manual integration](#manual-integration)
+- [Session Ready Listener](#session-ready-listener)
 - [Collect IDFA with ATTrackingManager](#collect-idfa-with-attrackingmanager)
 - [Send consent for DMA compliance](#send-consent-for-dma-compliance)
 - [Sending SKAN postback to Appsflyer](#sending-skan-postback-to-appsflyer)
 - [MacOS initialization](#macos-initialization)
 - [Request Listeners (Optional)](#request-listeners-optional)
 
-## Using the AppsFlyerObject.prefab
-
-1. Go to Assets > AppsFlyer and drag AppsFlyerObject.prefab to your scene.
-<img src="assets/unity_add_object.png" width="650">
-<br/>
-2. Update the following fields:
-
-| Setting  | Description   |
-| -------- | ------------- |
-| **Dev Key**   |  AppsFlyer's [Dev Key](https://support.appsflyer.com/hc/en-us/articles/207032126-Android-SDK-integration-for-developers#integration-31-retrieving-your-dev-key), which is accessible from the AppsFlyer dashboard. |
-| **App ID**      | Your iTunes Application ID. (If your app is not for iOS the leave field empty)  |
-| **Get Conversion Data**    | Set this to true if your app is using AppsFlyer for deep linking.  |
-| **Is Debug**    | Set this to true to view the debug logs. (for development only!)  |
-
-3. Update the code in Assets > AppsFlyer > AppsFlyerObjectScript.cs with other available [API](/docs/api).
-
 ## Manual integration
+
+> **Requires Unity 2023.1 or newer** (raised from 2019.4) — `init`/`start` and most other APIs
+> are now `async Awaitable`/`Awaitable<T>` methods on the RPC bridge. See
+> [Installation](/docs/Installation.md#requirements).
 
 Create a game object and add the following init code:
 
 ```c#
 using AppsFlyerSDK;
+using System;
 
-public class AppsFlyerObjectScript : MonoBehaviour
+public class AppsFlyerInit : MonoBehaviour
 {
-  void Start()
+  async void Start()
   {
-    AppsFlyer.initSDK("devkey", "appID");
-    AppsFlyer.startSDK();
+    // Subscribe before registerSessionReadyListener() so the event can't fire before
+    // we're listening.
+    AppsFlyer.OnSessionReady += OnSessionReadyHandler;
+
+    await AppsFlyer.init("devkey", "appID");
+    await AppsFlyer.registerSessionReadyListener();
+    // start() is called from OnSessionReadyHandler below, once the SDK reports the
+    // session is ready - see "Session Ready Listener" below for why.
+  }
+
+  void OnSessionReadyHandler(object sender, EventArgs args)
+  {
+    AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    AppsFlyer.start();
   }
 }
 ```
@@ -52,6 +53,37 @@ public class AppsFlyerObjectScript : MonoBehaviour
 > **Note:** 
 > - Make sure not to call destroy on the game object. 
 > - Use [`DontDestroyOnLoad`](https://docs.unity3d.com/ScriptReference/Object.DontDestroyOnLoad.html) to keep the object when loading a new scene.
+
+### Session Ready Listener
+
+`registerSessionReadyListener()` defers `start()` until the native SDK reports it has finished
+evaluating session-readiness conditions (config validity, any pending deep link), rather than
+racing `start()` against that evaluation. This is the recommended way to call `start()`; calling
+`AppsFlyer.start()` directly right after `init()` still works but skips that coordination.
+
+```c#
+AppsFlyer.OnSessionReady += OnSessionReadyHandler;   // subscribe first
+await AppsFlyer.init(devKey, appID, this);
+await AppsFlyer.registerSessionReadyListener();
+
+void OnSessionReadyHandler(object sender, EventArgs args)
+{
+    AppsFlyer.OnSessionReady -= OnSessionReadyHandler;
+    AppsFlyer.start();
+}
+```
+
+Unregister with `AppsFlyer.unregisterSessionReadyListener()` if you no longer need the callback.
+`AppsFlyer.isSessionReady()` lets you poll the current state instead of subscribing to the
+event.
+
+> **Note (Android):** on a cold, post-install launch, the native SDK's own foreground-detection
+> can miss the app's very first `onResume()` (it's registered by `init()`, which — running from
+> Unity's managed layer — is unavoidably a beat behind Android's real launch-triggering
+> `onResume()`). If your app relies on `start()` firing immediately on first launch rather than
+> on the next background/foreground cycle, account for this in your own Activity/init flow. iOS
+> is not affected — its SDK re-evaluates readiness immediately if the app is already active at
+> registration time.
 
 ---
 
@@ -74,7 +106,7 @@ AppsFlyer.setCustomerUserId("someId");
 
 ### Associate the CUID with the install event
 
-If it’s important for you to associate the install event with the CUID, call `setCustomerUserId` before calling `startSDK`.
+If it’s important for you to associate the install event with the CUID, call `setCustomerUserId` before calling `start`.
 
 ## Collect IDFA with ATTrackingManager
 
@@ -83,27 +115,25 @@ If it’s important for you to associate the install event with the CUID, call `
     1. Add an entry to the list: Press +  next to `Information Property List`.
     2. Scroll down and select `Privacy - Tracking Usage Description`.
     3. Add as the value the wording you want to present to the user when asking for permission to collect the IDFA.
-3. Call the `waitForATTUserAuthorizationWithTimeoutInterval` api before `startSDK()`
-    
-    ```c#
-    #if UNITY_IOS && !UNITY_EDITOR
-    AppsFlyer.waitForATTUserAuthorizationWithTimeoutInterval(60);
-    #endif
-    ```
-        
-4. Request the tracking authorization where you wish to display the prompt: <br/>
-    You can use the following [package](https://github.com/Unity-Technologies/com.unity.ads.ios-support) or any other package that allows you to request the tracking authorization. 
+3. Request the tracking authorization before calling `start()`, and wait for the user's
+    decision (or a timeout) so the first session can carry IDFA if the user grants it.
+    There is no plugin API for this — request authorization yourself (e.g. via the
+    [com.unity.ads.ios-support](https://github.com/Unity-Technologies/com.unity.ads.ios-support)
+    package, or a small native call) and delay `start()` until the request completes.
+    See `RequestATTThenStart()` in the sample app's
+    [`QATestScript.cs`](/test-app/Assets/Scripts/QATestScript.cs) for a reference implementation.
     ```c#
 
     using Unity.Advertisement.IosSupport;
 
     /*  ... */
-  
+
     if (ATTrackingStatusBinding.GetAuthorizationTrackingStatus() 
          == ATTrackingStatusBinding.AuthorizationTrackingStatus.NOT_DETERMINED)
         {
             ATTrackingStatusBinding.RequestAuthorizationTracking();
         }
+    // Wait for the authorization decision, then call start().
      /*  ... */
   
 ### Customizing the ATT consent dialog
@@ -127,23 +157,23 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
 ### Use CMP to collect consent data
 
 1. Initialize the SDK.
-2. Call enableTCFDataCollection(true) api before startSDK() to instruct the SDK to collect the TCF data from the device.
+2. Call enableTCFDataCollection(true) api before start() to instruct the SDK to collect the TCF data from the device.
 3. Use the CMP to decide if you need the consent dialog in the current session to acquire the consent data. If you need the consent dialog move to step 4; otherwise move to step 5.
 4. Get confirmation from the CMP that the user has made their consent decision and the data is available.
 5. Call start().
     
     ```c#
-        AppsFlyer.initSDK(devKey, appID, this);
+        await AppsFlyer.init(devKey, appID, this);
 
         AppsFlyer.enableTCFDataCollection(true);
         
         //YOUR_CMP_FLOW()
         // if already has consent ready - you can start
-            AppsFlyer.startSDK();
+            await AppsFlyer.start();
             
         //else Waiting for CMP completion and data ready and then start
         
-            AppsFlyer.startSDK();
+            await AppsFlyer.start();
     ```
 
 ### Manually collect consent data
@@ -168,23 +198,27 @@ Through a dedicated Unity SDK API: Developers can pass Google's required consent
         // or retrieve it from the storage
         ...
         // Set the consent data to the SDK:
-        AppsFlyerConsent consent = AppsFlyerConsent.ForGDPRUser(true, true);
+        AppsFlyerConsent consent = new AppsFlyerConsent(
+            isUserSubjectToGDPR: true,
+            hasConsentForDataUsage: true,
+            hasConsentForAdsPersonalization: true
+        );
         AppsFlyer.setConsentData(consent);
             
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
     ```
 
 ### When GDPR does not apply to the user
-1. Create an AppsFlyerConsent object using the ForNonGDPRUser() initializer. This initializer doesn’t accept any parameters.
-2. Pass the empty AppsFlyerConsent object to setConsentData().
+1. Create an AppsFlyerConsent object with `isUserSubjectToGDPR` set to `false`. The other consent fields can be omitted.
+2. Pass the AppsFlyerConsent object to setConsentData().
 2. Call start().
     
     ```c#
         // If the user is not subject to GDPR:
-        AppsFlyerConsent consent = AppsFlyerConsent.ForNonGDPRUser();
+        AppsFlyerConsent consent = new AppsFlyerConsent(isUserSubjectToGDPR: false);
         AppsFlyer.setConsentData(consent);
             
-        AppsFlyer.startSDK();
+        await AppsFlyer.start();
     ```
 
  ## Verify consent data is sent
@@ -204,15 +238,14 @@ More info on how to update the info.plist can be found [here](https://github.com
 --- 
 
 ## MacOS initialization
-1. Use the prefab `AppsFlyerObject`
-2. Add your MacOS app id
-3. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
+1. Use the manual integration code above, passing your MacOS app ID.
+2. Build for the platform `PC, Mac & Linux Standelone` and choose `MacOS` as the target platform.
   
 ---
 ## Request Listeners (Optional)
     
-1. Attach the 'AppsFlyer.cs' script to the game object with the AppsFlyer init code. (AppsFlyerObject, ect)
-2. Add the following code **before** startSDK()
+1. Add the following code to the game object with the AppsFlyer init code (see [Manual integration](#manual-integration)).
+2. Add the following code **before** start()
 
 Sessions response example:
 
@@ -221,8 +254,8 @@ Sessions response example:
     {
         AppsFlyer.OnRequestResponse += AppsFlyerOnRequestResponse;
         
-        AppsFlyer.initSDK(devKey, appID, this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init(devKey, appID, this);
+        await AppsFlyer.start();
     }
 
     void AppsFlyerOnRequestResponse(object sender, EventArgs e)
@@ -243,8 +276,8 @@ In-App response example:
             AppsFlyer.AFLog("AppsFlyerOnRequestResponse", " status code " + af_args.statusCode);
         };
         
-        AppsFlyer.initSDK(devKey, appID, this);
-        AppsFlyer.startSDK();
+        await AppsFlyer.init(devKey, appID, this);
+        await AppsFlyer.start();
     }
 
 

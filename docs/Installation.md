@@ -8,6 +8,18 @@ hnameden: false
 
 # Adding appsflyer-unity-plugin to your project
 
+## Requirements
+
+- **Unity 2023.1 or newer** (raised from 2019.4). This is required for `Awaitable`/`Awaitable<T>`
+  support, which the RPC bridge's public API (`init`, `start`, and most other methods) relies on
+  — see [Breaking changes](/README.md#breaking-changes-7xx). If you're on an older Unity version,
+  stay on the last plugin release that supported Unity 2019.4.
+- **The External Dependency Manager for Unity (EDM4U) 1.2.187 or newer.** Earlier 1.2.x releases
+  (e.g. 1.2.183) are known to mis-resolve this plugin's iOS Swift Package Manager dependencies
+  (`AppsFlyerRPC`, introduced with the RPC bridge). If you're bundling EDM4U yourself rather than
+  via the `.unitypackage`, update to at least 1.2.187 from the
+  [unity-jar-resolver releases](https://github.com/googlesamples/unity-jar-resolver/releases).
+
 ## Adding the SDK to your project
 
 In order to add the plugin to your project, you can either add the *unitypackage* **or** use *Unity Package Manager*. 
@@ -26,6 +38,8 @@ In order to add the plugin to your project, you can either add the *unitypackage
 4. Select the `appsflyer-unity-plugin-*.unitypackage` file or the `appsflyer-unity-plugin-strict-mode.*.unitypackage` file from the `strict-mode-sdk` folder for the Strict version of the plugin.
 
 **Note:** If you do not wish to include [The External Dependency Manager for Unity](https://github.com/googlesamples/unity-jar-resolver), refer to the steps of this [installation](#installation-without-unity-jar-resolver).
+
+**Note:** Unlike the regular plugin, the Strict Mode package resolves its iOS dependencies via **CocoaPods only** — it does not declare any Swift Package Manager package. Make sure "Use Swift Package Manager for iOS Cocoapod dependencies" is left disabled (Assets > External Dependency Manager > iOS Resolver > Settings) when integrating the Strict Mode package, so EDM4U generates a Podfile instead.
 
 ## Using Unity Package Manager
 
@@ -56,9 +70,9 @@ Add this line for the latest version of the regular mode
 
   2. Download and add the required Android dependencies to the Assets/Plugins/Android folder:
       1. [AppsFlyer Android SDK](https://repo1.maven.org/maven2/com/appsflyer/af-android-sdk/6.17.6/af-android-sdk-6.17.6.aar)
-      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/6.17.900/unity-wrapper-6.17.900.aar) - Billing Library 8
+      2. [AppsFlyer Unity Wrapper](https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/7.0.15/unity-wrapper-7.0.15.aar) - Billing Library 8
       3. [Google Installreferrer library](https://mvnrepository.com/artifact/com.android.installreferrer/installreferrer/2.1)
   3. Download and add the required iOS dependencies to the Assets/Plugins/iOS/AppsFlyer folder:
-      1. [Download](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/tag/6.17.9) the iOS SDK as a static library `AppsFlyerLib.xcframework.zip`
+      1. [Download](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/tag/7.0.2) the iOS SDK as a static library `AppsFlyerLib.xcframework.zip`
       2. Unzip the file you downloaded
       3. Drag & drop all the files into the `Assets/Plugins/iOS/AppsFlyer` folder

@@ -28,10 +28,7 @@ namespace AppsFlyerSDK
     ///     hasConsentForAdsPersonalization: false, 
     ///     hasConsentForAdStorage: true
     /// );
-    /// **Deprecated APIs:**
-    /// - `ForGDPRUser(...)` and `ForNonGDPRUser(...)` should no longer be used.
-    /// - Use `new AppsFlyerConsent(...)` instead with relevant consent fields.
-    ///
+    /// ```
     /// </summary>
     public class AppsFlyerConsent
     {
@@ -48,24 +45,5 @@ namespace AppsFlyerSDK
             this.hasConsentForAdStorage = hasConsentForAdStorage;
         }
 
-        [Obsolete("Use the new constructor with optional booleans instead.")]
-        private AppsFlyerConsent(bool isGDPR, bool hasForDataUsage, bool hasForAdsPersonalization)
-        {
-            isUserSubjectToGDPR = isGDPR;
-            hasConsentForDataUsage = hasForDataUsage;
-            hasConsentForAdsPersonalization = hasForAdsPersonalization;
-        }
-
-        [Obsolete("Use new AppsFlyerConsent(...) instead.")]
-        public static AppsFlyerConsent ForGDPRUser(bool hasConsentForDataUsage, bool hasConsentForAdsPersonalization)
-        {
-            return new AppsFlyerConsent(true, hasConsentForDataUsage, hasConsentForAdsPersonalization);
-        }
-
-        [Obsolete("Use new AppsFlyerConsent(...) instead.")]
-        public static AppsFlyerConsent ForNonGDPRUser()
-        {
-            return new AppsFlyerConsent(false);
-        }
     }
 }

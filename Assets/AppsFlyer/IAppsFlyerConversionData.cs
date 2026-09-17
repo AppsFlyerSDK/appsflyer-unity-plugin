@@ -14,18 +14,5 @@ namespace AppsFlyerSDK
         /// </summary>
         /// <param name="error">A string describing the error.</param>
         void onConversionDataFail(string error);
-
-        /// <summary>
-        /// `attributionData` contains information about OneLink, deeplink.
-        /// <see>https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-Deep-Linking-Guide#Intro</see>
-        /// </summary>
-        /// <param name="attributionData">JSON string of the returned deeplink data.</param>
-        void onAppOpenAttribution(string attributionData);
-
-        /// <summary>
-        /// Any errors that occurred during the attribution request.
-        /// </summary>
-        /// <param name="error">A string describing the error.</param>
-        void onAppOpenAttributionFailure(string error);
     }
 }

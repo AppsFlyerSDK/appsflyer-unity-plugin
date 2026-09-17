@@ -78,6 +78,7 @@ jobs:
 
       - name: Write .env from secret
         run: |
+          mkdir -p test-app/Assets/StreamingAssets
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
       - name: Cache Unity Editor installation
@@ -158,6 +159,14 @@ jobs:
           exit $BUILD_EXIT
         timeout-minutes: 30
 
+      - name: Upload Unity build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-build-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/unity-build.log
+          retention-days: 3
+
       - name: Patch Unity libs to arm64 simulator
         run: |
           TRAMPOLINE=$(find /Applications/Unity -name "baselib-sim-arm64.a" 2>/dev/null | head -1 | sed 's|/Libraries/baselib-sim-arm64.a||')
@@ -184,16 +193,52 @@ jobs:
           echo "=== unity-return.log ==="
           cat /tmp/unity-return.log || true
 
-      - name: Install iOS pods
+      - name: Patch SDKROOT for simulator build
         run: |
-          chmod +x scripts/ios-pod-install.sh
-          scripts/ios-pod-install.sh test-app/Build/iOS-Simulator
+          # Unity hardcodes SDKROOT = iphoneos at the target level, which overrides
+          # xcodebuild's -sdk flag below. Must run before xcodebuild for simulator builds.
+          sed -i '' 's/SDKROOT = iphoneos;//g' \
+            test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj/project.pbxproj
 
-      - name: Compile simulator .app from Xcode workspace
+      - name: Resolve Swift Package dependencies
         run: |
-          XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
+          set -o pipefail
+          # SPM-resolved packages (e.g. AppsFlyerLib-Dynamic's binary xcframework) are
+          # fetched over the network. When that fetch flakes in CI, `xcodebuild build`
+          # doesn't fail here — it silently proceeds to build with whatever partial
+          # package artifacts it has, surfacing later as a confusing "header not found"
+          # deep in a compile step. Resolve explicitly first, with retries, so a real
+          # network flake fails loudly and recovers instead of masquerading as a code bug.
+          XCODE_PROJ=test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj
+          for attempt in 1 2 3; do
+            echo "Resolve attempt $attempt..."
+            if xcodebuild -resolvePackageDependencies \
+                 -project "$XCODE_PROJ" \
+                 -scheme  Unity-iPhone \
+                 -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
+                 2>&1 | tee /tmp/xcode-resolve.log; then
+              echo "Package resolution succeeded on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::Package resolution attempt $attempt failed, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Package resolution failed after 3 attempts"
+          exit 1
+
+      - name: Upload package resolution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-resolve-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/xcode-resolve.log
+          retention-days: 3
+
+      - name: Compile simulator .app from Xcode project
+        run: |
+          XCODE_PROJ=test-app/Build/iOS-Simulator/Unity-iPhone.xcodeproj
           xcodebuild \
-            -workspace "$XCODE_WS" \
+            -project   "$XCODE_PROJ" \
             -scheme    Unity-iPhone \
             -sdk       iphonesimulator \
             -configuration Debug \
@@ -220,6 +265,14 @@ jobs:
           fi
           rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
           cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
+
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log-ios-${{ inputs.plugin_version }}
+          path: /tmp/xcode-build.log
+          retention-days: 3
 
       - name: Boot iOS simulator
         run: |

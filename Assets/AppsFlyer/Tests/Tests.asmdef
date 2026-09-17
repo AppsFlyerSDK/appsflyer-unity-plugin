@@ -1,5 +1,5 @@
 {
-    "name": "Tests",
+    "name": "AppsFlyerSDK.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
