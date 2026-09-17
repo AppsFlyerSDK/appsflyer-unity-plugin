@@ -45,6 +45,16 @@ on:
         required: false
         default: "8.0.0"
         type: string
+      android_sdk_version:
+        description: "Native Android AppsFlyer SDK version (af-android-sdk, pulled in transitively by af-android-plugin-bridge). Pass when it differs from the current gradle.properties value — also updates README's \"built for\" block."
+        required: false
+        default: ""
+        type: string
+      ios_sdk_version:
+        description: "Native iOS AppsFlyer SDK version (AppsFlyerFramework / AppsFlyerFramework-Dynamic). Pass when it differs from the current AppsFlyerDependencies.xml value — also updates README's \"built for\" block."
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -168,6 +178,8 @@ jobs:
           [[ -n "${{ inputs.ios_pc_version }}" ]] && BUMP_ARGS+=(--ios-pc-version "${{ inputs.ios_pc_version }}")
           [[ -n "${{ inputs.android_pc_version }}" ]] && BUMP_ARGS+=(--android-pc-version "${{ inputs.android_pc_version }}")
           [[ -n "${{ inputs.android_billing_version }}" ]] && BUMP_ARGS+=(--android-billing-version "${{ inputs.android_billing_version }}")
+          [[ -n "${{ inputs.android_sdk_version }}" ]] && BUMP_ARGS+=(--android-sdk-version "${{ inputs.android_sdk_version }}")
+          [[ -n "${{ inputs.ios_sdk_version }}" ]] && BUMP_ARGS+=(--ios-sdk-version "${{ inputs.ios_sdk_version }}")
           scripts/bump-version.sh "${BUMP_ARGS[@]}"
 
       - name: Verify version bump
