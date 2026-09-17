@@ -55,16 +55,15 @@ def validate_common_surfaces(root, version):
 
 
 def validate_strict_surfaces(root):
+    # disableAdvertisingIdentifier and waitForATTUserAuthorizationWithTimeoutInterval used to be
+    # strict mode's differentiator (commented out of AppsFlyeriOSWrapper.mm), but the RPC bridge
+    # rewrite (1507c8c1) removed both APIs entirely, from the public surface and the native
+    # wrapper, for regular and strict alike (see Tests_Suite.cs's WaitForATT_NoLongerFiresAnyRPCCall).
+    # Strict mode's only remaining differentiator is the CocoaPods /Strict subspec swap.
     appsflyer_root = root / "Assets" / "AppsFlyer"
     deps = require_file(appsflyer_root, "Editor/AppsFlyerDependencies.xml")
-    ios_wrapper = require_file(appsflyer_root, "Plugins/iOS/AppsFlyeriOSWrapper.mm")
     assert_contains(deps, 'name="AppsFlyerFramework/Strict"')
     assert_contains(deps, 'name="PurchaseConnector/Strict"')
-    assert_contains(ios_wrapper, "//[AppsFlyerLib shared].disableAdvertisingIdentifier")
-    assert_contains(
-        ios_wrapper,
-        "//[[AppsFlyerLib shared] waitForATTUserAuthorizationWithTimeoutInterval:timeoutInterval];",
-    )
 
 
 def main():

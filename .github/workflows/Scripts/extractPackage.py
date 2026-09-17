@@ -28,7 +28,11 @@ def main():
     path_of_repo = "Assets/"
     
     files_to_not_check = ["package.json"]
-    files_for_strict_mode_only = ["AppsFlyeriOSWrapper.mm", "AppsFlyerDependencies.xml"]
+    # AppsFlyeriOSWrapper.mm used to diverge here (commented-out disableAdvertisingIdentifier /
+    # waitForATTUserAuthorizationWithTimeoutInterval calls in the strict build), but the RPC
+    # bridge rewrite removed both APIs entirely, from repo, regular, and strict alike, so the
+    # file is identical across all three now and falls through to the normal equality check below.
+    files_for_strict_mode_only = ["AppsFlyerDependencies.xml"]
     
     
     #checksum of files
@@ -46,12 +50,7 @@ def main():
                     if getHash(file_in_package) != getHash(file_in_repo):
                         print("❌ the file ", file, "is not the same")
                         sys.exit(5)
-                    print("file for non strict mode ", file, "md5 check passed ✅") 
-                    if file == "AppsFlyeriOSWrapper.mm":
-                       if not hasCommentedMethods(file_in_strict_package):
-                           print("❌ the methods are not commented in  ", file_in_strict_package)
-                           sys.exit(5)
-                       print("file in strict mode ", file, " has the correct methods commented out ✅")
+                    print("file for non strict mode ", file, "md5 check passed ✅")
                     if file == "AppsFlyerDependencies.xml":
                         if not isSrictModeDependency(file_in_strict_package):
                             print("❌ the dependecy is not strict in ",file_in_strict_package )
@@ -76,16 +75,6 @@ def getHash(filePath):
         return md5.hexdigest()
     
     
-#check that only the two methods are commented in the strict mode package
-def hasCommentedMethods(file):
-    print("###################### \n checking that the methods are commented in the strict mode package \n ######################")
-    textfile = open(file, 'r')
-    filetext = textfile.read()
-    textfile.close()
-    matches1 = re.findall("[/]+.*\[+AppsFlyerLib.*disableAdvertisingIdentifier", filetext)
-    matches2 = re.findall("[/]+.*\[+AppsFlyerLib.*waitForATTUserAuthorizationWithTimeoutInterval", filetext)
-    return len(matches1) == 1 and len(matches2) == 1
-
 #check that we are using the strict dependency in strict mode package
 def isSrictModeDependency(file):
     print("###################### \nchecking the depdendency for the strict mode \n ######################")

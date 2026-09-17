@@ -16,10 +16,10 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.6
-- Android Purchase Connector 2.2.0
-- iOS AppsFlyer SDK v6.17.9
-- iOS Purchase Connector 6.17.9
+- Android AppsFlyer SDK v7.0.1
+- Android Purchase Connector 2.3.0
+- iOS AppsFlyer SDK v7.0.2
+- iOS Purchase Connector 7.0.2
 ---
 ## 📌 RPC-schema-aligned plugin core + new async API surface
 
