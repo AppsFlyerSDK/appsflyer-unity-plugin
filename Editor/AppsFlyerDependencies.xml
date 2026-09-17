@@ -20,20 +20,17 @@
        Manager > iOS Resolver > Settings > "Use Swift Package Manager for iOS Cocoapod
        dependencies") EDM4U resolves the package and skips the matching iosPod below; with SPM
        disabled it falls back to the iosPods entries unchanged, so the Podfile path still works. -->
-  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git" version="7.0.2">
-    <swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Strict.git" version="7.0.2">
+    <swiftPackage name="AppsFlyerLib" replacesPod="AppsFlyerFramework"/>
   </remoteSwiftPackage>
   <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/appsflyer-apple-rpc.git" version="7.0.13">
-    <swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>
-  </remoteSwiftPackage>
-  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/PurchaseConnector-Dynamic.git" version="7.0.2">
-    <swiftPackage name="PurchaseConnector-Dynamic" replacesPod="PurchaseConnector"/>
+    <swiftPackage name="AppsFlyerRPCStrict" replacesPod="AppsFlyerRPC"/>
   </remoteSwiftPackage>
 
   <iosPods>
     <iosPod name="AppsFlyerFramework" version="7.0.2" minTargetSdk="13.0"></iosPod>
     <iosPod name="AppsFlyerRPC" version="7.0.13" minTargetSdk="13.0"></iosPod>
-    <iosPod name="PurchaseConnector" version="7.0.2" minTargetSdk="13.0"></iosPod>
+    <iosPod name="PurchaseConnector/Strict" version="7.0.2" minTargetSdk="13.0"></iosPod>
   </iosPods>
 
 </dependencies>
