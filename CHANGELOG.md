@@ -1,5 +1,17 @@
 # Versions
 
+## v7.0.3
+* **Fix:** Universal Links (OneLink) opened while the app builds with Unity's `UIScene`-based
+  iOS export (`UnityScene`/`UIApplicationSceneManifest`, shipping since 6000.x/2022.3.72f1+)
+  were silently misrouted through the SDK's legacy custom-URL-scheme entry point
+  (`handleOpenURL:sourceApplication:withAnnotation:`) instead of the OneLink-specific
+  `continueUserActivity:restorationHandler:`, for both cold and warm launches. Added
+  `Assets/AppsFlyer/Plugins/iOS/AppsFlyer+UnityScene.m`, a scene-lifecycle counterpart to the
+  existing `AppsFlyer+AppController.m`/`AppsFlyerAppController.mm` bridge, so Universal Links are
+  routed correctly on scene-based exports without double-dispatching or affecting custom-URL-scheme
+  deep links, which are unaffected and keep working as before. Pre-scene Unity exports are
+  unaffected (existing `UnityAppController`-swizzle path keeps serving them).
+
 ## v7.0.2
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
   AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
