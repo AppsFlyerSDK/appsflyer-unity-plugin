@@ -178,7 +178,7 @@ jobs:
           echo "Trampoline: $TRAMPOLINE"
           cp "$TRAMPOLINE/Libraries/baselib-sim-arm64.a" \
              test-app/Build/iOS-Simulator/Libraries/baselib.a
-          cp "$TRAMPOLINE/Frameworks/libiPhone-lib-sim-arm64/UnityRuntime.framework/UnityRuntime" \
+          cp "$TRAMPOLINE/Frameworks/UnityRuntime-sim-arm64/UnityRuntime.framework/UnityRuntime" \
              test-app/Build/iOS-Simulator/Frameworks/UnityRuntime.framework/UnityRuntime
           echo "Patched to arm64 simulator"
 
