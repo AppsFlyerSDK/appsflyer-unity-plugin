@@ -78,9 +78,23 @@ static BOOL __af_suppressNextApplyURLDispatch = NO;
     }
 }
 
+// scene:continueUserActivity: is Apple's general activity-continuation entry point - not
+// Universal-Link-only - so it can also fire for Handoff, Siri Shortcuts/donated activities,
+// Spotlight continuation, etc. Only a browsing-web activity with a webpageURL is a Universal
+// Link and will make Unity's own applyURL: fire; filtering here (mirroring
+// __af_firstBrowsingActivity's check below) avoids setting the suppression flag for a
+// non-browsing activity, which would otherwise never get consumed and would silently swallow
+// the next legitimate deep link dispatch.
+static BOOL __af_isBrowsingActivity(NSUserActivity *activity) {
+    return activity != nil
+        && [activity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]
+        && activity.webpageURL != nil
+        && activity.webpageURL.absoluteString != nil;
+}
+
 // Warm Universal Link re-open.
 void __swizzled_scene_continueUserActivity(id self, SEL _cmd, UIScene *scene, NSUserActivity *userActivity) {
-    if (userActivity != nil) {
+    if (__af_isBrowsingActivity(userActivity)) {
         NSLog(@"[AppsFlyer+UnityScene] scene:continueUserActivity: forwarding to AppsFlyerLib continueUserActivity:restorationHandler:");
         __af_suppressNextApplyURLDispatch = YES;
         [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:nil];
@@ -111,7 +125,7 @@ void __swizzled_scene_continueUserActivity(id self, SEL _cmd, UIScene *scene, NS
 // isn't exposed for us to call directly.
 static NSUserActivity *__af_firstBrowsingActivity(NSSet<NSUserActivity *> *activities) {
     for (NSUserActivity *activity in activities) {
-        if ([activity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb] && activity.webpageURL != nil && activity.webpageURL.absoluteString != nil) {
+        if (__af_isBrowsingActivity(activity)) {
             return activity;
         }
     }
