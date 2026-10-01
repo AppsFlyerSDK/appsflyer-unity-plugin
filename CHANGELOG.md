@@ -11,6 +11,10 @@
   routed correctly on scene-based exports without double-dispatching or affecting custom-URL-scheme
   deep links, which are unaffected and keep working as before. Pre-scene Unity exports are
   unaffected (existing `UnityAppController`-swizzle path keeps serving them).
+* **Fix:** `AppsFlyerRPCClient.ParseResponse` threw `AppsFlyerRPCException(-1, "Unknown RPC error")`
+  on every successful response when the native side returned an explicit `"error":null` key
+  (present but null) instead of omitting the key entirely - iOS does this on success. The check
+  only tested for key presence (`ContainsKey("error")`), not whether the value was non-null.
 
 ## v7.0.2
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
