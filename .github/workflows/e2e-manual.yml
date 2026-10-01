@@ -89,12 +89,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /Applications/Unity/Unity.app
-          key: unity-6000.3.5f1-core-macos14-arm64
+          key: unity-6000.5.6f1-core-macos14-arm64
 
       - name: Install Unity Editor
         if: inputs.release_tag == '' && steps.cache-unity.outputs.cache-hit != 'true'
         run: |
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+          curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorInstallerArm64/Unity-6000.5.6f1.pkg" \
             -o /tmp/Unity.pkg
           sudo installer -pkg /tmp/Unity.pkg -target /
           UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
