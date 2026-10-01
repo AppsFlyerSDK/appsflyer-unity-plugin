@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 DEPLOY_PATH="$SCRIPT_DIR/outputs"
-PACKAGE_NAME="appsflyer-unity-plugin-7.0.2.unitypackage"
+PACKAGE_NAME="appsflyer-unity-plugin-7.0.3-rc3.unitypackage"
 UNITY_BIN="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
 EDM_PACKAGE="$REPO_ROOT/Assets/ExternalDependencyManager/Editor/external-dependency-manager-1.2.187.unitypackage"
 OUTPUT_DIR="$DEPLOY_PATH"
