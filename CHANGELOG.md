@@ -16,6 +16,12 @@
   (present but null) instead of omitting the key entirely - iOS does this on success. The check
   only tested for key presence (`ContainsKey("error")`), not whether the value was non-null.
 
+* Update af-android-plugin-bridge version - 7.0.13
+* Update AppsFlyerRPC version - 7.0.13
+* Update Android unity-wrapper version - 7.0.15
+* Update iOS Purchase Connector version - 7.0.2
+* Update Android Purchase Connector version - 2.3.0
+* Unity plugin version - 7.0.3-rc1
 ## v7.0.2
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
   AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
