@@ -100,6 +100,16 @@ namespace AppsFlyerSDK.Tests
         }
 
         [Test]
+        public void ParseResponse_SuccessWithExplicitNullErrorKey_ReturnsData()
+        {
+            // iOS emits "error":null (key present) rather than omitting it on success.
+            // ContainsKey("error") alone would be true here and must not throw.
+            string response = "{\"id\":\"x\",\"result\":{\"data\":{\"uid\":\"abc\"}},\"error\":null}";
+            var data = rpc.ParseResponse(response) as Dictionary<string, object>;
+            Assert.AreEqual("abc", data["uid"]);
+        }
+
+        [Test]
         public void ParseResponse_ErrorResponse_ThrowsRPCException()
         {
             string response = "{\"id\":\"x\",\"error\":{\"code\":422,\"message\":\"bad devKey\"}}";
