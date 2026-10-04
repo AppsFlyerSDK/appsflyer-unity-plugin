@@ -58,6 +58,11 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          # game-ci resolves its own CLI release via an unauthenticated api.github.com call
+          # unless GITHUB_TOKEN is set in the environment (the `githubToken` input below only
+          # authenticates check-run creation) — without it that call hits the anonymous rate
+          # limit and fails with "Failed to resolve the latest game-ci CLI release: ... 403".
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: .
           testMode: ${{ matrix.testMode }}
