@@ -20,7 +20,7 @@
 * Update AppsFlyerRPC version - 7.0.13
 * Update Android unity-wrapper version - 7.0.15
 * Update iOS Purchase Connector version - 7.0.2
-* Unity plugin version - 7.0.3-rc4
+* Unity plugin version - 7.0.3
 ## v7.0.2
 * **RPC bridge migration:** the C#/native bridge was migrated from per-method
   AndroidJavaClass/DllImport calls to a JSON-RPC transport (see
