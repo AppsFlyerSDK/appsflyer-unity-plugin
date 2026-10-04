@@ -42,7 +42,10 @@ on:
 jobs:
   e2e-ios:
     name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-15
+    # Runs on a dedicated self-hosted Apple Silicon Mac instead of GH-hosted macos-15:
+    # Unity Editor + iOS module stay resident on disk between runs instead of being
+    # downloaded/installed fresh every time, and Xcode/simulator runtimes are pre-provisioned.
+    runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 120
     permissions:
       contents: read

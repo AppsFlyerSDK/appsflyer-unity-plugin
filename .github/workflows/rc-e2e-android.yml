@@ -206,7 +206,9 @@ jobs:
           done
 
       - name: Run E2E scenario runner inside Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
+        # Pinned to an exact release (not the floating @v2 tag) so the action's internal
+        # SDK/cmdline-tools installation logic can't change under us between runs.
+        uses: reactivecircus/android-emulator-runner@v2.38.0
         env:
           AF_QA_POST_MARKER_WAIT_SEC: "30"
         with:
