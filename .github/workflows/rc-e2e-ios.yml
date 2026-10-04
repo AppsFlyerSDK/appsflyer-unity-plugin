@@ -42,7 +42,10 @@ on:
 jobs:
   e2e-ios:
     name: E2E iOS — ${{ inputs.plugin_version }}
-    runs-on: macos-15
+    # Runs on a dedicated self-hosted Apple Silicon Mac instead of GH-hosted macos-15:
+    # Unity Editor + iOS module stay resident on disk between runs instead of being
+    # downloaded/installed fresh every time, and Xcode/simulator runtimes are pre-provisioned.
+    runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 120
     permissions:
       contents: read
@@ -86,15 +89,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /Applications/Unity/Unity.app
-          key: unity-6000.3.5f1-ios-macos14-arm64
+          key: unity-6000.5.6f1-ios-macos14-arm64
 
       - name: Install Unity Editor + iOS module
         if: steps.cache-unity.outputs.cache-hit != 'true'
         run: |
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+          curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorInstallerArm64/Unity-6000.5.6f1.pkg" \
             -o /tmp/Unity.pkg
           sudo installer -pkg /tmp/Unity.pkg -target /
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.3.5f1.pkg" \
+          curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.5.6f1.pkg" \
             -o /tmp/Unity-iOS.pkg
           sudo installer -pkg /tmp/Unity-iOS.pkg -target /
           UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
@@ -178,7 +181,7 @@ jobs:
           echo "Trampoline: $TRAMPOLINE"
           cp "$TRAMPOLINE/Libraries/baselib-sim-arm64.a" \
              test-app/Build/iOS-Simulator/Libraries/baselib.a
-          cp "$TRAMPOLINE/Frameworks/libiPhone-lib-sim-arm64/UnityRuntime.framework/UnityRuntime" \
+          cp "$TRAMPOLINE/Frameworks/UnityRuntime-sim-arm64/UnityRuntime.framework/UnityRuntime" \
              test-app/Build/iOS-Simulator/Frameworks/UnityRuntime.framework/UnityRuntime
           echo "Patched to arm64 simulator"
 

@@ -528,6 +528,21 @@ run_phase_command() {
     printf '%s\n' "$output" >&2
   fi
 
+  # `xcrun simctl launch` prints "<bundle_id>: <pid>" on success. Triggers and
+  # pre-actions can relaunch the app (terminate + relaunch for a deep link)
+  # with a new PID, and log collection filters on IOS_LAST_PID — without this,
+  # a stale PID from the initial cold launch silently drops every log line
+  # from the relaunched process, including plain NSLog output that doesn't
+  # also go through the file-based AF_QA logger.
+  if [[ "$PLATFORM" == "ios" ]]; then
+    local relaunch_pid
+    relaunch_pid=$(echo "$output" | awk -F': ' '/^'"$PACKAGE_NAME"': [0-9]+$/ {print $2}' | tail -1)
+    if [[ -n "$relaunch_pid" ]]; then
+      IOS_LAST_PID="$relaunch_pid"
+      log_debug "Updated IOS_LAST_PID: $IOS_LAST_PID"
+    fi
+  fi
+
   if [[ "$status" -ne 0 ]]; then
     if [[ "$allow_failure" == "true" ]]; then
       log_warn "${label} failed with exit code ${status}; continuing"
@@ -913,6 +928,26 @@ main() {
       log_debug "Skipping phase $pid (filter: $PHASE_FILTER)"
       p=$((p + 1))
       continue
+    fi
+
+    # Phases without a "platforms" array run on every platform (back-compat with existing phases).
+    # Phases that declare one only run when $PLATFORM is a member.
+    local phase_platforms
+    phase_platforms=$(echo "$phase" | jq -r 'if has("platforms") then (.platforms | join(",")) else "" end')
+    if [[ -n "$phase_platforms" ]]; then
+      IFS=',' read -ra _phase_platform_list <<< "$phase_platforms"
+      local platform_supported=false
+      for _pp in "${_phase_platform_list[@]}"; do
+        if [[ "$_pp" == "$PLATFORM" ]]; then
+          platform_supported=true
+          break
+        fi
+      done
+      if ! $platform_supported; then
+        log_debug "Skipping phase $pid (not applicable to platform: $PLATFORM)"
+        p=$((p + 1))
+        continue
+      fi
     fi
 
     run_phase "$phase"

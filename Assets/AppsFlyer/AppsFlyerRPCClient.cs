@@ -120,7 +120,7 @@ namespace AppsFlyerSDK
                         "RPC response id mismatch: expected " + expectedId + " but got " + actualId);
             }
 
-            if (root.ContainsKey("error"))
+            if (root.ContainsKey("error") && root["error"] != null)
             {
                 var error = root["error"] as Dictionary<string, object>;
                 int code = error != null && error.ContainsKey("code")

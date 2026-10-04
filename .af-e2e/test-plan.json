@@ -3,10 +3,10 @@
     "plan_id": "unity-e2e",
     "plugin": "unity",
     "version": "1.0.0",
-    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers six scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, and consent / SDK stop toggle. Mapped to E2E-001..E2E-006 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
+    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers seven scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, consent / SDK stop toggle, and (iOS-only) Universal Link re-open through the scene delegate's scene:continueUserActivity:. NOTE: the scene delegate's true cold-launch path (scene:willConnectToSession:options:, DELIVERY-115275's original trigger) is NOT exercised by phase_7 or any other automation here - UISceneConnectionOptions has no public initializer, so the QA harness cannot fabricate that event and can only drive the warm re-open swizzle. That branch remains manually/E2E-unverified. Mapped to E2E-001..E2E-007 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
     "platforms": ["android", "ios"],
     "schema_version": "1.0.0",
-    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006"
+    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006, E2E-007"
   },
 
   "config": {
@@ -375,6 +375,61 @@
         {
           "id": "no_fatal_errors",
           "description": "No fatal exceptions across the stop/start cycle",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL"],
+          "fail_action": "fail"
+        }
+      ]
+    },
+
+    {
+      "id": "phase_7",
+      "name": "Universal Link re-open (scene delegate)",
+      "scenario_ref": "E2E-007",
+      "description": "iOS-only. Terminates the app, relaunches it, then the QA harness (UnitySceneDeepLink.mm) injects a real https:// OneLink URL on the app's configured associated domain (testunity6.onelink.me) by calling scene:continueUserActivity: directly - UISceneConnectionOptions has no public initializer, so the harness cannot fabricate a true willConnectToSession:options: cold-launch event and instead exercises the warm re-open swizzle every time. Regression-guards AppsFlyer+UnityScene.m: verifies the Universal Link is routed through continueUserActivity:restorationHandler: (not the legacy kUnityOnOpenURL/handleOpenUrl: path) and that the duplicate applyURL: dispatch is suppressed exactly once.",
+      "platforms": ["ios"],
+      "requires_fresh_install": true,
+      "wait_after_launch_sec": 240,
+      "wait_after_trigger_sec": 30,
+      "deep_link_url": "https://testunity6.onelink.me/qa_ul?deep_link_value=qa_deeplink_ul&af_sub1=universal_link_test&pid=testmedia&c=deeplink_test",
+      "pre_actions": {
+        "ios": ["xcrun simctl terminate {{UDID}} {{BUNDLE_ID}}", "sleep 1"]
+      },
+      "trigger": {
+        "ios": "xcrun simctl launch {{UDID}} {{BUNDLE_ID}} -deepLinkURL \"{{DEEP_LINK_URL}}\""
+      },
+      "checks": [
+        {
+          "id": "scene_continue_user_activity_fired",
+          "description": "scene:continueUserActivity: forwarded the Universal Link via continueUserActivity:restorationHandler:, proving the fixed code path executed (not the legacy AppDelegate/openURL path)",
+          "type": "log_contains",
+          "pattern": "[AppsFlyer+UnityScene] scene:continueUserActivity: forwarding to AppsFlyerLib continueUserActivity:restorationHandler:",
+          "fail_action": "abort"
+        },
+        {
+          "id": "duplicate_dispatch_suppressed",
+          "description": "The one-shot suppression fired, confirming applyURL:sourceApplication:annotation: did not also forward this same event through the legacy kUnityOnOpenURL/handleOpenUrl: path",
+          "type": "log_contains",
+          "pattern": "[AppsFlyer+UnityScene] applyURL:sourceApplication:annotation: suppressed duplicate kUnityOnOpenURL dispatch for Universal Link already forwarded via continueUserActivity:",
+          "fail_action": "fail"
+        },
+        {
+          "id": "deeplink_found_ul",
+          "description": "onDeepLinking fires with status=FOUND after Universal Link cold launch",
+          "type": "log_contains",
+          "pattern": "status=FOUND",
+          "fail_action": "fail"
+        },
+        {
+          "id": "deeplink_value_ul",
+          "description": "deepLinkValue matches qa_deeplink_ul",
+          "type": "log_contains",
+          "pattern": "deepLinkValue=qa_deeplink_ul",
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions after Universal Link cold launch",
           "type": "absent",
           "patterns": ["Fatal Exception", "FATAL"],
           "fail_action": "fail"
