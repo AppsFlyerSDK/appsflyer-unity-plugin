@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+
+  <androidPackages>
+    <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.13"></androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.15"></androidPackage>
+    <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
+    <!-- Required for the SDK to read the Google Advertising ID (GAID) - without it,
+         AdvertisingIdClient is missing from the app's classpath even when Play Services
+         itself is installed on the device, surfacing as a ClassNotFoundException in
+         the "gaidError" field of outgoing SDK requests. -->
+    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
+    <!-- purchase-connector shares a manifest package with af-android-sdk; AGP 8 namespace
+         collision. Disabled until AppsFlyer publishes distinct AGP namespaces upstream. -->
+    <!-- <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage> -->
+  </androidPackages>
+
+  <!-- iOS dependencies via Swift Package Manager (EDM4U 1.2.187+). Each remoteSwiftPackage's
+       swiftPackage carries replacesPod so that when SPM is enabled (Assets > External Dependency
+       Manager > iOS Resolver > Settings > "Use Swift Package Manager for iOS Cocoapod
+       dependencies") EDM4U resolves the package and skips the matching iosPod below; with SPM
+       disabled it falls back to the iosPods entries unchanged, so the Podfile path still works. -->
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic.git" version="7.0.2">
+    <swiftPackage name="AppsFlyerLib-Dynamic" replacesPod="AppsFlyerFramework"/>
+  </remoteSwiftPackage>
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/appsflyer-apple-rpc.git" version="7.0.13">
+    <swiftPackage name="AppsFlyerRPC" replacesPod="AppsFlyerRPC"/>
+  </remoteSwiftPackage>
+  <remoteSwiftPackage url="https://github.com/AppsFlyerSDK/PurchaseConnector-Dynamic.git" version="7.0.2">
+    <swiftPackage name="PurchaseConnector-Dynamic" replacesPod="PurchaseConnector"/>
+  </remoteSwiftPackage>
+
+  <iosPods>
+    <iosPod name="AppsFlyerFramework" version="7.0.2" minTargetSdk="13.0"></iosPod>
+    <iosPod name="AppsFlyerRPC" version="7.0.13" minTargetSdk="13.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="7.0.2" minTargetSdk="13.0"></iosPod>
+  </iosPods>
+
+</dependencies>
