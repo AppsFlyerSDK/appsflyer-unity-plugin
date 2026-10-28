@@ -36,7 +36,7 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.18.1
+- Android AppsFlyer SDK v6.18.2
 - Android Purchase Connector 2.2.0
 - iOS AppsFlyer SDK v6.18.1
 - iOS Purchase Connector 6.18.2

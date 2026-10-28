@@ -1,5 +1,14 @@
 # Versions
 
+## v6.18.2
+* Android: fix race condition in GAID collection (Android SDK 6.18.2)
+* Update Android SDK version - 6.18.2
+* Update iOS SDK version - 6.18.1
+* Update iOS Purchase Connector version - 6.18.2
+* Update Android unity-wrapper version - 6.18.2
+* Unity plugin version - 6.18.2-rc1
+
+
 ## v6.18.1
 * Update Android SDK version - 6.18.1
 * Update iOS SDK version - 6.18.1
