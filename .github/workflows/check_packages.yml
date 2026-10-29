@@ -11,6 +11,26 @@ on:
         required: false
         type: string
         default: ""
+      source_ref:
+        description: "Ref to check out for package checks (hotfix releases pass their branch)"
+        required: false
+        type: string
+        default: master
+      upm_branch:
+        description: "UPM branch to publish; hotfix releases must not use the default"
+        required: false
+        type: string
+        default: upm
+      strict_upm_branch:
+        description: "Strict-mode UPM branch to publish; hotfix releases must not use the default"
+        required: false
+        type: string
+        default: Strict-upm
+      dry_run:
+        description: "Build and validate everything but push no branches or tags"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   actions: read
@@ -22,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ inputs.source_ref }}
 
       - name: Download production packages
         if: inputs.package_artifact_name != ''
@@ -57,6 +77,9 @@ jobs:
   release-upm:
     runs-on: ubuntu-latest
     needs: check-packages
+    env:
+      UPM_BRANCH: ${{ inputs.upm_branch }}
+      DRY_RUN: ${{ inputs.dry_run }}
     steps:
       - uses: actions/checkout@v4
       - name: split branch
@@ -64,17 +87,22 @@ jobs:
             COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
             COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git branch -d upm &> /dev/null || echo upm branch not found
-          git subtree split -P Assets/AppsFlyer -b upm
-          git checkout upm
-          echo "Checked out to upm branch"
+          git branch -d "$UPM_BRANCH" &> /dev/null || echo "$UPM_BRANCH branch not found"
+          git subtree split -P Assets/AppsFlyer -b "$UPM_BRANCH"
+          git checkout "$UPM_BRANCH"
+          echo "Checked out to $UPM_BRANCH branch"
           git config --global user.name "$COMMIT_AUTHOR"
           git config --global user.email "$COMMIT_EMAIL"
           git rm -r Tests
           git commit -m "Remove Tests folder from upm branch"
           echo "Removed Tests folder"
-          git push -f -u origin upm
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "DRY RUN: would push $(git rev-parse HEAD) to $UPM_BRANCH"
+          else
+            git push -f -u origin "$UPM_BRANCH"
+          fi
       - name: create tag
+        if: ${{ !inputs.dry_run }}
         run: |
           git tag "v${{inputs.plugin_version}}"
           git push origin "v${{inputs.plugin_version}}"
@@ -84,6 +112,9 @@ jobs:
   strict-upm:
     runs-on: ubuntu-latest
     needs: check-packages
+    env:
+      STRICT_UPM_BRANCH: ${{ inputs.strict_upm_branch }}
+      DRY_RUN: ${{ inputs.dry_run }}
     steps:
       - uses: actions/checkout@v4
       - name: split branch
@@ -91,10 +122,10 @@ jobs:
             COMMIT_AUTHOR: ${{ secrets.CI_USERNAME }}
             COMMIT_EMAIL: ${{ secrets.CI_EMAIL }}
         run: |
-          git branch -d Strict-upm &> /dev/null || echo Strict-upm branch not found
-          git subtree split -P Assets/AppsFlyer -b Strict-upm
-          git checkout Strict-upm
-          echo "Checked out to Strict-upm branch"
+          git branch -d "$STRICT_UPM_BRANCH" &> /dev/null || echo "$STRICT_UPM_BRANCH branch not found"
+          git subtree split -P Assets/AppsFlyer -b "$STRICT_UPM_BRANCH"
+          git checkout "$STRICT_UPM_BRANCH"
+          echo "Checked out to $STRICT_UPM_BRANCH branch"
           git config --global user.name "$COMMIT_AUTHOR"
           git config --global user.email "$COMMIT_EMAIL"
           git rm -r Tests
@@ -124,8 +155,14 @@ jobs:
           git config user.email "$COMMIT_EMAIL"
           git add -A
           git commit -m "update package.json"
-          git push -f -u origin Strict-upm
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "DRY RUN: would push $(git rev-parse HEAD) to $STRICT_UPM_BRANCH"
+            git show --stat --format='%h %s' HEAD
+          else
+            git push -f -u origin "$STRICT_UPM_BRANCH"
+          fi
       - name: create tag
+        if: ${{ !inputs.dry_run }}
         run: |
           git tag "Strict-v${{inputs.plugin_version}}"
           git push origin "Strict-v${{inputs.plugin_version}}"

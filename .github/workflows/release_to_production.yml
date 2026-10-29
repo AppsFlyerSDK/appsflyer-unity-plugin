@@ -12,6 +12,21 @@ on:
       package_artifact_name:
         required: true
         type: string
+      source_ref:
+        description: "Ref to check out (hotfix releases pass their branch)"
+        required: false
+        type: string
+        default: master
+      target_commitish:
+        description: "Release target if the tag does not exist yet (hotfix releases pass their commit)"
+        required: false
+        type: string
+        default: master
+      make_latest:
+        description: "Mark the release as Latest; hotfixes for an older line pass false"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   actions: read
@@ -24,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ inputs.source_ref }}
 
       - name: Configure git
         env:
@@ -45,8 +60,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.plugin_version }}
           TAG: v${{ inputs.plugin_version }}
+          TARGET: ${{ inputs.target_commitish }}
+          MAKE_LATEST: ${{ inputs.make_latest }}
         run: |
           set -euo pipefail
+          LATEST_ARG=()
+          if [[ "$MAKE_LATEST" == "false" ]]; then
+            LATEST_ARG=(--latest=false)
+          fi
           REGULAR="appsflyer-unity-plugin-${VERSION}.unitypackage"
           STRICT="strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${VERSION}.unitypackage"
           test -f "$REGULAR"
@@ -69,12 +90,14 @@ jobs:
             gh release edit "$TAG" \
               --title "$TAG" \
               --notes-file "$NOTES_FILE" \
-              --prerelease=false
+              --prerelease=false \
+              "${LATEST_ARG[@]}"
           else
             gh release create "$TAG" \
-              --target master \
+              --target "$TARGET" \
               --title "$TAG" \
-              --notes-file "$NOTES_FILE"
+              --notes-file "$NOTES_FILE" \
+              "${LATEST_ARG[@]}"
           fi
 
           gh release upload "$TAG" "$REGULAR" "$STRICT" --clobber

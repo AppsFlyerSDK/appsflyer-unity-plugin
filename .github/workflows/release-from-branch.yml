@@ -1,0 +1,128 @@
+name: Release from hotfix branch
+
+# Hotfix release of 6.18.3 (DELIVERY-134366), separate from release_production_workflow.yml.
+# Same stages as the production workflow, reusing its own reusable workflows:
+#   Check-Packages        -> check_packages.yml        (validate packages, publish UPM branches + tags)
+#   Release-To-Production -> release_to_production.yml (GitHub release with both .unitypackage files)
+# Differences from production, all passed as inputs:
+#   - source ref is this hotfix branch, not master
+#   - UPM branches are upm-6.x / Strict-upm-6.x, so `upm` / `Strict-upm` (7.x) are never touched
+#   - the release is not marked Latest
+# Not run here: the Unity package build (already done by build-packages-from-branch.yml),
+# Generate-Tag (it tags master) and the Slack notice.
+#
+# DRY_RUN (below) defaults to "true": everything is built and validated (guards, package checks,
+# the real UPM split + strict-mode edits) but NO branch, tag or release is pushed. To publish,
+# change DRY_RUN to "false" in a new commit and push it.
+#
+# Lives only on the hotfix branch (never on master). Runs when this file is pushed to the
+# branch below, or via "Re-run all jobs" in the Actions UI.
+# For a future hotfix: copy this file to the new branch and change the branch filter,
+# the package run id and the UPM branch names.
+on:
+  push:
+    branches:
+      - dev/DELIVERY-134366/v6.18.3
+    paths:
+      - .github/workflows/release-from-branch.yml
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  DRY_RUN: "true"
+
+jobs:
+  Prepare-Release:
+    runs-on: ubuntu-latest
+    outputs:
+      plugin_version: ${{ steps.ver.outputs.plugin_version }}
+      artifact_name: ${{ steps.ver.outputs.artifact_name }}
+      dry_run: ${{ steps.ver.outputs.dry_run }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # Run id of the "Build Unity packages from hotfix branch" run whose artifact is released.
+      PACKAGES_RUN_ID: "40828224235"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version and check it is safe to release
+        id: ver
+        run: |
+          set -euo pipefail
+          [[ "$DRY_RUN" == "true" || "$DRY_RUN" == "false" ]] || { echo "::error::DRY_RUN must be true or false, got '$DRY_RUN'"; exit 1; }
+          VERSION=$(python3 -c 'import json; print(json.load(open("Assets/AppsFlyer/package.json"))["version"])')
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::package.json version '$VERSION' is not a final X.Y.Z"; exit 1; }
+
+          # Refuse to start if the release already exists (the UPM job would fail half way).
+          for ref in "refs/tags/v$VERSION" "refs/tags/Strict-v$VERSION" \
+                     "refs/heads/upm-6.x" "refs/heads/Strict-upm-6.x"; do
+            if git ls-remote --exit-code origin "$ref" >/dev/null 2>&1; then
+              echo "::error::$ref already exists on origin"; exit 1
+            fi
+          done
+
+          # The packages being released must be built from these sources: only workflow files
+          # may differ between the package build commit and this commit.
+          BUILT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${PACKAGES_RUN_ID}" --jq .head_sha)
+          OTHER=$(git diff --name-only "$BUILT_SHA" HEAD | grep -v '^\.github/' || true)
+          if [[ -n "$OTHER" ]]; then
+            echo "::error::sources changed since the package build ($BUILT_SHA):"; echo "$OTHER"; exit 1
+          fi
+
+          echo "Releasing $VERSION from ${GITHUB_REF_NAME} @ ${GITHUB_SHA}; packages from run ${PACKAGES_RUN_ID} (built at $BUILT_SHA)"
+          echo "plugin_version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=production-unity-packages-$VERSION" >> "$GITHUB_OUTPUT"
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "### DRY RUN: v$VERSION is built and validated, nothing is pushed or released" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # The reusable workflows download the packages as an artifact of THIS run, so republish the
+  # artifact from the package build run under the name the production workflow uses.
+  Fetch-Packages:
+    needs: [Prepare-Release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packages from the build run
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-packages-${{ needs.Prepare-Release.outputs.plugin_version }}
+          run-id: 40828224235
+          github-token: ${{ github.token }}
+          path: dist/unitypackages
+
+      - name: Upload as production package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.Prepare-Release.outputs.artifact_name }}
+          path: dist/unitypackages/
+          retention-days: 30
+
+  Check-Packages:
+    needs: [Prepare-Release, Fetch-Packages]
+    uses: ./.github/workflows/check_packages.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.plugin_version }}
+      package_artifact_name: ${{ needs.Prepare-Release.outputs.artifact_name }}
+      source_ref: ${{ github.ref_name }}
+      upm_branch: upm-6.x
+      strict_upm_branch: Strict-upm-6.x
+      dry_run: ${{ needs.Prepare-Release.outputs.dry_run == 'true' }}
+    secrets: inherit
+
+  Release-To-Production:
+    needs: [Prepare-Release, Check-Packages]
+    if: ${{ needs.Prepare-Release.outputs.dry_run != 'true' }}
+    uses: ./.github/workflows/release_to_production.yml
+    with:
+      plugin_version: ${{ needs.Prepare-Release.outputs.plugin_version }}
+      branch_name: ${{ github.ref_name }}
+      package_artifact_name: ${{ needs.Prepare-Release.outputs.artifact_name }}
+      source_ref: ${{ github.ref_name }}
+      target_commitish: ${{ github.sha }}
+      make_latest: false
+    secrets: inherit
