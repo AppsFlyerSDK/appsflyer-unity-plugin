@@ -6,7 +6,7 @@
 * Update iOS SDK version - 6.18.1
 * Update iOS Purchase Connector version - 6.18.2
 * Update Android unity-wrapper version - 6.18.3
-* Unity plugin version - 6.18.3-rc1
+* Unity plugin version - 6.18.3
 
 
 ## v6.18.1
