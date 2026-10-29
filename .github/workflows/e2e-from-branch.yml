@@ -1,0 +1,391 @@
+name: E2E from hotfix branch (self-hosted Mac)
+
+# One-off E2E (Android + iOS) of the 6.18.3 hotfix packages (DELIVERY-134366).
+# Lives only on the hotfix branch (never on master). Runs when this file is pushed to the
+# branch below, or via "Re-run all jobs" in the Actions UI. Publishes nothing.
+#
+# Uses the packages already built by build-packages-from-branch.yml (PACKAGES_RUN_ID below)
+# instead of rebuilding them. The Android APK is built on a GitHub-hosted runner (Docker);
+# the Android emulator run and the whole iOS job run on the self-hosted Mac runner
+# (labels: self-hosted, macOS, ARM64). One runner executes one job at a time, so the two
+# platforms run back to back.
+#
+# For a future hotfix: copy this file to the new branch, change the branch filter and
+# PACKAGES_RUN_ID.
+on:
+  push:
+    branches:
+      - dev/DELIVERY-134366/v6.18.3
+    paths:
+      - .github/workflows/e2e-from-branch.yml
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+env:
+  # Run id of the "Build Unity packages from hotfix branch" run whose artifact is tested.
+  PACKAGES_RUN_ID: "40828224235"
+  PLAN_PATH: .af-e2e/test-plan.json
+  UNITY_VERSION: 6000.3.5f1
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: ver
+        run: |
+          VERSION=$(python3 -c 'import json; print(json.load(open("Assets/AppsFlyer/package.json"))["version"])')
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::package.json version '$VERSION' is not a final X.Y.Z"; exit 1; }
+          echo "E2E for plugin $VERSION from ${GITHUB_REF_NAME} @ ${GITHUB_SHA}, packages from run ${PACKAGES_RUN_ID}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-apk:
+    name: Build Android APK — ${{ needs.prepare.outputs.version }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download generated Unity package
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-packages-${{ needs.prepare.outputs.version }}
+          run-id: ${{ env.PACKAGES_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: .af-artifacts
+
+      - name: Import generated package into test app
+        run: |
+          python3 scripts/import-unity-package.py \
+            --package ".af-artifacts/appsflyer-unity-plugin-${{ needs.prepare.outputs.version }}.unitypackage" \
+            --project test-app \
+            --remove-manifest-dependency appsflyer-unity-plugin \
+            --clean Assets/AppsFlyer
+
+      - name: Write .env from secret
+        run: |
+          mkdir -p test-app/Assets/StreamingAssets
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
+
+      - name: Log in to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build Android APK
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL:   ${{ secrets.UNITY_SERIAL }}
+        with:
+          unityVersion:   ${{ env.UNITY_VERSION }}
+          targetPlatform: Android
+          customImage:    ghcr.io/appsflyersdk/unity-android:ubuntu-6000.3.5f1-android-3
+          projectPath:    test-app
+          buildMethod:    BuildScript.BuildAndroid
+          buildsPath:     test-app/Build
+          allowDirtyBuild: true
+        timeout-minutes: 45
+
+      - name: Upload Unity build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-unity-build-log-android-${{ needs.prepare.outputs.version }}
+          path: /tmp/unity-build.log
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Locate APK
+        run: |
+          APK=$(find test-app/Build -name "*.apk" | head -1)
+          if [[ -z "$APK" ]]; then
+            echo "::error::APK not found after Unity build"
+            exit 1
+          fi
+          mkdir -p .af-artifacts/apk
+          cp "$APK" .af-artifacts/apk/app.apk
+          ls -l .af-artifacts/apk/app.apk
+
+      - name: Verify AppsFlyer SDK is in the APK
+        run: |
+          WORKDIR=$(mktemp -d)
+          unzip -q .af-artifacts/apk/app.apk -d "$WORKDIR"
+          if strings "$WORKDIR"/classes*.dex | grep -q 'Lcom/appsflyer/AppsFlyerLib;'; then
+            echo "AppsFlyerLib class present in dex"
+          else
+            echo "::error::AppsFlyerLib class missing from built APK"
+            exit 1
+          fi
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-built-apk-${{ needs.prepare.outputs.version }}
+          path: .af-artifacts/apk/app.apk
+          retention-days: 3
+
+  e2e-android:
+    name: E2E Android — ${{ needs.prepare.outputs.version }}
+    needs: [prepare, build-apk]
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download built APK
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-built-apk-${{ needs.prepare.outputs.version }}
+          path: .af-artifacts/apk
+
+      - name: Locate APK
+        run: |
+          APK=".af-artifacts/apk/app.apk"
+          [[ -f "$APK" ]] || { echo "::error::APK not found in downloaded artifact"; exit 1; }
+          # af-scenario-runner.sh reads config.android.apk_path from the plan JSON, so place
+          # the APK there too (needed for requires_fresh_install re-installs).
+          mkdir -p test-app/Build/Android
+          cp "$APK" test-app/Build/Android/com.appsflyer.engagement.apk
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+
+      - name: Check tooling
+        run: |
+          command -v jq adb
+          echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+
+      - name: Run E2E scenario runner inside Android emulator
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        env:
+          AF_QA_POST_MARKER_WAIT_SEC: "30"
+        with:
+          # Apple Silicon host: native arm64 image with HVF acceleration, windowed emulator.
+          api-level: 36
+          arch: arm64-v8a
+          target: google_apis_playstore
+          profile: pixel_9_pro
+          emulator-options: -dns-server 8.8.8.8,1.1.1.1 -no-snapshot -no-boot-anim -accel on
+          disable-animations: true
+          script: |
+            # This action runs EACH LINE of `script:` as its own `sh -c`, so every line below
+            # is a self-contained statement. macOS has no `timeout`, hence the counter loop.
+            set +e
+            mkdir -p .af-e2e/reports .af-smoke/reports
+            adb wait-for-device
+            i=0; while [ $i -lt 40 ]; do if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] && adb shell pidof com.android.vending >/dev/null 2>&1; then break; fi; i=$((i+1)); sleep 3; done
+            sleep 15
+            adb logcat -c
+            nohup adb logcat > .af-e2e/reports/device-logcat-full.txt 2>&1 &
+            { echo "=== adb install -r $APK_PATH ==="; adb install -r "$APK_PATH"; } > .af-e2e/reports/adb-install.log 2>&1; INSTALL_EXIT=$?; cat .af-e2e/reports/adb-install.log; if [ $INSTALL_EXIT -ne 0 ]; then echo "::error::adb install failed with exit $INSTALL_EXIT"; RUNNER_EXIT=$INSTALL_EXIT; else adb shell am force-stop com.appsflyer.engagement; chmod +x scripts/af-scenario-runner.sh; scripts/af-scenario-runner.sh --platform android --plan "${{ env.PLAN_PATH }}" --verbose; RUNNER_EXIT=$?; fi; pkill -f "adb .*logcat" >/dev/null 2>&1; exit $RUNNER_EXIT
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-report-${{ needs.prepare.outputs.version }}
+          path: |
+            .af-e2e/reports/
+            .af-smoke/reports/
+          include-hidden-files: true
+          retention-days: 30
+
+  e2e-ios:
+    name: E2E iOS — ${{ needs.prepare.outputs.version }}
+    needs: prepare
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 120
+    env:
+      # Unity Editor + iOS module are already installed on the Mac (via Unity Hub).
+      UNITY_PATH: /Applications/Unity/Hub/Editor/6000.3.5f1/Unity.app/Contents/MacOS/Unity
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download generated Unity package
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-packages-${{ needs.prepare.outputs.version }}
+          run-id: ${{ env.PACKAGES_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: .af-artifacts
+
+      - name: Import generated package into test app
+        run: |
+          python3 scripts/import-unity-package.py \
+            --package ".af-artifacts/appsflyer-unity-plugin-${{ needs.prepare.outputs.version }}.unitypackage" \
+            --project test-app \
+            --remove-manifest-dependency appsflyer-unity-plugin \
+            --clean Assets/AppsFlyer
+
+      - name: Write .env from secret
+        run: |
+          mkdir -p test-app/Assets/StreamingAssets
+          printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
+
+      - name: Check tooling on the Mac
+        run: |
+          [[ -x "$UNITY_PATH" ]] || { echo "::error::Unity not found at $UNITY_PATH"; exit 1; }
+          ls "$(dirname "$UNITY_PATH")/../../PlaybackEngines" | grep -q iOSSupport || { echo "::error::Unity iOS module missing"; exit 1; }
+          command -v pod jq xcpretty
+          xcodebuild -version
+
+      - name: Activate Unity license
+        run: |
+          activate() {
+            rm -f /tmp/unity-activate.log
+            "$UNITY_PATH" -quit -batchmode \
+              -serial   "${{ secrets.UNITY_SERIAL }}" \
+              -username "${{ secrets.UNITY_EMAIL }}" \
+              -password "${{ secrets.UNITY_PASSWORD }}" \
+              -logFile  /tmp/unity-activate.log 2>&1 || true
+          }
+
+          activate
+
+          if grep -q "serial has reached the maximum number of activations" /tmp/unity-activate.log 2>/dev/null; then
+            echo "::warning::Serial at max activations — returning existing license and retrying in 60s..."
+            "$UNITY_PATH" -quit -batchmode -returnlicense \
+              -username "${{ secrets.UNITY_EMAIL }}" \
+              -password "${{ secrets.UNITY_PASSWORD }}" \
+              -logFile  /tmp/unity-return-preflight.log 2>&1 || true
+            sleep 60
+            activate
+          fi
+
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build iOS Simulator Xcode project
+        run: |
+          mkdir -p test-app/Build/iOS-Simulator
+          "$UNITY_PATH" -quit -batchmode \
+            -logFile /tmp/unity-build.log \
+            -projectPath "$(pwd)/test-app" \
+            -buildTarget iOS \
+            -executeMethod BuildScript.BuildIOSSimulator
+          BUILD_EXIT=$?
+          tail -50 /tmp/unity-build.log
+          exit $BUILD_EXIT
+        timeout-minutes: 30
+
+      - name: Upload Unity build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-unity-build-log-ios-${{ needs.prepare.outputs.version }}
+          path: /tmp/unity-build.log
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Patch Unity libs to arm64 simulator
+        run: |
+          UNITY_ROOT="$(cd "$(dirname "$UNITY_PATH")/../../.." && pwd)"
+          TRAMPOLINE=$(find "$UNITY_ROOT" -name "baselib-sim-arm64.a" 2>/dev/null | head -1 | sed 's|/Libraries/baselib-sim-arm64.a||')
+          if [[ -z "$TRAMPOLINE" ]]; then
+            echo "::error::baselib-sim-arm64.a not found under $UNITY_ROOT"
+            exit 1
+          fi
+          echo "Trampoline: $TRAMPOLINE"
+          cp "$TRAMPOLINE/Libraries/baselib-sim-arm64.a" \
+             test-app/Build/iOS-Simulator/Libraries/baselib.a
+          cp "$TRAMPOLINE/Frameworks/libiPhone-lib-sim-arm64/UnityRuntime.framework/UnityRuntime" \
+             test-app/Build/iOS-Simulator/Frameworks/UnityRuntime.framework/UnityRuntime
+          echo "Patched to arm64 simulator"
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          "$UNITY_PATH" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-return.log 2>&1 || true
+          echo "=== unity-return.log ==="
+          cat /tmp/unity-return.log || true
+
+      - name: Install iOS pods
+        run: |
+          chmod +x scripts/ios-pod-install.sh
+          scripts/ios-pod-install.sh test-app/Build/iOS-Simulator
+
+      - name: Compile simulator .app from Xcode workspace
+        run: |
+          XCODE_WS=test-app/Build/iOS-Simulator/Unity-iPhone.xcworkspace
+          xcodebuild \
+            -workspace "$XCODE_WS" \
+            -scheme    Unity-iPhone \
+            -sdk       iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath test-app/Build/iOS-Simulator/DerivedData \
+            ARCHS=arm64 \
+            VALID_ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            CURRENT_PROJECT_VERSION=1 \
+            MARKETING_VERSION=1.0 \
+            ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            build 2>&1 | tee /tmp/xcode-build.log | xcpretty || true
+          if grep -q "\*\* BUILD FAILED \*\*" /tmp/xcode-build.log; then
+            echo "::group::xcodebuild errors"
+            grep -A 30 "Undefined symbols" /tmp/xcode-build.log || true
+            grep -E "^(ld: |clang: error: |error: )" /tmp/xcode-build.log | head -40 || true
+            echo "::endgroup::"
+            exit 1
+          fi
+          APP=$(find test-app/Build/iOS-Simulator/DerivedData -name "UnityQATest.app" -maxdepth 6 | head -1)
+          if [[ -z "$APP" ]]; then
+            echo "::error::UnityQATest.app not found after xcodebuild"
+            exit 1
+          fi
+          rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
+          cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
+
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-xcodebuild-log-ios-${{ needs.prepare.outputs.version }}
+          path: /tmp/xcode-build.log
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Boot iOS simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | \
+            jq -r '.devices | to_entries[] | select(.key | contains("iOS-18")) | .value[] | select(.isAvailable == true) | .udid' | head -1)
+          if [[ -z "$UDID" ]]; then
+            UDID=$(xcrun simctl list devices available -j | \
+              jq -r '.devices[][] | select(.isAvailable == true) | .udid' | head -1)
+          fi
+          echo "Booting simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Run E2E scenario runner — iOS
+        env:
+          AF_QA_POST_MARKER_WAIT_SEC: "30"
+        run: |
+          chmod +x scripts/af-scenario-runner.sh
+          scripts/af-scenario-runner.sh \
+            --platform ios \
+            --plan     "${{ env.PLAN_PATH }}" \
+            --verbose
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-report-${{ needs.prepare.outputs.version }}
+          path: |
+            .af-e2e/reports/
+            .af-smoke/reports/
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Shut down simulator
+        if: always()
+        run: xcrun simctl shutdown "${SIM_UDID:-booted}" || true
