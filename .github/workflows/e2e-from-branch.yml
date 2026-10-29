@@ -73,6 +73,18 @@ jobs:
           mkdir -p test-app/Assets/StreamingAssets
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
+      - name: Use the published unity-wrapper AAR from Maven Central
+        run: |
+          # test-app ships a checked-in unitywrapper.aar (6.17.91). Replace it with the
+          # artifact we are releasing so the E2E exercises the real unity-wrapper:${VERSION}.
+          VERSION="${{ needs.prepare.outputs.version }}"
+          AAR=test-app/Assets/Plugins/Android/unitywrapper.aar
+          curl -fL --retry 5 --retry-delay 10 -o "$AAR" \
+            "https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/${VERSION}/unity-wrapper-${VERSION}.aar"
+          unzip -p "$AAR" classes.jar | strings | grep -qx "$VERSION" \
+            || { echo "::error::downloaded AAR does not contain PLUGIN_VERSION $VERSION"; exit 1; }
+          echo "unitywrapper.aar replaced with unity-wrapper-${VERSION}.aar"
+
       - name: Log in to GHCR
         env:
           GH_TOKEN: ${{ github.token }}
@@ -184,6 +196,16 @@ jobs:
             adb logcat -c
             nohup adb logcat > .af-e2e/reports/device-logcat-full.txt 2>&1 &
             { echo "=== adb install -r $APK_PATH ==="; adb install -r "$APK_PATH"; } > .af-e2e/reports/adb-install.log 2>&1; INSTALL_EXIT=$?; cat .af-e2e/reports/adb-install.log; if [ $INSTALL_EXIT -ne 0 ]; then echo "::error::adb install failed with exit $INSTALL_EXIT"; RUNNER_EXIT=$INSTALL_EXIT; else adb shell am force-stop com.appsflyer.engagement; chmod +x scripts/af-scenario-runner.sh; scripts/af-scenario-runner.sh --platform android --plan "${{ env.PLAN_PATH }}" --verbose; RUNNER_EXIT=$?; fi; pkill -f "adb .*logcat" >/dev/null 2>&1; exit $RUNNER_EXIT
+
+      - name: Verify the app reported the expected plugin and SDK versions
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          LOG=.af-e2e/reports/device-logcat-full.txt
+          grep -q "\"platform\":\"android_unity\",\"version\":\"$VERSION\"" "$LOG" \
+            || { echo "::error::payload plugin version is not $VERSION"; grep -o '"platform_extension_v2":{[^}]*}' "$LOG" | sort -u | head -3; exit 1; }
+          grep -q "AppsFlyer_$VERSION" "$LOG" \
+            || { echo "::error::Android SDK $VERSION not seen in logcat"; exit 1; }
+          echo "Verified: plugin version and Android SDK are both $VERSION"
 
       - name: Upload E2E report
         if: always()
