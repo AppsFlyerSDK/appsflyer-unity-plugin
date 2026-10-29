@@ -1,0 +1,48 @@
+name: Publish unity-wrapper from hotfix branch
+
+# One-off publish of com.appsflyer:unity-wrapper from a hotfix branch (DELIVERY-134366).
+# Lives only on the hotfix branch (never on master). Runs when this file is pushed to
+# the branch below, or via "Re-run all jobs" in the Actions UI. Versions are read from
+# android-unity-wrapper/gradle.properties on the branch, so nothing here is hardcoded.
+# For a future hotfix: copy this file to the new branch and change the branch filter.
+on:
+  push:
+    branches:
+      - dev/DELIVERY-134366/v6.18.3
+    paths:
+      - .github/workflows/publish-wrapper-from-branch.yml
+
+permissions:
+  contents: read
+
+jobs:
+  read-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      wrapper_version: ${{ steps.v.outputs.wrapper_version }}
+      android_sdk_version: ${{ steps.v.outputs.android_sdk_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          set -euo pipefail
+          PROPS=android-unity-wrapper/gradle.properties
+          WRAPPER=$(grep '^VERSION_NAME=' "$PROPS" | cut -d= -f2)
+          SDK=$(grep '^ANDROID_SDK_VERSION=' "$PROPS" | cut -d= -f2)
+          [[ "$WRAPPER" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::bad VERSION_NAME '$WRAPPER'"; exit 1; }
+          [[ "$SDK" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::bad ANDROID_SDK_VERSION '$SDK'"; exit 1; }
+          echo "Publishing unity-wrapper:$WRAPPER (compiled against af-android-sdk:$SDK) from ${GITHUB_REF_NAME}"
+          echo "wrapper_version=$WRAPPER" >> "$GITHUB_OUTPUT"
+          echo "android_sdk_version=$SDK" >> "$GITHUB_OUTPUT"
+
+  publish-wrapper:
+    needs: read-versions
+    uses: ./.github/workflows/publish-android-wrapper.yml
+    with:
+      wrapper_version: ${{ needs.read-versions.outputs.wrapper_version }}
+      plugin_base_version: ${{ needs.read-versions.outputs.wrapper_version }}
+      android_sdk_version: ${{ needs.read-versions.outputs.android_sdk_version }}
+      release_branch: ${{ github.ref_name }}
+      skip_if_exists: true
+      dry_run: false
+    secrets: inherit
