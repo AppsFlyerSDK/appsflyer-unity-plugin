@@ -231,7 +231,7 @@ jobs:
       - name: Check tooling on the Mac
         run: |
           [[ -x "$UNITY_PATH" ]] || { echo "::error::Unity not found at $UNITY_PATH"; exit 1; }
-          ls "$(dirname "$UNITY_PATH")/../../PlaybackEngines" | grep -q iOSSupport || { echo "::error::Unity iOS module missing"; exit 1; }
+          ls "$(dirname "$UNITY_PATH")/../../../PlaybackEngines" | grep -q iOSSupport || { echo "::error::Unity iOS module missing"; exit 1; }
           command -v pod jq xcpretty
           xcodebuild -version
 
