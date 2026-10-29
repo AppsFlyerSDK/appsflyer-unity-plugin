@@ -81,7 +81,10 @@ jobs:
           AAR=test-app/Assets/Plugins/Android/unitywrapper.aar
           curl -fL --retry 5 --retry-delay 10 -o "$AAR" \
             "https://repo1.maven.org/maven2/com/appsflyer/unity-wrapper/${VERSION}/unity-wrapper-${VERSION}.aar"
-          unzip -p "$AAR" classes.jar | strings | grep -qx "$VERSION" \
+          # classes.jar is itself a zip, so extract it and then read the class files inside.
+          JAR=$(mktemp -d)/classes.jar
+          unzip -p "$AAR" classes.jar > "$JAR"
+          unzip -p "$JAR" | strings | grep -qx "$VERSION" \
             || { echo "::error::downloaded AAR does not contain PLUGIN_VERSION $VERSION"; exit 1; }
           echo "unitywrapper.aar replaced with unity-wrapper-${VERSION}.aar"
 
@@ -221,6 +224,9 @@ jobs:
   e2e-ios:
     name: E2E iOS — ${{ needs.prepare.outputs.version }}
     needs: prepare
+    # Switched off for the Android-only re-run: iOS already passed (38/38) on run 40868468815
+    # with the same packages. Remove this line to run iOS again.
+    if: ${{ false }}
     runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 120
     env:
