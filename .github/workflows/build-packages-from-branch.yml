@@ -1,0 +1,112 @@
+name: Build Unity packages from hotfix branch
+
+# One-off build of the regular + strict-mode .unitypackage files from the hotfix branch
+# (DELIVERY-134366), mirroring Build-Production-Packages in release_production_workflow.yml.
+# Lives only on the hotfix branch (never on master). Runs when this file is pushed to the
+# branch below, or via "Re-run all jobs" in the Actions UI. Publishes nothing: no tags,
+# releases, or pushes. Download the result with: gh run download <run-id> -n <artifact>
+# For a future hotfix: copy this file to the new branch and change the branch filter.
+on:
+  push:
+    branches:
+      - dev/DELIVERY-134366/v6.18.3
+    paths:
+      - .github/workflows/build-packages-from-branch.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-packages:
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read plugin version
+        id: ver
+        run: |
+          VERSION=$(python3 -c 'import json; print(json.load(open("Assets/AppsFlyer/package.json"))["version"])')
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::package.json version '$VERSION' is not a final X.Y.Z"; exit 1; }
+          echo "Building plugin $VERSION from ${GITHUB_REF_NAME} @ ${GITHUB_SHA}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Unity Editor installation
+        id: cache-unity
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Unity.app
+          key: unity-6000.3.5f1-core-macos14-arm64
+
+      - name: Install Unity Editor
+        if: steps.cache-unity.outputs.cache-hit != 'true'
+        run: |
+          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
+            -o /tmp/Unity.pkg
+          sudo installer -pkg /tmp/Unity.pkg -target /
+          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
+          echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
+        timeout-minutes: 45
+
+      - name: Activate Unity license
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode \
+            -serial "${{ secrets.UNITY_SERIAL }}" \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-activate.log 2>&1 || true
+          grep -E "LICENSE|license|error|Error" /tmp/unity-activate.log || true
+
+      - name: Build regular and strict-mode packages
+        run: |
+          scripts/build-release-packages.sh \
+            --version "${{ steps.ver.outputs.version }}" \
+            --output-dir dist/unitypackages
+        timeout-minutes: 45
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install package validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install unitypackage_extractor
+
+      - name: Validate package metadata
+        run: |
+          python .github/workflows/Scripts/validate-production-package.py \
+            --version "${{ steps.ver.outputs.version }}" \
+            --regular "dist/unitypackages/appsflyer-unity-plugin-${{ steps.ver.outputs.version }}.unitypackage" \
+            --strict "dist/unitypackages/strict-mode-sdk/appsflyer-unity-plugin-strict-mode-${{ steps.ver.outputs.version }}.unitypackage"
+
+      - name: Return Unity license
+        if: always()
+        run: |
+          UNITY="${UNITY_PATH:-/Applications/Unity/Unity.app/Contents/MacOS/Unity}"
+          "$UNITY" -quit -batchmode -returnlicense \
+            -username "${{ secrets.UNITY_EMAIL }}" \
+            -password "${{ secrets.UNITY_PASSWORD }}" \
+            -logFile /tmp/unity-return.log 2>&1 || true
+          cat /tmp/unity-return.log || true
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-packages-${{ steps.ver.outputs.version }}
+          path: dist/unitypackages/
+          retention-days: 14
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-package-build-logs-${{ steps.ver.outputs.version }}
+          path: |
+            deploy/create_unity_core.log
+            deploy/create_unity_strict.log
+            /tmp/unity-activate.log
+            /tmp/unity-return.log
+          retention-days: 7
