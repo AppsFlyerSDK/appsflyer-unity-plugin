@@ -84,24 +84,29 @@ jobs:
           mkdir -p test-app/Assets/StreamingAssets
           printf '%s' "${{ secrets.ENV_FILE }}" > test-app/Assets/StreamingAssets/.env
 
-      - name: Cache Unity Editor installation
-        id: cache-unity
-        uses: actions/cache@v4
-        with:
-          path: /Applications/Unity/Unity.app
-          key: unity-6000.5.6f1-ios-macos14-arm64
-
-      - name: Install Unity Editor + iOS module
-        if: steps.cache-unity.outputs.cache-hit != 'true'
+      # Self-hosted runner: the editor persists on disk between runs, so install only what is
+      # missing. The .pkg lays the editor out under /Applications/Unity/Unity-<version>/, and
+      # re-running it over an existing install fails in its preinstall script.
+      - name: Install Unity Editor + iOS module (if missing)
         run: |
-          curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorInstallerArm64/Unity-6000.5.6f1.pkg" \
-            -o /tmp/Unity.pkg
-          sudo installer -pkg /tmp/Unity.pkg -target /
-          curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.5.6f1.pkg" \
-            -o /tmp/Unity-iOS.pkg
-          sudo installer -pkg /tmp/Unity-iOS.pkg -target /
-          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
-          echo "Unity installed at: $UNITY"
+          UNITY_DIR="/Applications/Unity/Unity-6000.5.6f1"
+          UNITY="$UNITY_DIR/Unity.app/Contents/MacOS/Unity"
+
+          if [ ! -x "$UNITY" ]; then
+            curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorInstallerArm64/Unity-6000.5.6f1.pkg" \
+              -o /tmp/Unity.pkg
+            sudo installer -pkg /tmp/Unity.pkg -target /
+          fi
+
+          if [ ! -d "$UNITY_DIR/PlaybackEngines/iOSSupport" ]; then
+            curl -fL "https://download.unity3d.com/download_unity/0e0577a1a2ac/MacEditorTargetInstaller/UnitySetup-iOS-Support-for-Editor-6000.5.6f1.pkg" \
+              -o /tmp/Unity-iOS.pkg
+            sudo installer -pkg /tmp/Unity-iOS.pkg -target /
+          fi
+
+          [ -x "$UNITY" ] || { echo "::error::Unity editor not found at $UNITY after install"; exit 1; }
+          [ -d "$UNITY_DIR/PlaybackEngines/iOSSupport" ] || { echo "::error::iOS support module missing in $UNITY_DIR"; exit 1; }
+          echo "Unity at: $UNITY"
           echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
         timeout-minutes: 60
 
