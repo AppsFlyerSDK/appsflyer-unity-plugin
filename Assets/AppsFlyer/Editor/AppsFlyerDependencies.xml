@@ -3,7 +3,7 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.13"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.15"></androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.16"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) - without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
@@ -32,8 +32,8 @@
 
   <iosPods>
     <iosPod name="AppsFlyerFramework" version="7.0.2" minTargetSdk="13.0"></iosPod>
-    <iosPod name="AppsFlyerRPC" version="7.0.13" minTargetSdk="13.0"></iosPod>
-    <iosPod name="PurchaseConnector" version="7.0.2" minTargetSdk="13.0"></iosPod>
+    <iosPod name="AppsFlyerRPC" version="7.0.41" minTargetSdk="13.0"></iosPod>
+    <iosPod name="PurchaseConnector" version="7.0.4" minTargetSdk="13.0"></iosPod>
   </iosPods>
 
 </dependencies>
