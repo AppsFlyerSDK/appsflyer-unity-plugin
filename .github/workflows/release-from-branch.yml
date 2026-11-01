@@ -25,6 +25,8 @@ on:
       - dev/DELIVERY-134366/v6.18.3
     paths:
       - .github/workflows/release-from-branch.yml
+      - .github/workflows/check_packages.yml
+      - .github/workflows/release_to_production.yml
 
 permissions:
   actions: read
