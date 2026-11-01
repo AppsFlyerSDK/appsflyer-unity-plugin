@@ -33,7 +33,7 @@ permissions:
   contents: write
 
 env:
-  DRY_RUN: "true"
+  DRY_RUN: "false"
 
 jobs:
   Prepare-Release:
