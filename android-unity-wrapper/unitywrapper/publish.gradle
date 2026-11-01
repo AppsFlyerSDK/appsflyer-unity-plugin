@@ -58,12 +58,32 @@ afterEvaluate {
 
                 // Add dependencies to the POM
                 pom.withXml {
-                    def dependenciesNode = asNode().appendNode('dependencies')
+                    def root = asNode()
+                    def dependenciesNode = root.appendNode('dependencies')
+                    def managedNode = null
                     configurations.implementation.allDependencies.each { dependency ->
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group ?: '')
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version ?: '')
+                        // platform(...) BOMs must be written as a dependencyManagement import,
+                        // otherwise consumers treat the BOM as a plain library and the
+                        // version-less dependencies below resolve to an empty version.
+                        def isPlatform = dependency instanceof ModuleDependency &&
+                                dependency.attributes.getAttribute(org.gradle.api.attributes.Category.CATEGORY_ATTRIBUTE)?.name ==
+                                org.gradle.api.attributes.Category.REGULAR_PLATFORM
+                        if (isPlatform) {
+                            managedNode = managedNode ?: root.appendNode('dependencyManagement').appendNode('dependencies')
+                            def bomNode = managedNode.appendNode('dependency')
+                            bomNode.appendNode('groupId', dependency.group)
+                            bomNode.appendNode('artifactId', dependency.name)
+                            bomNode.appendNode('version', dependency.version)
+                            bomNode.appendNode('type', 'pom')
+                            bomNode.appendNode('scope', 'import')
+                        } else {
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', dependency.group ?: '')
+                            dependencyNode.appendNode('artifactId', dependency.name)
+                            if (dependency.version) {
+                                dependencyNode.appendNode('version', dependency.version)
+                            }
+                        }
                     }
                 }
             }
