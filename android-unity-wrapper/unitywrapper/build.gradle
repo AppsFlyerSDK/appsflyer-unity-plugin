@@ -49,7 +49,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation platform("com.appsflyer:af-android-sdk-bom:$ANDROID_SDK_VERSION")
     implementation "com.appsflyer:af-android-sdk"
-    // Pinned explicitly: af-android-sdk-bom (7.0.4) still maps the bridge to 7.0.1, which this wrapper does not compile against.
+    // TODO: drop the explicit version below once an af-android-sdk-bom release maps the bridge to 7.0.13 or newer,
+    // so the bridge comes from the BOM like af-android-sdk. Pinned for now because af-android-sdk-bom (7.0.4) still
+    // maps the bridge to 7.0.1, which this wrapper does not compile against.
     implementation "com.appsflyer:af-android-plugin-bridge:7.0.13"
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
     compileOnly "com.appsflyer:purchase-connector:$ANDROID_PC_VERSION"
