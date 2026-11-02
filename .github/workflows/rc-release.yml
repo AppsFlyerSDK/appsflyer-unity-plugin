@@ -304,7 +304,7 @@ jobs:
   build-package:
     name: Build Unity packages
     needs: [prepare-branch, validate-wrapper]
-    runs-on: macos-14
+    runs-on: [self-hosted, macOS, ARM64]
     permissions:
       contents: read
     outputs:
@@ -318,22 +318,15 @@ jobs:
         with:
           ref: ${{ needs.prepare-branch.outputs.release_branch }}
 
-      - name: Cache Unity Editor installation
-        id: cache-unity
-        uses: actions/cache@v4
-        with:
-          path: /Applications/Unity/Unity.app
-          key: unity-6000.3.5f1-core-macos14-arm64
-
-      - name: Install Unity Editor
-        if: steps.cache-unity.outputs.cache-hit != 'true'
+      - name: Use Unity Editor installed on the runner
         run: |
-          curl -fL "https://download.unity3d.com/download_unity/a1ec4b2f2d19/MacEditorInstallerArm64/Unity-6000.3.5f1.pkg" \
-            -o /tmp/Unity.pkg
-          sudo installer -pkg /tmp/Unity.pkg -target /
-          UNITY=$(find /Applications -name "Unity" -type f -path "*/MacOS/Unity" 2>/dev/null | head -1)
+          UNITY_DIR="/Applications/Unity/Unity-6000.5.6f1"
+          UNITY="$UNITY_DIR/Unity.app/Contents/MacOS/Unity"
+          if [ ! -x "$UNITY" ]; then
+            echo "::error::Unity 6000.5.6f1 not found at $UNITY_DIR on this runner"
+            exit 1
+          fi
           echo "UNITY_PATH=$UNITY" >> "$GITHUB_ENV"
-        timeout-minutes: 45
 
       - name: Activate Unity license
         run: |
