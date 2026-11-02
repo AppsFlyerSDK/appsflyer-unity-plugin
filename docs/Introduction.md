@@ -36,10 +36,10 @@ To do so, please follow [this article](https://support.appsflyer.com/hc/en-us/ar
 
 ### <a id="plugin-build-for"> This plugin is built for
 
-- Android AppsFlyer SDK v6.17.6
-- Android Purchase Connector 2.2.0
-- iOS AppsFlyer SDK v6.17.9
-- iOS Purchase Connector 7.0.2
+- Android AppsFlyer SDK v7.0.4
+- Android Purchase Connector 2.3.0
+- iOS AppsFlyer SDK v7.0.4
+- iOS Purchase Connector 7.0.4
 ---
 
 ## 📌 Important: Two Versions of Unity Plugin v6.17.7

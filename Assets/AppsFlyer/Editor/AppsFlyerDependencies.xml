@@ -3,7 +3,7 @@
 
   <androidPackages>
     <androidPackage spec="com.appsflyer:af-android-plugin-bridge:7.0.13"></androidPackage>
-    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.15"></androidPackage>
+    <androidPackage spec="com.appsflyer:unity-wrapper:7.0.16"></androidPackage>
     <androidPackage spec="com.android.installreferrer:installreferrer:2.1"></androidPackage>
     <!-- Required for the SDK to read the Google Advertising ID (GAID) - without it,
          AdvertisingIdClient is missing from the app's classpath even when Play Services
