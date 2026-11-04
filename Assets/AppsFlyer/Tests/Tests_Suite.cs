@@ -1107,4 +1107,266 @@ namespace AppsFlyerSDK.Tests
         }
 #endif
     }
+
+    /// <summary>
+    /// DELIVERY-135217: AFMiniJSON used the current culture for numbers, so on comma-decimal
+    /// locales (vi-VN, de-DE, ...) requests carried "revenue":0,0123 (invalid JSON, dropped by the
+    /// native RPC bridge) and parsed native payloads silently corrupted fractional values.
+    /// Every test runs under each comma-decimal culture below.
+    /// </summary>
+    [TestFixture("vi-VN")]
+    [TestFixture("de-DE")]
+    [TestFixture("fr-FR")]
+    [TestFixture("ru-RU")]
+    public class AFMiniJSONCultureTests
+    {
+        private readonly string _cultureName;
+        private System.Globalization.CultureInfo _savedCulture;
+        private IAppsFlyerRPCClient mockRpc;
+        private readonly List<GameObject> _spawned = new List<GameObject>();
+
+        public AFMiniJSONCultureTests(string cultureName)
+        {
+            _cultureName = cultureName;
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            _savedCulture = System.Globalization.CultureInfo.CurrentCulture;
+            System.Globalization.CultureInfo culture;
+            try
+            {
+                culture = new System.Globalization.CultureInfo(_cultureName);
+            }
+            catch (System.Globalization.CultureNotFoundException)
+            {
+                Assert.Inconclusive(_cultureName + " culture data is not available on this runtime");
+                return;
+            }
+            if (culture.NumberFormat.NumberDecimalSeparator != ",")
+                Assert.Inconclusive(_cultureName + " is not a comma-decimal culture on this runtime");
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+
+            mockRpc = Substitute.For<IAppsFlyerRPCClient>();
+            AppsFlyerRPCClient.instance = mockRpc;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            System.Globalization.CultureInfo.CurrentCulture = _savedCulture;
+            AppsFlyerRPCClient.instance = AppsFlyerRPCClient.DefaultInstance;
+            AppsFlyer.CallBackObjectName = null;
+            typeof(AppsFlyer).GetField("onConversionDataSuccessCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, null);
+            typeof(AppsFlyer).GetField("onConversionDataFailCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, null);
+            typeof(AppsFlyer).GetField("onDeepLinkListenerCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, null);
+            foreach (var go in _spawned) UnityEngine.Object.DestroyImmediate(go);
+            _spawned.Clear();
+        }
+
+        // ── Serialize ──────────────────────────────────────────────────────────────
+
+        [Test]
+        public void Serialize_Double_UsesDotDecimalSeparator()
+        {
+            Assert.AreEqual("{\"v\":0.0123}", Json.Serialize(new Dictionary<string, object> { { "v", 0.0123 } }));
+        }
+
+        [Test]
+        public void Serialize_Float_UsesDotDecimalSeparator()
+        {
+            Assert.AreEqual("{\"v\":1.5}", Json.Serialize(new Dictionary<string, object> { { "v", 1.5f } }));
+        }
+
+        [Test]
+        public void Serialize_Decimal_UsesDotDecimalSeparator()
+        {
+            Assert.AreEqual("{\"v\":19.99}", Json.Serialize(new Dictionary<string, object> { { "v", 19.99m } }));
+        }
+
+        [Test]
+        public void Serialize_NegativeAndLargeIntegers_AreInvariant()
+        {
+            // Some cultures use U+2212 (minus sign) instead of '-'; force it so the test actually
+            // fails if integers are formatted with the current culture.
+            var withUnicodeMinus = (System.Globalization.CultureInfo)System.Globalization.CultureInfo.CurrentCulture.Clone();
+            withUnicodeMinus.NumberFormat.NegativeSign = "\u2212";
+            System.Globalization.CultureInfo.CurrentCulture = withUnicodeMinus;
+
+            Assert.AreEqual("[-42,1234567,-9000000000]", Json.Serialize(new List<object> { -42, 1234567, -9000000000L }));
+        }
+
+        [Test]
+        public void Serialize_NonPrimitiveFallback_IsInvariant()
+        {
+            var value = new DateTime(2026, 11, 4, 13, 5, 0);
+            Assert.AreEqual("{\"v\":\"" + value.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"}",
+                Json.Serialize(new Dictionary<string, object> { { "v", value } }));
+        }
+
+        [Test]
+        public void Serialize_NaNAndInfinity_BecomeZero()
+        {
+            Assert.AreEqual("[0,0,0,0]",
+                Json.Serialize(new List<object> { double.NaN, double.PositiveInfinity, float.NaN, float.NegativeInfinity }));
+        }
+
+        // ── Deserialize ────────────────────────────────────────────────────────────
+
+        [Test]
+        public void Deserialize_Fraction_IsNotTreatedAsThousandsSeparator()
+        {
+            var dict = Json.Deserialize("{\"v\":0.5,\"w\":1234.25}") as Dictionary<string, object>;
+            Assert.AreEqual(0.5, (double)dict["v"]);
+            Assert.AreEqual(1234.25, (double)dict["w"]);
+        }
+
+        [Test]
+        public void Deserialize_Exponent_IsParsedAsDouble()
+        {
+            var list = Json.Deserialize("[1E-05,-2.5e3,3e+2]") as List<object>;
+            Assert.AreEqual(1e-05, (double)list[0], 1e-12);
+            Assert.AreEqual(-2500.0, (double)list[1]);
+            Assert.AreEqual(300.0, (double)list[2]);
+        }
+
+        [Test]
+        public void Deserialize_Integers_StayLong()
+        {
+            var list = Json.Deserialize("[-42,0,9000000000]") as List<object>;
+            Assert.AreEqual(-42L, list[0]);
+            Assert.AreEqual(0L, list[1]);
+            Assert.AreEqual(9000000000L, list[2]);
+        }
+
+        [Test]
+        public void Deserialize_IntegerBeyondLongRange_FallsBackToDouble()
+        {
+            var list = Json.Deserialize("[99999999999999999999]") as List<object>;
+            Assert.IsInstanceOf<double>(list[0]);
+            Assert.AreEqual(1e20, (double)list[0], 1e5);
+        }
+
+        [Test]
+        public void RoundTrip_PreservesFractionalValues()
+        {
+            var original = new Dictionary<string, object> { { "a", 0.0123 }, { "b", -7.25 }, { "c", 1e-7 } };
+            var parsed = Json.Deserialize(Json.Serialize(original)) as Dictionary<string, object>;
+            Assert.AreEqual(0.0123, (double)parsed["a"]);
+            Assert.AreEqual(-7.25, (double)parsed["b"]);
+            Assert.AreEqual(1e-7, (double)parsed["c"], 1e-15);
+        }
+
+        // ── Public APIs whose RPC request carries numbers ──────────────────────────
+
+        [Test]
+        [Timeout(10000)]
+        public async Task LogAdRevenue_RequestIsValidJsonWithDotDecimal()
+        {
+            Dictionary<string, object> captured = null;
+            mockRpc.When(x => x.ExecuteFire("logAdRevenue", Arg.Any<Dictionary<string, object>>()))
+                .Do(ci => captured = ci.ArgAt<Dictionary<string, object>>(1));
+
+            await AppsFlyer.logAdRevenue(new AFAdRevenueData("ironSource", MediationNetwork.IronSource, "USD", 0.0123), null);
+
+            string json = AppsFlyerRPCClient.DefaultInstance.BuildRequest("logAdRevenue", captured);
+            StringAssert.Contains("\"revenue\":0.0123", json);
+            var request = Json.Deserialize(json) as Dictionary<string, object>;
+            Assert.IsNotNull(request, "request JSON must parse: " + json);
+            Assert.AreEqual(0.0123, (double)((Dictionary<string, object>)request["params"])["revenue"]);
+        }
+
+        [TestCase(double.NaN)]
+        [TestCase(double.PositiveInfinity)]
+        [TestCase(double.NegativeInfinity)]
+        [Timeout(10000)]
+        public async Task LogAdRevenue_NonFiniteRevenue_IsSentAsZero(double revenue)
+        {
+            Dictionary<string, object> captured = null;
+            mockRpc.When(x => x.ExecuteFire("logAdRevenue", Arg.Any<Dictionary<string, object>>()))
+                .Do(ci => captured = ci.ArgAt<Dictionary<string, object>>(1));
+
+            await AppsFlyer.logAdRevenue(new AFAdRevenueData("ironSource", MediationNetwork.IronSource, "USD", revenue), null);
+
+            string json = AppsFlyerRPCClient.DefaultInstance.BuildRequest("logAdRevenue", captured);
+            StringAssert.Contains("\"revenue\":0,", json);
+            Assert.IsNotNull(Json.Deserialize(json), "request JSON must parse: " + json);
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task LogLocation_NonFiniteCoordinates_AreSentAsZero()
+        {
+            Dictionary<string, object> captured = null;
+            mockRpc.When(x => x.ExecuteFire("logLocation", Arg.Any<Dictionary<string, object>>()))
+                .Do(ci => captured = ci.ArgAt<Dictionary<string, object>>(1));
+
+            await AppsFlyer.logLocation(double.NaN, double.PositiveInfinity);
+
+            string json = AppsFlyerRPCClient.DefaultInstance.BuildRequest("logLocation", captured);
+            StringAssert.Contains("\"latitude\":0", json);
+            StringAssert.Contains("\"longitude\":0", json);
+            Assert.IsNotNull(Json.Deserialize(json), "request JSON must parse: " + json);
+        }
+
+        [Test]
+        [Timeout(10000)]
+        public async Task LogLocation_RequestIsValidJsonWithDotDecimal()
+        {
+            Dictionary<string, object> captured = null;
+            mockRpc.When(x => x.ExecuteFire("logLocation", Arg.Any<Dictionary<string, object>>()))
+                .Do(ci => captured = ci.ArgAt<Dictionary<string, object>>(1));
+
+            await AppsFlyer.logLocation(10.7769, -106.7009);
+
+            string json = AppsFlyerRPCClient.DefaultInstance.BuildRequest("logLocation", captured);
+            StringAssert.Contains("\"latitude\":10.7769", json);
+            StringAssert.Contains("\"longitude\":-106.7009", json);
+            Assert.IsNotNull(Json.Deserialize(json), "request JSON must parse: " + json);
+        }
+
+#if UNITY_IOS || UNITY_STANDALONE_OSX
+        [Test]
+        [Timeout(10000)]
+        public async Task HandlePushNotifications_NumericPayloadValues_AreInvariant()
+        {
+            Dictionary<string, object> captured = null;
+            mockRpc.When(x => x.ExecuteFire("handlePushNotification", Arg.Any<Dictionary<string, object>>()))
+                .Do(ci => captured = ci.ArgAt<Dictionary<string, object>>(1));
+
+            await AppsFlyer.handlePushNotifications(new Dictionary<string, object> { { "score", 2.5 } });
+
+            string json = AppsFlyerRPCClient.DefaultInstance.BuildRequest("handlePushNotification", captured);
+            StringAssert.Contains("\"score\":2.5", json);
+        }
+#endif
+
+        // ── Callbacks parsed from native payloads ──────────────────────────────────
+
+        [Test]
+        [Timeout(10000)]
+        public async Task ConversionData_RoundTripThroughOnRPCEvent_PreservesFractions()
+        {
+            string success = null;
+            await AppsFlyer.registerConversionListener(d => success = d, e => { });
+            var go = new GameObject();
+            _spawned.Add(go);
+            go.AddComponent<AppsFlyer>().onRPCEvent("{\"event\":\"onConversionDataSuccess\",\"data\":{\"cost\":0.5}}");
+
+            Assert.IsNotNull(success);
+            var data = AppsFlyer.CallbackStringToDictionary(success);
+            Assert.AreEqual(0.5, (double)data["cost"]);
+        }
+
+        [Test]
+        public void DeepLinkEventsArgs_NumericValue_FormatsInvariant()
+        {
+            var args = new DeepLinkEventsArgs("{\"status\":\"FOUND\",\"deepLink\":{\"deep_link_value\":0.5}}");
+            Assert.AreEqual("0.5", args.getDeepLinkValue());
+        }
+    }
 }

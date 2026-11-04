@@ -29,6 +29,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -90,6 +91,7 @@ namespace AFMiniJSON {
 
         sealed class Parser : IDisposable {
             const string WORD_BREAK = "{}[],:\"";
+            static readonly char[] FractionOrExponentChars = { '.', 'e', 'E' };
 
             public static bool IsWordBreak(char c) {
                 return Char.IsWhiteSpace(c) || WORD_BREAK.IndexOf(c) != -1;
@@ -290,14 +292,17 @@ namespace AFMiniJSON {
             object ParseNumber() {
                 string number = NextWord;
 
-                if (number.IndexOf('.') == -1) {
+                // JSON numbers are culture-invariant. Parsing with the current culture breaks on
+                // comma-decimal locales (vi-VN/de-DE treat '.' as a thousands separator, so "0.5" -> 5).
+                if (number.IndexOfAny(FractionOrExponentChars) == -1) {
                     long parsedInt;
-                    Int64.TryParse(number, out parsedInt);
-                    return parsedInt;
+                    if (Int64.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedInt)) {
+                        return parsedInt;
+                    }
                 }
 
                 double parsedDouble;
-                Double.TryParse(number, out parsedDouble);
+                Double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out parsedDouble);
                 return parsedDouble;
             }
 
@@ -524,8 +529,18 @@ namespace AFMiniJSON {
                 // NOTE: decimals lose precision during serialization.
                 // They always have, I'm just letting you know.
                 // Previously floats and doubles lost precision too.
+                // JSON numbers must be culture-invariant: the current culture would emit "0,0123" on
+                // comma-decimal locales, producing invalid JSON that the native RPC bridge rejects.
+                // NaN/Infinity have no JSON representation; they're emitted as 0 (not null) so both native
+                // RPC layers treat them the same — Android's parser maps null to 0 for numeric params while
+                // iOS rejects null, so null would drop the event on iOS but log 0 on Android.
                 if (value is float) {
-                    builder.Append(((float) value).ToString("R"));
+                    float f = (float) value;
+                    if (float.IsNaN(f) || float.IsInfinity(f)) {
+                        builder.Append('0');
+                    } else {
+                        builder.Append(f.ToString("R", CultureInfo.InvariantCulture));
+                    }
                 } else if (value is int
                     || value is uint
                     || value is long
@@ -534,12 +549,17 @@ namespace AFMiniJSON {
                     || value is short
                     || value is ushort
                     || value is ulong) {
-                    builder.Append(value);
+                    builder.Append(Convert.ToString(value, CultureInfo.InvariantCulture));
                 } else if (value is double
                     || value is decimal) {
-                    builder.Append(Convert.ToDouble(value).ToString("R"));
+                    double d = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+                    if (double.IsNaN(d) || double.IsInfinity(d)) {
+                        builder.Append('0');
+                    } else {
+                        builder.Append(d.ToString("R", CultureInfo.InvariantCulture));
+                    }
                 } else {
-                    SerializeString(value.ToString());
+                    SerializeString(Convert.ToString(value, CultureInfo.InvariantCulture));
                 }
             }
         }

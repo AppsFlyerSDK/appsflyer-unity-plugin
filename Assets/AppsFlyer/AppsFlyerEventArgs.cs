@@ -219,7 +219,7 @@ namespace AppsFlyerSDK
         {
             if (deepLink != null && deepLink.ContainsKey(name) && deepLink[name] != null)
             {
-                return deepLink[name].ToString();
+                return Convert.ToString(deepLink[name], System.Globalization.CultureInfo.InvariantCulture);
             }
             
             return null;

@@ -83,3 +83,6 @@ build.gradle_mine
 *.csproj
 
 *.cache
+
+# Local SDK source checkouts for cross-referencing (not part of the plugin)
+.sdk_workspace/

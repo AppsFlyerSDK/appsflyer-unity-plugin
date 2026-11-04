@@ -1,5 +1,31 @@
 # Versions
 
+## v7.0.41
+* **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current
+  culture. On comma-decimal locales (e.g. `vi-VN`, `de-DE`, `fr-FR`, `ru-RU`) RPC requests carried
+  `"revenue":0,0123`, which is invalid JSON, and the native RPC bridge rejected them. As a result,
+  `logAdRevenue` and `logLocation` were silently dropped on Android and iOS, along with any request
+  carrying float/double/decimal values (e.g. numeric values in `handlePushNotifications` payloads,
+  Purchase Connector additional parameters). Numbers are now always serialized and parsed with
+  `CultureInfo.InvariantCulture`.
+* **Fix:** parsing payloads from native (conversion data, deep link data, `validateAndLogInAppPurchase`
+  results, `CallbackStringToDictionary`) silently corrupted fractional values on comma-decimal locales
+  (`0.5` → `5` or `0`). Numbers with an exponent (`1E-05`) were parsed as `0`, and so were integers
+  beyond the `long` range. They are now parsed as `double`.
+* **Fix:** `DeepLinkEventsArgs` getters (`getDeepLinkValue`, `getMediaSource`, ...) formatted numeric
+  values with the current culture (`0.5` → `"0,5"`). They now use the invariant culture.
+* **Behavior change:** `NaN` and `±Infinity` have no JSON representation and are now serialized as `0`
+  (previously they produced invalid JSON). For example, `logAdRevenue` with a `NaN` revenue is sent
+  with `revenue = 0` on both platforms.
+* **Behavior change:** parsed numbers that have an exponent, or that are integers beyond the `long`
+  range, are now returned as `double` instead of `long` `0`.
+
+* Update af-android-plugin-bridge version - 7.0.13
+* Update AppsFlyerRPC version - 7.0.41
+* Update Android unity-wrapper version - 7.0.16
+* Update iOS Purchase Connector version - 7.0.4
+* Update Android Purchase Connector version - 2.3.0
+* Unity plugin version - 7.0.41
 ## v7.0.4
 * Update af-android-plugin-bridge version - 7.0.13
 * Update AppsFlyerRPC version - 7.0.41
