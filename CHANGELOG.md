@@ -1,6 +1,6 @@
 # Versions
 
-## v7.0.5
+## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current
   culture. On comma-decimal locales (e.g. `vi-VN`, `de-DE`, `fr-FR`, `ru-RU`) RPC requests carried
   `"revenue":0,0123`, which is invalid JSON, and the native RPC bridge rejected them. As a result,
