@@ -20,6 +20,12 @@
 * **Behavior change:** parsed numbers that have an exponent, or that are integers beyond the `long`
   range, are now returned as `double` instead of `long` `0`.
 
+* Update af-android-plugin-bridge version - 7.0.13
+* Update AppsFlyerRPC version - 7.0.41
+* Update Android unity-wrapper version - 7.0.16
+* Update iOS Purchase Connector version - 7.0.4
+* Update Android Purchase Connector version - 2.3.0
+* Unity plugin version - 7.0.41-rc1
 ## v7.0.4
 * Update af-android-plugin-bridge version - 7.0.13
 * Update AppsFlyerRPC version - 7.0.41
