@@ -86,7 +86,10 @@ Use the last **6.17.x** dual-line release: **`v6.17.90`** (Billing v7) or **`v6.
 - If you were previously using the standalone Purchase Connector from a separate repository, simply remove any references to `using AppsFlyerConnector;` from your codebase, as its functionality is now included in the main plugin under the `AppsFlyerSDK` namespace.
 - The Purchase Connector now supports **StoreKit 2** for iOS 15+ alongside the existing StoreKit 1 support.
 - For detailed migration instructions and new features, see our [Purchase Connector documentation](/docs/purchase-connector.md).
-- **Android + AGP 8**: `com.appsflyer:purchase-connector:2.3.0` and `com.appsflyer:af-android-sdk:7.0.1` currently share the same manifest package (`com.appsflyer`), which AGP 8's mandatory namespace-uniqueness check hard-fails on. There is no known consumer-side Gradle property that resolves this (in particular, `android.uniquePackageNames` is an older, unrelated flag and does not fix it) — the fix has to happen upstream, in how these artifacts are published. Until that lands, `purchase-connector` cannot be built alongside `af-android-sdk` under AGP 8+; track the upstream issue with AppsFlyer support for status.
+- **Android + AGP 9**: `com.appsflyer:purchase-connector` and `com.appsflyer:af-android-sdk` share the manifest package `com.appsflyer`. AGP 8.x only logs a warning (`Namespace 'com.appsflyer' is used in multiple modules and/or libraries`). AGP 9.0 changed the default of `android.uniquePackageNames` to `true`, which turns this into a build error. If your project builds with AGP 9+, add the following to `Assets/Plugins/Android/gradleTemplate.properties` (enable **Custom Gradle Properties Template** in Player Settings > Publishing Settings):
+  ```properties
+  android.uniquePackageNames=false
+  ```
 
 ---
 ## <a id="breaking-changes-6175">     ❗❗ Breaking changes when updating to 6.17.5 ❗❗

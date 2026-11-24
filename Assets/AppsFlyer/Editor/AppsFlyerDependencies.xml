@@ -10,9 +10,10 @@
          itself is installed on the device, surfacing as a ClassNotFoundException in
          the "gaidError" field of outgoing SDK requests. -->
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
-    <!-- purchase-connector shares a manifest package with af-android-sdk; AGP 8 namespace
-         collision. Disabled until AppsFlyer publishes distinct AGP namespaces upstream. -->
-    <!-- <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage> -->
+    <!-- purchase-connector and af-android-sdk both use the manifest package "com.appsflyer".
+         AGP 8.x only warns about it; AGP 9+ fails the build unless the app sets
+         android.uniquePackageNames=false in its gradleTemplate.properties. -->
+    <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage>
   </androidPackages>
 
   <!-- iOS dependencies via Swift Package Manager (EDM4U 1.2.187+). Each remoteSwiftPackage's

@@ -1,5 +1,12 @@
 # Versions
 
+## Unreleased
+* **Fix (DELIVERY-137580):** Android Purchase Connector is enabled again. `com.appsflyer:purchase-connector:2.3.0`
+  had been commented out in `AppsFlyerDependencies.xml` because of a manifest-package collision with
+  `af-android-sdk` (both `com.appsflyer`), so Purchase Connector calls on Android were no-ops. AGP 8.x
+  only warns about the collision. AGP 9+ fails the build unless `android.uniquePackageNames=false` is
+  set in `gradleTemplate.properties` (see README).
+
 ## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current
   culture. On comma-decimal locales (e.g. `vi-VN`, `de-DE`, `fr-FR`, `ru-RU`) RPC requests carried
