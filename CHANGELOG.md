@@ -1,6 +1,6 @@
 # Versions
 
-## Unreleased
+## v7.0.42
 * **Fix (DELIVERY-137580):** Android Purchase Connector is enabled again. `com.appsflyer:purchase-connector:2.3.0`
   had been commented out in `AppsFlyerDependencies.xml` because of a manifest-package collision with
   `af-android-sdk` (both `com.appsflyer`), so Purchase Connector calls on Android were no-ops. AGP 8.x
