@@ -3,10 +3,10 @@
     "plan_id": "unity-e2e",
     "plugin": "unity",
     "version": "1.0.0",
-    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers eight scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, consent / SDK stop toggle, (iOS-only) Universal Link re-open through the scene delegate's scene:continueUserActivity:, and (Android-only) Purchase Connector integration. NOTE: the scene delegate's true cold-launch path (scene:willConnectToSession:options:, DELIVERY-115275's original trigger) is NOT exercised by phase_7 or any other automation here - UISceneConnectionOptions has no public initializer, so the QA harness cannot fabricate that event and can only drive the warm re-open swizzle. That branch remains manually/E2E-unverified. Mapped to E2E-001..E2E-008 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
+    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers nine scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, consent / SDK stop toggle, (iOS-only) Universal Link re-open through the scene delegate's scene:continueUserActivity:, and Purchase Connector integration (Android-only phase_8, iOS-only phase_9). NOTE: the scene delegate's true cold-launch path (scene:willConnectToSession:options:, DELIVERY-115275's original trigger) is NOT exercised by phase_7 or any other automation here - UISceneConnectionOptions has no public initializer, so the QA harness cannot fabricate that event and can only drive the warm re-open swizzle. That branch remains manually/E2E-unverified. Mapped to E2E-001..E2E-009 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
     "platforms": ["android", "ios"],
     "schema_version": "1.0.0",
-    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006, E2E-007, E2E-008"
+    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006, E2E-007, E2E-008, E2E-009"
   },
 
   "config": {
@@ -471,6 +471,52 @@
           "description": "C# guard did not report a missing purchase-connector dependency",
           "type": "absent",
           "patterns": ["Purchase Connector is unavailable on Android", "NoClassDefFoundError"],
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL"],
+          "fail_action": "fail"
+        }
+      ]
+    },
+    {
+      "id": "phase_9",
+      "name": "Purchase Connector integration (iOS)",
+      "scenario_ref": "E2E-009",
+      "description": "iOS-only. Fresh install. The test app calls AppsFlyerPurchaseConnector init, setStoreKitVersion(SK2), setIsSandbox(true), build and startObservingTransactions before start(). Verifies the PurchaseConnector framework is linked and actually runs: when it is not linked, AppsFlyeriOSWrapper.mm compiles silent no-op stubs, so the native [PurchaseConnector] logs are the only proof. No purchase is made; the simulator has no App Store account, so StoreKit reports 'No active account', which is expected.",
+      "platforms": ["ios"],
+      "requires_fresh_install": true,
+      "wait_after_launch_sec": 240,
+      "checks": [
+        {
+          "id": "pc_csharp_calls_done",
+          "description": "Test app ran the Purchase Connector setup calls",
+          "type": "log_contains",
+          "pattern": "[AF_QA][PurchaseConnector] init+build+startObservingTransactions done",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_native_sandbox",
+          "description": "Native PurchaseConnector received setIsSandbox(true) (proves the real framework, not the wrapper stubs, ran)",
+          "type": "log_contains",
+          "pattern": "[PurchaseConnector] AppsFlyerARS has been set to Sandbox environment",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_native_cache_resolved",
+          "description": "Native PurchaseConnector initialised its purchase event cache",
+          "type": "log_contains",
+          "pattern": "[PurchaseConnector] Resolved cached PurchaseConnectorEvents",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_linked",
+          "description": "No missing framework or selector errors",
+          "type": "absent",
+          "patterns": ["Library not loaded", "unrecognized selector"],
           "fail_action": "fail"
         },
         {

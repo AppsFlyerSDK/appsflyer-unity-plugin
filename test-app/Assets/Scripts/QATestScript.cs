@@ -299,16 +299,23 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData, IAppsFlyerP
         AFQALogger.Log("[AF_QA][AUTO_APIS] --- Pre-start auto APIs complete ---");
     }
 
-    // ── Purchase Connector (Android) ──────────────────────────────────────────
+    // ── Purchase Connector ────────────────────────────────────────────────────
 
-    // Must run before AppsFlyer.start(). Billing comes from Assets/Editor/TestAppDependencies.xml.
-    // E2E phase_8 checks the native "[PurchaseConnector]: Start Observing Transactions" log that
-    // this produces; if purchase-connector is missing from the APK the C# guard turns these calls
-    // into no-ops and logs "Purchase Connector is unavailable on Android" instead.
+    // Must run before AppsFlyer.start().
+    // Android: Billing comes from Assets/Editor/TestAppDependencies.xml. E2E phase_8 checks the
+    // native "[PurchaseConnector]: Start Observing Transactions" log; if purchase-connector is
+    // missing from the APK the C# guard turns these calls into no-ops and logs
+    // "Purchase Connector is unavailable on Android" instead.
+    // iOS: E2E phase_9 checks the native "[PurchaseConnector] AppsFlyerARS has been set to Sandbox
+    // environment" log. If PurchaseConnector isn't linked, AppsFlyeriOSWrapper.mm compiles silent
+    // stubs, so that log is the only sign the real framework ran.
     void SetupPurchaseConnector()
     {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         AppsFlyerPurchaseConnector.init(this, Store.GOOGLE);
+#if UNITY_IOS
+        AppsFlyerPurchaseConnector.setStoreKitVersion(StoreKitVersion.SK2);
+#endif
         AppsFlyerPurchaseConnector.setIsSandbox(true);
         AppsFlyerPurchaseConnector.setAutoLogPurchaseRevenue(
             AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsAutoRenewableSubscriptions,

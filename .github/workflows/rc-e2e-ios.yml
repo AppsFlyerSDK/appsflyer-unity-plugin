@@ -274,6 +274,23 @@ jobs:
           rm -rf test-app/Build/iOS-Simulator/UnityQATest.app
           cp -R "$APP" test-app/Build/iOS-Simulator/UnityQATest.app
 
+      - name: Verify Purchase Connector is linked into the .app
+        run: |
+          APP=test-app/Build/iOS-Simulator/UnityQATest.app
+          if [[ ! -d "$APP/Frameworks/PurchaseConnector.framework" ]]; then
+            echo "::error::PurchaseConnector.framework is not embedded in UnityQATest.app (PurchaseConnector pod/SPM package not resolved from AppsFlyerDependencies.xml)"
+            exit 1
+          fi
+          # AppsFlyeriOSWrapper.mm compiles silent no-op stubs when PurchaseConnector-Swift.h is
+          # not found, so the embedded framework alone is not enough: the real bridge references
+          # the PurchaseConnector class. (No grep -q: it closes the pipe early, and under pipefail
+          # nm's SIGPIPE would fail the check even when the symbol is present.)
+          if ! nm -u "$APP/Frameworks/UnityFramework.framework/UnityFramework" | grep '_OBJC_CLASS_\$_PurchaseConnector$' >/dev/null; then
+            echo "::error::UnityFramework does not reference the PurchaseConnector class - AppsFlyeriOSWrapper.mm was compiled with the no-op stubs"
+            exit 1
+          fi
+          echo "PurchaseConnector.framework embedded and referenced by UnityFramework"
+
       - name: Upload xcodebuild log
         if: always()
         uses: actions/upload-artifact@v4

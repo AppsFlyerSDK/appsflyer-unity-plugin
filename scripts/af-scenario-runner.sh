@@ -391,8 +391,10 @@ ios_collect_logs() {
   if [[ -n "$IOS_LAST_PID" ]]; then
     predicate_args=(--predicate "processIdentifier == $IOS_LAST_PID")
   fi
+  # --info: the AppsFlyer SDK (including Purchase Connector) logs at os_log Info level, which
+  # `log show` drops by default; phase_9's native [PurchaseConnector] checks depend on it.
   xcrun simctl spawn "$IOS_UDID" log show \
-    --last 240s --style compact ${predicate_args[@]+"${predicate_args[@]}"} 2>&1 | \
+    --last 240s --info --style compact ${predicate_args[@]+"${predicate_args[@]}"} 2>&1 | \
     grep -E "${LOG_TAG}|appsflyer|CFNetwork:Summary|response_status|response code|Opening URL|launchservices|openURL|continueUserActivity" >> "$log_file" || true
 
   # Best-effort screenshot for failure triage (no-op if nothing booted).
