@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+  <androidPackages>
+    <!-- purchase-connector only has a compileOnly dependency on Play Billing; the app must supply
+         it (normally via Unity IAP 5.x). The test-app has no Unity IAP, so pull Billing 8 directly
+         to exercise Purchase Connector on Android. -->
+    <androidPackage spec="com.android.billingclient:billing:8.0.0"></androidPackage>
+  </androidPackages>
+</dependencies>

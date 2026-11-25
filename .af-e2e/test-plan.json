@@ -3,10 +3,10 @@
     "plan_id": "unity-e2e",
     "plugin": "unity",
     "version": "1.0.0",
-    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers seven scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, consent / SDK stop toggle, and (iOS-only) Universal Link re-open through the scene delegate's scene:continueUserActivity:. NOTE: the scene delegate's true cold-launch path (scene:willConnectToSession:options:, DELIVERY-115275's original trigger) is NOT exercised by phase_7 or any other automation here - UISceneConnectionOptions has no public initializer, so the QA harness cannot fabricate that event and can only drive the warm re-open swizzle. That branch remains manually/E2E-unverified. Mapped to E2E-001..E2E-007 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
+    "description": "End-to-end test plan for the AppsFlyer Unity plugin. CI imports the generated appsflyer-unity-plugin-<version>.unitypackage into test-app/ before building, so E2E validates the same regular customer artifact that RC publish attaches. Covers eight scenarios: cold launch, background deep link, foreground deep link, custom event with parameters, identity APIs round-trip, consent / SDK stop toggle, (iOS-only) Universal Link re-open through the scene delegate's scene:continueUserActivity:, and (Android-only) Purchase Connector integration. NOTE: the scene delegate's true cold-launch path (scene:willConnectToSession:options:, DELIVERY-115275's original trigger) is NOT exercised by phase_7 or any other automation here - UISceneConnectionOptions has no public initializer, so the QA harness cannot fabricate that event and can only drive the warm re-open swizzle. That branch remains manually/E2E-unverified. Mapped to E2E-001..E2E-008 in appsflyer-mobile-plugin-tooling/contracts/e2e-test-contract.md.",
     "platforms": ["android", "ios"],
     "schema_version": "1.0.0",
-    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006, E2E-007"
+    "tooling_contract_ref": "E2E-001, E2E-002, E2E-003, E2E-004, E2E-005, E2E-006, E2E-007, E2E-008"
   },
 
   "config": {
@@ -430,6 +430,52 @@
         {
           "id": "no_fatal_errors",
           "description": "No fatal exceptions after Universal Link cold launch",
+          "type": "absent",
+          "patterns": ["Fatal Exception", "FATAL"],
+          "fail_action": "fail"
+        }
+      ]
+    },
+    {
+      "id": "phase_8",
+      "name": "Purchase Connector integration (Android)",
+      "scenario_ref": "E2E-008",
+      "description": "Android-only. Fresh install. The test app calls AppsFlyerPurchaseConnector init/build/startObservingTransactions before start(). Verifies com.appsflyer:purchase-connector is in the APK and actually starts: the native SDK logs Start Observing Transactions and the Play Billing connection callback, and the C# guard did not fall back to no-ops. Regression guard for DELIVERY-137580, where the dependency was commented out of AppsFlyerDependencies.xml and Purchase Connector silently did nothing. No purchase is made; the CI emulator has no Google account, so onBillingSetupFinished reports billing unavailable, which is expected.",
+      "platforms": ["android"],
+      "requires_fresh_install": true,
+      "wait_after_launch_sec": 240,
+      "checks": [
+        {
+          "id": "pc_csharp_calls_done",
+          "description": "Test app ran the Purchase Connector setup calls",
+          "type": "log_contains",
+          "pattern": "[AF_QA][PurchaseConnector] init+build+startObservingTransactions done",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_native_observing",
+          "description": "Native Purchase Connector started observing transactions (proves purchase-connector is in the APK)",
+          "type": "log_contains",
+          "pattern": "[PurchaseConnector]: Start Observing Transactions",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_billing_setup_finished",
+          "description": "Purchase Connector connected to Play Billing (the callback fires even when billing is unavailable)",
+          "type": "log_contains",
+          "pattern": "[PurchaseConnector]: onBillingSetupFinished",
+          "fail_action": "fail"
+        },
+        {
+          "id": "pc_not_missing",
+          "description": "C# guard did not report a missing purchase-connector dependency",
+          "type": "absent",
+          "patterns": ["Purchase Connector is unavailable on Android", "NoClassDefFoundError"],
+          "fail_action": "fail"
+        },
+        {
+          "id": "no_fatal_errors",
+          "description": "No fatal exceptions",
           "type": "absent",
           "patterns": ["Fatal Exception", "FATAL"],
           "fail_action": "fail"
