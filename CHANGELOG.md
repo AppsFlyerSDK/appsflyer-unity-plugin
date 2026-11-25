@@ -4,8 +4,10 @@
 * **Fix (DELIVERY-137580):** Android Purchase Connector is enabled again. `com.appsflyer:purchase-connector:2.3.0`
   had been commented out in `AppsFlyerDependencies.xml` because of a manifest-package collision with
   `af-android-sdk` (both `com.appsflyer`), so Purchase Connector calls on Android were no-ops. AGP 8.x
-  only warns about the collision. AGP 9+ fails the build unless `android.uniquePackageNames=false` is
-  set in `gradleTemplate.properties` (see README).
+  only warns about the collision; AGP 9+ fails the build unless `android.uniquePackageNames=false` is set.
+  The plugin now adds `android.uniquePackageNames=false` to the generated `gradle.properties` at build
+  time (new `AppsFlyerGradlePropertiesProcessor`), unless the project already sets the property. Define
+  `APPSFLYER_DISABLE_UNIQUE_PACKAGE_NAMES_FIX` to opt out (see README).
 
 ## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current

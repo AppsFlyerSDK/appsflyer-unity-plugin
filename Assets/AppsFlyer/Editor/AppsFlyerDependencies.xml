@@ -11,8 +11,8 @@
          the "gaidError" field of outgoing SDK requests. -->
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.3.0"></androidPackage>
     <!-- purchase-connector and af-android-sdk both use the manifest package "com.appsflyer".
-         AGP 8.x only warns about it; AGP 9+ fails the build unless the app sets
-         android.uniquePackageNames=false in its gradleTemplate.properties. -->
+         AGP 8.x only warns about it; AGP 9+ fails the build unless android.uniquePackageNames=false,
+         which AppsFlyerGradlePropertiesProcessor adds to the generated gradle.properties. -->
     <androidPackage spec="com.appsflyer:purchase-connector:2.3.0"></androidPackage>
   </androidPackages>
 
