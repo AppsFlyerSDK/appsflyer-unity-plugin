@@ -211,7 +211,10 @@ android_launch() {
   # which holds only ~10-20s at typical Unity rates.
   adb logcat -G 32m 2>/dev/null || true
   adb logcat -c
-  adb shell am start -n "${PACKAGE_NAME}/${ACTIVITY}" 2>/dev/null || \
+  # -force-gles: Development builds crash on the emulator's Vulkan (Unity SIGSEGV in
+  # vk::DebugToolsUtils::SetVkDebugObjectName, host gfxstream on Apple Silicon). Unity reads
+  # the "unity" intent extra as command-line args; GLES3 avoids the Vulkan debug-label path.
+  adb shell am start -n "${PACKAGE_NAME}/${ACTIVITY}" -e unity "-force-gles" 2>/dev/null || \
     adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 2>/dev/null
 }
 
@@ -272,7 +275,7 @@ android_background_app() {
 android_trigger_deeplink() {
   local url="$1"
   log_info "Triggering deep link: $url"
-  adb shell am start -W -a android.intent.action.VIEW -d "$url"
+  adb shell am start -W -a android.intent.action.VIEW -d "$url" -e unity "-force-gles"
 }
 
 android_is_alive() {
