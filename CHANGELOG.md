@@ -17,7 +17,7 @@
 * Update Android unity-wrapper version - 7.0.16
 * Update iOS Purchase Connector version - 7.0.4
 * Update Android Purchase Connector version - 2.3.0
-* Unity plugin version - 7.0.42-rc1
+* Unity plugin version - 7.0.42
 ## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current
   culture. On comma-decimal locales (e.g. `vi-VN`, `de-DE`, `fr-FR`, `ru-RU`) RPC requests carried
