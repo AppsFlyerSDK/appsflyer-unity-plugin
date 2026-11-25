@@ -246,12 +246,11 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
         private static bool _connectorUnavailableWarned;
         private static bool _connectorLookupFailed;
 
-        // purchase-connector is currently disabled in AppsFlyerDependencies.xml (AGP 8 namespace
-        // collision with af-android-sdk - see review_processed.md #16), but AppsFlyerAndroidWrapper
-        // still directly imports its types. That turns every Purchase Connector call below into an
-        // unguarded NoClassDefFoundError/ClassNotFoundException at the point of first use instead of
-        // a build-time failure. Resolve/call through here so integrators who don't use Purchase
-        // Connector are unaffected, and those who do get one clear logged warning instead of a crash.
+        // AppsFlyerAndroidWrapper imports purchase-connector types, but the wrapper only has a
+        // compileOnly dependency on it. If the app ends up without purchase-connector (e.g. the
+        // dependency was excluded or EDM4U resolution was skipped), every call below would throw
+        // NoClassDefFoundError/ClassNotFoundException at first use. Resolve/call through here so the
+        // app gets one clear logged warning instead of a crash.
         private static bool TryGetConnector(out AndroidJavaClass connector)
         {
             if (_connectorLookupFailed)
@@ -294,10 +293,12 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
         {
             if (_connectorUnavailableWarned) return;
             _connectorUnavailableWarned = true;
-            Debug.LogWarning("[AppsFlyer] Purchase Connector is unavailable on Android (the " +
-                "purchase-connector dependency is currently disabled due to an AGP 8 namespace " +
-                "collision with af-android-sdk - see Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml). " +
-                "Purchase Connector calls will be no-ops until this is resolved upstream. " + e);
+            Debug.LogWarning("[AppsFlyer] Purchase Connector is unavailable on Android. Possible causes: " +
+                "(1) com.appsflyer:purchase-connector is missing from the build - make sure External " +
+                "Dependency Manager resolved Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml; " +
+                "(2) Google Play Billing Library 8 is missing or older - Purchase Connector requires the " +
+                "app to provide com.android.billingclient:billing 8.x (e.g. Unity IAP 5.x). " +
+                "Purchase Connector calls will be no-ops. " + e);
         }
 #endif
 
