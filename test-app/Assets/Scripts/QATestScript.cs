@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 using AppsFlyerSDK;
 using System.Text;
 
-public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
+public class QATestScript : MonoBehaviour, IAppsFlyerConversionData, IAppsFlyerPurchaseValidation
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoInit()
@@ -294,7 +294,47 @@ public class QATestScript : MonoBehaviour, IAppsFlyerConversionData
         AppsFlyer.setAdditionalData(additionalData);
         AFQALogger.Log("[AF_QA][setAdditionalData] tenant=qa_eu experiment=rc_pipeline_v1");
 
+        SetupPurchaseConnector();
+
         AFQALogger.Log("[AF_QA][AUTO_APIS] --- Pre-start auto APIs complete ---");
+    }
+
+    // ── Purchase Connector ────────────────────────────────────────────────────
+
+    // Must run before AppsFlyer.start().
+    // Android: Billing comes from Assets/Editor/TestAppDependencies.xml. E2E phase_8 checks the
+    // native "[PurchaseConnector]: Start Observing Transactions" log; if purchase-connector is
+    // missing from the APK the C# guard turns these calls into no-ops and logs
+    // "Purchase Connector is unavailable on Android" instead.
+    // iOS: E2E phase_9 checks the native "[PurchaseConnector] AppsFlyerARS has been set to Sandbox
+    // environment" log. If PurchaseConnector isn't linked, AppsFlyeriOSWrapper.mm compiles silent
+    // stubs, so that log is the only sign the real framework ran.
+    void SetupPurchaseConnector()
+    {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        AppsFlyerPurchaseConnector.init(this, Store.GOOGLE);
+#if UNITY_IOS
+        AppsFlyerPurchaseConnector.setStoreKitVersion(StoreKitVersion.SK2);
+#endif
+        AppsFlyerPurchaseConnector.setIsSandbox(true);
+        AppsFlyerPurchaseConnector.setAutoLogPurchaseRevenue(
+            AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsAutoRenewableSubscriptions,
+            AppsFlyerAutoLogPurchaseRevenueOptions.AppsFlyerAutoLogPurchaseRevenueOptionsInAppPurchases);
+        AppsFlyerPurchaseConnector.setPurchaseRevenueValidationListeners(true);
+        AppsFlyerPurchaseConnector.build();
+        AppsFlyerPurchaseConnector.startObservingTransactions();
+        AFQALogger.Log("[AF_QA][PurchaseConnector] init+build+startObservingTransactions done");
+#endif
+    }
+
+    public void didReceivePurchaseRevenueValidationInfo(string validationInfo)
+    {
+        AFQALogger.Log("[AF_QA][PurchaseConnector] validation info: " + validationInfo);
+    }
+
+    public void didReceivePurchaseRevenueError(string error)
+    {
+        AFQALogger.Log("[AF_QA][PurchaseConnector] validation error: " + error);
     }
 
     // ── Post-start APIs ───────────────────────────────────────────────────────

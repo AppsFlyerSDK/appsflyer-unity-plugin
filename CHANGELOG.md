@@ -1,5 +1,23 @@
 # Versions
 
+## v7.0.42
+* **Fix (DELIVERY-137580):** Android Purchase Connector is enabled again. `com.appsflyer:purchase-connector:2.3.0`
+  had been commented out in `AppsFlyerDependencies.xml` because of a manifest-package collision with
+  `af-android-sdk` (both `com.appsflyer`), so Purchase Connector calls on Android were no-ops. AGP 8.x
+  only warns about the collision; AGP 9+ fails the build unless `android.uniquePackageNames=false` is set.
+  The plugin now adds `android.uniquePackageNames=false` to the generated `gradle.properties` at build
+  time (new `AppsFlyerGradlePropertiesProcessor`), unless the project already sets the property. Define
+  `APPSFLYER_DISABLE_UNIQUE_PACKAGE_NAMES_FIX` to opt out (see README).
+  Purchase Connector requires the app to provide Google Play Billing Library 8.x (e.g. Unity IAP 5.x);
+  Billing 7 / Unity IAP 4.x is not supported. Apps that don't call `AppsFlyerPurchaseConnector` are
+  unaffected.
+
+* Update af-android-plugin-bridge version - 7.0.13
+* Update AppsFlyerRPC version - 7.0.41
+* Update Android unity-wrapper version - 7.0.16
+* Update iOS Purchase Connector version - 7.0.4
+* Update Android Purchase Connector version - 2.3.0
+* Unity plugin version - 7.0.42
 ## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current
   culture. On comma-decimal locales (e.g. `vi-VN`, `de-DE`, `fr-FR`, `ru-RU`) RPC requests carried

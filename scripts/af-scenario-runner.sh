@@ -211,7 +211,10 @@ android_launch() {
   # which holds only ~10-20s at typical Unity rates.
   adb logcat -G 32m 2>/dev/null || true
   adb logcat -c
-  adb shell am start -n "${PACKAGE_NAME}/${ACTIVITY}" 2>/dev/null || \
+  # -force-gles: Development builds crash on the emulator's Vulkan (Unity SIGSEGV in
+  # vk::DebugToolsUtils::SetVkDebugObjectName, host gfxstream on Apple Silicon). Unity reads
+  # the "unity" intent extra as command-line args; GLES3 avoids the Vulkan debug-label path.
+  adb shell am start -n "${PACKAGE_NAME}/${ACTIVITY}" -e unity "-force-gles" 2>/dev/null || \
     adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 2>/dev/null
 }
 
@@ -272,7 +275,7 @@ android_background_app() {
 android_trigger_deeplink() {
   local url="$1"
   log_info "Triggering deep link: $url"
-  adb shell am start -W -a android.intent.action.VIEW -d "$url"
+  adb shell am start -W -a android.intent.action.VIEW -d "$url" -e unity "-force-gles"
 }
 
 android_is_alive() {
@@ -391,9 +394,13 @@ ios_collect_logs() {
   if [[ -n "$IOS_LAST_PID" ]]; then
     predicate_args=(--predicate "processIdentifier == $IOS_LAST_PID")
   fi
+  # --info: the AppsFlyer SDK (including Purchase Connector) logs at os_log Info level, which
+  # `log show` drops by default; phase_9's native [PurchaseConnector] checks depend on it.
+  # PurchaseConnector is in the grep filter so those lines don't rely on the lowercase
+  # "com.appsflyer" subsystem prefix that --style compact happens to print today.
   xcrun simctl spawn "$IOS_UDID" log show \
-    --last 240s --style compact ${predicate_args[@]+"${predicate_args[@]}"} 2>&1 | \
-    grep -E "${LOG_TAG}|appsflyer|CFNetwork:Summary|response_status|response code|Opening URL|launchservices|openURL|continueUserActivity" >> "$log_file" || true
+    --last 240s --info --style compact ${predicate_args[@]+"${predicate_args[@]}"} 2>&1 | \
+    grep -E "${LOG_TAG}|appsflyer|PurchaseConnector|CFNetwork:Summary|response_status|response code|Opening URL|launchservices|openURL|continueUserActivity" >> "$log_file" || true
 
   # Best-effort screenshot for failure triage (no-op if nothing booted).
   local shot_dir="${log_file%/*}"
