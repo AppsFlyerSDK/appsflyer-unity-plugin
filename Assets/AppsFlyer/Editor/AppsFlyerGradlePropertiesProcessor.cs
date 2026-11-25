@@ -1,4 +1,8 @@
-#if UNITY_ANDROID && !APPSFLYER_DISABLE_UNIQUE_PACKAGE_NAMES_FIX
+// Not guarded by UNITY_ANDROID: a scripted Android build started while the Editor's active platform
+// is iOS/Standalone would otherwise compile without this hook. IPostGenerateGradleAndroidProject
+// lives in UnityEditor.CoreModule, so this compiles without the Android module, and Unity only
+// invokes it for Android builds.
+#if !APPSFLYER_DISABLE_UNIQUE_PACKAGE_NAMES_FIX
 using System.IO;
 using UnityEditor.Android;
 using UnityEngine;

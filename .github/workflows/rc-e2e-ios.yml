@@ -277,19 +277,25 @@ jobs:
       - name: Verify Purchase Connector is linked into the .app
         run: |
           APP=test-app/Build/iOS-Simulator/UnityQATest.app
-          if [[ ! -d "$APP/Frameworks/PurchaseConnector.framework" ]]; then
-            echo "::error::PurchaseConnector.framework is not embedded in UnityQATest.app (PurchaseConnector pod/SPM package not resolved from AppsFlyerDependencies.xml)"
-            exit 1
-          fi
+          UF="$APP/Frameworks/UnityFramework.framework/UnityFramework"
           # AppsFlyeriOSWrapper.mm compiles silent no-op stubs when PurchaseConnector-Swift.h is
-          # not found, so the embedded framework alone is not enough: the real bridge references
-          # the PurchaseConnector class. (No grep -q: it closes the pipe early, and under pipefail
-          # nm's SIGPIPE would fail the check even when the symbol is present.)
-          if ! nm -u "$APP/Frameworks/UnityFramework.framework/UnityFramework" | grep '_OBJC_CLASS_\$_PurchaseConnector$' >/dev/null; then
-            echo "::error::UnityFramework does not reference the PurchaseConnector class - AppsFlyeriOSWrapper.mm was compiled with the no-op stubs"
+          # not found, so the real bridge is proven by UnityFramework referencing the @objc
+          # PurchaseConnector class (verified with nm on a real build: "(undefined) external
+          # _OBJC_CLASS_$_PurchaseConnector (from PurchaseConnector)"). Undefined = dynamically
+          # linked (SPM PurchaseConnector-Dynamic), so the framework must also be embedded;
+          # defined = statically linked into UnityFramework, nothing to embed.
+          # (No grep -q: it closes the pipe early and nm's SIGPIPE would fail under pipefail.)
+          SYMBOLS=$(nm -m "$UF" | grep -E '_OBJC_CLASS_\$_PurchaseConnector( |$)' || true)
+          echo "$SYMBOLS"
+          if [[ -z "$SYMBOLS" ]]; then
+            echo "::error::UnityFramework does not reference the PurchaseConnector class - AppsFlyeriOSWrapper.mm was compiled with the no-op stubs (PurchaseConnector pod/SPM package not resolved)"
             exit 1
           fi
-          echo "PurchaseConnector.framework embedded and referenced by UnityFramework"
+          if echo "$SYMBOLS" | grep '(undefined)' >/dev/null && [[ ! -d "$APP/Frameworks/PurchaseConnector.framework" ]]; then
+            echo "::error::UnityFramework links PurchaseConnector dynamically but PurchaseConnector.framework is not embedded in UnityQATest.app (dyld would fail at launch)"
+            exit 1
+          fi
+          echo "PurchaseConnector bridge linked into UnityFramework"
 
       - name: Upload xcodebuild log
         if: always()

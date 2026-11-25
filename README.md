@@ -75,6 +75,7 @@ From **v6.18.0** onward, the Unity plugin ships as a **single release line** wit
 
 - **Unity IAP:** Use **Unity IAP (`com.unity.purchasing`) 5.0.0 or newer** (recommended: latest 5.x). Unity IAP 4.x does **not** include Billing v8.
 - **Migration:** Apps still on Billing v7 must migrate to Billing v8 APIs before upgrading to 6.18.0+.
+- **The app provides Billing:** `com.appsflyer:purchase-connector` does not pull in Google Play Billing itself (it is a compile-only dependency). If you call `AppsFlyerPurchaseConnector` on Android, your app must include `com.android.billingclient:billing` 8.x, normally through Unity IAP 5.x. Without it (or with Unity IAP 4.x / Billing 7) Purchase Connector does not work and logs a warning. Apps that never call `AppsFlyerPurchaseConnector` are not affected.
 
 ### Still on Billing Library v7?
 

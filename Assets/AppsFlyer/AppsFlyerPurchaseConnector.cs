@@ -293,9 +293,11 @@ private static extern void RegisterUnityPurchaseRevenueParamsCallbackSK2(Func<st
         {
             if (_connectorUnavailableWarned) return;
             _connectorUnavailableWarned = true;
-            Debug.LogWarning("[AppsFlyer] Purchase Connector is unavailable on Android: " +
-                "com.appsflyer:purchase-connector is missing from the build. Make sure External " +
-                "Dependency Manager resolved Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml. " +
+            Debug.LogWarning("[AppsFlyer] Purchase Connector is unavailable on Android. Possible causes: " +
+                "(1) com.appsflyer:purchase-connector is missing from the build - make sure External " +
+                "Dependency Manager resolved Assets/AppsFlyer/Editor/AppsFlyerDependencies.xml; " +
+                "(2) Google Play Billing Library 8 is missing or older - Purchase Connector requires the " +
+                "app to provide com.android.billingclient:billing 8.x (e.g. Unity IAP 5.x). " +
                 "Purchase Connector calls will be no-ops. " + e);
         }
 #endif

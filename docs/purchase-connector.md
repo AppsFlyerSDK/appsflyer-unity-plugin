@@ -24,7 +24,7 @@ The AppsFlyer ROI360 purchase connector is used to validate and report in-app pu
 - Unity AppsFlyer plugin **6.17.1** and higher
 
 ### Android Requirements
-- Google Play Billing library version **7.x.x** and **8.x.x**
+- Google Play Billing library version **8.x.x**, provided by the app (e.g. Unity IAP 5.x). Billing 7 is supported only by the 6.17.x dual-line releases (see below)
 - Unity AppsFlyer plugin **6.17.1** and higher
 
 ### General Requirements

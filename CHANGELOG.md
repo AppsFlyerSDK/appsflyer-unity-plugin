@@ -8,6 +8,9 @@
   The plugin now adds `android.uniquePackageNames=false` to the generated `gradle.properties` at build
   time (new `AppsFlyerGradlePropertiesProcessor`), unless the project already sets the property. Define
   `APPSFLYER_DISABLE_UNIQUE_PACKAGE_NAMES_FIX` to opt out (see README).
+  Purchase Connector requires the app to provide Google Play Billing Library 8.x (e.g. Unity IAP 5.x);
+  Billing 7 / Unity IAP 4.x is not supported. Apps that don't call `AppsFlyerPurchaseConnector` are
+  unaffected.
 
 ## v7.0.41
 * **Fix (DELIVERY-135217):** `AFMiniJSON` formatted and parsed numbers using the device's current

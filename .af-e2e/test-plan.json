@@ -468,9 +468,9 @@
         },
         {
           "id": "pc_not_missing",
-          "description": "C# guard did not report a missing purchase-connector dependency",
+          "description": "C# guard did not fall back to no-ops (its warning carries the [AppsFlyer] tag, so it passes the runner's logcat filter; the native-log checks above are the primary guard)",
           "type": "absent",
-          "patterns": ["Purchase Connector is unavailable on Android", "NoClassDefFoundError"],
+          "patterns": ["Purchase Connector is unavailable on Android"],
           "fail_action": "fail"
         },
         {
@@ -510,13 +510,6 @@
           "description": "Native PurchaseConnector initialised its purchase event cache",
           "type": "log_contains",
           "pattern": "[PurchaseConnector] Resolved cached PurchaseConnectorEvents",
-          "fail_action": "fail"
-        },
-        {
-          "id": "pc_linked",
-          "description": "No missing framework or selector errors",
-          "type": "absent",
-          "patterns": ["Library not loaded", "unrecognized selector"],
           "fail_action": "fail"
         },
         {

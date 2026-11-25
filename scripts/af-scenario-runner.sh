@@ -393,9 +393,11 @@ ios_collect_logs() {
   fi
   # --info: the AppsFlyer SDK (including Purchase Connector) logs at os_log Info level, which
   # `log show` drops by default; phase_9's native [PurchaseConnector] checks depend on it.
+  # PurchaseConnector is in the grep filter so those lines don't rely on the lowercase
+  # "com.appsflyer" subsystem prefix that --style compact happens to print today.
   xcrun simctl spawn "$IOS_UDID" log show \
     --last 240s --info --style compact ${predicate_args[@]+"${predicate_args[@]}"} 2>&1 | \
-    grep -E "${LOG_TAG}|appsflyer|CFNetwork:Summary|response_status|response code|Opening URL|launchservices|openURL|continueUserActivity" >> "$log_file" || true
+    grep -E "${LOG_TAG}|appsflyer|PurchaseConnector|CFNetwork:Summary|response_status|response code|Opening URL|launchservices|openURL|continueUserActivity" >> "$log_file" || true
 
   # Best-effort screenshot for failure triage (no-op if nothing booted).
   local shot_dir="${log_file%/*}"
