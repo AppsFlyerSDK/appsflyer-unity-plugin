@@ -83,7 +83,7 @@ jobs:
 
   Build-Production-Packages:
     needs: [Prepare-Release]
-    runs-on: macos-14
+    runs-on: macos-15
     outputs:
       artifact_name: ${{ steps.artifact.outputs.name }}
     steps:
@@ -101,7 +101,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /Applications/Unity/Unity.app
-          key: unity-6000.3.5f1-core-macos14-arm64
+          key: unity-6000.3.5f1-core-macos15-arm64
 
       - name: Install Unity Editor
         if: steps.cache-unity.outputs.cache-hit != 'true'
